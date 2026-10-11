@@ -21,7 +21,8 @@ use crate::{
     next_solver::{
         DbInterner, GenericArgs, Ty, TyKind, TypingMode,
         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt, references_non_lt_error,
+        obligation_ctxt::ObligationCtxt,
+        references_non_lt_error,
     },
 };
 
@@ -99,7 +100,11 @@ impl<'db> Filler<'db> {
     ) -> Self {
         let interner = DbInterner::new_with(db, Some(env.krate), env.block);
         let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
-        Self { infcx, trait_env: env, subst }
+        Self {
+            infcx,
+            trait_env: env,
+            subst,
+        }
     }
 
     fn fill<T: TypeFoldable<DbInterner<'db>> + Copy>(
@@ -109,7 +114,9 @@ impl<'db> Filler<'db> {
         // Can't deep normalized as that'll try to normalize consts and fail.
         *t = t.try_fold_with(self)?;
         if references_non_lt_error(t) {
-            Err(MirLowerError::NotSupported("monomorphization resulted in errors".to_owned()))
+            Err(MirLowerError::NotSupported(
+                "monomorphization resulted in errors".to_owned(),
+            ))
         } else {
             Ok(())
         }

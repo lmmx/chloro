@@ -47,11 +47,7 @@ pub(crate) fn move_item(
     find_ancestors(item, direction, range.range)
 }
 
-fn find_ancestors(
-    item: SyntaxElement,
-    direction: Direction,
-    range: TextRange,
-) -> Option<TextEdit> {
+fn find_ancestors(item: SyntaxElement, direction: Direction, range: TextRange) -> Option<TextEdit> {
     let root = match item {
         SyntaxElement::Node(node) => node,
         SyntaxElement::Token(token) => token.parent()?,
@@ -178,18 +174,24 @@ fn replace_nodes<'a>(
 mod tests {
     use crate::fixture;
     use expect_test::{Expect, expect};
+
     use crate::Direction;
+
     fn check(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         expect: Expect,
         direction: Direction,
     ) {
         let (analysis, range) = fixture::range(ra_fixture);
-        let edit = analysis.move_item(range, direction).unwrap().unwrap_or_default();
+        let edit = analysis
+            .move_item(range, direction)
+            .unwrap()
+            .unwrap_or_default();
         let mut file = analysis.file_text(range.file_id).unwrap().to_string();
         edit.apply(&mut file);
         expect.assert_eq(&file);
     }
+
     #[test]
     fn test_moves_match_arm_up() {
         check(
@@ -220,6 +222,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_match_arm_down() {
         check(
@@ -250,6 +253,7 @@ fn main() {
             Direction::Down,
         );
     }
+
     #[test]
     fn test_nowhere_to_move() {
         check(
@@ -280,6 +284,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_let_stmt_up() {
         check(
@@ -298,6 +303,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_expr_up() {
         check(
@@ -417,6 +423,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_nowhere_to_move_stmt() {
         check(
@@ -435,6 +442,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_move_item() {
         check(
@@ -451,6 +459,7 @@ fn foo() {}$0$0
             Direction::Up,
         );
     }
+
     #[test]
     fn test_move_impl_up() {
         check(
@@ -471,6 +480,7 @@ impl Wow for Yay $0$0{}
             Direction::Up,
         );
     }
+
     #[test]
     fn test_move_use_up() {
         check(
@@ -485,6 +495,7 @@ use std::collections::HashMap$0$0;
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_match_expr_up() {
         check(
@@ -511,6 +522,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_param() {
         check(
@@ -540,6 +552,7 @@ fn f($0$0arg: u8, arg2: u16) {}
             Direction::Down,
         );
     }
+
     #[test]
     fn test_moves_arg_up() {
         check(
@@ -560,6 +573,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_arg_down() {
         check(
@@ -580,6 +594,7 @@ fn main() {
             Direction::Down,
         );
     }
+
     #[test]
     fn test_nowhere_to_move_arg() {
         check(
@@ -600,6 +615,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_generic_param_up() {
         check(
@@ -616,6 +632,7 @@ fn main() {}
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_generic_arg_up() {
         check(
@@ -636,6 +653,7 @@ fn main() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_variant_up() {
         check(
@@ -658,6 +676,7 @@ fn main() {}
             Direction::Up,
         );
     }
+
     #[test]
     fn test_moves_type_bound_up() {
         check(
@@ -682,6 +701,7 @@ fn main() {}
             Direction::Up,
         );
     }
+
     #[test]
     fn test_prioritizes_trait_items() {
         check(
@@ -730,6 +750,7 @@ impl Yay for Test {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_weird_nesting() {
         check(
@@ -758,6 +779,7 @@ fn test() {
             Direction::Up,
         );
     }
+
     #[test]
     fn test_cursor_at_item_start() {
         check(
@@ -822,6 +844,7 @@ fn main() {}
             Direction::Up,
         );
     }
+
     #[test]
     fn test_cursor_at_item_end() {
         check(
@@ -865,6 +888,7 @@ fn main() {}
             Direction::Up,
         );
     }
+
     #[test]
     fn handles_empty_file() {
         check(r#"$0$0"#, expect![[r#""#]], Direction::Up);

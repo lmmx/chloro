@@ -4,8 +4,8 @@ use base_db::Crate;
 use intern::sym;
 use span::{Edition, Span, SyntaxContext};
 use stdx::TupleExt;
-use syntax_bridge::DocCommentDesugarMode;
 use syntax::{AstNode, ast};
+use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 
 use crate::{
@@ -36,12 +36,12 @@ impl DeclarativeMacroExpander {
         match self.mac.err() {
             Some(_) => ExpandResult::new(
                 (
-                tt::TopSubtree::empty(tt::DelimSpan {
-                open: span,
-                close: span,
-            }),
-                None,
-            ),
+                    tt::TopSubtree::empty(tt::DelimSpan {
+                        open: span,
+                        close: span,
+                    }),
+                    None,
+                ),
                 ExpandError::new(span, ExpandErrorKind::MacroDefinition),
             ),
             None => self
@@ -68,9 +68,9 @@ impl DeclarativeMacroExpander {
         match self.mac.err() {
             Some(_) => ExpandResult::new(
                 tt::TopSubtree::empty(tt::DelimSpan {
-                open: call_site,
-                close: call_site,
-            }),
+                    open: call_site,
+                    close: call_site,
+                }),
                 ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
             ),
             None => self
@@ -118,8 +118,10 @@ impl DeclarativeMacroExpander {
                 def_crate.data(db).edition
             } else {
                 // UNWRAP-SAFETY: Only the root context has no outer expansion
-                let krate =
-                    db.lookup_intern_macro_call(ctx.outer_expn(db).unwrap().into()).def.krate;
+                let krate = db
+                    .lookup_intern_macro_call(ctx.outer_expn(db).unwrap().into())
+                    .def
+                    .krate;
                 krate.data(db).edition
             }
         };
@@ -177,6 +179,10 @@ impl DeclarativeMacroExpander {
             HirFileId::MacroFile(macro_file) => macro_file.lookup(db).ctxt,
             HirFileId::FileId(file) => SyntaxContext::root(file.edition(db)),
         });
-        Arc::new(DeclarativeMacroExpander { mac, transparency, edition })
+        Arc::new(DeclarativeMacroExpander {
+            mac,
+            transparency,
+            edition,
+        })
     }
 }

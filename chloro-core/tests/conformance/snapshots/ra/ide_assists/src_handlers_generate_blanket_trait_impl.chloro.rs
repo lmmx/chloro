@@ -87,8 +87,9 @@ pub(crate) fn generate_blanket_trait_impl(
                 apply_sized(has_sized(&traitd, &ctx.sema), bounds),
             ))]);
 
-            let trait_gen_args =
-                traitd.generic_param_list().map(|param_list| param_list.to_generic_args());
+            let trait_gen_args = traitd
+                .generic_param_list()
+                .map(|param_list| param_list.to_generic_args());
 
             let impl_ = make::impl_trait(
                 cfg_attrs(&traitd),
@@ -143,10 +144,7 @@ pub(crate) fn generate_blanket_trait_impl(
     Some(())
 }
 
-fn existing_any_impl(
-    traitd: &ast::Trait,
-    sema: &Semantics<'_, RootDatabase>,
-) -> Option<hir::Impl> {
+fn existing_any_impl(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Impl> {
     let db = sema.db;
     let traitd = sema.to_def(traitd)?;
     traitd
@@ -162,14 +160,12 @@ fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
     } else if let Some(is_sized) = where_clause_sized(traitd.where_clause()) {
         is_sized
     } else {
-        contained_owned_self_method(traitd.assoc_item_list()) || super_traits_has_sized(traitd, sema) == Some(true)
+        contained_owned_self_method(traitd.assoc_item_list())
+            || super_traits_has_sized(traitd, sema) == Some(true)
     }
 }
 
-fn super_traits_has_sized(
-    traitd: &ast::Trait,
-    sema: &Semantics<'_, RootDatabase>,
-) -> Option<bool> {
+fn super_traits_has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<bool> {
     let traitd = sema.to_def(traitd)?;
     let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
 
@@ -177,14 +173,15 @@ fn super_traits_has_sized(
 }
 
 fn contained_owned_self_method(item_list: Option<ast::AssocItemList>) -> bool {
-    item_list.into_iter().flat_map(|assoc_item_list| assoc_item_list.assoc_items()).any(|item| {
-        match item {
+    item_list
+        .into_iter()
+        .flat_map(|assoc_item_list| assoc_item_list.assoc_items())
+        .any(|item| match item {
             AssocItem::Fn(f) => {
                 has_owned_self(&f) && where_clause_sized(f.where_clause()).is_none()
             }
             _ => false,
-        }
-    })
+        })
 }
 
 fn has_owned_self(f: &ast::Fn) -> bool {
@@ -250,15 +247,14 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
     let mut name_gen =
         suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
 
-    make::name(&name_gen.suggest_name(if has_iter {
-            "I"
-        } else {
-            "T"
-        }))
+    make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
 }
 
 fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {
-    bounds.into_iter().flat_map(|bounds| bounds.bounds()).find(|bound| ty_bound_is(bound, s))
+    bounds
+        .into_iter()
+        .flat_map(|bounds| bounds.bounds())
+        .find(|bound| ty_bound_is(bound, s))
 }
 
 fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
@@ -270,7 +266,9 @@ fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
 }
 
 fn todo_fn(f: &ast::Fn, config: &AssistConfig) -> ast::Fn {
-    let params = f.param_list().unwrap_or_else(|| make::param_list(None, None));
+    let params = f
+        .param_list()
+        .unwrap_or_else(|| make::param_list(None, None));
     make::fn_(
         cfg_attrs(f),
         f.visibility(),
@@ -297,13 +295,18 @@ fn default_block(config: &AssistConfig) -> BlockExpr {
 }
 
 fn cfg_attrs(node: &impl HasAttrs) -> impl Iterator<Item = ast::Attr> {
-    node.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"))
+    node.attrs().filter(|attr| {
+        attr.as_simple_call()
+            .is_some_and(|(name, _arg)| name == "cfg")
+    })
 }
 
 #[cfg(test)]
 mod test {
+
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn test_gen_blanket_works() {
         check_assist(
@@ -343,6 +346,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_sized() {
         check_assist(
@@ -405,6 +409,7 @@ impl<T> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_super_sized() {
         check_assist(
@@ -428,6 +433,7 @@ impl<T: Default> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_non_sized() {
         check_assist(
@@ -504,6 +510,7 @@ impl<I: Iterator + ?Sized> Foo for $0I {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_other_assoc_items() {
         check_assist(
@@ -538,6 +545,7 @@ impl<T: ?Sized> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_indent() {
         check_assist(
@@ -818,6 +826,7 @@ mod foo {
         "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_remove_attribute() {
         check_assist(
@@ -861,6 +870,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_not_gen_type_alias() {
         check_assist(
@@ -906,6 +916,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_no_quick_bound() {
         check_assist(
@@ -954,6 +965,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_no_where_clause() {
         check_assist(
@@ -990,6 +1002,7 @@ impl<T: Send, T1: ?Sized> Foo<T> for $0T1 {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_basic() {
         check_assist(
@@ -1026,6 +1039,7 @@ impl<T: ?Sized> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_cfg_attrs() {
         check_assist(
@@ -1094,6 +1108,7 @@ impl<T: ?Sized> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait() {
         check_assist(
@@ -1108,6 +1123,7 @@ impl<T: ?Sized> Foo for $0T {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_quick_bounds() {
         check_assist(
@@ -1122,6 +1138,7 @@ impl<T: Copy + ?Sized> Foo for $0T {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_where_clause() {
         check_assist(
@@ -1139,6 +1156,7 @@ where Self: Copy
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_where_clause_comma() {
         check_assist(
@@ -1156,6 +1174,7 @@ where Self: Copy,
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_where_clause_newline() {
         check_assist(
@@ -1177,6 +1196,7 @@ where Self: Copy
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_where_clause_newline_newline() {
         check_assist(
@@ -1201,6 +1221,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_where_clause_newline_newline_comma() {
         check_assist(
@@ -1225,6 +1246,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_multiple_where_clause() {
         check_assist(
@@ -1252,6 +1274,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_trait_with_multiple_bounds_where_clause() {
         check_assist(
@@ -1279,6 +1302,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_empty_generate() {
         check_assist(
@@ -1297,6 +1321,7 @@ impl<T: ?Sized> Foo for $0T {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_trait_with_doc() {
         check_assist(
@@ -1313,6 +1338,7 @@ impl<T: ?Sized> Foo for $0T {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_multiple_method() {
         check_assist(
@@ -1341,6 +1367,7 @@ impl<T: ?Sized> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_generic() {
         check_assist(
@@ -1365,6 +1392,7 @@ impl<T: ?Sized> Foo for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_lifetimes() {
         check_assist(
@@ -1387,6 +1415,7 @@ impl<'a, T: ?Sized> Foo<'a> for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_lifetime_bounds() {
         check_assist(
@@ -1409,6 +1438,7 @@ impl<'a: 'static, T: ?Sized> Foo<'a> for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_lifetime_quick_bounds() {
         check_assist(
@@ -1431,6 +1461,7 @@ impl<'a, T: 'a + ?Sized> Foo<'a> for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_multiple_lifetimes() {
         check_assist(
@@ -1453,6 +1484,7 @@ impl<'a, 'b, T: ?Sized> Foo<'a, 'b> for $0T {
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_method_with_lifetime_bounds_at_where_clause() {
         check_assist(
@@ -1481,6 +1513,7 @@ where 'a: 'static,
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_not_on_name() {
         check_assist_not_applicable(
@@ -1531,6 +1564,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_existing_impl() {
         cov_mark::check!(existing_any_impl);
@@ -1544,6 +1578,7 @@ impl Foo for () {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_existing_other_impl() {
         check_assist(
@@ -1574,6 +1609,7 @@ impl Bar for () {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_apply_on_other_impl_block() {
         check_assist(
@@ -1610,6 +1646,7 @@ impl Bar for i32 {}
 "#,
         );
     }
+
     #[test]
     fn test_gen_blanket_apply_on_other_blanket_impl_block() {
         check_assist(

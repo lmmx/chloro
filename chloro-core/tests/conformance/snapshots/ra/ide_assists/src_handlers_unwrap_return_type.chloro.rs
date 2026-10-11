@@ -65,112 +65,116 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let happy_type = extract_wrapped_type(type_ref)?;
 
-    acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
-        let mut editor = builder.make_editor(&parent);
-        let make = SyntaxFactory::with_mappings();
+    acc.add(
+        kind.assist_id(),
+        kind.label(),
+        type_ref.syntax().text_range(),
+        |builder| {
+            let mut editor = builder.make_editor(&parent);
+            let make = SyntaxFactory::with_mappings();
 
-        let mut exprs_to_unwrap = Vec::new();
-        let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_unwrap, e);
-        walk_expr(&body_expr, &mut |expr| {
-            if let ast::Expr::ReturnExpr(ret_expr) = expr
-                && let Some(ret_expr_arg) = &ret_expr.expr()
-            {
-                for_each_tail_expr(ret_expr_arg, tail_cb);
+            let mut exprs_to_unwrap = Vec::new();
+            let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_unwrap, e);
+            walk_expr(&body_expr, &mut |expr| {
+                if let ast::Expr::ReturnExpr(ret_expr) = expr
+                    && let Some(ret_expr_arg) = &ret_expr.expr()
+                {
+                    for_each_tail_expr(ret_expr_arg, tail_cb);
+                }
+            });
+            for_each_tail_expr(&body_expr, tail_cb);
+
+            let is_unit_type = is_unit_type(&happy_type);
+            if is_unit_type {
+                if let Some(NodeOrToken::Token(token)) = ret_type.syntax().next_sibling_or_token()
+                    && token.kind() == SyntaxKind::WHITESPACE
+                {
+                    editor.delete(token);
+                }
+
+                editor.delete(ret_type.syntax());
+            } else {
+                editor.replace(type_ref.syntax(), happy_type.syntax());
             }
-        });
-        for_each_tail_expr(&body_expr, tail_cb);
 
-        let is_unit_type = is_unit_type(&happy_type);
-        if is_unit_type {
-            if let Some(NodeOrToken::Token(token)) = ret_type.syntax().next_sibling_or_token()
-                && token.kind() == SyntaxKind::WHITESPACE
-            {
-                editor.delete(token);
-            }
+            let mut final_placeholder = None;
+            for tail_expr in exprs_to_unwrap {
+                match &tail_expr {
+                    ast::Expr::CallExpr(call_expr) => {
+                        let ast::Expr::PathExpr(path_expr) = call_expr.expr().unwrap() else {
+                            continue;
+                        };
 
-            editor.delete(ret_type.syntax());
-        } else {
-            editor.replace(type_ref.syntax(), happy_type.syntax());
-        }
+                        let path_str = path_expr.path().unwrap().to_string();
+                        let needs_replacing = match kind {
+                            UnwrapperKind::Option => path_str == "Some",
+                            UnwrapperKind::Result => path_str == "Ok" || path_str == "Err",
+                        };
 
-        let mut final_placeholder = None;
-        for tail_expr in exprs_to_unwrap {
-            match &tail_expr {
-                ast::Expr::CallExpr(call_expr) => {
-                    let ast::Expr::PathExpr(path_expr) = call_expr.expr().unwrap() else {
-                        continue;
-                    };
-
-                    let path_str = path_expr.path().unwrap().to_string();
-                    let needs_replacing = match kind {
-                        UnwrapperKind::Option => path_str == "Some",
-                        UnwrapperKind::Result => path_str == "Ok" || path_str == "Err",
-                    };
-
-                    if !needs_replacing {
-                        continue;
-                    }
-
-                    let arg_list = call_expr.arg_list().unwrap();
-                    if is_unit_type {
-                        let tail_parent = tail_expr
-                            .syntax()
-                            .parent()
-                            .and_then(Either::<ast::ReturnExpr, ast::StmtList>::cast)
-                            .unwrap();
-                        match tail_parent {
-                            Either::Left(ret_expr) => {
-                                editor.replace(ret_expr.syntax(), make.expr_return(None).syntax())
-                            }
-                            Either::Right(stmt_list) => {
-                                let new_block = if stmt_list.statements().next().is_none() {
-                                    make.expr_empty_block()
-                                } else {
-                                    make.block_expr(stmt_list.statements(), None)
-                                };
-                                editor.replace(
-                                    stmt_list.syntax(),
-                                    new_block.stmt_list().unwrap().syntax(),
-                                );
-                            }
+                        if !needs_replacing {
+                            continue;
                         }
-                    } else if let Some(first_arg) = arg_list.args().next() {
-                        editor.replace(tail_expr.syntax(), first_arg.syntax());
+
+                        let arg_list = call_expr.arg_list().unwrap();
+                        if is_unit_type {
+                            let tail_parent = tail_expr
+                                .syntax()
+                                .parent()
+                                .and_then(Either::<ast::ReturnExpr, ast::StmtList>::cast)
+                                .unwrap();
+                            match tail_parent {
+                                Either::Left(ret_expr) => editor
+                                    .replace(ret_expr.syntax(), make.expr_return(None).syntax()),
+                                Either::Right(stmt_list) => {
+                                    let new_block = if stmt_list.statements().next().is_none() {
+                                        make.expr_empty_block()
+                                    } else {
+                                        make.block_expr(stmt_list.statements(), None)
+                                    };
+                                    editor.replace(
+                                        stmt_list.syntax(),
+                                        new_block.stmt_list().unwrap().syntax(),
+                                    );
+                                }
+                            }
+                        } else if let Some(first_arg) = arg_list.args().next() {
+                            editor.replace(tail_expr.syntax(), first_arg.syntax());
+                        }
                     }
+                    ast::Expr::PathExpr(path_expr) => {
+                        let UnwrapperKind::Option = kind else {
+                            continue;
+                        };
+
+                        if path_expr.path().unwrap().to_string() != "None" {
+                            continue;
+                        }
+
+                        let new_tail_expr = make.expr_unit();
+                        editor.replace(path_expr.syntax(), new_tail_expr.syntax());
+                        if let Some(cap) = ctx.config.snippet_cap {
+                            editor.add_annotation(
+                                new_tail_expr.syntax(),
+                                builder.make_placeholder_snippet(cap),
+                            );
+
+                            final_placeholder = Some(new_tail_expr);
+                        }
+                    }
+                    _ => (),
                 }
-                ast::Expr::PathExpr(path_expr) => {
-                    let UnwrapperKind::Option = kind else {
-                        continue;
-                    };
-
-                    if path_expr.path().unwrap().to_string() != "None" {
-                        continue;
-                    }
-
-                    let new_tail_expr = make.expr_unit();
-                    editor.replace(path_expr.syntax(), new_tail_expr.syntax());
-                    if let Some(cap) = ctx.config.snippet_cap {
-                        editor.add_annotation(
-                            new_tail_expr.syntax(),
-                            builder.make_placeholder_snippet(cap),
-                        );
-
-                        final_placeholder = Some(new_tail_expr);
-                    }
-                }
-                _ => (),
             }
-        }
 
-        if let Some(cap) = ctx.config.snippet_cap
-            && let Some(final_placeholder) = final_placeholder
-        {
-            editor.add_annotation(final_placeholder.syntax(), builder.make_tabstop_after(cap));
-        }
+            if let Some(cap) = ctx.config.snippet_cap
+                && let Some(final_placeholder) = final_placeholder
+            {
+                editor.add_annotation(final_placeholder.syntax(), builder.make_tabstop_after(cap));
+            }
 
-        editor.add_mappings(make.finish_with_mappings());
-        builder.add_file_edits(ctx.vfs_file_id(), editor);
-    })
+            editor.add_mappings(make.finish_with_mappings());
+            builder.add_file_edits(ctx.vfs_file_id(), editor);
+        },
+    )
 }
 
 enum UnwrapperKind {
@@ -235,14 +239,18 @@ fn extract_wrapped_type(ty: &ast::Type) -> Option<ast::Type> {
 }
 
 fn is_unit_type(ty: &ast::Type) -> bool {
-    let ast::Type::TupleType(tuple) = ty else { return false };
+    let ast::Type::TupleType(tuple) = ty else {
+        return false;
+    };
     tuple.fields().next().is_none()
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};
+
     use super::*;
+
     #[test]
     fn unwrap_option_return_type_simple() {
         check_assist_by_label(
@@ -263,6 +271,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_unit_type() {
         check_assist_by_label(
@@ -294,6 +303,7 @@ fn foo() {}
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_none() {
         check_assist_by_label(
@@ -320,6 +330,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_multi_none() {
         check_assist_by_label(
@@ -354,6 +365,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_ending_with_parent() {
         check_assist_by_label(
@@ -380,6 +392,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_break_split_tail() {
         check_assist_by_label(
@@ -410,6 +423,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_closure() {
         check_assist_by_label(
@@ -434,6 +448,7 @@ fn foo() {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_return_type_bad_cursor() {
         check_assist_not_applicable_by_label(
@@ -448,6 +463,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_return_type_bad_cursor_closure() {
         check_assist_not_applicable_by_label(
@@ -464,6 +480,7 @@ fn foo() {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_closure_non_block() {
         check_assist_not_applicable_by_label(
@@ -475,6 +492,7 @@ fn foo() { || -> i$032 3; }
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_return_type_already_not_option_std() {
         check_assist_not_applicable_by_label(
@@ -489,6 +507,7 @@ fn foo() -> i32$0 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_return_type_already_not_option_closure() {
         check_assist_not_applicable_by_label(
@@ -505,6 +524,7 @@ fn foo() {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail() {
         check_assist_by_label(
@@ -525,6 +545,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_closure() {
         check_assist_by_label(
@@ -549,6 +570,7 @@ fn foo() {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_only() {
         check_assist_by_label(
@@ -563,6 +585,7 @@ fn foo() -> i32 { 42i32 }
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_block_like() {
         check_assist_by_label(
@@ -589,6 +612,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_without_block_closure() {
         check_assist_by_label(
@@ -619,6 +643,7 @@ fn foo() {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_nested_if() {
         check_assist_by_label(
@@ -653,6 +678,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_await() {
         check_assist_by_label(
@@ -687,6 +713,7 @@ async fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_array() {
         check_assist_by_label(
@@ -701,6 +728,7 @@ fn foo() -> [i32; 3] { [1, 2, 3] }
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_cast() {
         check_assist_by_label(
@@ -735,6 +763,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_block_like_match() {
         check_assist_by_label(
@@ -761,6 +790,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_loop_with_tail() {
         check_assist_by_label(
@@ -789,6 +819,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_loop_in_let_stmt() {
         check_assist_by_label(
@@ -813,6 +844,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_block_like_match_return_expr() {
         check_assist_by_label(
@@ -869,6 +901,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_block_like_match_deeper() {
         check_assist_by_label(
@@ -919,6 +952,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_tail_block_like_early_return() {
         check_assist_by_label(
@@ -945,6 +979,7 @@ fn foo() -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_in_tail_position() {
         check_assist_by_label(
@@ -963,6 +998,7 @@ fn foo(num: i32) -> i32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_closure() {
         check_assist_by_label(
@@ -1045,6 +1081,7 @@ fn foo(the_field: u32) -> u32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_simple_with_weird_forms() {
         check_assist_by_label(
@@ -1219,6 +1256,7 @@ fn foo(the_field: u32) -> u32 {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_option_return_type_nested_type() {
         check_assist_by_label(
@@ -1269,6 +1307,7 @@ fn foo() -> impl Iterator<Item = i32> {
             "Unwrap Option return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple() {
         check_assist_by_label(
@@ -1289,6 +1328,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_unit_type() {
         check_assist_by_label(
@@ -1320,6 +1360,7 @@ fn foo() {}
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_ending_with_parent() {
         check_assist_by_label(
@@ -1346,6 +1387,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_break_split_tail() {
         check_assist_by_label(
@@ -1376,6 +1418,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_closure() {
         check_assist_by_label(
@@ -1400,6 +1443,7 @@ fn foo() {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_return_type_bad_cursor() {
         check_assist_not_applicable_by_label(
@@ -1414,6 +1458,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_return_type_bad_cursor_closure() {
         check_assist_not_applicable_by_label(
@@ -1430,6 +1475,7 @@ fn foo() {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_closure_non_block() {
         check_assist_not_applicable_by_label(
@@ -1441,6 +1487,7 @@ fn foo() { || -> i$032 3; }
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_return_type_already_not_result_std() {
         check_assist_not_applicable_by_label(
@@ -1455,6 +1502,7 @@ fn foo() -> i32$0 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_return_type_already_not_result_closure() {
         check_assist_not_applicable_by_label(
@@ -1471,6 +1519,7 @@ fn foo() {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail() {
         check_assist_by_label(
@@ -1491,6 +1540,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_closure() {
         check_assist_by_label(
@@ -1515,6 +1565,7 @@ fn foo() {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_only() {
         check_assist_by_label(
@@ -1529,6 +1580,7 @@ fn foo() -> i32 { 42i32 }
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_block_like() {
         check_assist_by_label(
@@ -1555,6 +1607,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_without_block_closure() {
         check_assist_by_label(
@@ -1585,6 +1638,7 @@ fn foo() {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_nested_if() {
         check_assist_by_label(
@@ -1619,6 +1673,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_await() {
         check_assist_by_label(
@@ -1653,6 +1708,7 @@ async fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_array() {
         check_assist_by_label(
@@ -1667,6 +1723,7 @@ fn foo() -> [i32; 3] { [1, 2, 3] }
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_cast() {
         check_assist_by_label(
@@ -1701,6 +1758,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_block_like_match() {
         check_assist_by_label(
@@ -1727,6 +1785,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_loop_with_tail() {
         check_assist_by_label(
@@ -1755,6 +1814,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_loop_in_let_stmt() {
         check_assist_by_label(
@@ -1779,6 +1839,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_block_like_match_return_expr() {
         check_assist_by_label(
@@ -1835,6 +1896,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_block_like_match_deeper() {
         check_assist_by_label(
@@ -1885,6 +1947,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_tail_block_like_early_return() {
         check_assist_by_label(
@@ -1911,6 +1974,7 @@ fn foo() -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_in_tail_position() {
         check_assist_by_label(
@@ -1929,6 +1993,7 @@ fn foo(num: i32) -> i32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_closure() {
         check_assist_by_label(
@@ -2011,6 +2076,7 @@ fn foo(the_field: u32) -> u32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_simple_with_weird_forms() {
         check_assist_by_label(
@@ -2185,6 +2251,7 @@ fn foo(the_field: u32) -> u32 {
             "Unwrap Result return type",
         );
     }
+
     #[test]
     fn unwrap_result_return_type_nested_type() {
         check_assist_by_label(

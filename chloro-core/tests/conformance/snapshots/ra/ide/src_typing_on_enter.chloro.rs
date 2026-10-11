@@ -54,7 +54,10 @@ pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<Text
         ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
     let parse = db.parse(editioned_file_id_wrapper);
     let file = parse.tree();
-    let token = file.syntax().token_at_offset(position.offset).left_biased()?;
+    let token = file
+        .syntax()
+        .token_at_offset(position.offset)
+        .left_biased()?;
 
     if let Some(comment) = ast::Comment::cast(token.clone()) {
         return on_enter_in_comment(&comment, &file, position.offset);
@@ -129,7 +132,11 @@ fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<Te
 
     let indent = IndentLevel::from_node(block.syntax());
     let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
-    edit.union(TextEdit::insert(contents.text_range().end(), format!("\n{indent}"))).ok()?;
+    edit.union(TextEdit::insert(
+        contents.text_range().end(),
+        format!("\n{indent}"),
+    ))
+    .ok()?;
     Some(edit)
 }
 
@@ -140,8 +147,11 @@ fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> 
 
     let indent = IndentLevel::from_node(list.syntax());
     let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
-    edit.union(TextEdit::insert(list.r_curly_token()?.text_range().start(), format!("\n{indent}")))
-        .ok()?;
+    edit.union(TextEdit::insert(
+        list.r_curly_token()?.text_range().start(),
+        format!("\n{indent}"),
+    ))
+    .ok()?;
     Some(edit)
 }
 
@@ -161,14 +171,21 @@ fn block_contents(block: &ast::BlockExpr) -> Option<SyntaxNode> {
 }
 
 fn followed_by_comment(comment: &ast::Comment) -> bool {
-    let ws = match comment.syntax().next_token().and_then(ast::Whitespace::cast) {
+    let ws = match comment
+        .syntax()
+        .next_token()
+        .and_then(ast::Whitespace::cast)
+    {
         Some(it) => it,
         None => return false,
     };
     if ws.spans_multiple_lines() {
         return false;
     }
-    ws.syntax().next_token().and_then(ast::Comment::cast).is_some()
+    ws.syntax()
+        .next_token()
+        .and_then(ast::Comment::cast)
+        .is_some()
 }
 
 fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
@@ -195,7 +212,9 @@ fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
 mod tests {
     use stdx::trim_indent;
     use test_utils::assert_eq_text;
+
     use crate::fixture;
+
     fn apply_on_enter(before: &str) -> Option<String> {
         let (analysis, position) = fixture::position(before);
         let result = analysis.on_enter(position).unwrap()?;
@@ -204,6 +223,7 @@ mod tests {
         result.apply(&mut actual);
         Some(actual)
     }
+
     fn do_check(
         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
         #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
@@ -212,9 +232,11 @@ mod tests {
         let actual = apply_on_enter(ra_fixture_before).unwrap();
         assert_eq_text!(ra_fixture_after, &actual);
     }
+
     fn do_check_noop(ra_fixture_text: &str) {
         assert!(apply_on_enter(ra_fixture_text).is_none())
     }
+
     #[test]
     fn continues_doc_comment() {
         do_check(
@@ -261,10 +283,12 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn does_not_continue_before_doc_comment() {
         do_check_noop(r"$0//! docz");
     }
+
     #[test]
     fn continues_another_doc_comment() {
         do_check(
@@ -283,6 +307,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn continues_code_comment_in_the_middle_of_line() {
         do_check(
@@ -301,6 +326,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn continues_code_comment_in_the_middle_several_lines() {
         do_check(
@@ -321,6 +347,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn does_not_continue_end_of_line_comment() {
         do_check_noop(
@@ -332,6 +359,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn continues_end_of_line_comment_with_space() {
         cov_mark::check!(continues_end_of_line_comment_with_space);
@@ -351,6 +379,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trims_all_trailing_whitespace() {
         do_check(
@@ -369,6 +398,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn indents_fn_body_block() {
         cov_mark::check!(indent_block_contents);
@@ -383,6 +413,7 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn indents_block_expr() {
         do_check(
@@ -400,6 +431,7 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn indents_match_arm() {
         do_check(
@@ -423,6 +455,7 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn indents_block_with_statement() {
         do_check(
@@ -446,6 +479,7 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn indents_nested_blocks() {
         do_check(
@@ -459,6 +493,7 @@ fn f() {
         "#,
         );
     }
+
     #[test]
     fn does_not_indent_empty_block() {
         do_check_noop(
@@ -472,6 +507,7 @@ fn f() {{$0}}
         "#,
         );
     }
+
     #[test]
     fn does_not_indent_block_with_too_much_content() {
         do_check_noop(
@@ -485,6 +521,7 @@ fn f() {$0 a = b; a = b; }
         "#,
         );
     }
+
     #[test]
     fn does_not_indent_multiline_block() {
         do_check_noop(
@@ -501,6 +538,7 @@ fn f() {$0
         "#,
         );
     }
+
     #[test]
     fn indents_use_tree_list() {
         do_check(
@@ -548,6 +586,7 @@ use {
             "#,
         );
     }
+
     #[test]
     fn does_not_indent_use_tree_list_when_not_at_curly_brace() {
         do_check_noop(
@@ -556,6 +595,7 @@ use path::{Thing$0};
             "#,
         );
     }
+
     #[test]
     fn does_not_indent_use_tree_list_without_curly_braces() {
         do_check_noop(
@@ -579,6 +619,7 @@ use path::{$0Thing;
             "#,
         );
     }
+
     #[test]
     fn does_not_indent_multiline_use_tree_list() {
         do_check_noop(

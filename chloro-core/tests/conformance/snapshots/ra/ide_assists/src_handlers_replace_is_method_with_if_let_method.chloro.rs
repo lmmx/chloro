@@ -49,9 +49,17 @@ pub(crate) fn replace_is_method_with_if_let_method(
             };
 
             let (assist_id, message, text) = if name_ref.text() == "is_some" {
-                ("replace_is_some_with_if_let_some", "Replace `is_some` with `let Some`", "Some")
+                (
+                    "replace_is_some_with_if_let_some",
+                    "Replace `is_some` with `let Some`",
+                    "Some",
+                )
             } else {
-                ("replace_is_ok_with_if_let_ok", "Replace `is_ok` with `let Ok`", "Ok")
+                (
+                    "replace_is_ok_with_if_let_ok",
+                    "Replace `is_ok` with `let Ok`",
+                    "Ok",
+                )
             };
 
             acc.add(
@@ -87,7 +95,9 @@ pub(crate) fn replace_is_method_with_if_let_method(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::replace_is_method_with_if_let_method;
+
     #[test]
     fn replace_is_some_with_if_let_some_works() {
         check_assist(
@@ -126,6 +136,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_some_with_if_let_some_not_applicable() {
         check_assist_not_applicable(
@@ -138,6 +149,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_ok_with_if_let_ok_works() {
         check_assist(
@@ -176,6 +188,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_ok_with_if_let_ok_not_applicable() {
         check_assist_not_applicable(
@@ -188,6 +201,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_some_with_if_let_some_in_let_chain() {
         check_assist(
@@ -244,6 +258,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_some_with_while_let_some() {
         check_assist(
@@ -262,6 +277,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_is_some_with_if_let_some_not_applicable_after_l_curly() {
         check_assist_not_applicable(

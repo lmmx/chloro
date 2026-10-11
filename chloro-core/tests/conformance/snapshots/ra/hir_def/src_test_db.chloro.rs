@@ -132,7 +132,10 @@ impl SourceDatabase for TestDB {
     }
 
     fn nonce_and_revision(&self) -> (Nonce, salsa::Revision) {
-        (self.nonce, salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision())
+        (
+            self.nonce,
+            salsa::plumbing::ZalsaDatabase::zalsa(self).current_revision(),
+        )
     }
 }
 
@@ -143,7 +146,11 @@ impl TestDB {
             .iter()
             .copied()
             .find(|&krate| {
-                krate.extra_data(self).display_name.as_ref().map(|it| it.canonical_name().as_str())
+                krate
+                    .extra_data(self)
+                    .display_name
+                    .as_ref()
+                    .map(|it| it.canonical_name().as_str())
                     == Some("ra_test_fixture")
             })
             .unwrap_or(*all_crates.last().unwrap())
@@ -278,10 +285,14 @@ impl TestDB {
             });
 
         for scope in scope_iter {
-            let mut containing_blocks =
-                scopes.scope_chain(Some(scope)).filter_map(|scope| scopes.block(scope));
+            let mut containing_blocks = scopes
+                .scope_chain(Some(scope))
+                .filter_map(|scope| scopes.block(scope));
 
-            if let Some(block) = containing_blocks.next().map(|block| block_def_map(self, block)) {
+            if let Some(block) = containing_blocks
+                .next()
+                .map(|block| block_def_map(self, block))
+            {
                 return Some(block);
             }
         }

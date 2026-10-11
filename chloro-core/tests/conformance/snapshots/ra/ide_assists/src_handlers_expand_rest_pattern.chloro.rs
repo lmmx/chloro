@@ -45,7 +45,11 @@ fn expand_record_rest_pattern(
         return None;
     }
 
-    let edition = ctx.sema.scope(record_pat.syntax())?.krate().edition(ctx.db());
+    let edition = ctx
+        .sema
+        .scope(record_pat.syntax())?
+        .krate()
+        .edition(ctx.db());
     acc.add(
         AssistId::refactor_rewrite("expand_record_rest_pattern"),
         "Fill struct fields",
@@ -53,16 +57,18 @@ fn expand_record_rest_pattern(
         |builder| {
             let make = SyntaxFactory::with_mappings();
             let mut editor = builder.make_editor(rest_pat.syntax());
-            let new_fields = old_field_list.fields().chain(missing_fields.iter().map(|(f, _)| {
-                make.record_pat_field_shorthand(
-                    make.ident_pat(
-                        false,
-                        false,
-                        make.name(&f.name(ctx.sema.db).display_no_db(edition).to_smolstr()),
+            let new_fields = old_field_list
+                .fields()
+                .chain(missing_fields.iter().map(|(f, _)| {
+                    make.record_pat_field_shorthand(
+                        make.ident_pat(
+                            false,
+                            false,
+                            make.name(&f.name(ctx.sema.db).display_no_db(edition).to_smolstr()),
+                        )
+                        .into(),
                     )
-                    .into(),
-                )
-            }));
+                }));
             let new_field_list = make.record_pat_field_list(new_fields, None);
 
             editor.replace(old_field_list.syntax(), new_field_list.syntax());
@@ -99,7 +105,12 @@ fn expand_tuple_struct_rest_pattern(
     rest_pat: ast::RestPat,
 ) -> Option<()> {
     let path = pat.path()?;
-    let fields = match ctx.sema.type_of_pat(&pat.clone().into())?.original.as_adt()? {
+    let fields = match ctx
+        .sema
+        .type_of_pat(&pat.clone().into())?
+        .original
+        .as_adt()?
+    {
         hir::Adt::Struct(s) if s.kind(ctx.sema.db) == StructKind::Tuple => s.fields(ctx.sema.db),
         hir::Adt::Enum(_) => match ctx.sema.resolve_path(&path)? {
             PathResolution::Def(hir::ModuleDef::Variant(v))
@@ -115,7 +126,12 @@ fn expand_tuple_struct_rest_pattern(
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.fields())?;
 
-    if fields.len().saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
+    if fields
+        .len()
+        .saturating_sub(prefix_count)
+        .saturating_sub(suffix_count)
+        == 0
+    {
         cov_mark::hit!(no_missing_fields_tuple_struct);
         return None;
     }
@@ -138,15 +154,19 @@ fn expand_tuple_struct_rest_pattern(
                 path,
                 pat.fields()
                     .take(prefix_count)
-                    .chain(fields[prefix_count..fields.len() - suffix_count].iter().map(|f| {
-                        gen_unnamed_pat(
-                            ctx,
-                            &make,
-                            &mut name_gen,
-                            &f.ty(ctx.db()).to_type(ctx.sema.db),
-                            f.index(),
-                        )
-                    }))
+                    .chain(
+                        fields[prefix_count..fields.len() - suffix_count]
+                            .iter()
+                            .map(|f| {
+                                gen_unnamed_pat(
+                                    ctx,
+                                    &make,
+                                    &mut name_gen,
+                                    &f.ty(ctx.db()).to_type(ctx.sema.db),
+                                    f.index(),
+                                )
+                            }),
+                    )
                     .chain(pat.fields().skip(prefix_count + 1)),
             );
 
@@ -179,13 +199,21 @@ fn expand_tuple_rest_pattern(
     pat: ast::TuplePat,
     rest_pat: ast::RestPat,
 ) -> Option<()> {
-    let fields = ctx.sema.type_of_pat(&pat.clone().into())?.original.tuple_fields(ctx.db());
+    let fields = ctx
+        .sema
+        .type_of_pat(&pat.clone().into())?
+        .original
+        .tuple_fields(ctx.db());
     let len = fields.len();
 
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.fields())?;
 
-    if len.saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
+    if len
+        .saturating_sub(prefix_count)
+        .saturating_sub(suffix_count)
+        == 0
+    {
         cov_mark::hit!(no_missing_fields_tuple);
         return None;
     }
@@ -207,11 +235,14 @@ fn expand_tuple_rest_pattern(
             let new_pat = make.tuple_pat(
                 pat.fields()
                     .take(prefix_count)
-                    .chain(fields[prefix_count..len - suffix_count].iter().enumerate().map(
-                        |(index, ty)| {
-                            gen_unnamed_pat(ctx, &make, &mut name_gen, ty, prefix_count + index)
-                        },
-                    ))
+                    .chain(
+                        fields[prefix_count..len - suffix_count]
+                            .iter()
+                            .enumerate()
+                            .map(|(index, ty)| {
+                                gen_unnamed_pat(ctx, &make, &mut name_gen, ty, prefix_count + index)
+                            }),
+                    )
                     .chain(pat.fields().skip(prefix_count + 1)),
             );
 
@@ -244,12 +275,20 @@ fn expand_slice_rest_pattern(
     pat: ast::SlicePat,
     rest_pat: ast::RestPat,
 ) -> Option<()> {
-    let (ty, len) = ctx.sema.type_of_pat(&pat.clone().into())?.original.as_array(ctx.db())?;
+    let (ty, len) = ctx
+        .sema
+        .type_of_pat(&pat.clone().into())?
+        .original
+        .as_array(ctx.db())?;
 
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.pats())?;
 
-    if len.saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
+    if len
+        .saturating_sub(prefix_count)
+        .saturating_sub(suffix_count)
+        == 0
+    {
         cov_mark::hit!(no_missing_fields_slice);
         return None;
     }
@@ -331,6 +370,7 @@ fn calculate_counts(
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn fill_fields_enum_with_only_ellipsis() {
         check_assist(
@@ -363,6 +403,7 @@ fn bar(foo: Foo) {
 "#,
         )
     }
+
     #[test]
     fn fill_fields_enum_with_fields() {
         check_assist(
@@ -395,6 +436,7 @@ fn bar(foo: Foo) {
 "#,
         )
     }
+
     #[test]
     fn fill_fields_struct_with_only_ellipsis() {
         check_assist(
@@ -442,6 +484,7 @@ fn foo(bar: Bar) {
 "#,
         )
     }
+
     #[test]
     fn fill_fields_struct_with_fields() {
         check_assist(
@@ -491,6 +534,7 @@ fn foo(bar: Bar) {
 "#,
         )
     }
+
     #[test]
     fn fill_tuple_with_fields() {
         check_assist(
@@ -520,6 +564,7 @@ fn foo(bar: (char, i32, i32)) {
 "#,
         );
     }
+
     #[test]
     fn fill_array_with_fields() {
         check_assist(
@@ -562,6 +607,7 @@ fn foo(bar: [i32; 4]) {
 "#,
         );
     }
+
     #[test]
     fn fill_fields_struct_generated_by_macro() {
         check_assist(
@@ -594,6 +640,7 @@ fn macro_call(pos: Pos) {
 "#,
         );
     }
+
     #[test]
     fn fill_fields_enum_generated_by_macro() {
         check_assist(
@@ -638,6 +685,7 @@ fn macro_call(foo: Foo) {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_not_in_ellipsis() {
         check_assist_not_applicable(
@@ -689,6 +737,7 @@ fn bar(foo: Foo) {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_no_missing_fields() {
         // This is still possible even though it's meaningless

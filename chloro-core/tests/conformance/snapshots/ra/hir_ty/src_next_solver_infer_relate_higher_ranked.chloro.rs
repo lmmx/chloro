@@ -38,19 +38,28 @@ impl<'db> InferCtxt<'db> {
             regions: &mut |br: BoundRegion| {
                 Region::new_placeholder(
                     self.interner,
-                    PlaceholderRegion { universe: next_universe, bound: br },
+                    PlaceholderRegion {
+                        universe: next_universe,
+                        bound: br,
+                    },
                 )
             },
             types: &mut |bound_ty: BoundTy| {
                 Ty::new_placeholder(
                     self.interner,
-                    PlaceholderTy { universe: next_universe, bound: bound_ty },
+                    PlaceholderTy {
+                        universe: next_universe,
+                        bound: bound_ty,
+                    },
                 )
             },
             consts: &mut |bound: BoundConst| {
                 Const::new_placeholder(
                     self.interner,
-                    PlaceholderConst { universe: next_universe, bound },
+                    PlaceholderConst {
+                        universe: next_universe,
+                        bound,
+                    },
                 )
             },
         };

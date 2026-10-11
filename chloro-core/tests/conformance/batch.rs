@@ -27,6 +27,7 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
     let mut files_by_status: Vec<(String, bool)> = Vec::new();
 
     for entry in walkdir::WalkDir::new(&fixtures_dir)
+        .sort_by_file_name()
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().is_some_and(|ext| ext == "rs"))

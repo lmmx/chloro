@@ -105,8 +105,9 @@ fn find_path_type(
     type_param_name: &Name,
     param: &NameLike,
 ) -> Option<PathType> {
-    let path_type =
-        sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
+    let path_type = sema
+        .ancestors_with_macros(param.syntax().clone())
+        .find_map(ast::PathType::cast)?;
 
     // Ignore any path types that look like `P::Assoc`
     if path_type.path()?.as_single_name_ref()?.text() != type_param_name.text() {
@@ -161,8 +162,14 @@ fn find_usages(
     type_param_def: Definition,
     file_id: EditionedFileId,
 ) -> UsageSearchResult {
-    let file_range = FileRange { file_id, range: fn_.syntax().text_range() };
-    type_param_def.usages(sema).in_scope(&SearchScope::file_range(file_range)).all()
+    let file_range = FileRange {
+        file_id,
+        range: fn_.syntax().text_range(),
+    };
+    type_param_def
+        .usages(sema)
+        .in_scope(&SearchScope::file_range(file_range))
+        .all()
 }
 
 fn check_valid_usages(usages: &UsageSearchResult, param_list_range: TextRange) -> bool {
@@ -175,7 +182,9 @@ fn check_valid_usages(usages: &UsageSearchResult, param_list_range: TextRange) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn replace_generic_moves_into_function() {
         check_assist(
@@ -184,6 +193,7 @@ mod tests {
             r#"fn new(input: impl ToString) -> Self {}"#,
         );
     }
+
     #[test]
     fn replace_generic_with_inner_associated_type() {
         check_assist(
@@ -192,6 +202,7 @@ mod tests {
             r#"fn new(input: impl AsRef<Path>) -> Self {}"#,
         );
     }
+
     #[test]
     fn replace_generic_trait_applies_to_all_matching_params() {
         check_assist(
@@ -200,6 +211,7 @@ mod tests {
             r#"fn new(a: impl ToString, b: impl ToString) -> Self {}"#,
         );
     }
+
     #[test]
     fn replace_generic_trait_applies_to_generic_arguments_in_params() {
         check_assist(
@@ -224,6 +236,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_one_param_type_is_invalid() {
         check_assist_not_applicable(
@@ -240,6 +253,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_referenced_in_where_clause() {
         check_assist_not_applicable(
@@ -247,6 +261,7 @@ mod tests {
             r#"fn foo<P$0: Trait, I>() where I: FromRef<P> {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_used_with_type_alias() {
         check_assist_not_applicable(
@@ -254,6 +269,7 @@ mod tests {
             r#"fn foo<P$0: Trait>(p: <P as Trait>::Assoc) {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_used_as_argument_in_outer_trait_alias() {
         check_assist_not_applicable(
@@ -261,6 +277,7 @@ mod tests {
             r#"fn foo<P$0: Trait>(_: <() as OtherTrait<P>>::Assoc) {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_with_inner_associated_type() {
         check_assist_not_applicable(
@@ -268,6 +285,7 @@ mod tests {
             r#"fn foo<P$0: Trait>(_: P::Assoc) {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_passed_into_outer_impl_trait() {
         check_assist_not_applicable(
@@ -275,6 +293,7 @@ mod tests {
             r#"fn foo<P$0: Trait>(_: impl OtherTrait<P>) {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_when_used_in_passed_function_parameter() {
         check_assist_not_applicable(
@@ -282,6 +301,7 @@ mod tests {
             r#"fn foo<P$0: Trait>(_: &dyn Fn(P)) {}"#,
         );
     }
+
     #[test]
     fn replace_generic_with_multiple_generic_params() {
         check_assist(
@@ -300,6 +320,7 @@ mod tests {
             r#"fn new<A: Send, C: Debug>(a: A, b: impl ToString, c: C) -> Self {}"#,
         );
     }
+
     #[test]
     fn replace_generic_with_multiple_trait_bounds() {
         check_assist(
@@ -308,6 +329,7 @@ mod tests {
             r#"fn new(p: impl Send + Sync) -> Self {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_if_param_used_as_return_type() {
         check_assist_not_applicable(
@@ -315,6 +337,7 @@ mod tests {
             r#"fn new<P$0: Send + Sync>(p: P) -> P {}"#,
         );
     }
+
     #[test]
     fn replace_generic_not_applicable_if_param_used_in_fn_body() {
         check_assist_not_applicable(
@@ -322,6 +345,7 @@ mod tests {
             r#"fn new<P$0: ToString>(p: P) { let x: &dyn P = &O; }"#,
         );
     }
+
     #[test]
     fn replace_generic_ignores_another_function_with_same_param_type() {
         check_assist(

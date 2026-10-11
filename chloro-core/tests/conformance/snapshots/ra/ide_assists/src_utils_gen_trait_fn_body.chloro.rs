@@ -411,7 +411,11 @@ fn gen_hash_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
 fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
     fn gen_eq_chain(expr: Option<ast::Expr>, cmp: ast::Expr) -> Option<ast::Expr> {
         match expr {
-            Some(expr) => Some(make::expr_bin_op(expr, BinaryOp::LogicOp(LogicOp::And), cmp)),
+            Some(expr) => Some(make::expr_bin_op(
+                expr,
+                BinaryOp::LogicOp(LogicOp::And),
+                cmp,
+            )),
             None => Some(cmp),
         }
     }
@@ -604,10 +608,15 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
     fn gen_partial_eq_match(match_target: ast::Expr) -> Option<ast::Stmt> {
         let mut arms = vec![];
 
-        let variant_name =
-            make::path_pat(make::ext::path_from_idents(["core", "cmp", "Ordering", "Equal"])?);
+        let variant_name = make::path_pat(make::ext::path_from_idents([
+            "core", "cmp", "Ordering", "Equal",
+        ])?);
         let lhs = make::tuple_struct_pat(make::ext::path_from_idents(["Some"])?, [variant_name]);
-        arms.push(make::match_arm(lhs.into(), None, make::expr_empty_block().into()));
+        arms.push(make::match_arm(
+            lhs.into(),
+            None,
+            make::expr_empty_block().into(),
+        ));
 
         arms.push(make::match_arm(
             make::ident_pat(false, false, make::name("ord")).into(),
@@ -690,5 +699,9 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
 }
 
 fn make_discriminant() -> Option<ast::Expr> {
-    Some(make::expr_path(make::ext::path_from_idents(["core", "mem", "discriminant"])?))
+    Some(make::expr_path(make::ext::path_from_idents([
+        "core",
+        "mem",
+        "discriminant",
+    ])?))
 }

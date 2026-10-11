@@ -10,7 +10,8 @@ use crate::{
             ExprCollector,
             path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
         },
-        path::Path, pretty,
+        path::Path,
+        pretty,
     },
     nameres::crate_def_map,
     test_db::TestDB,
@@ -19,8 +20,11 @@ use crate::{
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
     let (db, file_id) = TestDB::with_single_file("");
     let krate = db.fetch_test_crate();
-    let mut ctx =
-        ExprCollector::new(&db, crate_def_map(&db, krate).root_module_id(), file_id.into());
+    let mut ctx = ExprCollector::new(
+        &db,
+        crate_def_map(&db, krate).root_module_id(),
+        file_id.into(),
+    );
     let lowered_path = ctx.lower_path(path, &mut ExprCollector::impl_trait_allocator);
     let (store, _) = ctx.store.finish();
     (db, store, lowered_path)

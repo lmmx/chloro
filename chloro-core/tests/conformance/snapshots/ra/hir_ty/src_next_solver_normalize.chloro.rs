@@ -9,16 +9,17 @@ use crate::next_solver::{
     Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
     TyKind,
     fulfill::{FulfillmentCtxt, NextSolverError},
-    infer::{InferCtxt, at::At, traits::{Obligation, ObligationCause}},
+    infer::{
+        InferCtxt,
+        at::At,
+        traits::{Obligation, ObligationCause},
+    },
     util::PlaceholderReplacer,
 };
 
 /// Deeply normalize all aliases in `value`. This does not handle inference and expects
 /// its input to be already fully resolved.
-pub fn deeply_normalize<'db, T>(
-    at: At<'_, 'db>,
-    value: T,
-) -> Result<T, Vec<NextSolverError<'db>>>
+pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>
 where
     T: TypeFoldable<DbInterner<'db>>,
 {
@@ -75,7 +76,9 @@ where
         stalled_coroutine_goals: vec![],
     };
     let value = value.try_fold_with(&mut folder)?;
-    let errors = folder.fulfill_cx.evaluate_obligations_error_on_ambiguity(at.infcx);
+    let errors = folder
+        .fulfill_cx
+        .evaluate_obligations_error_on_ambiguity(at.infcx);
     if errors.is_empty() {
         Ok((value, folder.stalled_coroutine_goals))
     } else {
@@ -121,7 +124,8 @@ impl<'db> NormalizationFolder<'_, 'db> {
             return Err(vec![NextSolverError::Overflow(obligation)]);
         }
 
-        self.fulfill_cx.register_predicate_obligation(infcx, obligation);
+        self.fulfill_cx
+            .register_predicate_obligation(infcx, obligation);
         self.select_all_and_stall_coroutine_predicates()?;
 
         // Alias is guaranteed to be fully structurally resolved,
@@ -185,7 +189,9 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
             return Ok(ty);
         }
 
-        let TyKind::Alias(..) = ty.kind() else { return ty.try_super_fold_with(self) };
+        let TyKind::Alias(..) = ty.kind() else {
+            return ty.try_super_fold_with(self);
+        };
 
         if ty.has_escaping_bound_vars() {
             let (ty, mapped_regions, mapped_types, mapped_consts) =
@@ -211,7 +217,9 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
             return Ok(ct);
         }
 
-        let ConstKind::Unevaluated(..) = ct.kind() else { return ct.try_super_fold_with(self) };
+        let ConstKind::Unevaluated(..) = ct.kind() else {
+            return ct.try_super_fold_with(self);
+        };
 
         if ct.has_escaping_bound_vars() {
             let (ct, mapped_regions, mapped_types, mapped_consts) =

@@ -4,7 +4,10 @@ use ide_db::{assists::Assist, source_change::SourceChange};
 use itertools::Itertools;
 use syntax::{
     AstNode, SyntaxToken, TextRange,
-    ast::{self, edit::{AstNodeEdit, IndentLevel}},
+    ast::{
+        self,
+        edit::{AstNodeEdit, IndentLevel},
+    },
 };
 
 use crate::{
@@ -27,14 +30,14 @@ pub(crate) fn remove_unnecessary_else(
     let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
         if_expr.else_token().as_ref().map(SyntaxToken::text_range)
     });
-    Some(Diagnostic::new(
-        DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
-        "remove unnecessary else block",
-        display_range,
+    Some(
+        Diagnostic::new(
+            DiagnosticCode::Ra("remove-unnecessary-else", Severity::WeakWarning),
+            "remove unnecessary else block",
+            display_range,
+        )
+        .with_fixes(fixes(ctx, d)),
     )
-    .with_fixes(
-        fixes(ctx, d),
-    ))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<Assist>> {
@@ -43,7 +46,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
     let if_expr = ctx.sema.original_ast_node(if_expr)?;
 
     let mut indent = IndentLevel::from_node(if_expr.syntax());
-    let has_parent_if_expr = if_expr.syntax().parent().and_then(ast::IfExpr::cast).is_some();
+    let has_parent_if_expr = if_expr
+        .syntax()
+        .parent()
+        .and_then(ast::IfExpr::cast)
+        .is_some();
     if has_parent_if_expr {
         indent = indent + 1;
     }
@@ -87,7 +94,10 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
 
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(
-        d.if_expr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        d.if_expr
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         edit,
     );
 
@@ -102,6 +112,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics_with_disabled, check_fix};
+
     #[test]
     fn remove_unnecessary_else_for_return() {
         check_diagnostics_with_disabled(
@@ -137,6 +148,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_return2() {
         check_diagnostics_with_disabled(
@@ -180,6 +192,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_return3() {
         check_diagnostics_with_disabled(
@@ -215,6 +228,7 @@ fn test(a: bool) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_return_in_child_if_expr() {
         check_diagnostics_with_disabled(
@@ -258,6 +272,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_return_in_child_if_expr2() {
         check_fix(
@@ -292,6 +307,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_break() {
         check_diagnostics_with_disabled(
@@ -333,6 +349,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_continue() {
         check_diagnostics_with_disabled(
@@ -374,6 +391,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn remove_unnecessary_else_for_never() {
         check_diagnostics_with_disabled(
@@ -421,6 +439,7 @@ fn never() -> ! {
 "#,
         );
     }
+
     #[test]
     fn no_diagnostic_if_no_else_branch() {
         check_diagnostics_with_disabled(
@@ -436,6 +455,7 @@ fn test() {
             &["E0425"],
         );
     }
+
     #[test]
     fn no_diagnostic_if_no_divergence() {
         check_diagnostics_with_disabled(
@@ -451,6 +471,7 @@ fn test() {
             &["E0425"],
         );
     }
+
     #[test]
     fn no_diagnostic_if_no_divergence_in_else_branch() {
         check_diagnostics_with_disabled(
@@ -466,6 +487,7 @@ fn test() {
             &["needless_return", "E0425"],
         );
     }
+
     #[test]
     fn no_diagnostic_if_not_expr_stmt() {
         check_diagnostics_with_disabled(

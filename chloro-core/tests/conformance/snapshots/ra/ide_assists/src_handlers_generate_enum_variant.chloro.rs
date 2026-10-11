@@ -56,22 +56,25 @@ pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let target = path.syntax().text_range();
     let name_ref: &ast::NameRef = &name_ref;
     let db = ctx.db();
-    let InRealFile { file_id, value: enum_node } = e.source(db)?.original_ast_node_rooted(db)?;
+    let InRealFile {
+        file_id,
+        value: enum_node,
+    } = e.source(db)?.original_ast_node_rooted(db)?;
 
     acc.add(
         AssistId::generate("generate_enum_variant"),
         "Generate variant",
         target,
         |builder| {
-        let mut editor = builder.make_editor(enum_node.syntax());
-        let make = SyntaxFactory::with_mappings();
-        let field_list = parent.make_field_list(ctx, &make);
-        let variant = make.variant(None, make.name(&name_ref.text()), field_list, None);
-        if let Some(it) = enum_node.variant_list() {
-            it.add_variant(&mut editor, &variant);
-        }
-        builder.add_file_edits(file_id.file_id(ctx.db()), editor);
-    },
+            let mut editor = builder.make_editor(enum_node.syntax());
+            let make = SyntaxFactory::with_mappings();
+            let field_list = parent.make_field_list(ctx, &make);
+            let variant = make.variant(None, make.name(&name_ref.text()), field_list, None);
+            if let Some(it) = enum_node.variant_list() {
+                it.add_variant(&mut editor, &variant);
+            }
+            builder.add_file_edits(file_id.file_id(ctx.db()), editor);
+        },
     )
 }
 
@@ -167,14 +170,18 @@ fn expr_ty(
     scope: &hir::SemanticsScope<'_>,
 ) -> Option<ast::Type> {
     let ty = ctx.sema.type_of_expr(&arg).map(|it| it.adjusted())?;
-    let text = ty.display_source_code(ctx.db(), scope.module().into(), false).ok()?;
+    let text = ty
+        .display_source_code(ctx.db(), scope.module().into(), false)
+        .ok()?;
     Some(make.ty(&text))
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn generate_basic_enum_variant_in_empty_enum() {
         check_assist(
@@ -195,6 +202,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn generate_basic_enum_variant_in_non_empty_enum() {
         check_assist(
@@ -218,6 +226,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn generate_basic_enum_variant_in_different_file() {
         check_assist(
@@ -244,6 +253,7 @@ pub enum Foo {
 ",
         )
     }
+
     #[test]
     fn not_applicable_for_existing_variant() {
         check_assist_not_applicable(
@@ -258,6 +268,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn not_applicable_for_lowercase() {
         check_assist_not_applicable(
@@ -272,6 +283,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn indentation_level_is_correct() {
         check_assist(
@@ -299,6 +311,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_single_element_tuple() {
         check_assist(
@@ -319,6 +332,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_single_element_tuple_unknown_type() {
         check_assist(
@@ -339,6 +353,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_multi_element_tuple() {
         check_assist(
@@ -361,6 +376,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_record() {
         check_assist(
@@ -381,6 +397,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_record_unknown_type() {
         check_assist(
@@ -401,6 +418,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_record_field_shorthand() {
         check_assist(
@@ -423,6 +441,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_record_field_shorthand_unknown_type() {
         check_assist(
@@ -443,6 +462,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn associated_record_field_multiple_fields() {
         check_assist(
@@ -465,6 +485,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn use_tree() {
         check_assist(
@@ -484,13 +505,18 @@ pub enum Foo {
 ",
         )
     }
+
     #[test]
     fn not_applicable_for_path_type() {
-        check_assist_not_applicable(generate_enum_variant, r"
+        check_assist_not_applicable(
+            generate_enum_variant,
+            r"
 enum Foo {}
 impl Foo::Bar$0 {}
-")
+",
+        )
     }
+
     #[test]
     fn path_pat() {
         check_assist(

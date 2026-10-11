@@ -101,9 +101,12 @@ dependencies = [
  "duct",
  "imara-diff",
  "insta",
+ "ra_ap_parser",
  "ra_ap_syntax",
+ "rowan",
  "rust-format",
  "tempfile",
+ "unicode-width",
  "walkdir",
 ]
 

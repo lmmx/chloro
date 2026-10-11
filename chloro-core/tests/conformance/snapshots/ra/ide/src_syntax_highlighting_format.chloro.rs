@@ -1,5 +1,4 @@
 //! Syntax highlighting for format macro strings.
-
 use ide_db::{
     SymbolKind,
     defs::Definition,
@@ -10,7 +9,7 @@ use syntax::{AstToken, ast};
 
 use crate::{
     HlRange, HlTag,
-    syntax_highlighting::{highlights::Highlights, highlight::highlight_def},
+    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
 };
 
 pub(super) fn highlight_format_string(

@@ -33,14 +33,18 @@ use crate::{
 pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let file_id = ctx.file_id();
     let range = ctx.selection_trimmed();
-    let InlineData { let_stmt, delete_let, references, target } =
-        if let Some(path_expr) = ctx.find_node_at_offset::<ast::PathExpr>() {
-            inline_usage(&ctx.sema, path_expr, range, file_id)
-        } else if let Some(let_stmt) = ctx.find_node_at_offset::<ast::LetStmt>() {
-            inline_let(&ctx.sema, let_stmt, range, file_id)
-        } else {
-            None
-        }?;
+    let InlineData {
+        let_stmt,
+        delete_let,
+        references,
+        target,
+    } = if let Some(path_expr) = ctx.find_node_at_offset::<ast::PathExpr>() {
+        inline_usage(&ctx.sema, path_expr, range, file_id)
+    } else if let Some(let_stmt) = ctx.find_node_at_offset::<ast::LetStmt>() {
+        inline_let(&ctx.sema, let_stmt, range, file_id)
+    } else {
+        None
+    }?;
     let initializer_expr = let_stmt.initializer()?;
 
     let wrap_in_parens = references
@@ -55,8 +59,10 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
                 // FIXME: This feels like a bad heuristic for macros
                 return None;
             }
-            let usage_node =
-                name_ref.syntax().ancestors().find(|it| ast::PathExpr::can_cast(it.kind()));
+            let usage_node = name_ref
+                .syntax()
+                .ancestors()
+                .find(|it| ast::PathExpr::can_cast(it.kind()));
             let usage_parent_option = usage_node.as_ref().and_then(|it| it.parent());
             let usage_parent = match usage_parent_option {
                 Some(u) => u,
@@ -194,13 +200,20 @@ fn inline_usage(
     let delete_let = references.len() == 1;
     references.retain(|fref| fref.name.as_name_ref() == Some(&name));
 
-    Some(InlineData { let_stmt, delete_let, target: ast::NameOrNameRef::NameRef(name), references })
+    Some(InlineData {
+        let_stmt,
+        delete_let,
+        target: ast::NameOrNameRef::NameRef(name),
+        references,
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_inline_let_bind_literal_expr() {
         check_assist(
@@ -234,6 +247,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_inline_let_bind_bin_expr() {
         check_assist(
@@ -267,6 +281,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_inline_let_bind_function_call_expr() {
         check_assist(
@@ -300,6 +315,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_inline_let_bind_cast_expr() {
         check_assist(
@@ -334,6 +350,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_inline_let_bind_block_expr() {
         check_assist(
@@ -365,6 +382,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_inline_let_bind_paren_expr() {
         check_assist(
@@ -396,6 +414,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_not_inline_mut_variable() {
         cov_mark::check!(test_not_inline_mut_variable);
@@ -408,6 +427,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_not_inline_mut_variable_use() {
         cov_mark::check!(test_not_inline_mut_variable_use);
@@ -420,6 +440,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_call_expr() {
         check_assist(
@@ -437,6 +458,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_index_expr() {
         check_assist(
@@ -456,6 +478,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_method_call_expr() {
         check_assist(
@@ -475,6 +498,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_field_expr() {
         check_assist(
@@ -502,6 +526,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_try_expr() {
         check_assist(
@@ -523,6 +548,7 @@ fn foo() -> Option<usize> {
 }",
         );
     }
+
     #[test]
     fn test_ref_expr() {
         check_assist(
@@ -540,6 +566,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_tuple_expr() {
         check_assist(
@@ -555,6 +582,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_array_expr() {
         check_assist(
@@ -570,6 +598,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_paren() {
         check_assist(
@@ -587,6 +616,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_path_expr() {
         check_assist(
@@ -606,6 +636,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_block_expr() {
         check_assist(
@@ -623,6 +654,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_different_expr1() {
         check_assist(
@@ -644,6 +676,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_for_expr() {
         check_assist(
@@ -659,6 +692,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_while_expr() {
         check_assist(
@@ -674,6 +708,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_break_expr() {
         check_assist(
@@ -693,6 +728,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_return_expr() {
         check_assist(
@@ -708,6 +744,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_used_in_match_expr() {
         check_assist(
@@ -723,6 +760,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn inline_field_shorthand() {
         cov_mark::check!(inline_field_shorthand);
@@ -743,6 +781,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn test_not_applicable_if_variable_unused() {
         cov_mark::check!(test_not_applicable_if_variable_unused);
@@ -755,6 +794,7 @@ fn foo() {
             ",
         )
     }
+
     #[test]
     fn not_applicable_outside_of_bind_pat() {
         cov_mark::check!(not_applicable_outside_of_bind_pat);
@@ -768,6 +808,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn works_on_local_usage() {
         check_assist(
@@ -785,6 +826,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn does_not_remove_let_when_multiple_usages() {
         check_assist(
@@ -805,6 +847,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_with_non_ident_pattern() {
         check_assist_not_applicable(
@@ -817,6 +860,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_on_local_usage_in_macro() {
         check_assist_not_applicable(
@@ -844,6 +888,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_not_inline_selection_too_broad() {
         cov_mark::check!(test_not_inline_selection_too_broad);
@@ -858,6 +903,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_inline_ref_in_let() {
         check_assist(
@@ -879,6 +925,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_inline_let_unit_struct() {
         check_assist_not_applicable(
@@ -892,6 +939,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_inline_closure() {
         check_assist(
@@ -909,6 +957,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_wrap_in_parens() {
         check_assist(

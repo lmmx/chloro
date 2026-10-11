@@ -2,58 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6415 bytes
-Chloro size:   6410 bytes
+Chloro size:   6524 bytes
 Rustfmt size:  6524 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Type inhabitedness logic.
-+
- use std::ops::ControlFlow::{self, Break, Continue};
- 
- use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
-     db::HirDatabase,
-     next_solver::{
-         DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
--        infer::{InferCtxt, traits::ObligationCause},
--        obligation_ctxt::ObligationCtxt,
-+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
-     },
- };
- 
- }
- 
- const CONTINUE_OPAQUELY_INHABITED: ControlFlow<VisiblyUninhabited> = Continue(());
-+
- const BREAK_VISIBLY_UNINHABITED: ControlFlow<VisiblyUninhabited> = Break(VisiblyUninhabited);
-+
- #[derive(PartialEq, Eq)]
- struct VisiblyUninhabited;
- 
-         target_mod: ModuleId,
-         env: Arc<TraitEnvironment<'db>>,
-     ) -> Self {
--        Self {
--            target_mod,
--            recursive_ty: FxHashSet::default(),
--            max_depth: 500,
--            infcx,
--            env,
--        }
-+        Self { target_mod, recursive_ty: FxHashSet::default(), max_depth: 500, infcx, env }
-     }
- 
-     #[inline]
- 
-         let is_enum = matches!(variant, VariantId::EnumVariantId(..));
-         let field_tys = self.db().field_types(variant);
--        let field_vis = if is_enum {
--            None
--        } else {
--            Some(self.db().field_visibilities(variant))
--        };
-+        let field_vis = if is_enum { None } else { Some(self.db().field_visibilities(variant)) };
- 
-         for (fid, _) in fields.iter() {
-             self.visit_field(field_vis.as_ref().map(|it| it[fid]), &field_tys[fid], subst)?;
+✓ Outputs are IDENTICAL

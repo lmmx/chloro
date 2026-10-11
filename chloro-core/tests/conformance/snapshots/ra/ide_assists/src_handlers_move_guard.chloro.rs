@@ -220,7 +220,9 @@ fn parse_if_chain(if_expr: IfExpr) -> Option<(Vec<(Expr, BlockExpr)>, Option<Blo
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn move_guard_to_arm_body_range() {
         cov_mark::check!(move_guard_inapplicable_in_arm_body);
@@ -251,6 +253,7 @@ fn main() {
             r#"if x > 10"#,
         );
     }
+
     #[test]
     fn move_guard_to_arm_body_works() {
         check_assist(
@@ -275,6 +278,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_let_guard_to_arm_body_works() {
         check_assist(
@@ -299,6 +303,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_multiline_guard_to_arm_body_works() {
         check_assist(
@@ -336,6 +341,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_guard_to_arm_body_works_complex_match() {
         check_assist(
@@ -360,6 +366,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_works() {
         check_assist(
@@ -382,6 +389,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_in_block_to_match_guard_works() {
         cov_mark::check!(move_guard_ifelse_has_wildcard);
@@ -409,6 +417,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_in_block_to_match_guard_no_wildcard_works() {
         cov_mark::check_count!(move_guard_ifelse_has_wildcard, 0);
@@ -435,6 +444,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_in_block_to_match_guard_wildcard_guard_works() {
         cov_mark::check_count!(move_guard_ifelse_has_wildcard, 0);
@@ -463,6 +473,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_in_block_to_match_guard_add_comma_works() {
         check_assist(
@@ -489,6 +500,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_if_let_works() {
         check_assist(
@@ -511,6 +523,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_if_empty_body_works() {
         check_assist(
@@ -533,6 +546,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_if_multiline_body_works() {
         check_assist(
@@ -561,6 +575,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_in_block_to_match_guard_if_multiline_body_works() {
         check_assist(
@@ -591,6 +606,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_works() {
         check_assist(
@@ -618,6 +634,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_block_works() {
         cov_mark::check!(move_guard_ifelse_expr_only);
@@ -648,6 +665,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_else_if_empty_body_works() {
         check_assist(
@@ -671,6 +689,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_multiline_works() {
         check_assist(
@@ -702,6 +721,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_multiline_else_works() {
         cov_mark::check!(move_guard_ifelse_else_block);
@@ -734,6 +754,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_multiline_else_block_works() {
         cov_mark::check!(move_guard_ifelse_in_block);
@@ -768,6 +789,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_last_arm_works() {
         check_assist(
@@ -801,6 +823,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_with_else_comma_works() {
         check_assist(
@@ -832,6 +855,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_elseif() {
         check_assist(
@@ -865,6 +889,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_elseif_in_block() {
         cov_mark::check!(move_guard_ifelse_in_block);
@@ -901,6 +926,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_elseif_chain() {
         cov_mark::check!(move_guard_ifelse_else_tail);
@@ -939,6 +965,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_elseif_iflet() {
         check_assist(
@@ -974,6 +1001,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn move_arm_cond_to_match_guard_elseif_notail() {
         cov_mark::check!(move_guard_ifelse_notail);

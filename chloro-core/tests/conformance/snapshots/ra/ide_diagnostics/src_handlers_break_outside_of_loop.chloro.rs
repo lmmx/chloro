@@ -25,6 +25,7 @@ pub(crate) fn break_outside_of_loop(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn outside_of_loop() {
         check_diagnostics(
@@ -38,6 +39,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn async_blocks_are_borders() {
         check_diagnostics(
@@ -55,6 +57,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn closures_are_borders() {
         check_diagnostics(
@@ -72,6 +75,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn blocks_pass_through() {
         check_diagnostics(
@@ -87,6 +91,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn try_blocks_pass_through() {
         check_diagnostics(
@@ -102,6 +107,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn label_blocks() {
         check_diagnostics(
@@ -117,6 +123,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn value_break_in_for_loop() {
         // FIXME: the error is correct, but the message is terrible
@@ -132,6 +139,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn try_block_desugaring_inside_closure() {
         // regression test for #14701

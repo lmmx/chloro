@@ -36,10 +36,7 @@ pub enum PathGenericsSource {
     /// Generic arguments directly on the segment.
     Segment(u32),
     /// Generic arguments on an associated type, e.g. `Foo<Assoc<A, B> = C>` or `Foo<Assoc<A, B>: Bound>`.
-    AssocType {
-        segment: u32,
-        assoc_type: u32,
-    },
+    AssocType { segment: u32, assoc_type: u32 },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]

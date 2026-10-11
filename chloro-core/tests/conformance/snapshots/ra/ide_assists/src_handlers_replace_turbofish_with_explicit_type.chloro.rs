@@ -54,7 +54,10 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     let returned_type = match ctx.sema.type_of_expr(&initializer) {
         Some(returned_type) if !returned_type.original.contains_unknown() => {
             let module = ctx.sema.scope(let_stmt.syntax())?.module();
-            returned_type.original.display_source_code(ctx.db(), module.into(), false).ok()?
+            returned_type
+                .original
+                .display_source_code(ctx.db(), module.into(), false)
+                .ok()?
         }
         _ => {
             cov_mark::hit!(fallback_to_turbofish_type_if_type_info_not_available);
@@ -125,7 +128,9 @@ fn generic_arg_list(expr: &Expr) -> Option<GenericArgList> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn replaces_turbofish_for_vec_string() {
         cov_mark::check!(fallback_to_turbofish_type_if_type_info_not_available);
@@ -145,6 +150,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replaces_method_calls() {
         // foo.make() is a method call which uses a different expr in the let initializer
@@ -165,6 +171,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_turbofish_target() {
         check_assist_target(
@@ -178,6 +185,7 @@ fn main() {
             r#"make::<Vec<String>>"#,
         );
     }
+
     #[test]
     fn not_applicable_outside_turbofish() {
         cov_mark::check!(not_applicable_outside_turbofish);
@@ -191,6 +199,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replace_inferred_type_placeholder() {
         check_assist(
@@ -209,6 +218,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_constant_initializer() {
         cov_mark::check!(not_applicable_if_non_function_call_initializer);
@@ -222,6 +232,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_non_path_function_call() {
         cov_mark::check!(not_applicable_if_non_path_function_call);
@@ -235,6 +246,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn non_applicable_multiple_generic_args() {
         cov_mark::check!(not_applicable_if_not_single_arg);
@@ -248,6 +260,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replaces_turbofish_for_known_type() {
         check_assist(
@@ -282,6 +295,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replaces_turbofish_not_same_type() {
         check_assist(
@@ -301,6 +315,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replaces_turbofish_for_type_with_defaulted_generic_param() {
         check_assist(
@@ -321,6 +336,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn replaces_turbofish_try_await() {
         check_assist(

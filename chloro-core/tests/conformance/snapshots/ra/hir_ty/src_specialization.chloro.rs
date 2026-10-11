@@ -62,6 +62,7 @@ fn specializes_query(
     // The last three steps are encapsulated in `fulfill_implication`.
     //
     // See RFC 1210 for more details and justification.
+
     // Currently we do not allow e.g., a negative impl to specialize a positive one
     if specializing_impl_signature.is_negative() != parent_impl_signature.is_negative() {
         return false;
@@ -74,8 +75,10 @@ fn specializes_query(
     // Create an infcx, taking the predicates of the specializing impl as assumptions:
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
 
-    let specializing_impl_trait_ref =
-        db.impl_trait(specializing_impl_def_id).unwrap().instantiate_identity();
+    let specializing_impl_trait_ref = db
+        .impl_trait(specializing_impl_def_id)
+        .unwrap()
+        .instantiate_identity();
     let cause = &ObligationCause::dummy();
     debug!(
         "fulfill_implication({:?}, trait_ref={:?} |- {:?} applies)",
@@ -83,6 +86,7 @@ fn specializes_query(
     );
 
     // Attempt to prove that the parent impl applies, given all of the above.
+
     let mut ocx = ObligationCtxt::new(&infcx);
 
     let parent_args = infcx.fresh_args_for_item(parent_impl_def_id.into());
@@ -92,16 +96,21 @@ fn specializes_query(
         .instantiate(interner, parent_args);
 
     // do the impls unify? If not, no specialization.
-    let Ok(()) = ocx.eq(cause, param_env, specializing_impl_trait_ref, parent_impl_trait_ref)
-    else {
+    let Ok(()) = ocx.eq(
+        cause,
+        param_env,
+        specializing_impl_trait_ref,
+        parent_impl_trait_ref,
+    ) else {
         return false;
     };
 
     // Now check that the source trait ref satisfies all the where clauses of the target impl.
     // This is not just for correctness; we also need this to constrain any params that may
     // only be referenced via projection predicates.
-    if let Some(predicates) =
-        db.generic_predicates(parent_impl_def_id.into()).instantiate(interner, parent_args)
+    if let Some(predicates) = db
+        .generic_predicates(parent_impl_def_id.into())
+        .instantiate(interner, parent_args)
     {
         ocx.register_obligations(
             predicates
@@ -121,6 +130,7 @@ fn specializes_query(
     }
 
     // FIXME: Check impl constness (when we implement const impls).
+
     debug!(
         "fulfill_implication: an impl for {:?} specializes {:?}",
         specializing_impl_trait_ref, parent_impl_trait_ref

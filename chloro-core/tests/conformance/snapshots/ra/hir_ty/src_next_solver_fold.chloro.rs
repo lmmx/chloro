@@ -18,9 +18,7 @@ use super::{
 /// a `DelayedMap` which does not cache the first few types it encounters.
 pub trait BoundVarReplacerDelegate<'db> {
     fn replace_region(&mut self, br: BoundRegion) -> Region<'db>;
-
     fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db>;
-
     fn replace_const(&mut self, bv: BoundConst) -> Const<'db>;
 }
 
@@ -37,11 +35,9 @@ impl<'db, 'a> BoundVarReplacerDelegate<'db> for FnMutDelegate<'db, 'a> {
     fn replace_region(&mut self, br: BoundRegion) -> Region<'db> {
         (self.regions)(br)
     }
-
     fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db> {
         (self.types)(bt)
     }
-
     fn replace_const(&mut self, bv: BoundConst) -> Const<'db> {
         (self.consts)(bv)
     }
@@ -53,12 +49,17 @@ pub(crate) struct BoundVarReplacer<'db, D> {
     /// As with `RegionFolder`, represents the index of a binder *just outside*
     /// the ones we have visited.
     current_index: DebruijnIndex,
+
     delegate: D,
 }
 
 impl<'db, D: BoundVarReplacerDelegate<'db>> BoundVarReplacer<'db, D> {
     pub(crate) fn new(tcx: DbInterner<'db>, delegate: D) -> Self {
-        BoundVarReplacer { interner: tcx, current_index: DebruijnIndex::ZERO, delegate }
+        BoundVarReplacer {
+            interner: tcx,
+            current_index: DebruijnIndex::ZERO,
+            delegate,
+        }
     }
 }
 
@@ -82,7 +83,9 @@ where
 
     fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
         match t.kind() {
-            TyKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_ty) if debruijn == self.current_index => {
+            TyKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_ty)
+                if debruijn == self.current_index =>
+            {
                 let ty = self.delegate.replace_ty(bound_ty);
                 debug_assert!(!ty.has_vars_bound_above(DebruijnIndex::ZERO));
                 rustc_type_ir::shift_vars(self.interner, ty, self.current_index.as_u32())
@@ -99,9 +102,12 @@ where
 
     fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
         match r.kind() {
-            RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn), br) if debruijn == self.current_index => {
+            RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn), br)
+                if debruijn == self.current_index =>
+            {
                 let region = self.delegate.replace_region(br);
-                if let RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn1), br) = region.kind() {
+                if let RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn1), br) = region.kind()
+                {
                     // If the callback returns a bound region,
                     // that region should always use the INNERMOST
                     // debruijn index. Then we adjust it to the
@@ -118,7 +124,9 @@ where
 
     fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
         match ct.kind() {
-            ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_const) if debruijn == self.current_index => {
+            ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_const)
+                if debruijn == self.current_index =>
+            {
                 let ct = self.delegate.replace_const(bound_const);
                 debug_assert!(!ct.has_vars_bound_above(DebruijnIndex::ZERO));
                 rustc_type_ir::shift_vars(self.interner, ct, self.current_index.as_u32())

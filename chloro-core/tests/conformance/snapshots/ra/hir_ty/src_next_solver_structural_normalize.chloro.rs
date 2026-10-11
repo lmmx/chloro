@@ -12,7 +12,8 @@ impl<'db> At<'_, 'db> {
         ty: Ty<'db>,
         fulfill_cx: &mut FulfillmentCtxt<'db>,
     ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
-        self.structurally_normalize_term(ty.into(), fulfill_cx).map(|term| term.expect_type())
+        self.structurally_normalize_term(ty.into(), fulfill_cx)
+            .map(|term| term.expect_type())
     }
 
     pub(crate) fn structurally_normalize_const(
@@ -20,7 +21,8 @@ impl<'db> At<'_, 'db> {
         ct: Const<'db>,
         fulfill_cx: &mut FulfillmentCtxt<'db>,
     ) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
-        self.structurally_normalize_term(ct.into(), fulfill_cx).map(|term| term.expect_const())
+        self.structurally_normalize_term(ct.into(), fulfill_cx)
+            .map(|term| term.expect_const())
     }
 
     pub(crate) fn structurally_normalize_term(

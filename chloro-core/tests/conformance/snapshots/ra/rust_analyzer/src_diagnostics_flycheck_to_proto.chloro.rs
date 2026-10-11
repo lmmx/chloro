@@ -9,8 +9,8 @@ use stdx::format_to;
 use vfs::{AbsPath, AbsPathBuf};
 
 use crate::{
-    global_state::GlobalStateSnapshot, line_index::PositionEncoding, lsp_ext,
-    lsp::to_proto::url_from_abs_path,
+    global_state::GlobalStateSnapshot, line_index::PositionEncoding,
+    lsp::to_proto::url_from_abs_path, lsp_ext,
 };
 
 use super::{DiagnosticsMapConfig, Fix};
@@ -75,7 +75,12 @@ fn location(
                 span.line_start,
                 span.column_start.saturating_sub(1),
             ),
-            position(&position_encoding, span, span.line_end, span.column_end.saturating_sub(1)),
+            position(
+                &position_encoding,
+                span,
+                span.line_end,
+                span.column_end.saturating_sub(1),
+            ),
         )
     };
     lsp_types::Location::new(uri, range)
@@ -159,10 +164,11 @@ fn resolve_path(
     workspace_root: &AbsPath,
     file_name: &str,
 ) -> AbsPathBuf {
-    match config
-        .remap_prefix
-        .iter()
-        .find_map(|(from, to)| file_name.strip_prefix(from).map(|file_name| (to, file_name))) {
+    match config.remap_prefix.iter().find_map(|(from, to)| {
+        file_name
+            .strip_prefix(from)
+            .map(|file_name| (to, file_name))
+    }) {
         Some((to, file_name)) => workspace_root.join(format!("{to}{file_name}")),
         None => workspace_root.join(file_name),
     }
@@ -212,8 +218,10 @@ fn map_rust_child_diagnostic(
             ) {
                 edit_map.entry(location.uri).or_default().push(edit);
             }
-            is_preferred &=
-                matches!(span.suggestion_applicability, Some(Applicability::MachineApplicable));
+            is_preferred &= matches!(
+                span.suggestion_applicability,
+                Some(Applicability::MachineApplicable)
+            );
         }
     }
 
@@ -222,8 +230,10 @@ fn map_rust_child_diagnostic(
     let mut message = rd.message.clone();
     if !suggested_replacements.is_empty() {
         message.push_str(": ");
-        let suggestions =
-            suggested_replacements.iter().map(|suggestion| format!("`{suggestion}`")).join(", ");
+        let suggestions = suggested_replacements
+            .iter()
+            .map(|suggestion| format!("`{suggestion}`"))
+            .join(", ");
         message.push_str(&suggestions);
     }
 
@@ -324,7 +334,10 @@ pub(crate) fn map_rust_diagnostic_to_lsp(
     for secondary_span in secondary_spans {
         let related = diagnostic_related_information(config, workspace_root, secondary_span, snap);
         if let Some(related) = related {
-            subdiagnostics.push(SubDiagnostic { related, suggested_fix: None });
+            subdiagnostics.push(SubDiagnostic {
+                related,
+                suggested_fix: None,
+            });
         }
     }
 
@@ -383,9 +396,10 @@ pub(crate) fn map_rust_diagnostic_to_lsp(
         // where the error originated
         // Also, we would generate an additional diagnostic, so that exact place of macro
         // will be highlighted in the error origin place.
-        let span_stack =
-            std::iter::successors(Some(&primary_span), |span| Some(&span.expansion.as_ref()?.span))
-                .skip(1);
+        let span_stack = std::iter::successors(Some(&primary_span), |span| {
+            Some(&span.expansion.as_ref()?.span)
+        })
+        .skip(1);
         for (i, span) in span_stack.enumerate() {
             if is_dummy_macro_file(&span.file_name) {
                 continue;
@@ -418,7 +432,9 @@ pub(crate) fn map_rust_diagnostic_to_lsp(
                 range: secondary_location.range,
                 // downgrade to hint if we're pointing at the macro
                 severity: Some(lsp_types::DiagnosticSeverity::HINT),
-                code: code.map(ToOwned::to_owned).map(lsp_types::NumberOrString::String),
+                code: code
+                    .map(ToOwned::to_owned)
+                    .map(lsp_types::NumberOrString::String),
                 code_description: code_description.clone(),
                 source: Some(source.to_owned()),
                 message: message.clone(),
@@ -439,7 +455,9 @@ pub(crate) fn map_rust_diagnostic_to_lsp(
             diagnostic: lsp_types::Diagnostic {
                 range: primary_location.range,
                 severity,
-                code: code.map(ToOwned::to_owned).map(lsp_types::NumberOrString::String),
+                code: code
+                    .map(ToOwned::to_owned)
+                    .map(lsp_types::NumberOrString::String),
                 code_description: code_description.clone(),
                 source: Some(source.to_owned()),
                 message,
@@ -471,7 +489,9 @@ pub(crate) fn map_rust_diagnostic_to_lsp(
                 diagnostic: lsp_types::Diagnostic {
                     range: sub.related.location.range,
                     severity: Some(lsp_types::DiagnosticSeverity::HINT),
-                    code: code.map(ToOwned::to_owned).map(lsp_types::NumberOrString::String),
+                    code: code
+                        .map(ToOwned::to_owned)
+                        .map(lsp_types::NumberOrString::String),
                     code_description: code_description.clone(),
                     source: Some(source.to_owned()),
                     message: sub.related.message.clone(),
@@ -493,9 +513,11 @@ fn rustc_code_description(code: Option<&str>) -> Option<lsp_types::CodeDescripti
             && chars.next().is_none()
     })
     .and_then(|code| {
-        lsp_types::Url::parse(&format!("https://doc.rust-lang.org/error-index.html#{code}"))
-            .ok()
-            .map(|href| lsp_types::CodeDescription { href })
+        lsp_types::Url::parse(&format!(
+            "https://doc.rust-lang.org/error-index.html#{code}"
+        ))
+        .ok()
+        .map(|href| lsp_types::CodeDescription { href })
     })
 }
 
@@ -513,18 +535,18 @@ fn clippy_code_description(code: Option<&str>) -> Option<lsp_types::CodeDescript
 #[cfg(not(windows))]
 mod tests {
     use crate::{config::Config, global_state::GlobalState};
+
     use super::*;
+
     use expect_test::{ExpectFile, expect_file};
     use lsp_types::ClientCapabilities;
     use paths::Utf8Path;
+
     fn check(diagnostics_json: &str, expect: ExpectFile) {
         check_with_config(DiagnosticsMapConfig::default(), diagnostics_json, expect)
     }
-    fn check_with_config(
-        config: DiagnosticsMapConfig,
-        diagnostics_json: &str,
-        expect: ExpectFile,
-    ) {
+
+    fn check_with_config(config: DiagnosticsMapConfig, diagnostics_json: &str, expect: ExpectFile) {
         let diagnostic: crate::flycheck::Diagnostic =
             serde_json::from_str(diagnostics_json).unwrap();
         let workspace_root: &AbsPath = Utf8Path::new("/test/").try_into().unwrap();
@@ -540,9 +562,12 @@ mod tests {
         );
         let snap = state.snapshot();
         let mut actual = map_rust_diagnostic_to_lsp(&config, diagnostic, workspace_root, &snap);
-        actual.iter_mut().for_each(|diag| diag.diagnostic.data = None);
+        actual
+            .iter_mut()
+            .for_each(|diag| diag.diagnostic.data = None);
         expect.assert_debug_eq(&actual)
     }
+
     #[test]
     fn rustc_incompatible_type_for_trait() {
         check(
@@ -592,6 +617,7 @@ mod tests {
             expect_file!["./test_data/rustc_incompatible_type_for_trait.txt"],
         );
     }
+
     #[test]
     fn rustc_unused_variable() {
         check(
@@ -670,6 +696,7 @@ mod tests {
             expect_file!["./test_data/rustc_unused_variable.txt"],
         );
     }
+
     #[test]
     #[cfg(not(windows))]
     fn rustc_unused_variable_as_info() {
@@ -753,6 +780,7 @@ mod tests {
             expect_file!["./test_data/rustc_unused_variable_as_info.txt"],
         );
     }
+
     #[test]
     #[cfg(not(windows))]
     fn rustc_unused_variable_as_hint() {
@@ -836,6 +864,7 @@ mod tests {
             expect_file!["./test_data/rustc_unused_variable_as_hint.txt"],
         );
     }
+
     #[test]
     fn rustc_wrong_number_of_parameters() {
         check(
@@ -956,6 +985,7 @@ mod tests {
             expect_file!["./test_data/rustc_wrong_number_of_parameters.txt"],
         );
     }
+
     #[test]
     fn clippy_pass_by_ref() {
         check(
@@ -1072,6 +1102,7 @@ mod tests {
             expect_file!["./test_data/clippy_pass_by_ref.txt"],
         );
     }
+
     #[test]
     fn rustc_range_map_lsp_position() {
         check(
@@ -1132,6 +1163,7 @@ mod tests {
             expect_file!("./test_data/rustc_range_map_lsp_position.txt"),
         )
     }
+
     #[test]
     fn rustc_mismatched_type() {
         check(
@@ -1171,6 +1203,7 @@ mod tests {
             expect_file!["./test_data/rustc_mismatched_type.txt"],
         );
     }
+
     #[test]
     fn handles_macro_location() {
         check(
@@ -1438,6 +1471,7 @@ mod tests {
             expect_file!["./test_data/handles_macro_location.txt"],
         );
     }
+
     #[test]
     fn macro_compiler_error() {
         check(
@@ -1663,6 +1697,7 @@ mod tests {
             expect_file!["./test_data/macro_compiler_error.txt"],
         );
     }
+
     #[test]
     fn snap_multi_line_fix() {
         check(
@@ -1792,6 +1827,7 @@ mod tests {
             expect_file!["./test_data/snap_multi_line_fix.txt"],
         );
     }
+
     #[test]
     fn reasonable_line_numbers_from_empty_file() {
         check(

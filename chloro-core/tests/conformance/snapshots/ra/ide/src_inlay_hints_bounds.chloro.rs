@@ -1,7 +1,6 @@
 //! Implementation of trait bound hints.
 //!
 //! Currently this renders the implied `Sized` bound.
-
 use ide_db::{FileRange, famous_defs::FamousDefs};
 
 use syntax::ast::{self, AstNode, HasTypeBounds};
@@ -27,8 +26,9 @@ pub(super) fn hints(
         match param {
             ast::TypeOrConstParam::Type(type_param) => {
                 let c = type_param.colon_token().map(|it| it.text_range());
-                let has_bounds =
-                    type_param.type_bound_list().is_some_and(|it| it.bounds().next().is_some());
+                let has_bounds = type_param
+                    .type_bound_list()
+                    .is_some_and(|it| it.bounds().next().is_some());
                 acc.push(InlayHint {
                     range: c.unwrap_or_else(|| type_param.syntax().text_range()),
                     kind: InlayKind::Type,
@@ -82,12 +82,22 @@ pub(super) fn hints(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::inlay_hints::InlayHintsConfig;
+
     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_expect, check_with_config};
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-        check_with_config(InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG }, ra_fixture);
+        check_with_config(
+            InlayHintsConfig {
+                sized_bound: true,
+                ..DISABLED_CONFIG
+            },
+            ra_fixture,
+        );
     }
+
     #[test]
     fn smoke() {
         check(
@@ -97,6 +107,7 @@ fn foo<T>() {}
 "#,
         );
     }
+
     #[test]
     fn with_colon() {
         check(
@@ -106,6 +117,7 @@ fn foo<T:>() {}
 "#,
         );
     }
+
     #[test]
     fn with_colon_and_bounds() {
         check(
@@ -115,10 +127,14 @@ fn foo<T: 'static>() {}
 "#,
         );
     }
+
     #[test]
     fn location_works() {
         check_expect(
-            InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG },
+            InlayHintsConfig {
+                sized_bound: true,
+                ..DISABLED_CONFIG
+            },
             r#"
 //- minicore: sized
 fn foo<T>() {}

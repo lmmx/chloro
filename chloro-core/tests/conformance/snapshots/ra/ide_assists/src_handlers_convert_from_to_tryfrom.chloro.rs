@@ -40,9 +40,12 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
     let module = ctx.sema.scope(impl_.syntax())?.module();
 
     let from_type = match &trait_ty {
-        ast::Type::PathType(path) => {
-            path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
-        }
+        ast::Type::PathType(path) => path
+            .path()?
+            .segment()?
+            .generic_arg_list()?
+            .generic_args()
+            .next()?,
         _ => return None,
     };
 
@@ -60,7 +63,11 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
     let from_fn_name = from_fn.name()?;
     let from_fn_return_type = from_fn.ret_type()?.ty()?;
 
-    let return_exprs = from_fn.body()?.syntax().descendants().filter_map(ast::ReturnExpr::cast);
+    let return_exprs = from_fn
+        .body()?
+        .syntax()
+        .descendants()
+        .filter_map(ast::ReturnExpr::cast);
     let tail_expr = from_fn.body()?.tail_expr()?;
 
     if resolve_target_trait(&ctx.sema, &impl_)?
@@ -77,14 +84,20 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
             let mut editor = builder.make_editor(impl_.syntax());
             editor.replace(
                 trait_ty.syntax(),
-                make::ty(&format!("TryFrom<{from_type}>")).syntax().clone_for_update(),
+                make::ty(&format!("TryFrom<{from_type}>"))
+                    .syntax()
+                    .clone_for_update(),
             );
             editor.replace(
                 from_fn_return_type.syntax(),
-                make::ty("Result<Self, Self::Error>").syntax().clone_for_update(),
+                make::ty("Result<Self, Self::Error>")
+                    .syntax()
+                    .clone_for_update(),
             );
-            editor
-                .replace(from_fn_name.syntax(), make::name("try_from").syntax().clone_for_update());
+            editor.replace(
+                from_fn_name.syntax(),
+                make::name("try_from").syntax().clone_for_update(),
+            );
             editor.replace(
                 tail_expr.syntax(),
                 wrap_ok(tail_expr.clone()).syntax().clone_for_update(),
@@ -138,7 +151,9 @@ fn wrap_ok(expr: ast::Expr) -> ast::Expr {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn converts_from_to_tryfrom() {
         check_assist(
@@ -172,6 +187,7 @@ impl TryFrom<String> for Foo {
             "#,
         );
     }
+
     #[test]
     fn converts_from_to_tryfrom_nested_type() {
         check_assist(
@@ -205,6 +221,7 @@ impl TryFrom<Option<String>> for Foo {
             "#,
         );
     }
+
     #[test]
     fn converts_from_to_tryfrom_preserves_lifetimes() {
         check_assist(
@@ -232,6 +249,7 @@ impl<'a> TryFrom<&'a str> for Foo<'a> {
             "#,
         );
     }
+
     #[test]
     fn other_trait_not_applicable() {
         check_assist_not_applicable(

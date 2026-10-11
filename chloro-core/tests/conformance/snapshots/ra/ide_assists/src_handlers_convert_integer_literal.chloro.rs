@@ -63,39 +63,57 @@ pub(crate) fn convert_integer_literal(acc: &mut Assists, ctx: &AssistContext<'_>
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist_by_label, check_assist_not_applicable, check_assist_target};
+
     use super::*;
+
     #[test]
     fn binary_target() {
-        check_assist_target(convert_integer_literal, "const _: i32 = 0b1010$0;", "0b1010");
+        check_assist_target(
+            convert_integer_literal,
+            "const _: i32 = 0b1010$0;",
+            "0b1010",
+        );
     }
+
     #[test]
     fn octal_target() {
         check_assist_target(convert_integer_literal, "const _: i32 = 0o12$0;", "0o12");
     }
+
     #[test]
     fn decimal_target() {
         check_assist_target(convert_integer_literal, "const _: i32 = 10$0;", "10");
     }
+
     #[test]
     fn hexadecimal_target() {
         check_assist_target(convert_integer_literal, "const _: i32 = 0xA$0;", "0xA");
     }
+
     #[test]
     fn binary_target_with_underscores() {
-        check_assist_target(convert_integer_literal, "const _: i32 = 0b10_10$0;", "0b10_10");
+        check_assist_target(
+            convert_integer_literal,
+            "const _: i32 = 0b10_10$0;",
+            "0b10_10",
+        );
     }
+
     #[test]
     fn octal_target_with_underscores() {
         check_assist_target(convert_integer_literal, "const _: i32 = 0o1_2$0;", "0o1_2");
     }
+
     #[test]
     fn decimal_target_with_underscores() {
         check_assist_target(convert_integer_literal, "const _: i32 = 1_0$0;", "1_0");
     }
+
     #[test]
     fn hexadecimal_target_with_underscores() {
         check_assist_target(convert_integer_literal, "const _: i32 = 0x_A$0;", "0x_A");
     }
+
     #[test]
     fn convert_decimal_integer() {
         let before = "const _: i32 = 1000$0;";
@@ -121,6 +139,7 @@ mod tests {
             "Convert 1000 to 0x3E8",
         );
     }
+
     #[test]
     fn convert_hexadecimal_integer() {
         let before = "const _: i32 = 0xFF$0;";
@@ -146,6 +165,7 @@ mod tests {
             "Convert 0xFF to 255",
         );
     }
+
     #[test]
     fn convert_binary_integer() {
         let before = "const _: i32 = 0b11111111$0;";
@@ -171,6 +191,7 @@ mod tests {
             "Convert 0b11111111 to 0xFF",
         );
     }
+
     #[test]
     fn convert_octal_integer() {
         let before = "const _: i32 = 0o377$0;";
@@ -196,6 +217,7 @@ mod tests {
             "Convert 0o377 to 0xFF",
         );
     }
+
     #[test]
     fn convert_integer_with_underscores() {
         let before = "const _: i32 = 1_00_0$0;";
@@ -221,6 +243,7 @@ mod tests {
             "Convert 1_00_0 to 0x3E8",
         );
     }
+
     #[test]
     fn convert_integer_with_suffix() {
         let before = "const _: i32 = 1000i32$0;";
@@ -246,12 +269,14 @@ mod tests {
             "Convert 1000i32 to 0x3E8i32",
         );
     }
+
     #[test]
     fn convert_overflowing_literal() {
         let before = "const _: i32 =
             111111111111111111111111111111111111111111111111111111111111111111111111$0;";
         check_assist_not_applicable(convert_integer_literal, before);
     }
+
     #[test]
     fn convert_non_empty_selection_literal() {
         check_assist_not_applicable(convert_integer_literal, "const _: i32 = $00b1010$0;");

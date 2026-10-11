@@ -2,23 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 985 bytes
-Chloro size:   983 bytes
+Chloro size:   985 bytes
 Rustfmt size:  985 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use crate::tests::check_diagnostics;
--
-     #[test]
-     fn bare() {
-         check_diagnostics(
- "#,
-         );
-     }
--
-     #[test]
-     fn unimplemented_trait() {
-         check_diagnostics(
+✓ Outputs are IDENTICAL

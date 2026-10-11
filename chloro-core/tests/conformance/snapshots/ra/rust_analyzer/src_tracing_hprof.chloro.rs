@@ -40,15 +40,15 @@ use std::{
 };
 
 use rustc_hash::FxHashSet;
-use tracing_subscriber::{
-    Layer, Registry, filter,
-    layer::{Context, SubscriberExt},
-    registry::LookupSpan,
-};
 use tracing::{
     Event, Id, Level, Subscriber,
     field::{Field, Visit},
     span::Attributes,
+};
+use tracing_subscriber::{
+    Layer, Registry, filter,
+    layer::{Context, SubscriberExt},
+    registry::LookupSpan,
 };
 
 pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {
@@ -86,7 +86,12 @@ where
                 && !metadata.target().starts_with("chalk")
         });
 
-        Self { aggregate: true, write_filter, _inner: PhantomData }.with_filter(profile_filter)
+        Self {
+            aggregate: true,
+            write_filter,
+            _inner: PhantomData,
+        }
+        .with_filter(profile_filter)
     }
 }
 
@@ -98,9 +103,15 @@ struct Data {
 
 impl Data {
     fn new(attrs: &Attributes<'_>) -> Self {
-        let mut data = Self { start: Instant::now(), children: Vec::new(), fields: String::new() };
+        let mut data = Self {
+            start: Instant::now(),
+            children: Vec::new(),
+            fields: String::new(),
+        };
 
-        let mut visitor = DataVisitor { string: &mut data.fields };
+        let mut visitor = DataVisitor {
+            string: &mut data.fields,
+        };
         attrs.record(&mut visitor);
         data
     }
@@ -146,7 +157,12 @@ where
 
         match span.parent() {
             Some(parent_span) => {
-                parent_span.extensions_mut().get_mut::<Data>().unwrap().children.push(node);
+                parent_span
+                    .extensions_mut()
+                    .get_mut::<Data>()
+                    .unwrap()
+                    .children
+                    .push(node);
             }
             None => {
                 if self.aggregate {
@@ -232,7 +248,9 @@ pub(crate) struct WriteFilter {
 impl WriteFilter {
     pub(crate) fn from_spec(mut spec: &str) -> (WriteFilter, Option<FxHashSet<String>>) {
         let longer_than = if let Some(idx) = spec.rfind('>') {
-            let longer_than = spec[idx + 1..].parse().expect("invalid profile longer_than");
+            let longer_than = spec[idx + 1..]
+                .parse()
+                .expect("invalid profile longer_than");
             spec = &spec[..idx];
             Duration::from_millis(longer_than)
         } else {

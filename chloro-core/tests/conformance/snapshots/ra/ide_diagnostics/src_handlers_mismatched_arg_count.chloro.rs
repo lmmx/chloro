@@ -52,17 +52,17 @@ fn invalid_args_range(
     expected: usize,
     found: usize,
 ) -> FileRange {
-    adjusted_display_range(
-        ctx,
-        source,
-        &|expr| {
+    adjusted_display_range(ctx, source, &|expr| {
         let (text_range, r_paren_token, expected_arg) = match expr {
             Either::Left(ast::Expr::CallExpr(call)) => {
                 let arg_list = call.arg_list()?;
                 (
                     arg_list.syntax().text_range(),
                     arg_list.r_paren_token(),
-                    arg_list.args().nth(expected).map(|it| it.syntax().text_range()),
+                    arg_list
+                        .args()
+                        .nth(expected)
+                        .map(|it| it.syntax().text_range()),
                 )
             }
             Either::Left(ast::Expr::MethodCallExpr(call)) => {
@@ -70,7 +70,10 @@ fn invalid_args_range(
                 (
                     arg_list.syntax().text_range(),
                     arg_list.r_paren_token(),
-                    arg_list.args().nth(expected).map(|it| it.syntax().text_range()),
+                    arg_list
+                        .args()
+                        .nth(expected)
+                        .map(|it| it.syntax().text_range()),
                 )
             }
             Either::Right(ast::Pat::TupleStructPat(pat)) => {
@@ -79,7 +82,9 @@ fn invalid_args_range(
                 (
                     l_paren.text_range().cover(r_paren.text_range()),
                     Some(r_paren),
-                    pat.fields().nth(expected).map(|it| it.syntax().text_range()),
+                    pat.fields()
+                        .nth(expected)
+                        .map(|it| it.syntax().text_range()),
                 )
             }
             _ => return None,
@@ -103,13 +108,13 @@ fn invalid_args_range(
         }
 
         None
-    },
-    )
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn simple_free_fn_zero() {
         check_diagnostics(
@@ -127,6 +132,7 @@ fn f() { zero(); }
 "#,
         );
     }
+
     #[test]
     fn simple_free_fn_one() {
         check_diagnostics(
@@ -144,6 +150,7 @@ fn f() { one(1); }
 "#,
         );
     }
+
     #[test]
     fn method_as_fn() {
         check_diagnostics(
@@ -169,6 +176,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn method_with_arg() {
         check_diagnostics(
@@ -194,6 +202,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn method_unknown_receiver() {
         // note: this is incorrect code, so there might be errors on this in the
@@ -209,24 +218,31 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn tuple_struct() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 struct Tup(u8, u16);
 fn f() {
     Tup(0);
 }      //^ error: expected 2 arguments, found 1
-"#)
+"#,
+        )
     }
+
     #[test]
     fn enum_variant() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 enum En { Variant(u8, u16), }
 fn f() {
     En::Variant(0);
 }              //^ error: expected 2 arguments, found 1
-"#)
+"#,
+        )
     }
+
     #[test]
     fn enum_variant_type_macro() {
         check_diagnostics(
@@ -249,6 +265,7 @@ impl Foo {
         "#,
         );
     }
+
     #[test]
     fn rest_pat_in_macro_expansion() {
         check_diagnostics(
@@ -317,9 +334,11 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn varargs() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 extern "C" {
     fn fixed(fixed: u8);
     fn varargs(fixed: u8, ...);
@@ -338,11 +357,14 @@ fn f() {
         varargs2(0, 1);
     }
 }
-        "#)
+        "#,
+        )
     }
+
     #[test]
     fn arg_count_lambda() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn main() {
     let f = |()| ();
     f();
@@ -351,8 +373,10 @@ fn main() {
     f((), ());
         //^^^ error: expected 1 argument, found 2
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn cfgd_out_call_arguments() {
         check_diagnostics(
@@ -375,9 +399,11 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn cfgd_out_fn_params() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 fn foo(#[cfg(NEVER)] x: ()) {}
 
 struct S;
@@ -404,11 +430,14 @@ fn main() {
         varargs(1, 2, 3);
     }
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn legacy_const_generics() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 #[rustc_legacy_const_generics(1, 3)]
 fn mixed<const N1: &'static str, const N2: bool>(
     _a: u8,
@@ -433,11 +462,14 @@ fn g() {
     b(0, 1, 2);
            //^ error: expected 4 arguments, found 3
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn tuple_struct_pat() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 struct S(u32, u32);
 fn f(
     S(a, b, c): S,
@@ -447,8 +479,10 @@ fn f(
     S(e, f, .., g, d): S
   //        ^^^^^^^^^ error: this pattern has 4 fields, but the corresponding tuple struct has 2 fields
 ) { _ = (a, b, c, d, e, f, g); }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn no_type_mismatches_when_arg_count_mismatch() {
         check_diagnostics(
@@ -462,6 +496,7 @@ fn foo((): (), (): ()) {
 "#,
         );
     }
+
     #[test]
     fn regression_17233() {
         check_diagnostics(

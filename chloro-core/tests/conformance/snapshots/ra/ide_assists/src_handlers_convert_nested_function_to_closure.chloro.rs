@@ -63,9 +63,17 @@ pub(crate) fn convert_nested_function_to_closure(
 
 /// Returns whether the given function is nested within the body of another function.
 fn is_nested_function(function: &ast::Fn) -> bool {
-    function.syntax().ancestors().skip(1).find_map(ast::Item::cast).is_some_and(|it| {
-        matches!(it, ast::Item::Fn(_) | ast::Item::Static(_) | ast::Item::Const(_))
-    })
+    function
+        .syntax()
+        .ancestors()
+        .skip(1)
+        .find_map(ast::Item::cast)
+        .is_some_and(|it| {
+            matches!(
+                it,
+                ast::Item::Fn(_) | ast::Item::Static(_) | ast::Item::Const(_)
+            )
+        })
 }
 
 /// Returns whether the given nested function has generic parameters.
@@ -96,7 +104,9 @@ fn has_semicolon(function: &ast::Fn) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::convert_nested_function_to_closure;
+
     #[test]
     fn convert_nested_function_to_closure_works() {
         check_assist(
@@ -121,6 +131,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_nested_function_to_closure_works_with_existing_semicolon() {
         check_assist(
@@ -145,6 +156,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_nested_function_to_closure_is_not_suggested_on_top_level_function() {
         check_assist_not_applicable(
@@ -154,6 +166,7 @@ fn ma$0in() {}
             "#,
         );
     }
+
     #[test]
     fn convert_nested_function_to_closure_is_not_suggested_when_cursor_off_name() {
         check_assist_not_applicable(
@@ -169,6 +182,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_nested_function_to_closure_is_not_suggested_if_function_has_generic_params() {
         check_assist_not_applicable(
@@ -184,6 +198,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn convert_nested_function_to_closure_is_not_suggested_if_function_has_modifier() {
         check_assist_not_applicable(

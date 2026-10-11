@@ -12,8 +12,8 @@ pub struct Config {
     /// Maximum line width for editor text wrapping.
     #[facet(default = 100)]
     pub wrap_width: usize,
-    /// File suffixes to match when scanning directories.
     #[facet(default = vec!["md".to_string()])]
+    /// File suffixes to match when scanning directories.
     pub file_extensions: Vec<String>,
 }
 

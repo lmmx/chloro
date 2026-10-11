@@ -41,14 +41,18 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();
 
-    let mut proposed_imports: Vec<_> =
-        import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
+    let mut proposed_imports: Vec<_> = import_assets
+        .search_for_relative_paths(&ctx.sema, cfg)
+        .collect();
     if proposed_imports.is_empty() {
         return None;
     }
 
     let range = ctx.sema.original_range(&syntax_under_caret).range;
-    let current_module = ctx.sema.scope(&syntax_under_caret).map(|scope| scope.module());
+    let current_module = ctx
+        .sema
+        .scope(&syntax_under_caret)
+        .map(|scope| scope.module());
 
     let candidate = import_assets.import_candidate();
     let qualify_candidate = match candidate {
@@ -81,8 +85,9 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 
-    let current_edition =
-        current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
+    let current_edition = current_module
+        .map(|it| it.krate().edition(ctx.db()))
+        .unwrap_or(Edition::CURRENT);
     // prioritize more relevant imports
     proposed_imports.sort_by_key(|import| {
         Reverse(super::auto_import::relevance_score(
@@ -112,7 +117,6 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     }
     Some(())
 }
-
 pub(crate) enum QualifyCandidate<'db> {
     QualifierStart(ast::PathSegment, Option<ast::GenericArgList>),
     UnqualifiedName(Option<ast::GenericArgList>),
@@ -132,11 +136,15 @@ impl QualifyCandidate<'_> {
         let import = mod_path_to_ast(import, edition);
         match self {
             QualifyCandidate::QualifierStart(segment, generics) => {
-                let generics = generics.as_ref().map_or_else(String::new, ToString::to_string);
+                let generics = generics
+                    .as_ref()
+                    .map_or_else(String::new, ToString::to_string);
                 replacer(format!("{import}{generics}::{segment}"));
             }
             QualifyCandidate::UnqualifiedName(generics) => {
-                let generics = generics.as_ref().map_or_else(String::new, ToString::to_string);
+                let generics = generics
+                    .as_ref()
+                    .map_or_else(String::new, ToString::to_string);
                 replacer(format!("{import}{generics}"));
             }
             QualifyCandidate::TraitAssocItem(qualifier, segment) => {
@@ -160,8 +168,10 @@ impl QualifyCandidate<'_> {
     ) -> Option<()> {
         let receiver = mcall_expr.receiver()?;
         let method_name = mcall_expr.name_ref()?;
-        let generics =
-            mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
+        let generics = mcall_expr
+            .generic_arg_list()
+            .as_ref()
+            .map_or_else(String::new, ToString::to_string);
         let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
 
         if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
@@ -203,7 +213,8 @@ fn find_trait_method(
             item.name(db)
                 .map(|name| name.as_str() == trait_method_name.text().trim_start_matches("r#"))
                 .unwrap_or(false)
-        }) {
+        })
+    {
         Some(method)
     } else {
         None
@@ -247,7 +258,9 @@ fn label(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     use super::*;
+
     #[test]
     fn applicable_when_found_an_import_partial() {
         cov_mark::check!(qualify_path_unqualified_name);
@@ -277,6 +290,7 @@ fmt::Formatter
 "#,
         );
     }
+
     #[test]
     fn applicable_when_found_an_import() {
         check_assist(
@@ -297,6 +311,7 @@ pub mod PubMod {
 "#,
         );
     }
+
     #[test]
     fn applicable_in_macros() {
         check_assist(
@@ -323,6 +338,7 @@ pub mod PubMod {
 "#,
         );
     }
+
     #[test]
     fn applicable_when_found_multiple_imports() {
         check_assist(
@@ -355,6 +371,7 @@ pub mod PubMod3 {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_already_imported_types() {
         check_assist_not_applicable(
@@ -370,6 +387,7 @@ pub mod PubMod {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_types_with_private_paths() {
         check_assist_not_applicable(
@@ -383,10 +401,12 @@ pub mod PubMod {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_no_imports_found() {
         check_assist_not_applicable(qualify_path, r#"PubStruct$0"#);
     }
+
     #[test]
     fn qualify_function() {
         check_assist(
@@ -407,6 +427,7 @@ pub mod PubMod {
 "#,
         );
     }
+
     #[test]
     fn qualify_macro() {
         check_assist(
@@ -430,6 +451,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn qualify_path_target() {
         check_assist_target(
@@ -444,6 +466,7 @@ mod m { pub struct GroupLabel; }
             "GroupLabel",
         )
     }
+
     #[test]
     fn not_applicable_when_path_start_is_imported() {
         check_assist_not_applicable(
@@ -464,6 +487,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_imported_function() {
         check_assist_not_applicable(
@@ -480,6 +504,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn associated_struct_function() {
         check_assist(
@@ -510,6 +535,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn associated_struct_const() {
         cov_mark::check!(qualify_path_qualifier_start);
@@ -541,6 +567,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn associated_struct_const_unqualified() {
         // FIXME: non-trait assoc items completion is unsupported yet, see FIXME in the import_assets.rs for more details
@@ -560,6 +587,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn associated_trait_function() {
         check_assist(
@@ -596,6 +624,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_function() {
         check_assist_not_applicable(
@@ -627,6 +656,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn associated_trait_const() {
         cov_mark::check!(qualify_path_trait_assoc_item);
@@ -664,6 +694,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_const() {
         check_assist_not_applicable(
@@ -695,6 +726,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn trait_method() {
         cov_mark::check!(qualify_path_trait_method);
@@ -734,6 +766,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_multi_params() {
         check_assist(
@@ -772,6 +805,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_consume() {
         check_assist(
@@ -810,6 +844,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_cross_crate() {
         check_assist(
@@ -839,6 +874,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn assoc_fn_cross_crate() {
         check_assist(
@@ -866,6 +902,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn assoc_const_cross_crate() {
         check_assist(
@@ -893,6 +930,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn assoc_fn_as_method_cross_crate() {
         check_assist_not_applicable(
@@ -916,6 +954,7 @@ pub mod test_mod {
 "#,
         );
     }
+
     #[test]
     fn private_trait_cross_crate() {
         check_assist_not_applicable(
@@ -939,6 +978,7 @@ pub mod test_mod {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_method() {
         check_assist_not_applicable(
@@ -971,6 +1011,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn dep_import() {
         check_assist(
@@ -991,6 +1032,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn whole_segment() {
         // Tests that only imports whose last segment matches the identifier get suggested.
@@ -1016,6 +1058,7 @@ impl dep::fmt::Display for S {}
 ",
         );
     }
+
     #[test]
     fn macro_generated() {
         // Tests that macro-generated items are suggested from external crates.
@@ -1043,6 +1086,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn casing() {
         // Tests that differently cased names don't interfere and we only suggest the matching one.
@@ -1065,6 +1109,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn keep_generic_annotations() {
         check_assist(
@@ -1085,6 +1130,7 @@ fn main() {}
 ",
         );
     }
+
     #[test]
     fn keep_generic_annotations_leading_colon() {
         check_assist(
@@ -1105,6 +1151,7 @@ fn main() {}
 ",
         );
     }
+
     #[test]
     fn associated_struct_const_generic() {
         check_assist(
@@ -1135,6 +1182,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn associated_trait_const_generic() {
         check_assist(
@@ -1171,6 +1219,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn trait_method_generic() {
         check_assist(
@@ -1209,6 +1258,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn works_in_derives() {
         check_assist(
@@ -1232,6 +1282,7 @@ struct Foo;
 "#,
         );
     }
+
     #[test]
     fn works_in_use_start() {
         check_assist(
@@ -1254,6 +1305,7 @@ use bar::foo::Foo;
 "#,
         );
     }
+
     #[test]
     fn not_applicable_in_non_start_use() {
         check_assist_not_applicable(

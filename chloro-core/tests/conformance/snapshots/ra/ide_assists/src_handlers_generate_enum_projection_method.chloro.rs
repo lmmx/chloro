@@ -48,13 +48,13 @@ pub(crate) fn generate_enum_try_into_method(
         "generate_enum_try_into_method",
         "Generate a `try_into_` method for this enum variant",
         ProjectionProps {
-        fn_name_prefix: "try_into",
-        self_param: "self",
-        return_prefix: "Result<",
-        return_suffix: ", Self>",
-        happy_case: "Ok",
-        sad_case: "Err(self)",
-    },
+            fn_name_prefix: "try_into",
+            self_param: "self",
+            return_prefix: "Result<",
+            return_suffix: ", Self>",
+            happy_case: "Ok",
+            sad_case: "Err(self)",
+        },
     )
 }
 
@@ -92,13 +92,13 @@ pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>
         "generate_enum_as_method",
         "Generate an `as_` method for this enum variant",
         ProjectionProps {
-        fn_name_prefix: "as",
-        self_param: "&self",
-        return_prefix: "Option<&",
-        return_suffix: ">",
-        happy_case: "Some",
-        sad_case: "None",
-    },
+            fn_name_prefix: "as",
+            self_param: "&self",
+            return_prefix: "Option<&",
+            return_suffix: ">",
+            happy_case: "Some",
+            sad_case: "None",
+        },
     )
 }
 
@@ -147,7 +147,10 @@ fn generate_enum_projection_method(
         ast::StructKind::Unit => return None,
     };
 
-    let fn_name = format!("{fn_name_prefix}_{}", &to_lower_snake_case(&variant_name.text()));
+    let fn_name = format!(
+        "{fn_name_prefix}_{}",
+        &to_lower_snake_case(&variant_name.text())
+    );
 
     // Return early if we've found an existing new fn
     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
@@ -187,7 +190,9 @@ fn generate_enum_projection_method(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_enum_try_into_tuple_variant() {
         check_assist(
@@ -213,6 +218,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_try_into_already_implemented() {
         check_assist_not_applicable(
@@ -233,6 +239,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_try_into_unit_variant() {
         check_assist_not_applicable(
@@ -244,6 +251,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_try_into_record_with_multiple_fields() {
         check_assist_not_applicable(
@@ -255,6 +263,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_try_into_tuple_with_multiple_fields() {
         check_assist_not_applicable(
@@ -265,6 +274,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_try_into_record_variant() {
         check_assist(
@@ -289,6 +299,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_as_tuple_variant() {
         check_assist(
@@ -314,6 +325,7 @@ impl Value {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_enum_as_record_variant() {
         check_assist(

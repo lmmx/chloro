@@ -55,7 +55,9 @@ pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>)
             return None;
         }
 
-        let sc = adjusted_tc.display_source_code(db, scope.module().into(), true).ok()?;
+        let sc = adjusted_tc
+            .display_source_code(db, scope.module().into(), true)
+            .ok()?;
         acc.add(
             AssistId::generate("into_to_qualified_from"),
             "Convert `into` to fully qualified `from`",
@@ -79,7 +81,9 @@ pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>)
 #[cfg(test)]
 mod tests {
     use crate::tests::check_assist;
+
     use super::into_to_qualified_from;
+
     #[test]
     fn two_types_in_same_mod() {
         check_assist(
@@ -113,6 +117,7 @@ fn main() -> () {
 }"#,
         )
     }
+
     #[test]
     fn from_in_child_mod_imported() {
         check_assist(
@@ -160,6 +165,7 @@ fn main() -> () {
 }"#,
         )
     }
+
     #[test]
     fn from_in_child_mod_not_imported() {
         check_assist(
@@ -203,6 +209,7 @@ fn main() -> () {
 }"#,
         )
     }
+
     #[test]
     fn preceding_type_qualifier() {
         check_assist(
@@ -230,6 +237,7 @@ fn tuple_to_array() -> [i32; 2] {
 }"#,
         )
     }
+
     #[test]
     fn type_with_gens() {
         check_assist(

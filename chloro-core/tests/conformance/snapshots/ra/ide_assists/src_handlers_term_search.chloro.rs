@@ -1,5 +1,4 @@
 //! Term search assist
-
 use hir::term_search::{TermSearchConfig, TermSearchCtx};
 use ide_db::{
     assists::{AssistId, GroupLabel},
@@ -29,7 +28,10 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
         return None;
     }
 
-    let target_ty = ctx.sema.type_of_expr(&ast::Expr::cast(parent.clone())?)?.adjusted();
+    let target_ty = ctx
+        .sema
+        .type_of_expr(&ast::Expr::cast(parent.clone())?)?
+        .adjusted();
 
     let term_search_ctx = TermSearchCtx {
         sema: &ctx.sema,
@@ -56,7 +58,8 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             path.gen_source_code(
                 &scope,
                 &mut formatter,
-                ctx.config.find_path_config(ctx.sema.is_nightly(scope.module().krate())),
+                ctx.config
+                    .find_path_config(ctx.sema.is_nightly(scope.module().krate())),
                 scope.krate().to_display_target(ctx.db()),
             )
             .ok()
@@ -84,7 +87,9 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_complete_local() {
         check_assist(
@@ -94,6 +99,7 @@ fn f() { let a: u128 = 1; let b: u128 = todo$0!() }"#,
             r#"fn f() { let a: u128 = 1; let b: u128 = a }"#,
         )
     }
+
     #[test]
     fn test_complete_todo_with_msg() {
         check_assist(
@@ -103,6 +109,7 @@ fn f() { let a: u128 = 1; let b: u128 = todo$0!("asd") }"#,
             r#"fn f() { let a: u128 = 1; let b: u128 = a }"#,
         )
     }
+
     #[test]
     fn test_complete_unimplemented_with_msg() {
         check_assist(
@@ -112,6 +119,7 @@ fn f() { let a: u128 = 1; let b: u128 = unimplemented$0!("asd") }"#,
             r#"fn f() { let a: u128 = 1; let b: u128 = a }"#,
         )
     }
+
     #[test]
     fn test_complete_unimplemented() {
         check_assist(
@@ -121,6 +129,7 @@ fn f() { let a: u128 = 1; let b: u128 = unimplemented$0!() }"#,
             r#"fn f() { let a: u128 = 1; let b: u128 = a }"#,
         )
     }
+
     #[test]
     fn test_complete_struct_field() {
         check_assist(
@@ -132,6 +141,7 @@ fn f() { let a = A { x: 1, y: true }; let b: i32 = todo$0!(); }"#,
 fn f() { let a = A { x: 1, y: true }; let b: i32 = a.x; }"#,
         )
     }
+
     #[test]
     fn test_enum_with_generics() {
         check_assist(
@@ -141,6 +151,7 @@ fn f() { let a: i32 = 1; let b: Option<i32> = todo$0!(); }"#,
             r#"fn f() { let a: i32 = 1; let b: Option<i32> = None; }"#,
         )
     }
+
     #[test]
     fn test_enum_with_generics2() {
         check_assist(
@@ -152,6 +163,7 @@ fn f() { let a: i32 = 1; let b: Option<i32> = todo$0!(); }"#,
 fn f() { let a: i32 = 1; let b: Option<i32> = Option::None; }"#,
         )
     }
+
     #[test]
     fn test_enum_with_generics3() {
         check_assist(
@@ -163,6 +175,7 @@ fn f() { let a: Option<i32> = Option::None; let b: Option<Option<i32>> = todo$0!
 fn f() { let a: Option<i32> = Option::None; let b: Option<Option<i32>> = Option::None; }"#,
         )
     }
+
     #[test]
     fn test_enum_with_generics4() {
         check_assist(
@@ -183,6 +196,7 @@ fn f() { let a: Foo<u32> = Foo::Foo(0); let b: Foo<u32> = todo$0!(); }"#,
 fn f() { let a: Foo<u32> = Foo::Foo(0); let b: Foo<u32> = a; }"#,
         )
     }
+
     #[test]
     fn test_newtype() {
         check_assist(
@@ -194,6 +208,7 @@ fn f() { let a: i32 = 1; let b: Foo = todo$0!(); }"#,
 fn f() { let a: i32 = 1; let b: Foo = Foo(a); }"#,
         )
     }
+
     #[test]
     fn test_shadowing() {
         check_assist(
@@ -203,6 +218,7 @@ fn f() { let a: i32 = 1; let b: i32 = 2; let a: u32 = 0; let c: i32 = todo$0!();
             r#"fn f() { let a: i32 = 1; let b: i32 = 2; let a: u32 = 0; let c: i32 = b; }"#,
         )
     }
+
     #[test]
     fn test_famous_bool() {
         check_assist(
@@ -212,6 +228,7 @@ fn f() { let a: bool = todo$0!(); }"#,
             r#"fn f() { let a: bool = true; }"#,
         )
     }
+
     #[test]
     fn test_fn_with_reference_types() {
         check_assist(
@@ -223,6 +240,7 @@ fn g() { let a = 1; let b: f32 = todo$0!(); }"#,
 fn g() { let a = 1; let b: f32 = f(&a); }"#,
         )
     }
+
     #[test]
     fn test_fn_with_reference_types2() {
         check_assist(
@@ -234,6 +252,7 @@ fn g() { let a = &1; let b: f32 = todo$0!(); }"#,
 fn g() { let a = &1; let b: f32 = f(a); }"#,
         )
     }
+
     #[test]
     fn test_fn_with_reference_types3() {
         check_assist_not_applicable(
@@ -243,6 +262,7 @@ fn g() { let a = &1; let b: f32 = f(a); }"#,
             fn g() { let a = &mut 1; let b: f32 = todo$0!(); }"#,
         )
     }
+
     #[test]
     fn test_tuple_simple() {
         check_assist(
@@ -252,6 +272,7 @@ fn f() { let a = 1; let b = 0.0; let c: (i32, f64) = todo$0!(); }"#,
             r#"fn f() { let a = 1; let b = 0.0; let c: (i32, f64) = (a, b); }"#,
         )
     }
+
     #[test]
     fn test_tuple_nested() {
         check_assist(
@@ -261,6 +282,7 @@ fn f() { let a = 1; let b = 0.0; let c: (i32, (i32, f64)) = todo$0!(); }"#,
             r#"fn f() { let a = 1; let b = 0.0; let c: (i32, (i32, f64)) = (a, (a, b)); }"#,
         )
     }
+
     #[test]
     fn test_tuple_struct_with_generics() {
         check_assist(
@@ -272,6 +294,7 @@ fn f() { let a = 1; let b: Foo<i32> = todo$0!(); }"#,
 fn f() { let a = 1; let b: Foo<i32> = Foo(a); }"#,
         )
     }
+
     #[test]
     fn test_struct_assoc_item() {
         check_assist(
@@ -285,6 +308,7 @@ impl Foo { const FOO: i32 = 0; }
 fn f() { let a: i32 = Foo::FOO; }"#,
         )
     }
+
     #[test]
     fn test_trait_assoc_item() {
         check_assist(

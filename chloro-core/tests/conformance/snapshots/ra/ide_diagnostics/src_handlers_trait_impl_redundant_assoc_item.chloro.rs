@@ -29,7 +29,10 @@ pub(crate) fn trait_impl_redundant_assoc_item(
             let function = id;
             (
                 format!("`fn {redundant_assoc_item_name}`"),
-                function.source(db).map(|it| it.syntax().text_range()).unwrap_or(default_range),
+                function
+                    .source(db)
+                    .map(|it| it.syntax().text_range())
+                    .unwrap_or(default_range),
                 format!("\n    {};", function.display(db, ctx.display_target)),
             )
         }
@@ -37,7 +40,10 @@ pub(crate) fn trait_impl_redundant_assoc_item(
             let constant = id;
             (
                 format!("`const {redundant_assoc_item_name}`"),
-                constant.source(db).map(|it| it.syntax().text_range()).unwrap_or(default_range),
+                constant
+                    .source(db)
+                    .map(|it| it.syntax().text_range())
+                    .unwrap_or(default_range),
                 format!("\n    {};", constant.display(db, ctx.display_target)),
             )
         }
@@ -45,10 +51,16 @@ pub(crate) fn trait_impl_redundant_assoc_item(
             let type_alias = id;
             (
                 format!("`type {redundant_assoc_item_name}`"),
-                type_alias.source(db).map(|it| it.syntax().text_range()).unwrap_or(default_range),
+                type_alias
+                    .source(db)
+                    .map(|it| it.syntax().text_range())
+                    .unwrap_or(default_range),
                 format!(
                     "\n    type {};",
-                    type_alias.name(ctx.sema.db).display_no_db(ctx.edition).to_smolstr()
+                    type_alias
+                        .name(ctx.sema.db)
+                        .display_no_db(ctx.edition)
+                        .to_smolstr()
                 ),
             )
         }
@@ -59,7 +71,10 @@ pub(crate) fn trait_impl_redundant_assoc_item(
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0407"),
         format!("{redundant_item_name} is not a member of trait `{trait_name}`"),
-        ide_db::FileRange { file_id: file_id.file_id(ctx.sema.db), range },
+        ide_db::FileRange {
+            file_id: file_id.file_id(ctx.sema.db),
+            range,
+        },
     )
     .stable()
     .with_fixes(quickfix_for_redundant_assoc_item(
@@ -82,7 +97,10 @@ fn quickfix_for_redundant_assoc_item(
         let db = ctx.sema.db;
         let root = db.parse_or_expand(d.file_id);
         // don't modify trait def in outer crate
-        let current_crate = ctx.sema.scope(&d.impl_.syntax_node_ptr().to_node(&root))?.krate();
+        let current_crate = ctx
+            .sema
+            .scope(&d.impl_.syntax_node_ptr().to_node(&root))?
+            .krate();
         let trait_def_crate = d.trait_.module(db).krate();
         if trait_def_crate != current_crate {
             return None;
@@ -115,6 +133,7 @@ fn quickfix_for_redundant_assoc_item(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix, check_no_fix};
+
     #[test]
     fn quickfix_for_assoc_func() {
         check_fix(
@@ -141,6 +160,7 @@ impl Marker for Foo {
             "#,
         )
     }
+
     #[test]
     fn quickfix_for_assoc_const() {
         check_fix(
@@ -165,6 +185,7 @@ impl Marker for Foo {
             "#,
         )
     }
+
     #[test]
     fn quickfix_for_assoc_type() {
         check_fix(
@@ -187,9 +208,11 @@ impl Marker for Foo {
             "#,
         )
     }
+
     #[test]
     fn quickfix_dont_work() {
-        check_no_fix(r#"
+        check_no_fix(
+            r#"
             //- /dep.rs crate:dep
             trait Marker {
             }
@@ -198,11 +221,14 @@ impl Marker for Foo {
             impl dep::Marker for Foo {
                 type T = i32;$0
             }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn trait_with_default_value() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 trait Marker {
     const FLAG: bool = false;
     fn boo();
@@ -220,11 +246,14 @@ impl Marker for Foo {
 
     fn boo() {}
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn dont_work_for_negative_impl() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 trait Marker {
     const FLAG: bool = false;
     fn boo();
@@ -237,6 +266,7 @@ impl !Marker for Foo {
     fn bar() {}
     fn boo() {}
 }
-            "#)
+            "#,
+        )
     }
 }

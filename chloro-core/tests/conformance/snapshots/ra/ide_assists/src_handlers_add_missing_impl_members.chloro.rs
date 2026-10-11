@@ -147,11 +147,7 @@ fn add_missing_impl_members_inner(
     }
 
     let target = impl_def.syntax().text_range();
-    acc.add(
-        AssistId::quick_fix(assist_id),
-        label,
-        target,
-        |edit| {
+    acc.add(AssistId::quick_fix(assist_id), label, target, |edit| {
         let new_item = add_trait_assoc_items_to_impl(
             &ctx.sema,
             ctx.config,
@@ -196,7 +192,10 @@ fn add_missing_impl_members_inner(
             let assoc_item_list = make::assoc_item_list(Some(new_assoc_items)).clone_for_update();
             editor.insert_all(
                 Position::after(impl_def.syntax()),
-                vec![make::tokens::whitespace(" ").into(), assoc_item_list.syntax().clone().into()],
+                vec![
+                    make::tokens::whitespace(" ").into(),
+                    assoc_item_list.syntax().clone().into(),
+                ],
             );
             first_new_item = assoc_item_list.assoc_items().next();
         }
@@ -220,8 +219,7 @@ fn add_missing_impl_members_inner(
             };
         };
         edit.add_file_edits(ctx.vfs_file_id(), editor);
-    },
-    )
+    })
 }
 
 fn try_gen_trait_body(
@@ -232,7 +230,11 @@ fn try_gen_trait_body(
     edition: Edition,
 ) -> Option<ast::BlockExpr> {
     let trait_path = make::ext::ident_path(
-        &trait_ref.trait_().name(ctx.db()).display(ctx.db(), edition).to_string(),
+        &trait_ref
+            .trait_()
+            .name(ctx.db())
+            .display(ctx.db(), edition)
+            .to_string(),
     );
     let hir_ty = ctx.sema.resolve_type(&impl_def.self_ty()?)?;
     let adt = hir_ty.as_adt()?.source(ctx.db())?;
@@ -242,7 +244,9 @@ fn try_gen_trait_body(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_add_missing_impl_members() {
         check_assist(
@@ -297,6 +301,7 @@ impl Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_copied_overridden_members() {
         check_assist(
@@ -333,6 +338,7 @@ impl Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_empty_impl_def() {
         check_assist(
@@ -351,6 +357,7 @@ impl Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_impl_def_without_braces_macro() {
         check_assist(
@@ -369,6 +376,7 @@ impl Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_impl_def_without_braces_tabstop_first_item() {
         check_assist(
@@ -395,6 +403,7 @@ impl Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn fill_in_type_params_1() {
         check_assist(
@@ -413,6 +422,7 @@ impl Foo<u32> for S {
 }"#,
         );
     }
+
     #[test]
     fn fill_in_type_params_2() {
         check_assist(
@@ -431,6 +441,7 @@ impl<U> Foo<U> for S {
 }"#,
         );
     }
+
     #[test]
     fn test_lifetime_substitution() {
         check_assist(
@@ -453,6 +464,7 @@ impl<'x, 'y, T, V, U> Trait<'x, 'y, T, V, U> for () {
 }"#,
         );
     }
+
     #[test]
     fn test_lifetime_substitution_with_body() {
         check_assist(
@@ -482,6 +494,7 @@ impl<'x, 'y, T, V, U: Default> Trait<'x, 'y, T, V, U> for () {
 }"#,
         );
     }
+
     #[test]
     fn test_const_substitution() {
         check_assist(
@@ -524,6 +537,7 @@ impl<const X: usize, Y, Z> Foo<X, Z> for S<Y> {
 }"#,
         )
     }
+
     #[test]
     fn test_const_substitution_2() {
         check_assist(
@@ -546,6 +560,7 @@ impl<X> Foo<42, {20 + 22}, X> for () {
 }"#,
         )
     }
+
     #[test]
     fn test_const_substitution_with_defaults() {
         check_assist(
@@ -580,6 +595,7 @@ impl<X> Foo<X> for () {
 }"#,
         );
     }
+
     #[test]
     fn test_const_substitution_with_defaults_2() {
         check_assist(
@@ -610,6 +626,7 @@ impl m::Foo for () {
 }"#,
         )
     }
+
     #[test]
     fn test_const_substitution_with_defaults_3() {
         check_assist(
@@ -644,6 +661,7 @@ impl m::Foo for () {
 }"#,
         )
     }
+
     #[test]
     fn test_cursor_after_empty_impl_def() {
         check_assist(
@@ -662,6 +680,7 @@ impl Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn test_qualify_path_1() {
         check_assist(
@@ -686,6 +705,7 @@ impl foo::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_2() {
         check_assist(
@@ -720,6 +740,7 @@ impl bar::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_generic() {
         check_assist(
@@ -744,6 +765,7 @@ impl foo::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_and_substitute_param() {
         check_assist(
@@ -768,6 +790,7 @@ impl foo::Foo<u32> for S {
 }"#,
         );
     }
+
     #[test]
     fn test_substitute_param_no_qualify() {
         // when substituting params, the substituted param should not be qualified!
@@ -795,6 +818,7 @@ impl foo::Foo<Param> for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_associated_item() {
         check_assist(
@@ -821,6 +845,7 @@ impl foo::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_nested() {
         check_assist(
@@ -847,6 +872,7 @@ impl foo::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_path_fn_trait_notation() {
         check_assist(
@@ -871,6 +897,7 @@ impl foo::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_empty_trait() {
         check_assist_not_applicable(
@@ -881,6 +908,7 @@ struct S;
 impl Foo for S { $0 }"#,
         )
     }
+
     #[test]
     fn test_ignore_unnamed_trait_members_and_default_methods() {
         check_assist_not_applicable(
@@ -894,6 +922,7 @@ struct S;
 impl Foo for S { $0 }"#,
         )
     }
+
     #[test]
     fn test_with_docstring_and_attrs() {
         check_assist(
@@ -928,6 +957,7 @@ impl Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn test_default_methods() {
         check_assist(
@@ -962,6 +992,7 @@ impl Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn test_generic_single_default_parameter() {
         check_assist(
@@ -986,6 +1017,7 @@ impl Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn test_generic_default_parameter_is_second() {
         check_assist(
@@ -1010,6 +1042,7 @@ impl Foo<T> for S<T> {
 }"#,
         )
     }
+
     #[test]
     fn test_qualify_generic_default_parameter() {
         check_assist(
@@ -1040,6 +1073,7 @@ impl m::Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn test_qualify_generic_default_parameter_2() {
         check_assist(
@@ -1078,6 +1112,7 @@ impl m::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_generic_default_parameter_3() {
         check_assist(
@@ -1116,6 +1151,7 @@ impl m::Foo for S {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_bounds_are_removed() {
         check_assist(
@@ -1137,6 +1173,7 @@ impl Tr for () {
 }"#,
         )
     }
+
     #[test]
     fn test_whitespace_fixup_preserves_bad_tokens() {
         check_assist(
@@ -1162,6 +1199,7 @@ impl Tr for () {
 }"#,
         )
     }
+
     #[test]
     fn test_whitespace_fixup_preserves_comments() {
         check_assist(
@@ -1187,6 +1225,7 @@ impl Tr for () {
 }"#,
         )
     }
+
     #[test]
     fn weird_path() {
         check_assist(
@@ -1211,6 +1250,7 @@ impl Test for () {
 "#,
         )
     }
+
     #[test]
     fn missing_generic_type() {
         check_assist(
@@ -1235,6 +1275,7 @@ impl Foo for () {
 "#,
         )
     }
+
     #[test]
     fn does_not_requalify_self_as_crate() {
         check_assist(
@@ -1269,6 +1310,7 @@ impl T for () {
 ",
         );
     }
+
     #[test]
     fn test_default_body_generation() {
         check_assist(
@@ -1292,6 +1334,7 @@ impl Default for Foo {
 "#,
         )
     }
+
     #[test]
     fn test_from_macro() {
         check_assist(
@@ -1328,6 +1371,7 @@ impl FooB for Foo {
 "#,
         )
     }
+
     #[test]
     fn test_assoc_type_when_trait_with_same_name_in_scope() {
         check_assist(
@@ -1366,6 +1410,7 @@ impl<T: Types> Behavior<T> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_on_concrete_type() {
         check_assist(
@@ -1408,6 +1453,7 @@ impl Behavior<u32> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_on_concrete_type_qualified() {
         check_assist(
@@ -1450,6 +1496,7 @@ impl Behavior<std::string::String> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_on_concrete_type_multi_option_ambiguous() {
         check_assist(
@@ -1508,6 +1555,7 @@ impl Behavior<u32> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_on_concrete_type_multi_option() {
         check_assist(
@@ -1566,6 +1614,7 @@ impl Behavior<u32> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_type_on_concrete_type_multi_option_foreign() {
         check_assist(
@@ -1628,6 +1677,7 @@ impl Behavior<u32> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_transform_path_in_path_expr() {
         check_assist(
@@ -1683,6 +1733,7 @@ impl Trait<u32> for Impl {
 }"#,
         );
     }
+
     #[test]
     fn test_default_partial_eq() {
         check_assist(
@@ -1708,6 +1759,7 @@ impl PartialEq for SomeStruct {
 "#,
         );
     }
+
     #[test]
     fn test_partial_eq_body_when_types_semantically_match() {
         check_assist(
@@ -1729,6 +1781,7 @@ impl<T> PartialEq<Alias<T>> for S<T, T> {
 "#,
         );
     }
+
     #[test]
     fn test_partial_eq_body_when_types_dont_match() {
         check_assist(
@@ -1750,6 +1803,7 @@ impl<T> PartialEq<Alias<T>> for S<T, i32> {
 "#,
         );
     }
+
     #[test]
     fn test_ignore_function_body() {
         check_assist_not_applicable(
@@ -1769,6 +1823,7 @@ impl Trait for () {
 }"#,
         )
     }
+
     #[test]
     fn test_ignore_param_list() {
         check_assist_not_applicable(
@@ -1788,6 +1843,7 @@ impl Trait for () {
 }"#,
         )
     }
+
     #[test]
     fn test_ignore_scope_inside_function() {
         check_assist_not_applicable(
@@ -1807,6 +1863,7 @@ impl Trait for () {
 }"#,
         )
     }
+
     #[test]
     fn test_apply_outside_function() {
         check_assist(
@@ -1837,6 +1894,7 @@ impl Trait for () {
 }"#,
         )
     }
+
     #[test]
     fn test_works_inside_function() {
         check_assist(
@@ -1867,6 +1925,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_add_missing_preserves_indentation() {
         // in different modules
@@ -1978,6 +2037,7 @@ mod m {
 }"#,
         );
     }
+
     #[test]
     fn test_add_default_preserves_indentation() {
         check_assist(
@@ -2029,6 +2089,7 @@ impl m::Foo for S {
 }"#,
         )
     }
+
     #[test]
     fn nested_macro_should_not_cause_crash() {
         check_assist(
@@ -2064,6 +2125,7 @@ impl AnotherTrait for () {
 "#,
         );
     }
+
     // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
     #[test]
     fn paths_in_nested_macro_should_get_transformed() {
@@ -2100,6 +2162,7 @@ impl AnotherTrait<i32> for () {
 "#,
         );
     }
+
     #[test]
     fn doc_hidden_default_impls_ignored() {
         // doc(hidden) attr is ignored trait and impl both belong to the local crate.
@@ -2139,6 +2202,7 @@ impl Trait for Foo {
 }"#,
         )
     }
+
     #[test]
     fn doc_hidden_default_impls_lang_crates() {
         // Not applicable because Eq has a single method and this has a #[doc(hidden)] attr set.
@@ -2152,6 +2216,7 @@ impl E$0q for Foo { /* $0 */ }
 "#,
         )
     }
+
     #[test]
     fn doc_hidden_default_impls_lib_crates() {
         check_assist(
@@ -2184,6 +2249,7 @@ impl E$0q for Foo { /* $0 */ }
     "#,
         )
     }
+
     #[test]
     fn doc_hidden_default_impls_local_crates() {
         check_assist(
@@ -2226,6 +2292,7 @@ impl LocalTrait for B {
             "#,
         )
     }
+
     #[test]
     fn doc_hidden_default_impls_workspace_crates() {
         check_assist(
@@ -2260,6 +2327,7 @@ impl b::LocalTrait for B {
             "#,
         )
     }
+
     #[test]
     fn doc_hidden_nondefault_member() {
         check_assist(
@@ -2290,6 +2358,7 @@ impl b::LocalTrait for B {
             "#,
         )
     }
+
     #[test]
     fn impl_with_type_param_with_former_param_as_default() {
         check_assist(
@@ -2314,6 +2383,7 @@ impl<'a> Test<'a, i32> for bool {
 "#,
         );
     }
+
     #[test]
     fn issue_17321() {
         check_assist(
@@ -2358,6 +2428,7 @@ impl other_file_2::Trait for MyStruct {
 }"#,
         );
     }
+
     #[test]
     fn test_qualify_ident_pat_in_default_members() {
         check_assist(

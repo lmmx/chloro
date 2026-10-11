@@ -31,8 +31,11 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
 
     let ty = ctx.find_node_at_range::<ast::Type>()?;
     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
-    let assoc_owner =
-        item.syntax().ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+    let assoc_owner = item
+        .syntax()
+        .ancestors()
+        .nth(2)
+        .and_then(Either::<ast::Trait, ast::Impl>::cast);
     let node = assoc_owner.as_ref().map_or_else(
         || item.syntax(),
         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
@@ -61,7 +64,9 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                 generics.map(|it| make::generic_param_list(it.into_iter().cloned()));
 
             // Replace original type with the alias
-            let ty_args = generic_params.as_ref().map(|it| it.to_generic_args().generic_args());
+            let ty_args = generic_params
+                .as_ref()
+                .map(|it| it.to_generic_args().generic_args());
             let new_ty = if let Some(ty_args) = ty_args {
                 make::generic_ty_path_segment(make::name_ref("Type"), ty_args)
             } else {
@@ -194,7 +199,9 @@ fn collect_used_generics<'gp>(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_not_applicable_without_selection() {
         check_assist_not_applicable(
@@ -206,6 +213,7 @@ struct S {
             ",
         );
     }
+
     #[test]
     fn test_simple_types() {
         check_assist(
@@ -224,6 +232,7 @@ struct S {
             "#,
         );
     }
+
     #[test]
     fn test_generic_type_arg() {
         check_assist(
@@ -246,6 +255,7 @@ fn f() {
             "#,
         );
     }
+
     #[test]
     fn test_inner_type_arg() {
         check_assist(
@@ -266,6 +276,7 @@ struct S {
             "#,
         );
     }
+
     #[test]
     fn test_extract_inner_type() {
         check_assist(
@@ -284,6 +295,7 @@ struct S {
             "#,
         );
     }
+
     #[test]
     fn extract_from_impl_or_trait() {
         // When invoked in an impl/trait, extracted type alias should be placed next to the
@@ -319,6 +331,7 @@ trait Tr {
             "#,
         );
     }
+
     #[test]
     fn indentation() {
         check_assist(
@@ -337,6 +350,7 @@ mod m {
             "#,
         );
     }
+
     #[test]
     fn generics() {
         check_assist(
@@ -357,6 +371,7 @@ impl<'outer, Outer, const OUTER: usize> () {
 "#,
         );
     }
+
     #[test]
     fn issue_11197() {
         check_assist(

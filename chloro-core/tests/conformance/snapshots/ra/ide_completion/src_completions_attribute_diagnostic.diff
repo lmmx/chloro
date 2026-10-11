@@ -2,26 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   2095 bytes
+Chloro size:   2157 bytes
 Rustfmt size:  2157 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- }
- 
- const ATTRIBUTE_ARGS: &[AttrCompletion] = &[
--    super::attr(
--        r#"label = "…""#,
--        Some("label"),
--        Some(r#"label = "${0:label}""#),
--    ),
--    super::attr(
--        r#"message = "…""#,
--        Some("message"),
--        Some(r#"message = "${0:message}""#),
--    ),
-+    super::attr(r#"label = "…""#, Some("label"), Some(r#"label = "${0:label}""#)),
-+    super::attr(r#"message = "…""#, Some("message"), Some(r#"message = "${0:message}""#)),
-     super::attr(r#"note = "…""#, Some("note"), Some(r#"note = "${0:note}""#)),
- ];
+✓ Outputs are IDENTICAL

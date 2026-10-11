@@ -44,6 +44,7 @@ macro_rules! impl_from {
     }
 }
 
+// Upcast from a single kind of "undoable action" to the general enum
 impl_from! {
     RegionConstraintCollector(region_constraints::UndoLog<'db>),
 
@@ -68,12 +69,17 @@ impl<'db> Rollback<UndoLog<'db>> for InferCtxtInner<'db> {
             UndoLog::ConstUnificationTable(undo) => self.const_unification_storage.reverse(undo),
             UndoLog::IntUnificationTable(undo) => self.int_unification_storage.reverse(undo),
             UndoLog::FloatUnificationTable(undo) => self.float_unification_storage.reverse(undo),
-            UndoLog::RegionConstraintCollector(undo) => {
-                self.region_constraint_storage.as_mut().unwrap().reverse(undo)
-            }
-            UndoLog::RegionUnificationTable(undo) => {
-                self.region_constraint_storage.as_mut().unwrap().unification_table.reverse(undo)
-            }
+            UndoLog::RegionConstraintCollector(undo) => self
+                .region_constraint_storage
+                .as_mut()
+                .unwrap()
+                .reverse(undo),
+            UndoLog::RegionUnificationTable(undo) => self
+                .region_constraint_storage
+                .as_mut()
+                .unwrap()
+                .unification_table
+                .reverse(undo),
             UndoLog::PushRegionObligation => {
                 self.region_obligations.pop();
             }
@@ -162,7 +168,9 @@ impl<'db> InferCtxtInner<'db> {
 impl<'db> InferCtxtUndoLogs<'db> {
     pub(crate) fn start_snapshot(&mut self) -> Snapshot {
         self.num_open_snapshots += 1;
-        Snapshot { undo_len: self.logs.len() }
+        Snapshot {
+            undo_len: self.logs.len(),
+        }
     }
 
     pub(crate) fn region_constraints_in_snapshot(
@@ -176,7 +184,9 @@ impl<'db> InferCtxtUndoLogs<'db> {
     }
 
     pub(crate) fn opaque_types_in_snapshot(&self, s: &Snapshot) -> bool {
-        self.logs[s.undo_len..].iter().any(|log| matches!(log, UndoLog::OpaqueTypes(..)))
+        self.logs[s.undo_len..]
+            .iter()
+            .any(|log| matches!(log, UndoLog::OpaqueTypes(..)))
     }
 
     fn assert_open_snapshot(&self, snapshot: &Snapshot) {

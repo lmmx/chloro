@@ -274,8 +274,7 @@ impl<'db> InferCtxt<'db> {
     }
 }
 
-struct Select {
-}
+struct Select {}
 
 impl<'db> ProofTreeVisitor<'db> for Select {
     type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
@@ -333,10 +332,18 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
         return false;
     }
 
-    let ProbeKind::TraitCandidate { source: victim_source, result: _ } = victim.kind() else {
+    let ProbeKind::TraitCandidate {
+        source: victim_source,
+        result: _,
+    } = victim.kind()
+    else {
         return false;
     };
-    let ProbeKind::TraitCandidate { source: other_source, result: _ } = other.kind() else {
+    let ProbeKind::TraitCandidate {
+        source: other_source,
+        result: _,
+    } = other.kind()
+    else {
         return false;
     };
 
@@ -365,9 +372,11 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
         ) => true,
 
         // Prefer specializing candidates over specialized candidates.
-        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => {
-            victim.goal().infcx().interner.impl_specializes(other_def_id, victim_def_id)
-        }
+        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => victim
+            .goal()
+            .infcx()
+            .interner
+            .impl_specializes(other_def_id, victim_def_id),
 
         _ => false,
     }
@@ -420,7 +429,10 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
         | ProbeKind::Root { result: _ }
         | ProbeKind::ShadowedEnvProbing
         | ProbeKind::RigidAlias { result: _ } => {
-            panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
+            panic!(
+                "didn't expect to assemble trait candidate from {:#?}",
+                cand.kind()
+            )
         }
     })
 }

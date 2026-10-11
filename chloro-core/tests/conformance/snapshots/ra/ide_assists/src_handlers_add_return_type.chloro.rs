@@ -18,7 +18,10 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
     let module = ctx.sema.scope(tail_expr.syntax())?.module();
-    let ty = ctx.sema.type_of_expr(&peel_blocks(tail_expr.clone()))?.adjusted();
+    let ty = ctx
+        .sema
+        .type_of_expr(&peel_blocks(tail_expr.clone()))?
+        .adjusted();
     if ty.is_unit() {
         return None;
     }
@@ -90,9 +93,7 @@ fn ret_ty_to_action(
 
 enum FnType {
     Function,
-    Closure {
-        wrap_expr: bool,
-    },
+    Closure { wrap_expr: bool },
 }
 
 /// If we're looking at a block that is supposed to return `()`, type inference
@@ -182,7 +183,9 @@ fn extract_tail(ctx: &AssistContext<'_>) -> Option<(FnType, ast::Expr, InsertOrR
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn infer_return_type_specified_inferred() {
         cov_mark::check!(existing_infer_ret_type);
@@ -196,6 +199,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_specified_inferred_closure() {
         cov_mark::check!(existing_infer_ret_type_closure);
@@ -209,6 +213,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_cursor_at_return_type_pos() {
         cov_mark::check!(cursor_in_ret_position);
@@ -222,6 +227,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_cursor_at_return_type_pos_closure() {
         cov_mark::check!(cursor_in_ret_position_closure);
@@ -235,6 +241,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type() {
         cov_mark::check!(cursor_on_tail);
@@ -248,6 +255,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_no_whitespace() {
         check_assist(
@@ -260,6 +268,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_nested() {
         check_assist(
@@ -280,6 +289,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_nested_match() {
         check_assist(
@@ -298,6 +308,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_ret_type_specified() {
         cov_mark::check!(existing_ret_type);
@@ -308,6 +319,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_non_tail_expr() {
         check_assist_not_applicable(
@@ -318,6 +330,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_unit_return_type() {
         check_assist_not_applicable(
@@ -327,6 +340,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_closure_block() {
         cov_mark::check!(cursor_on_tail_closure);
@@ -344,6 +358,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_closure() {
         check_assist(
@@ -356,6 +371,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_closure_no_whitespace() {
         check_assist(
@@ -368,6 +384,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_closure_wrap() {
         cov_mark::check!(wrap_closure_non_block_expr);
@@ -381,6 +398,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_return_type_nested_closure() {
         check_assist(
@@ -405,6 +423,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn infer_coerced_return_type_closure() {
         check_assist(
@@ -419,6 +438,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_ret_type_specified_closure() {
         cov_mark::check!(existing_ret_type_closure);
@@ -429,6 +449,7 @@ mod tests {
 }"#,
         );
     }
+
     #[test]
     fn not_applicable_non_tail_expr_closure() {
         check_assist_not_applicable(

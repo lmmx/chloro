@@ -43,7 +43,9 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
         return None;
     }
 
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
 
     let src_type_path = {
         let src_type_path = src_type.syntax().descendants().find_map(ast::Path::cast)?;
@@ -58,9 +60,12 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
     };
 
     let dest_type = match &ast_trait {
-        ast::Type::PathType(path) => {
-            path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
-        }
+        ast::Type::PathType(path) => path
+            .path()?
+            .segment()?
+            .generic_arg_list()?
+            .generic_args()
+            .next()?,
         _ => return None,
     };
 
@@ -92,7 +97,10 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
             builder.replace(src_type.syntax().text_range(), dest_type.to_string());
             builder.replace(ast_trait.syntax().text_range(), format!("From<{src_type}>"));
             builder.replace(into_fn_return.syntax().text_range(), "-> Self");
-            builder.replace(into_fn_params.syntax().text_range(), format!("(val: {src_type})"));
+            builder.replace(
+                into_fn_params.syntax().text_range(),
+                format!("(val: {src_type})"),
+            );
             builder.replace(into_fn_name.syntax().text_range(), "from");
 
             for s in selfs {
@@ -109,7 +117,9 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn convert_into_to_from_converts_a_struct() {
         check_assist(
@@ -147,6 +157,7 @@ impl From<usize> for Thing {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_converts_enums() {
         check_assist(
@@ -184,6 +195,7 @@ impl From<Thing> for String {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_on_enum_with_lifetimes() {
         check_assist(
@@ -221,6 +233,7 @@ impl<'a> From<Thing<'a>> for &'a str {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_works_on_references() {
         check_assist(
@@ -246,6 +259,7 @@ impl From<&Thing> for String {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_works_on_qualified_structs() {
         check_assist(
@@ -277,6 +291,7 @@ impl From<&things::Thing> for things::BetterThing {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_works_on_qualified_enums() {
         check_assist(
@@ -320,6 +335,7 @@ impl From<&things::Thing> for things::BetterThing {
 "#,
         )
     }
+
     #[test]
     fn convert_into_to_from_not_applicable_on_any_trait_named_into() {
         check_assist_not_applicable(

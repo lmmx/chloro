@@ -25,7 +25,8 @@ impl RangeMapper {
     fn add_impl(&mut self, text: &str, source: Option<TextSize>) {
         let len = TextSize::of(text);
         let target_range = TextRange::at(TextSize::of(&self.buf), len);
-        self.ranges.push((target_range, source.map(|it| TextRange::at(it, len))));
+        self.ranges
+            .push((target_range, source.map(|it| TextRange::at(it, len))));
         self.buf.push_str(text);
     }
 
@@ -34,16 +35,13 @@ impl RangeMapper {
     }
 
     pub fn map_range_up(&self, range: TextRange) -> impl Iterator<Item = TextRange> + '_ {
-        equal_range_by(
-            &self.ranges,
-            |&(r, _)| {
+        equal_range_by(&self.ranges, |&(r, _)| {
             if range.is_empty() && r.contains(range.start()) {
                 Ordering::Equal
             } else {
                 TextRange::ordering(r, range)
             }
-        },
-        )
+        })
         .filter_map(move |i| {
             let (target_range, source_range) = self.ranges[i];
             let intersection = target_range.intersect(range).unwrap();
@@ -56,13 +54,15 @@ impl RangeMapper {
         // Using a binary search here is a bit complicated because of the `None` entries.
         // But the number of lines in fixtures is usually low.
         let (target_range, source_range) =
-            self.ranges.iter().find_map(|&(target_range, source_range)| {
-                let source_range = source_range?;
-                if !source_range.contains(offset) {
-                    return None;
-                }
-                Some((target_range, source_range))
-            })?;
+            self.ranges
+                .iter()
+                .find_map(|&(target_range, source_range)| {
+                    let source_range = source_range?;
+                    if !source_range.contains(offset) {
+                        return None;
+                    }
+                    Some((target_range, source_range))
+                })?;
         Some(offset - source_range.start() + target_range.start())
     }
 }

@@ -23,28 +23,43 @@ pub(crate) fn render_record_lit(
     path: &str,
 ) -> RenderedLiteral {
     if snippet_cap.is_none() {
-        return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
-    }
-    let completions = fields.iter().enumerate().format_with(", ", |(idx, field), f| {
-        let mut fmt_field = |fill, tab| {
-            let field_name = field.name(ctx.db);
-
-            if let Some(local) = ctx.locals.get(&field_name)
-                && local
-                    .ty(ctx.db)
-                    .could_unify_with_deeply(ctx.db, &field.ty(ctx.db).to_type(ctx.db))
-            {
-                f(&format_args!("{}{tab}", field_name.display(ctx.db, ctx.edition)))
-            } else {
-                f(&format_args!("{}: {fill}", field_name.display(ctx.db, ctx.edition)))
-            }
+        return RenderedLiteral {
+            literal: path.to_owned(),
+            detail: path.to_owned(),
         };
-        if snippet_cap.is_some() {
-            fmt_field(format_args!("${{{}:()}}", idx + 1), format_args!("${}", idx + 1))
-        } else {
-            fmt_field(format_args!("()"), format_args!(""))
-        }
-    });
+    }
+    let completions = fields
+        .iter()
+        .enumerate()
+        .format_with(", ", |(idx, field), f| {
+            let mut fmt_field = |fill, tab| {
+                let field_name = field.name(ctx.db);
+
+                if let Some(local) = ctx.locals.get(&field_name)
+                    && local
+                        .ty(ctx.db)
+                        .could_unify_with_deeply(ctx.db, &field.ty(ctx.db).to_type(ctx.db))
+                {
+                    f(&format_args!(
+                        "{}{tab}",
+                        field_name.display(ctx.db, ctx.edition)
+                    ))
+                } else {
+                    f(&format_args!(
+                        "{}: {fill}",
+                        field_name.display(ctx.db, ctx.edition)
+                    ))
+                }
+            };
+            if snippet_cap.is_some() {
+                fmt_field(
+                    format_args!("${{{}:()}}", idx + 1),
+                    format_args!("${}", idx + 1),
+                )
+            } else {
+                fmt_field(format_args!("()"), format_args!(""))
+            }
+        });
 
     let types = fields.iter().format_with(", ", |field, f| {
         f(&format_args!(
@@ -69,7 +84,10 @@ pub(crate) fn render_tuple_lit(
     path: &str,
 ) -> RenderedLiteral {
     if snippet_cap.is_none() {
-        return RenderedLiteral { literal: path.to_owned(), detail: path.to_owned() };
+        return RenderedLiteral {
+            literal: path.to_owned(),
+            detail: path.to_owned(),
+        };
     }
     let completions = fields.iter().enumerate().format_with(", ", |(idx, _), f| {
         if snippet_cap.is_some() {
@@ -79,9 +97,9 @@ pub(crate) fn render_tuple_lit(
         }
     });
 
-    let types = fields
-        .iter()
-        .format_with(", ", |field, f| f(&field.ty(ctx.db).display(ctx.db, ctx.display_target)));
+    let types = fields.iter().format_with(", ", |field, f| {
+        f(&field.ty(ctx.db).display(ctx.db, ctx.display_target))
+    });
 
     RenderedLiteral {
         literal: format!("{path}({completions})"),

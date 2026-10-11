@@ -43,7 +43,11 @@ fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
         target,
         |edit| {
             let indentation = IndentLevel::from_token(comment.syntax());
-            let line_prefix = CommentKind { shape: CommentShape::Line, ..comment.kind() }.prefix();
+            let line_prefix = CommentKind {
+                shape: CommentShape::Line,
+                ..comment.kind()
+            }
+            .prefix();
 
             let text = comment.text();
             let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
@@ -96,8 +100,11 @@ fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
                 .into_iter()
                 .join("\n");
 
-            let block_prefix =
-                CommentKind { shape: CommentShape::Block, ..comment.kind() }.prefix();
+            let block_prefix = CommentKind {
+                shape: CommentShape::Block,
+                ..comment.kind()
+            }
+            .prefix();
 
             let output = format!("{block_prefix}\n{block_comment_body}\n{indentation}*/");
 
@@ -164,7 +171,9 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
 pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
     let text = comm.text();
     let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);
-    let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
+    let contents = contents_without_prefix
+        .strip_prefix(' ')
+        .unwrap_or(contents_without_prefix);
 
     // Don't add the indentation if the line is empty
     if contents.is_empty() {
@@ -177,7 +186,9 @@ pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) ->
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn single_line_to_block() {
         check_assist(
@@ -198,6 +209,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn single_line_to_block_indented() {
         check_assist(
@@ -218,6 +230,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiline_to_block() {
         check_assist(
@@ -244,6 +257,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn end_of_line_to_block() {
         check_assist_not_applicable(
@@ -255,6 +269,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn single_line_different_kinds() {
         check_assist(
@@ -279,6 +294,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn single_line_separate_chunks() {
         check_assist(
@@ -305,6 +321,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn doc_block_comment_to_lines() {
         check_assist(
@@ -319,6 +336,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn block_comment_to_lines() {
         check_assist(
@@ -333,6 +351,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn inner_doc_block_to_lines() {
         check_assist(
@@ -347,6 +366,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn block_to_lines_indent() {
         check_assist(
@@ -373,6 +393,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn end_of_line_block_to_line() {
         check_assist_not_applicable(

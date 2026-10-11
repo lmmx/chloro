@@ -2,44 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4299 bytes
+Chloro size:   4380 bytes
 Rustfmt size:  4380 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- ) -> Option<SyntaxToken> {
-     tokens.max_by_key(move |t| f(t.kind()))
- }
-+
- pub fn pick_token<T: AstToken>(mut tokens: TokenAtOffset<SyntaxToken>) -> Option<T> {
-     tokens.find_map(T::cast)
- }
-             && submodule.is_inline(db)
-         {
-             defs.extend(submodule.declarations(db));
--            submodule
--                .impl_defs(db)
--                .into_iter()
--                .for_each(|impl_| cb(impl_.into()));
-+            submodule.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
-         }
-         cb(def.into());
-     }
--    module
--        .impl_defs(db)
--        .into_iter()
--        .for_each(|impl_| cb(impl_.into()));
-+    module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
- 
-     let is_root = module.is_crate_root();
-     module
-         .iter()
-         .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())
-         .chain(generated::lints::RUSTDOC_LINT_GROUPS.iter())
--        .find(|&check| check.lint.label == lint_is)
--    {
-+        .find(|&check| check.lint.label == lint_is) {
-         group.children.contains(&lint)
-     } else {
-         false
+✓ Outputs are IDENTICAL

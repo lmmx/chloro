@@ -2,37 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3669 bytes
-Chloro size:   3670 bytes
+Chloro size:   3740 bytes
 Rustfmt size:  3740 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-                 };
-             }
- 
--            return TestDir {
--                path: Utf8PathBuf::from_path_buf(path).unwrap(),
--                keep: false,
--            };
-+            return TestDir { path: Utf8PathBuf::from_path_buf(path).unwrap(), keep: false };
-         }
-         panic!("Failed to create a temporary directory")
-     }
-         self.keep = true;
-         self
-     }
-+
-     pub(crate) fn path(&self) -> &Utf8Path {
-         &self.path
-     }
-         }
- 
-         let filetype = fs::symlink_metadata(&self.path).unwrap().file_type();
--        let actual_path = filetype
--            .is_symlink()
--            .then(|| fs::read_link(&self.path).unwrap());
-+        let actual_path = filetype.is_symlink().then(|| fs::read_link(&self.path).unwrap());
- 
-         if let Some(actual_path) = actual_path {
-             remove_dir_all(Utf8Path::from_path(&actual_path).unwrap()).unwrap_or_else(|err| {
+✓ Outputs are IDENTICAL

@@ -27,7 +27,6 @@ pub(crate) fn check_fix(
 ) {
     check_nth_fix(0, ra_fixture_before, ra_fixture_after);
 }
-
 /// Takes a multi-file input fixture with annotated cursor positions,
 /// and checks that:
 ///  * a diagnostic is produced
@@ -181,7 +180,10 @@ pub(crate) fn check_no_fix(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     })
     .pop()
     .unwrap();
-    assert!(diagnostic.fixes.is_none(), "got a fix when none was expected: {diagnostic:?}");
+    assert!(
+        diagnostic.fixes.is_none(),
+        "got a fix when none was expected: {diagnostic:?}"
+    );
 }
 
 #[track_caller]
@@ -197,7 +199,9 @@ pub(crate) fn check_diagnostics_with_disabled(
     disabled: &[&str],
 ) {
     let mut config = DiagnosticsConfig::test_sample();
-    config.disabled.extend(disabled.iter().map(|&s| s.to_owned()));
+    config
+        .disabled
+        .extend(disabled.iter().map(|&s| s.to_owned()));
     check_diagnostics_with_config(config, ra_fixture)
 }
 
@@ -333,5 +337,7 @@ fn minicore_smoke_test() {
     }
     // And one time for all flags, to check codes which are behind multiple flags + prevent name collisions
     eprintln!("Checking all minicore flags");
-    check(MiniCore::from_flags(MiniCore::available_flags(MiniCore::RAW_SOURCE)))
+    check(MiniCore::from_flags(MiniCore::available_flags(
+        MiniCore::RAW_SOURCE,
+    )))
 }

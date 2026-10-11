@@ -7,7 +7,6 @@
 //! there is no value in lifting these out into the outline module test since they will either not
 //! show up for normal completions, or they won't show completions other than lifetimes depending
 //! on the fixture input.
-
 use hir::{Name, ScopeDef, sym};
 
 use crate::{
@@ -21,21 +20,32 @@ pub(crate) fn complete_lifetime(
     ctx: &CompletionContext<'_>,
     lifetime_ctx: &LifetimeContext,
 ) {
-    let &LifetimeContext { kind: LifetimeKind::Lifetime { in_lifetime_param_bound, def }, .. } =
-        lifetime_ctx
+    let &LifetimeContext {
+        kind:
+            LifetimeKind::Lifetime {
+                in_lifetime_param_bound,
+                def,
+            },
+        ..
+    } = lifetime_ctx
     else {
         return;
     };
 
     ctx.process_all_names_raw(&mut |name, res| {
-        if matches!(res, ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))) {
+        if matches!(
+            res,
+            ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))
+        ) {
             acc.add_lifetime(ctx, name);
         }
     });
     acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_static));
-    if !in_lifetime_param_bound && def.is_some_and(|def| {
+    if !in_lifetime_param_bound
+        && def.is_some_and(|def| {
             !matches!(def, hir::GenericDef::Function(_) | hir::GenericDef::Impl(_))
-        }) {
+        })
+    {
         acc.add_lifetime(ctx, Name::new_symbol_root(sym::tick_underscore));
     }
 }
@@ -46,7 +56,13 @@ pub(crate) fn complete_label(
     ctx: &CompletionContext<'_>,
     lifetime_ctx: &LifetimeContext,
 ) {
-    if !matches!(lifetime_ctx, LifetimeContext { kind: LifetimeKind::LabelRef, .. }) {
+    if !matches!(
+        lifetime_ctx,
+        LifetimeContext {
+            kind: LifetimeKind::LabelRef,
+            ..
+        }
+    ) {
         return;
     }
     ctx.process_all_names_raw(&mut |name, res| {
@@ -59,7 +75,9 @@ pub(crate) fn complete_label(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::{check, check_edit};
+
     #[test]
     fn check_lifetime_edit() {
         check_edit(
@@ -82,6 +100,7 @@ fn func<'lifetime>(foo: &'lifetime) {}
 "#,
         );
     }
+
     #[test]
     fn complete_lifetime_in_ref() {
         check(
@@ -94,6 +113,7 @@ fn foo<'lifetime>(foo: &'a$0 usize) {}
             "#]],
         );
     }
+
     #[test]
     fn complete_lifetime_in_ref_missing_ty() {
         check(
@@ -122,6 +142,7 @@ impl<'r#impl> Foo {
             "#]],
         );
     }
+
     #[test]
     fn complete_lifetime_in_arg_list() {
         check(
@@ -135,6 +156,7 @@ fn foo<'lifetime>(_: Foo<'a$0>) {}
             "#]],
         );
     }
+
     #[test]
     fn complete_lifetime_in_where_pred() {
         check(
@@ -147,6 +169,7 @@ fn foo2<'lifetime, T>() where 'a$0 {}
             "#]],
         );
     }
+
     #[test]
     fn complete_lifetime_in_ty_bound() {
         check(
@@ -168,6 +191,7 @@ fn foo2<'lifetime, T>() where T: Trait<'a$0> {}
             "#]],
         );
     }
+
     #[test]
     fn dont_complete_lifetime_in_assoc_ty_bound() {
         check(
@@ -177,6 +201,7 @@ fn foo2<'lifetime, T>() where T: Trait<Item = 'a$0> {}
             expect![[r#""#]],
         );
     }
+
     #[test]
     fn complete_lifetime_in_param_list() {
         check(
@@ -202,6 +227,7 @@ fn foo<'footime, 'lifetime: 'a$0>() {}
             "#]],
         );
     }
+
     #[test]
     fn check_label_edit() {
         check_edit(
@@ -222,6 +248,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn complete_label_in_loop() {
         check(
@@ -249,6 +276,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn complete_label_in_block_nested() {
         check(
@@ -267,6 +295,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn complete_label_in_loop_with_value() {
         check(
@@ -282,6 +311,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn complete_label_in_while_cond() {
         check(
@@ -296,6 +326,7 @@ fn foo() {
             "#]],
         );
     }
+
     #[test]
     fn complete_label_in_for_iterable() {
         check(

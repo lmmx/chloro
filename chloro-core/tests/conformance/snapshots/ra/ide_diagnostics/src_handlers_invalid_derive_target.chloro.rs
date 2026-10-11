@@ -21,6 +21,7 @@ pub(crate) fn invalid_derive_target(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn fails_on_function() {
         check_diagnostics(

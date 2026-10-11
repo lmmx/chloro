@@ -15,8 +15,8 @@ use itertools::Itertools;
 use paths::{AbsPath, AbsPathBuf, Utf8Path, Utf8PathBuf};
 use project_model::TargetDirectoryConfig;
 use rustc_hash::FxHashMap;
-use serde_derive::Deserialize;
 use serde::Deserialize as _;
+use serde_derive::Deserialize;
 
 pub(crate) use cargo_metadata::diagnostic::{
     Applicability, Diagnostic, DiagnosticCode, DiagnosticLevel, DiagnosticSpan,
@@ -108,9 +108,10 @@ impl FlycheckConfig {
     pub(crate) fn invocation_strategy(&self) -> InvocationStrategy {
         match self {
             FlycheckConfig::CargoCommand { .. } => InvocationStrategy::PerWorkspace,
-            FlycheckConfig::CustomCommand { invocation_strategy, .. } => {
-                invocation_strategy.clone()
-            }
+            FlycheckConfig::CustomCommand {
+                invocation_strategy,
+                ..
+            } => invocation_strategy.clone(),
         }
     }
 }
@@ -128,7 +129,13 @@ impl fmt::Display for FlycheckConfig {
                 // in the IDE (e.g. in the VS Code status bar).
                 let display_args = args
                     .iter()
-                    .map(|arg| if arg == SAVED_FILE_PLACEHOLDER { "..." } else { arg })
+                    .map(|arg| {
+                        if arg == SAVED_FILE_PLACEHOLDER {
+                            "..."
+                        } else {
+                            arg
+                        }
+                    })
                     .collect::<Vec<_>>();
 
                 write!(f, "{command} {}", display_args.join(" "))
@@ -176,7 +183,12 @@ impl FlycheckHandle {
             stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, format!("Flycheck{id}"))
                 .spawn(move || actor.run(receiver))
                 .expect("failed to spawn thread");
-        FlycheckHandle { id, generation: generation.into(), sender, _thread: thread }
+        FlycheckHandle {
+            id,
+            generation: generation.into(),
+            sender,
+            _thread: thread,
+        }
     }
 
     /// Schedule a re-start of the cargo check worker to do a workspace wide check.
@@ -203,7 +215,10 @@ impl FlycheckHandle {
         self.sender
             .send(StateChange::Restart {
                 generation,
-                scope: FlycheckScope::Package { package, workspace_deps },
+                scope: FlycheckScope::Package {
+                    package,
+                    workspace_deps,
+                },
                 saved_file: None,
                 target,
             })
@@ -275,14 +290,21 @@ impl fmt::Debug for FlycheckMessage {
                 .field("generation", generation)
                 .field("workspace_root", workspace_root)
                 .field("package_id", package_id)
-                .field("diagnostic_code", &diagnostic.code.as_ref().map(|it| &it.code))
+                .field(
+                    "diagnostic_code",
+                    &diagnostic.code.as_ref().map(|it| &it.code),
+                )
                 .finish(),
-            FlycheckMessage::ClearDiagnostics { id, kind } => {
-                f.debug_struct("ClearDiagnostics").field("id", id).field("kind", kind).finish()
-            }
-            FlycheckMessage::Progress { id, progress } => {
-                f.debug_struct("Progress").field("id", id).field("progress", progress).finish()
-            }
+            FlycheckMessage::ClearDiagnostics { id, kind } => f
+                .debug_struct("ClearDiagnostics")
+                .field("id", id)
+                .field("kind", kind)
+                .finish(),
+            FlycheckMessage::Progress { id, progress } => f
+                .debug_struct("Progress")
+                .field("id", id)
+                .field("progress", progress)
+                .finish(),
         }
     }
 }
@@ -318,6 +340,7 @@ enum StateChange {
 struct FlycheckActor {
     /// The workspace id of this flycheck instance.
     id: usize,
+
     generation: DiagnosticsGeneration,
     sender: Sender<FlycheckMessage>,
     config: FlycheckConfig,
@@ -385,7 +408,10 @@ impl FlycheckActor {
     }
 
     fn report_progress(&self, progress: Progress) {
-        self.send(FlycheckMessage::Progress { id: self.id, progress });
+        self.send(FlycheckMessage::Progress {
+            id: self.id,
+            progress,
+        });
     }
 
     fn next_event(&self, inbox: &Receiver<StateChange>) -> Option<Event> {
@@ -508,7 +534,10 @@ impl FlycheckActor {
                                     kind: ClearDiagnosticsKind::All(ClearScope::Workspace),
                                 });
                             }
-                            FlycheckScope::Package { package, workspace_deps } => {
+                            FlycheckScope::Package {
+                                package,
+                                workspace_deps,
+                            } => {
                                 for pkg in
                                     std::iter::once(package).chain(workspace_deps.iter().flatten())
                                 {
@@ -536,7 +565,10 @@ impl FlycheckActor {
                                     ),
                                 });
                             }
-                            FlycheckScope::Package { package, workspace_deps } => {
+                            FlycheckScope::Package {
+                                package,
+                                workspace_deps,
+                            } => {
                                 for pkg in
                                     std::iter::once(package).chain(workspace_deps.iter().flatten())
                                 {
@@ -581,7 +613,10 @@ impl FlycheckActor {
                             });
                         }
                     }
-                    CargoCheckMessage::Diagnostic { diagnostic, package_id } => {
+                    CargoCheckMessage::Diagnostic {
+                        diagnostic,
+                        package_id,
+                    } => {
                         tracing::trace!(
                             flycheck_id = self.id,
                             message = diagnostic.message,
@@ -657,14 +692,21 @@ impl FlycheckActor {
         target: Option<Target>,
     ) -> Option<Command> {
         match &self.config {
-            FlycheckConfig::CargoCommand { command, options, ansi_color_output } => {
+            FlycheckConfig::CargoCommand {
+                command,
+                options,
+                ansi_color_output,
+            } => {
                 let mut cmd =
                     toolchain::command(Tool::Cargo.path(), &*self.root, &options.extra_env);
                 if let Some(sysroot_root) = &self.sysroot_root
                     && !options.extra_env.contains_key("RUSTUP_TOOLCHAIN")
                     && std::env::var_os("RUSTUP_TOOLCHAIN").is_none()
                 {
-                    cmd.env("RUSTUP_TOOLCHAIN", AsRef::<std::path::Path>::as_ref(sysroot_root));
+                    cmd.env(
+                        "RUSTUP_TOOLCHAIN",
+                        AsRef::<std::path::Path>::as_ref(sysroot_root),
+                    );
                 }
                 cmd.env("CARGO_LOG", "cargo::core::compiler::fingerprint=info");
                 cmd.arg(command);
@@ -707,7 +749,12 @@ impl FlycheckActor {
                 cmd.args(&options.extra_args);
                 Some(cmd)
             }
-            FlycheckConfig::CustomCommand { command, args, extra_env, invocation_strategy } => {
+            FlycheckConfig::CustomCommand {
+                command,
+                args,
+                extra_env,
+                invocation_strategy,
+            } => {
                 let root = match invocation_strategy {
                     InvocationStrategy::Once => &*self.root,
                     InvocationStrategy::PerWorkspace => {
@@ -780,9 +827,10 @@ impl CargoParser<CargoCheckMessage> for CargoCheckParser {
                     }
                     _ => None,
                 },
-                JsonMessage::Rustc(message) => {
-                    Some(CargoCheckMessage::Diagnostic { diagnostic: message, package_id: None })
-                }
+                JsonMessage::Rustc(message) => Some(CargoCheckMessage::Diagnostic {
+                    diagnostic: message,
+                    package_id: None,
+                }),
             };
         }
 

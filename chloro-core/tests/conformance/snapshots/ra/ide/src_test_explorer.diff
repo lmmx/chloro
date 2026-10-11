@@ -2,42 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6183 bytes
-Chloro size:   6183 bytes
+Chloro size:   6291 bytes
 Rustfmt size:  6291 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     // only show tests for the local crates.
-     db.all_crates().iter().copied().find(|&id| {
-         id.data(db).origin.is_local()
--            && id
--                .extra_data(db)
--                .display_name
--                .as_ref()
--                .is_some_and(|x| x.to_string() == crate_id)
-+            && id.extra_data(db).display_name.as_ref().is_some_and(|x| x.to_string() == crate_id)
-     })
- }
- 
- pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<TestItem> {
-     let sema = Semantics::new(db);
- 
--    let Some(module) = sema.file_to_module_def(file_id) else {
--        return vec![];
--    };
-+    let Some(module) = sema.file_to_module_def(file_id) else { return vec![] };
-     let Some((mut tests, id)) = find_module_id_and_test_parents(&sema, module) else {
-         return vec![];
-     };
-     let parent = Some(id.clone());
-     id += "::";
-     let module_name = &module.name(sema.db);
--    let module_name = module_name
--        .as_ref()
--        .map(|n| n.as_str())
--        .unwrap_or("[mod without name]");
-+    let module_name = module_name.as_ref().map(|n| n.as_str()).unwrap_or("[mod without name]");
-     id += module_name;
-     let nav = NavigationTarget::from_module_to_decl(sema.db, module).call_site;
-     r.push(TestItem {
+✓ Outputs are IDENTICAL

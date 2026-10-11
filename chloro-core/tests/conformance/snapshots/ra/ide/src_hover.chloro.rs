@@ -101,14 +101,18 @@ impl HoverAction {
                     mod_path: render::path(
                         db,
                         it.module(db)?,
-                        it.name(db).map(|name| name.display(db, edition).to_string()),
+                        it.name(db)
+                            .map(|name| name.display(db, edition).to_string()),
                         edition,
                     ),
                     nav: it.try_to_nav(sema)?.call_site(),
                 })
             })
             .collect::<Vec<_>>();
-        targets.is_empty().not().then_some(HoverAction::GoToType(targets))
+        targets
+            .is_empty()
+            .not()
+            .then_some(HoverAction::GoToType(targets))
     }
 }
 
@@ -138,13 +142,18 @@ pub(crate) fn hover(
 ) -> Option<RangeInfo<HoverResult>> {
     let sema = &hir::Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
-    let edition =
-        sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
+    let edition = sema
+        .attach_first_edition(file_id)
+        .map(|it| it.edition(db))
+        .unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
     let mut res = if range.is_empty() {
         hover_offset(
             sema,
-            FilePosition { file_id, offset: range.start() },
+            FilePosition {
+                file_id,
+                offset: range.start(),
+            },
             file,
             config,
             edition,
@@ -231,7 +240,10 @@ fn hover_offset(
         return analysis
             .hover(
                 config,
-                FileRange { file_id: virtual_file_id, range: TextRange::empty(virtual_offset) },
+                FileRange {
+                    file_id: virtual_file_id,
+                    range: TextRange::empty(virtual_offset),
+                },
             )
             .ok()??
             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, file_id)
@@ -343,19 +355,33 @@ fn hover_offset(
             }
 
             let rest_pat = token.parent().and_then(ast::RestPat::cast)?;
-            let record_pat_field_list =
-                rest_pat.syntax().parent().and_then(ast::RecordPatFieldList::cast)?;
+            let record_pat_field_list = rest_pat
+                .syntax()
+                .parent()
+                .and_then(ast::RecordPatFieldList::cast)?;
 
-            let record_pat =
-                record_pat_field_list.syntax().parent().and_then(ast::RecordPat::cast)?;
+            let record_pat = record_pat_field_list
+                .syntax()
+                .parent()
+                .and_then(ast::RecordPat::cast)?;
 
-            Some(render::struct_rest_pat(sema, config, &record_pat, edition, display_target))
+            Some(render::struct_rest_pat(
+                sema,
+                config,
+                &record_pat,
+                edition,
+                display_target,
+            ))
         };
         let call = || {
             if !is_same_kind || token.kind() != T!['('] && token.kind() != T![')'] {
                 return None;
             }
-            let arg_list = token.parent().and_then(ast::ArgList::cast)?.syntax().parent()?;
+            let arg_list = token
+                .parent()
+                .and_then(ast::ArgList::cast)?
+                .syntax()
+                .parent()?;
             let call_expr = syntax::match_ast! {
                 match arg_list {
                     ast::CallExpr(expr) => expr.into(),
@@ -363,18 +389,31 @@ fn hover_offset(
                     _ => return None,
                 }
             };
-            render::type_info_of(sema, config, &Either::Left(call_expr), edition, display_target)
+            render::type_info_of(
+                sema,
+                config,
+                &Either::Left(call_expr),
+                edition,
+                display_target,
+            )
         };
         let closure = || {
             if !is_same_kind || token.kind() != T![|] {
                 return None;
             }
-            let c = token.parent().and_then(|x| x.parent()).and_then(ast::ClosureExpr::cast)?;
+            let c = token
+                .parent()
+                .and_then(|x| x.parent())
+                .and_then(ast::ClosureExpr::cast)?;
             render::closure_expr(sema, config, c, edition, display_target)
         };
         let literal = || {
-            render::literal(sema, original_token.clone(), display_target)
-                .map(|markup| HoverResult { markup, actions: vec![] })
+            render::literal(sema, original_token.clone(), display_target).map(|markup| {
+                HoverResult {
+                    markup,
+                    actions: vec![],
+                }
+            })
         };
         if let Some(result) = keywords()
             .or_else(underscore)
@@ -430,7 +469,13 @@ fn hover_ranged(
             {
                 let (virtual_file_id, virtual_range) = fixture_analysis.map_range_down(range)?;
                 return analysis
-                    .hover(config, FileRange { file_id: virtual_file_id, range: virtual_range })
+                    .hover(
+                        config,
+                        FileRange {
+                            file_id: virtual_file_id,
+                            range: virtual_range,
+                        },
+                    )
                     .ok()??
                     .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, file_id)
                     .ok();
@@ -464,7 +509,9 @@ pub(crate) fn hover_for_definition(
     display_target: DisplayTarget,
 ) -> HoverResult {
     let famous_defs = match &def {
-        Definition::BuiltinType(_) => sema.scope(scope_node).map(|it| FamousDefs(sema, it.krate())),
+        Definition::BuiltinType(_) => sema
+            .scope(scope_node)
+            .map(|it| FamousDefs(sema, it.krate())),
         _ => None,
     };
 
@@ -535,7 +582,10 @@ fn notable_traits<'db>(
                         .into_iter()
                         .filter_map(hir::AssocItem::as_type_alias)
                         .map(|alias| {
-                            (ty.normalize_trait_assoc_type(db, &[], alias), alias.name(db))
+                            (
+                                ty.normalize_trait_assoc_type(db, &[], alias),
+                                alias.name(db),
+                            )
                         })
                         .collect::<Vec<_>>(),
                 )
@@ -558,13 +608,18 @@ fn show_implementations_action(
 
     let adt = match def {
         Definition::Trait(it) => {
-            return it.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action);
+            return it
+                .try_to_nav(sema)
+                .map(UpmappingResult::call_site)
+                .map(to_action);
         }
         Definition::Adt(it) => Some(it),
         Definition::SelfType(it) => it.self_ty(sema.db).as_adt(),
         _ => None,
     }?;
-    adt.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action)
+    adt.try_to_nav(sema)
+        .map(UpmappingResult::call_site)
+        .map(to_action)
 }
 
 fn show_fn_references_action(
@@ -573,12 +628,14 @@ fn show_fn_references_action(
 ) -> Option<HoverAction> {
     match def {
         Definition::Function(it) => {
-            it.try_to_nav(sema).map(UpmappingResult::call_site).map(|nav_target| {
-                HoverAction::Reference(FilePosition {
-                    file_id: nav_target.file_id,
-                    offset: nav_target.focus_or_full_range().start(),
+            it.try_to_nav(sema)
+                .map(UpmappingResult::call_site)
+                .map(|nav_target| {
+                    HoverAction::Reference(FilePosition {
+                        file_id: nav_target.file_id,
+                        offset: nav_target.focus_or_full_range().start(),
+                    })
                 })
-            })
         }
         _ => None,
     }
@@ -593,7 +650,11 @@ fn runnable_action(
         Definition::Module(it) => runnable_mod(sema, it).map(HoverAction::Runnable),
         Definition::Function(func) => {
             let src = func.source(sema.db)?;
-            if src.file_id.file_id().is_none_or(|f| f.file_id(sema.db) != file_id) {
+            if src
+                .file_id
+                .file_id()
+                .is_none_or(|f| f.file_id(sema.db) != file_id)
+            {
                 cov_mark::hit!(hover_macro_generated_struct_fn_doc_comment);
                 cov_mark::hit!(hover_macro_generated_struct_fn_doc_attr);
                 return None;
@@ -622,15 +683,21 @@ fn goto_type_action_for_def(
 
     for &(trait_, ref assocs) in notable_traits {
         push_new_def(trait_.into());
-        assocs.iter().filter_map(|(ty, _)| ty.as_ref()).for_each(|ty| {
-            walk_and_push_ty(db, ty, &mut push_new_def);
-        });
+        assocs
+            .iter()
+            .filter_map(|(ty, _)| ty.as_ref())
+            .for_each(|ty| {
+                walk_and_push_ty(db, ty, &mut push_new_def);
+            });
     }
 
     if let Ok(generic_def) = GenericDef::try_from(def) {
-        generic_def.type_or_const_params(db).into_iter().for_each(|it| {
-            walk_and_push_ty(db, &it.ty(db), &mut push_new_def);
-        });
+        generic_def
+            .type_or_const_params(db)
+            .into_iter()
+            .for_each(|it| {
+                walk_and_push_ty(db, &it.ty(db), &mut push_new_def);
+            });
     }
 
     let ty = match def {
@@ -721,7 +788,10 @@ fn dedupe_or_merge_hover_actions(actions: Vec<HoverAction>) -> Vec<HoverAction> 
 
     if !go_to_type_targets.is_empty() {
         deduped_actions.push(HoverAction::GoToType(
-            go_to_type_targets.into_iter().sorted_by(|a, b| a.mod_path.cmp(&b.mod_path)).collect(),
+            go_to_type_targets
+                .into_iter()
+                .sorted_by(|a, b| a.mod_path.cmp(&b.mod_path))
+                .collect(),
         ));
     }
 

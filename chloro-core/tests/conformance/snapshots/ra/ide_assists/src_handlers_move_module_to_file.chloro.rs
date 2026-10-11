@@ -83,8 +83,11 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
             };
             let contents = {
                 let items = module_items.dedent(IndentLevel(1)).to_string();
-                let mut items =
-                    items.trim_start_matches('{').trim_end_matches('}').trim().to_owned();
+                let mut items = items
+                    .trim_start_matches('{')
+                    .trim_end_matches('}')
+                    .trim()
+                    .to_owned();
                 if !items.is_empty() {
                     items.push('\n');
                 }
@@ -104,7 +107,10 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
                 buf,
             );
 
-            let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+            let dst = AnchoredPathBuf {
+                anchor: ctx.vfs_file_id(),
+                path,
+            };
             builder.create_file(dst, contents);
         },
     )
@@ -113,7 +119,9 @@ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) ->
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn extract_with_specified_path_attr() {
         check_assist(
@@ -179,6 +187,7 @@ struct A {}
 "#,
         );
     }
+
     #[test]
     fn extract_from_root() {
         check_assist(
@@ -196,6 +205,7 @@ mod tests;
 "#,
         );
     }
+
     #[test]
     fn extract_from_submodule() {
         check_assist(
@@ -218,6 +228,7 @@ fn f() {}
 "#,
         );
     }
+
     #[test]
     fn extract_from_mod_rs() {
         check_assist(
@@ -240,6 +251,7 @@ fn f() {}
 "#,
         );
     }
+
     #[test]
     fn extract_public() {
         check_assist(
@@ -257,6 +269,7 @@ pub mod tests;
 "#,
         );
     }
+
     #[test]
     fn extract_public_crate() {
         check_assist(
@@ -274,11 +287,13 @@ pub(crate) mod tests;
 "#,
         );
     }
+
     #[test]
     fn available_before_curly() {
         cov_mark::check!(available_before_curly);
         check_assist_not_applicable(move_module_to_file, r#"mod m { $0 }"#);
     }
+
     #[test]
     fn keep_outer_comments_and_attributes() {
         check_assist(
@@ -300,6 +315,7 @@ mod tests;
 "#,
         );
     }
+
     #[test]
     fn extract_nested() {
         check_assist(
@@ -325,6 +341,7 @@ mod bar {
 "#,
         );
     }
+
     #[test]
     fn extract_mod_with_raw_ident() {
         check_assist(
@@ -340,6 +357,7 @@ mod r#static;
 "#,
         )
     }
+
     #[test]
     fn extract_r_mod() {
         check_assist(
@@ -355,6 +373,7 @@ mod r#mod;
 "#,
         )
     }
+
     #[test]
     fn extract_r_mod_from_mod_rs() {
         check_assist(
@@ -372,6 +391,7 @@ mod r#mod;
 "#,
         )
     }
+
     #[test]
     fn extract_nested_r_mod() {
         check_assist(

@@ -1,8 +1,7 @@
 //! Conversion lsp_types types to rust-analyzer specific ones.
-
 use anyhow::format_err;
-use ide_db::{FileId, FilePosition, FileRange, line_index::WideLineCol};
 use ide::{Annotation, AnnotationKind, AssistKind, LineCol};
+use ide_db::{FileId, FilePosition, FileRange, line_index::WideLineCol};
 use paths::Utf8PathBuf;
 use syntax::{TextRange, TextSize};
 use vfs::AbsPathBuf;
@@ -14,7 +13,9 @@ use crate::{
 };
 
 pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {
-    let path = url.to_file_path().map_err(|()| anyhow::format_err!("url is not a file"))?;
+    let path = url
+        .to_file_path()
+        .map_err(|()| anyhow::format_err!("url is not a file"))?;
     Ok(AbsPathBuf::try_from(Utf8PathBuf::from_path_buf(path).unwrap()).unwrap())
 }
 
@@ -27,9 +28,15 @@ pub(crate) fn offset(
     position: lsp_types::Position,
 ) -> anyhow::Result<TextSize> {
     let line_col = match line_index.encoding {
-        PositionEncoding::Utf8 => LineCol { line: position.line, col: position.character },
+        PositionEncoding::Utf8 => LineCol {
+            line: position.line,
+            col: position.character,
+        },
         PositionEncoding::Wide(enc) => {
-            let line_col = WideLineCol { line: position.line, col: position.character };
+            let line_col = WideLineCol {
+                line: position.line,
+                col: position.character,
+            };
             line_index
                 .index
                 .to_utf8(enc, line_col)
@@ -37,7 +44,10 @@ pub(crate) fn offset(
         }
     };
     let line_range = line_index.index.line(line_col.line).ok_or_else(|| {
-        format_err!("Invalid offset {line_col:?} (line index length: {:?})", line_index.index.len())
+        format_err!(
+            "Invalid offset {line_col:?} (line index length: {:?})",
+            line_index.index.len()
+        )
     })?;
     let col = TextSize::from(line_col.col);
     let clamped_len = col.min(line_range.len());
@@ -152,7 +162,5 @@ pub(crate) fn annotation(
             })
         }
     }
-    .map(
-        Some,
-    )
+    .map(Some)
 }

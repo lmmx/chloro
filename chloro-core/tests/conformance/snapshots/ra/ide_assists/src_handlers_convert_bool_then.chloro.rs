@@ -41,11 +41,17 @@ use crate::{
 pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME applies to match as well
     let expr = ctx.find_node_at_offset::<ast::IfExpr>()?;
-    if !expr.if_token()?.text_range().contains_inclusive(ctx.offset()) {
+    if !expr
+        .if_token()?
+        .text_range()
+        .contains_inclusive(ctx.offset())
+    {
         return None;
     }
 
-    let cond = expr.condition().filter(|cond| !is_pattern_cond(cond.clone()))?;
+    let cond = expr
+        .condition()
+        .filter(|cond| !is_pattern_cond(cond.clone()))?;
     let then = expr.then_branch()?;
     let else_ = match expr.else_branch()? {
         ast::ElseBranch::Block(b) => b,
@@ -128,7 +134,11 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
             } else {
                 cond.clone_for_update()
             };
-            let cond = if parenthesize { make.expr_paren(cond).into() } else { cond };
+            let cond = if parenthesize {
+                make.expr_paren(cond).into()
+            } else {
+                cond
+            };
             let arg_list = make.arg_list(Some(make.expr_closure(None, closure_body).into()));
             let mcall = make.expr_method_call(cond, make.name_ref("then"), arg_list);
             editor.replace(expr.syntax(), mcall.syntax());
@@ -161,7 +171,10 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
 // ```
 pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name_ref = ctx.find_node_at_offset::<ast::NameRef>()?;
-    let mcall = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
+    let mcall = name_ref
+        .syntax()
+        .parent()
+        .and_then(ast::MethodCallExpr::cast)?;
     let receiver = mcall.receiver()?;
     let closure_body = mcall.arg_list()?.args().exactly_one().ok()?;
     let closure_body = match closure_body {
@@ -225,7 +238,9 @@ pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>
                 .expr_if(
                     cond,
                     closure_body,
-                    Some(ast::ElseBranch::Block(make.block_expr(None, Some(none_path)))),
+                    Some(ast::ElseBranch::Block(
+                        make.block_expr(None, Some(none_path)),
+                    )),
                 )
                 .indent(mcall.indent_level());
             editor.replace(mcall.syntax().clone(), if_expr.syntax().clone());
@@ -261,8 +276,10 @@ fn is_invalid_body(
 ) -> bool {
     let mut invalid = false;
     preorder_expr(expr, &mut |e| {
-        invalid |=
-            matches!(e, syntax::WalkEvent::Enter(ast::Expr::TryExpr(_) | ast::Expr::ReturnExpr(_)));
+        invalid |= matches!(
+            e,
+            syntax::WalkEvent::Enter(ast::Expr::TryExpr(_) | ast::Expr::ReturnExpr(_))
+        );
         invalid
     });
     if !invalid {
@@ -306,7 +323,9 @@ fn block_is_none_variant(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn convert_if_to_bool_then_simple() {
         check_assist(
@@ -328,6 +347,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_invert() {
         check_assist(
@@ -349,6 +369,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_none_none() {
         check_assist_not_applicable(
@@ -365,6 +386,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_some_some() {
         check_assist_not_applicable(
@@ -381,6 +403,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_mixed() {
         check_assist_not_applicable(
@@ -401,6 +424,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_chain() {
         cov_mark::check!(convert_if_to_bool_then_chain);
@@ -420,6 +444,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_pattern_cond() {
         check_assist_not_applicable(
@@ -436,6 +461,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_if_to_bool_then_pattern_invalid_body() {
         cov_mark::check_count!(convert_if_to_bool_then_pattern_invalid_body, 2);
@@ -474,6 +500,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_bool_then_to_if_inapplicable() {
         check_assist_not_applicable(
@@ -504,6 +531,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_bool_then_to_if_simple() {
         check_assist(
@@ -545,6 +573,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn convert_bool_then_to_if_tails() {
         check_assist(

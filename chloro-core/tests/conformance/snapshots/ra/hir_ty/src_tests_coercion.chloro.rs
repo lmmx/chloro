@@ -107,7 +107,8 @@ fn test() {
 
 #[test]
 fn if_else_coerce() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: coerce_unsized
 fn foo<T>(x: &[T]) -> &[T] { x }
 fn test() {
@@ -117,7 +118,8 @@ fn test() {
         foo(&[1])
     };
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -573,7 +575,8 @@ fn test(f: impl Foo, g: &(impl Foo + ?Sized)) {
 
 #[test]
 fn two_closures_lub() {
-    check_types(r#"
+    check_types(
+        r#"
 fn foo(c: i32) {
     let add = |a: i32, b: i32| a + b;
             //^^^^^^^^^^^^^^^^^^^^^^ impl Fn(i32, i32) -> i32
@@ -582,12 +585,14 @@ fn foo(c: i32) {
     if c > 42 { add } else { sub };
   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ fn(i32, i32) -> i32
 }
-        "#)
+        "#,
+    )
 }
 
 #[test]
 fn match_diverging_branch_1() {
-    check_types(r#"
+    check_types(
+        r#"
 enum Result<T> { Ok(T), Err }
 fn parse<T>() -> T { loop {} }
 
@@ -599,13 +604,15 @@ fn test() -> i32 {
     a
   //^ i32
 }
-        "#)
+        "#,
+    )
 }
 
 #[test]
 fn match_diverging_branch_2() {
     // same as 1 except for order of branches
-    check_types(r#"
+    check_types(
+        r#"
 enum Result<T> { Ok(T), Err }
 fn parse<T>() -> T { loop {} }
 
@@ -617,7 +624,8 @@ fn test() -> i32 {
     a
   //^ i32
 }
-        "#)
+        "#,
+    )
 }
 
 #[test]
@@ -756,13 +764,15 @@ fn test() {
 
 #[test]
 fn coerce_type_var() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: from, coerce_unsized
 fn test() {
     let x = ();
     let _: &() = &x.into();
 }               //^^^^^^^^ ()
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -911,7 +921,8 @@ fn test() {
 
 #[test]
 fn regression_14443_dyn_coercion_block_impls() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: coerce_unsized
 trait T {}
 
@@ -933,7 +944,8 @@ fn main() {
     dyn_t(&a);
     dyn_t(&b);
 }
-"#)
+"#,
+    )
 }
 
 #[test]

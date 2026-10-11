@@ -21,10 +21,7 @@ use crate::assist_context::{AssistContext, Assists};
 //   let x = 1.checked_add(2);
 // }
 // ```
-pub(crate) fn replace_arith_with_checked(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn replace_arith_with_checked(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     replace_arith(acc, ctx, ArithKind::Checked)
 }
 
@@ -90,9 +87,14 @@ fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) ->
             let make = SyntaxFactory::with_mappings();
             let method_name = kind.method_name(op);
 
-            let needs_parentheses =
-                lhs.precedence().needs_parentheses_in(ast::prec::ExprPrecedence::Postfix);
-            let receiver = if needs_parentheses { make.expr_paren(lhs).into() } else { lhs };
+            let needs_parentheses = lhs
+                .precedence()
+                .needs_parentheses_in(ast::prec::ExprPrecedence::Postfix);
+            let receiver = if needs_parentheses {
+                make.expr_paren(lhs).into()
+            } else {
+                lhs
+            };
             let arith_expr =
                 make.expr_method_call(receiver, make.name_ref(&method_name), make.arg_list([rhs]));
             edit.replace(op_expr, arith_expr.syntax());
@@ -177,12 +179,18 @@ impl ArithKind {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn arith_kind_method_name() {
-        assert_eq!(ArithKind::Saturating.method_name(ArithOp::Add), "saturating_add");
+        assert_eq!(
+            ArithKind::Saturating.method_name(ArithOp::Add),
+            "saturating_add"
+        );
         assert_eq!(ArithKind::Checked.method_name(ArithOp::Sub), "checked_sub");
     }
+
     #[test]
     fn replace_arith_with_checked_add() {
         check_assist(
@@ -199,6 +207,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_arith_with_saturating_add() {
         check_assist(
@@ -215,6 +224,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_arith_with_wrapping_add() {
         check_assist(
@@ -231,6 +241,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_arith_with_wrapping_add_add_parenthesis() {
         check_assist(
@@ -247,6 +258,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn replace_arith_not_applicable_with_non_empty_selection() {
         check_assist_not_applicable(

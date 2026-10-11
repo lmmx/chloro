@@ -15,6 +15,7 @@ fn load_rust_analyzer_crate(crate_name: &str) -> String {
     let mut all_code = String::new();
 
     for entry in walkdir::WalkDir::new(&crate_dir)
+        .sort_by_file_name()
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().map(|ext| ext == "rs").unwrap_or(false))

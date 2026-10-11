@@ -7,7 +7,10 @@ use syntax::ToSmolStr;
 
 use crate::{
     CompletionItem, CompletionItemKind,
-    render::{RenderContext, variant::{format_literal_label, format_literal_lookup, visible_fields}},
+    render::{
+        RenderContext,
+        variant::{format_literal_label, format_literal_lookup, visible_fields},
+    },
 };
 
 pub(crate) fn render_union_literal(
@@ -72,7 +75,9 @@ pub(crate) fn render_union_literal(
             fields.iter().format_with(", ", |field, f| {
                 f(&format_args!(
                     "{}: ()",
-                    field.name(ctx.db()).display(ctx.db(), ctx.completion.edition)
+                    field
+                        .name(ctx.db())
+                        .display(ctx.db(), ctx.completion.edition)
                 ))
             })
         )
@@ -84,8 +89,12 @@ pub(crate) fn render_union_literal(
         fields.iter().format_with(", ", |field, f| {
             f(&format_args!(
                 "{}: {}",
-                field.name(ctx.db()).display(ctx.db(), ctx.completion.edition),
-                field.ty(ctx.db()).display(ctx.db(), ctx.completion.display_target)
+                field
+                    .name(ctx.db())
+                    .display(ctx.db(), ctx.completion.edition),
+                field
+                    .ty(ctx.db())
+                    .display(ctx.db(), ctx.completion.display_target)
             ))
         }),
         if fields_omitted { ", .." } else { "" }
@@ -97,7 +106,9 @@ pub(crate) fn render_union_literal(
         .set_relevance(ctx.completion_relevance());
 
     match ctx.snippet_cap() {
-        Some(snippet_cap) => item.insert_snippet(snippet_cap, literal).trigger_call_info(),
+        Some(snippet_cap) => item
+            .insert_snippet(snippet_cap, literal)
+            .trigger_call_info(),
         None => item.insert_text(literal),
     };
 

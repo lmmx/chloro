@@ -138,7 +138,11 @@ impl<'db> ImportAssets<'db> {
         let candidate_node = fully_qualified_path.syntax().clone();
         if let Some(use_tree) = candidate_node.ancestors().find_map(ast::UseTree::cast) {
             // Path is inside a use tree, then only continue if it is the first segment of a use statement.
-            if use_tree.syntax().parent().and_then(ast::Use::cast).is_none()
+            if use_tree
+                .syntax()
+                .parent()
+                .and_then(ast::Use::cast)
+                .is_none()
                 || fully_qualified_path.qualifier().is_some()
             {
                 return None;
@@ -151,10 +155,7 @@ impl<'db> ImportAssets<'db> {
         })
     }
 
-    pub fn for_ident_pat(
-        sema: &Semantics<'db, RootDatabase>,
-        pat: &ast::IdentPat,
-    ) -> Option<Self> {
+    pub fn for_ident_pat(sema: &Semantics<'db, RootDatabase>, pat: &ast::IdentPat) -> Option<Self> {
         if !pat.is_simple_ident() {
             return None;
         }
@@ -227,7 +228,12 @@ impl LocatedImport {
         original_item: ItemInNs,
         complete_in_flyimport: CompleteInFlyimport,
     ) -> Self {
-        Self { import_path, item_to_import, original_item, complete_in_flyimport }
+        Self {
+            import_path,
+            item_to_import,
+            original_item,
+            complete_in_flyimport,
+        }
     }
 
     pub fn new_no_completion(
@@ -271,7 +277,10 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to by prefix instead of fuzzily.
     pub fn path_fuzzy_name_to_prefix(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
+        if let ImportCandidate::Path(PathImportCandidate {
+            name: to_import, ..
+        }) = &mut self.import_candidate
+        {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -284,7 +293,10 @@ impl<'db> ImportAssets<'db> {
 
     /// Requires imports to match exactly instead of fuzzily.
     pub fn path_fuzzy_name_to_exact(&mut self) {
-        if let ImportCandidate::Path(PathImportCandidate { name: to_import, .. }) = &mut self.import_candidate {
+        if let ImportCandidate::Path(PathImportCandidate {
+            name: to_import, ..
+        }) = &mut self.import_candidate
+        {
             let (name, case_sensitive) = match to_import {
                 NameToImport::Fuzzy(name, case_sensitive) => {
                     (std::mem::take(name), *case_sensitive)
@@ -468,8 +480,12 @@ fn validate_resolvable(
             _ => None,
         }
     })();
-    let Some(qualifier) = qualifier else { return SmallVec::new() };
-    let Some(import_path_candidate) = mod_path(resolved_qualifier) else { return SmallVec::new() };
+    let Some(qualifier) = qualifier else {
+        return SmallVec::new();
+    };
+    let Some(import_path_candidate) = mod_path(resolved_qualifier) else {
+        return SmallVec::new();
+    };
     let mut result = SmallVec::new();
     let ty = match qualifier {
         ModuleDef::Module(module) => {
@@ -514,15 +530,20 @@ fn validate_resolvable(
             let is_match = match candidate {
                 NameToImport::Prefix(text, true) => name.as_str().starts_with(text),
                 NameToImport::Prefix(text, false) => {
-                    name.as_str().chars().zip(text.chars()).all(|(name_char, candidate_char)| {
-                        name_char.eq_ignore_ascii_case(&candidate_char)
-                    })
+                    name.as_str()
+                        .chars()
+                        .zip(text.chars())
+                        .all(|(name_char, candidate_char)| {
+                            name_char.eq_ignore_ascii_case(&candidate_char)
+                        })
                 }
                 NameToImport::Exact(text, true) => name.as_str() == text,
                 NameToImport::Exact(text, false) => name.as_str().eq_ignore_ascii_case(text),
                 NameToImport::Fuzzy(text, true) => text.chars().all(|c| name.as_str().contains(c)),
                 NameToImport::Fuzzy(text, false) => text.chars().all(|c| {
-                    name.as_str().chars().any(|name_char| name_char.eq_ignore_ascii_case(&c))
+                    name.as_str()
+                        .chars()
+                        .any(|name_char| name_char.eq_ignore_ascii_case(&c))
                 }),
             };
             if !is_match {
@@ -591,14 +612,19 @@ fn trait_applicable_items<'db>(
         if related_traits.contains(&assoc_item_trait) {
             return None;
         }
-        required_assoc_items
-            .insert(assoc, CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport));
+        required_assoc_items.insert(
+            assoc,
+            CompleteInFlyimport(do_not_complete != Complete::IgnoreFlyimport),
+        );
         Some(assoc_item_trait.into())
     })
     .collect();
 
     let autoderef_method_receiver = {
-        let mut deref_chain = trait_candidate.receiver_ty.autoderef(db).collect::<Vec<_>>();
+        let mut deref_chain = trait_candidate
+            .receiver_ty
+            .autoderef(db)
+            .collect::<Vec<_>>();
         // As a last step, we can do array unsizing (that's the only unsizing that rustc does for method receivers!)
         if let Some((ty, _len)) = deref_chain.last().and_then(|ty| ty.as_array(db)) {
             let slice = Type::new_slice(ty);
@@ -643,10 +669,12 @@ fn trait_applicable_items<'db>(
             // this is a closure for laziness: if `definitions_exist_in_trait_crate` is true,
             // we can avoid a second db lookup.
             let definitions_exist_in_receiver_crate = || {
-                autoderef_method_receiver.iter().any(|&(krate, fingerprint)| {
-                    db.trait_impls_in_crate(krate)
-                        .has_impls_for_trait_and_self_ty(candidate_trait_id, fingerprint)
-                })
+                autoderef_method_receiver
+                    .iter()
+                    .any(|&(krate, fingerprint)| {
+                        db.trait_impls_in_crate(krate)
+                            .has_impls_for_trait_and_self_ty(candidate_trait_id, fingerprint)
+                    })
             };
 
             definitions_exist_in_trait_crate || definitions_exist_in_receiver_crate()
@@ -682,31 +710,34 @@ fn trait_applicable_items<'db>(
             },
         )
     } else {
-        trait_candidate.receiver_ty.iterate_method_candidates_with_traits(
-            db,
-            scope,
-            &trait_candidates,
-            None,
-            None,
-            |function| {
-                let assoc = function.as_assoc_item(db)?;
-                if let Some(&complete_in_flyimport) = required_assoc_items.get(&assoc) {
-                    let located_trait = assoc.container_trait(db).filter(|&it| scope_filter(it))?;
-                    let trait_item = ItemInNs::from(ModuleDef::from(located_trait));
-                    let import_path = trait_import_paths
-                        .entry(trait_item)
-                        .or_insert_with(|| mod_path(trait_item))
-                        .clone()?;
-                    located_imports.insert(LocatedImport::new(
-                        import_path,
-                        trait_item,
-                        assoc_to_item(assoc),
-                        complete_in_flyimport,
-                    ));
-                }
-                None::<()>
-            },
-        )
+        trait_candidate
+            .receiver_ty
+            .iterate_method_candidates_with_traits(
+                db,
+                scope,
+                &trait_candidates,
+                None,
+                None,
+                |function| {
+                    let assoc = function.as_assoc_item(db)?;
+                    if let Some(&complete_in_flyimport) = required_assoc_items.get(&assoc) {
+                        let located_trait =
+                            assoc.container_trait(db).filter(|&it| scope_filter(it))?;
+                        let trait_item = ItemInNs::from(ModuleDef::from(located_trait));
+                        let import_path = trait_import_paths
+                            .entry(trait_item)
+                            .or_insert_with(|| mod_path(trait_item))
+                            .clone()?;
+                        located_imports.insert(LocatedImport::new(
+                            import_path,
+                            trait_item,
+                            assoc_to_item(assoc),
+                            complete_in_flyimport,
+                        ));
+                    }
+                    None::<()>
+                },
+            )
     };
 
     located_imports
@@ -744,7 +775,9 @@ impl<'db> ImportCandidate<'db> {
             Some(_) => None,
             None => Some(Self::TraitMethod(TraitImportCandidate {
                 receiver_ty: sema.type_of_expr(&method_call.receiver()?)?.adjusted(),
-                assoc_item_name: NameToImport::exact_case_sensitive(method_call.name_ref()?.to_string()),
+                assoc_item_name: NameToImport::exact_case_sensitive(
+                    method_call.name_ref()?.to_string(),
+                ),
             })),
         }
     }
@@ -791,7 +824,10 @@ fn path_import_candidate<'db>(
     Some(match qualifier {
         Some(qualifier) => match sema.resolve_path(&qualifier) {
             Some(PathResolution::Def(ModuleDef::BuiltinType(_))) | None => {
-                if qualifier.first_qualifier().is_none_or(|it| sema.resolve_path(&it).is_none()) {
+                if qualifier
+                    .first_qualifier()
+                    .is_none_or(|it| sema.resolve_path(&it).is_none())
+                {
                     let qualifier = qualifier
                         .segments()
                         .map(|seg| seg.name_ref().map(|name| Name::new_root(&name.text())))
@@ -820,7 +856,10 @@ fn path_import_candidate<'db>(
             }
             Some(_) => return None,
         },
-        None => ImportCandidate::Path(PathImportCandidate { qualifier: vec![], name }),
+        None => ImportCandidate::Path(PathImportCandidate {
+            qualifier: vec![],
+            name,
+        }),
     })
 }
 

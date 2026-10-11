@@ -1,5 +1,4 @@
 //! Documentation attribute related utilities.
-
 use either::Either;
 use hir::{
     AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
@@ -33,11 +32,9 @@ impl From<Documentation> for String {
     }
 }
 
-pub trait HasDocs {
+pub trait HasDocs: HasAttrs {
     fn docs(self, db: &dyn HirDatabase) -> Option<Documentation>;
-
     fn docs_with_rangemap(self, db: &dyn HirDatabase) -> Option<(Documentation, DocsRangeMap)>;
-
     fn resolve_doc_path(
         self,
         db: &dyn HirDatabase,
@@ -46,7 +43,6 @@ pub trait HasDocs {
         is_inner_doc: bool,
     ) -> Option<hir::DocLinkDef>;
 }
-
 /// A struct to map text ranges from [`Documentation`] back to TextRanges in the syntax tree.
 #[derive(Debug)]
 pub struct DocsRangeMap {
@@ -60,7 +56,10 @@ pub struct DocsRangeMap {
 impl DocsRangeMap {
     /// Maps a [`TextRange`] relative to the documentation string back to its AST range
     pub fn map(&self, range: TextRange) -> Option<(InFile<TextRange>, AttrId)> {
-        let found = self.mapping.binary_search_by(|(probe, ..)| probe.ordering(range)).ok()?;
+        let found = self
+            .mapping
+            .binary_search_by(|(probe, ..)| probe.ordering(range))
+            .ok()?;
         let (line_docs_range, idx, original_line_src_range) = self.mapping[found];
         if !line_docs_range.contains_range(range) {
             return None;
@@ -68,7 +67,10 @@ impl DocsRangeMap {
 
         let relative_range = range - line_docs_range.start();
 
-        let InFile { file_id, value: source } = self.source_map.source_of_id(idx);
+        let InFile {
+            file_id,
+            value: source,
+        } = self.source_map.source_of_id(idx);
         match source {
             Either::Left(attr) => {
                 let string = get_doc_string_in_attr(attr)?;
@@ -77,7 +79,13 @@ impl DocsRangeMap {
                     text_range.end() + original_line_src_range.start() + relative_range.start(),
                     string.syntax().text_range().len().min(range.len()),
                 );
-                Some((InFile { file_id, value: range }, idx))
+                Some((
+                    InFile {
+                        file_id,
+                        value: range,
+                    },
+                    idx,
+                ))
             }
             Either::Right(comment) => {
                 let text_range = comment.syntax().text_range();
@@ -88,7 +96,13 @@ impl DocsRangeMap {
                         + relative_range.start(),
                     text_range.len().min(range.len()),
                 );
-                Some((InFile { file_id, value: range }, idx))
+                Some((
+                    InFile {
+                        file_id,
+                        value: range,
+                    },
+                    idx,
+                ))
             }
         }
     }
@@ -102,7 +116,10 @@ impl DocsRangeMap {
                 (buf_offset, id, base_offset)
             })
             .collect_vec();
-        DocsRangeMap { source_map: self.source_map, mapping }
+        DocsRangeMap {
+            source_map: self.source_map,
+            mapping,
+        }
     }
 }
 
@@ -148,12 +165,21 @@ pub fn docs_with_rangemap(
     if buf.is_empty() {
         None
     } else {
-        Some((Documentation(buf), DocsRangeMap { mapping, source_map: attrs.source_map(db) }))
+        Some((
+            Documentation(buf),
+            DocsRangeMap {
+                mapping,
+                source_map: attrs.source_map(db),
+            },
+        ))
     }
 }
 
 pub fn docs_from_attrs(attrs: &hir::Attrs) -> Option<String> {
-    let docs = attrs.by_key(sym::doc).attrs().filter_map(|attr| attr.string_value_unescape());
+    let docs = attrs
+        .by_key(sym::doc)
+        .attrs()
+        .filter_map(|attr| attr.string_value_unescape());
     let indent = doc_indent(attrs);
     let mut buf = String::new();
     for doc in docs {
@@ -162,7 +188,9 @@ pub fn docs_from_attrs(attrs: &hir::Attrs) -> Option<String> {
             // We don't trim trailing whitespace from doc comments as multiple trailing spaces
             // indicates a hard line break in Markdown.
             let lines = doc.lines().map(|line| {
-                line.char_indices().nth(indent).map_or(line, |(offset, _)| &line[offset..])
+                line.char_indices()
+                    .nth(indent)
+                    .map_or(line, |(offset, _)| &line[offset..])
             });
 
             buf.extend(Itertools::intersperse(lines, "\n"));
@@ -170,11 +198,7 @@ pub fn docs_from_attrs(attrs: &hir::Attrs) -> Option<String> {
         buf.push('\n');
     }
     buf.pop();
-    if buf.is_empty() {
-        None
-    } else {
-        Some(buf)
-    }
+    if buf.is_empty() { None } else { Some(buf) }
 }
 
 macro_rules! impl_has_docs {
@@ -281,9 +305,7 @@ impl HasDocs for hir::ExternCrateDecl {
                 Some(decl_docs)
             }
         }
-        .map(
-            Documentation::new,
-        )
+        .map(Documentation::new)
     }
 
     fn docs_with_rangemap(self, db: &dyn HirDatabase) -> Option<(Documentation, DocsRangeMap)> {
@@ -307,7 +329,6 @@ impl HasDocs for hir::ExternCrateDecl {
             }
         }
     }
-
     fn resolve_doc_path(
         self,
         db: &dyn HirDatabase,
@@ -337,9 +358,15 @@ fn get_doc_string_in_attr(it: &ast::Attr) -> Option<ast::String> {
 
 fn doc_indent(attrs: &hir::Attrs) -> usize {
     let mut min = !0;
-    for val in attrs.by_key(sym::doc).attrs().filter_map(|attr| attr.string_value_unescape()) {
-        if let Some(m) =
-            val.lines().filter_map(|line| line.chars().position(|c| !c.is_whitespace())).min()
+    for val in attrs
+        .by_key(sym::doc)
+        .attrs()
+        .filter_map(|attr| attr.string_value_unescape())
+    {
+        if let Some(m) = val
+            .lines()
+            .filter_map(|line| line.chars().position(|c| !c.is_whitespace()))
+            .min()
         {
             min = min.min(m);
         }

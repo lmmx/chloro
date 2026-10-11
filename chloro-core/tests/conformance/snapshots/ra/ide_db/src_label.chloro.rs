@@ -1,5 +1,4 @@
 //! See [`Label`]
-
 use std::fmt;
 
 use stdx::always;

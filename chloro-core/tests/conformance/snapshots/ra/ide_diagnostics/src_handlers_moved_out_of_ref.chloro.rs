@@ -11,7 +11,10 @@ pub(crate) fn moved_out_of_ref(
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0507"),
-        format!("cannot move `{}` out of reference", d.ty.display(ctx.sema.db, ctx.display_target)),
+        format!(
+            "cannot move `{}` out of reference",
+            d.ty.display(ctx.sema.db, ctx.display_target)
+        ),
         d.span,
     )
     // spans are broken, and I'm not sure how precise we can detect copy types
@@ -20,6 +23,7 @@ pub(crate) fn moved_out_of_ref(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn operand_field_span_respected() {
         check_diagnostics(
@@ -36,6 +40,7 @@ fn f(s: &S) -> S {
             "#,
         );
     }
+
     #[test]
     fn move_by_explicit_deref() {
         check_diagnostics(
@@ -50,6 +55,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_out_of_field() {
         check_diagnostics(
@@ -67,6 +73,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn move_out_of_static() {
         check_diagnostics(
@@ -81,6 +88,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn generic_types() {
         check_diagnostics(
@@ -105,6 +113,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_false_positive_simple() {
         check_diagnostics(
@@ -118,6 +127,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_false_positive_unknown_type() {
         check_diagnostics(
@@ -145,6 +155,7 @@ fn h(x: &Y<Unknown>) -> Y<Unknown> {
 "#,
         );
     }
+
     #[test]
     fn no_false_positive_dyn_fn() {
         check_diagnostics(
@@ -164,6 +175,7 @@ fn g(x: &mut X<'_>) {
 "#,
         );
     }
+
     #[test]
     fn no_false_positive_match_and_closure_capture() {
         check_diagnostics(
@@ -184,6 +196,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn regression_15787() {
         check_diagnostics(
@@ -198,18 +211,23 @@ fn foo(mut slice: &[u32]) -> usize {
 "#,
         );
     }
+
     #[test]
     fn regression_16564() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- minicore: copy
 fn test() {
     let _x = (&(&mut (),)).0 as *const ();
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn regression_18201() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- minicore: copy
 struct NotCopy;
 struct S(NotCopy);
@@ -221,11 +239,14 @@ impl S {
         };
     }
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn regression_20155() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- minicore: copy, option
 struct Box(i32);
 fn test() {
@@ -236,6 +257,7 @@ fn test() {
         }
     };
 }
-"#)
+"#,
+        )
     }
 }

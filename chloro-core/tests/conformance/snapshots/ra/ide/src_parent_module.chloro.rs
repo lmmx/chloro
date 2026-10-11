@@ -57,7 +57,10 @@ pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
         .iter()
         .copied()
         .filter(|&crate_id| {
-            crate_def_map(db, crate_id).modules_for_file(db, file_id).next().is_some()
+            crate_def_map(db, crate_id)
+                .modules_for_file(db, file_id)
+                .next()
+                .is_some()
         })
         .sorted()
         .collect()
@@ -66,16 +69,25 @@ pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
 #[cfg(test)]
 mod tests {
     use ide_db::FileRange;
+
     use crate::fixture;
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
         let navs = analysis.parent_module(position).unwrap();
         let navs = navs
             .iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .collect::<Vec<_>>();
-        assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
+        assert_eq!(
+            expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(),
+            navs
+        );
     }
+
     #[test]
     fn test_resolve_parent_module() {
         check(
@@ -89,6 +101,7 @@ $0// empty
 "#,
         );
     }
+
     #[test]
     fn test_resolve_parent_module_on_module_decl() {
         cov_mark::check!(test_resolve_parent_module_on_module_decl);
@@ -105,6 +118,7 @@ mod $0bar;
 "#,
         );
     }
+
     #[test]
     fn test_resolve_parent_module_for_inline() {
         check(
@@ -118,6 +132,7 @@ mod foo {
 "#,
         );
     }
+
     #[test]
     fn test_resolve_multi_parent_module() {
         check(
@@ -133,6 +148,7 @@ $0
 "#,
         );
     }
+
     #[test]
     fn test_resolve_crate_root() {
         let (analysis, file_id) = fixture::file(
@@ -145,6 +161,7 @@ mod foo;
         );
         assert_eq!(analysis.crates_for(file_id).unwrap().len(), 1);
     }
+
     #[test]
     fn test_resolve_multi_parent_crate() {
         let (analysis, file_id) = fixture::file(

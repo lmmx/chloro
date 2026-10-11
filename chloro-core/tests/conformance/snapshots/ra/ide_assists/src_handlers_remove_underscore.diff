@@ -2,70 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3945 bytes
-Chloro size:   3937 bytes
+Chloro size:   3979 bytes
 Rustfmt size:  3979 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-         "Remove underscore from a used variable",
-         text_range,
-         |builder| {
--            let changes = def
--                .rename(&ctx.sema, new_name, RenameDefinition::Yes)
--                .unwrap();
-+            let changes = def.rename(&ctx.sema, new_name, RenameDefinition::Yes).unwrap();
-             builder.source_change = changes;
-         },
-     )
- #[cfg(test)]
- mod tests {
-     use crate::tests::{check_assist, check_assist_not_applicable};
--
-     use super::*;
--
-     #[test]
-     fn remove_underscore_from_used_variable() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn not_applicable_for_unused() {
-         check_assist_not_applicable(
- "#,
-         );
-     }
--
-     #[test]
-     fn not_applicable_for_no_underscore() {
-         check_assist_not_applicable(
- "#,
-         );
-     }
--
-     #[test]
-     fn remove_multiple_underscores() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn remove_underscore_on_usage() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn remove_underscore_in_function_parameter_usage() {
-         check_assist(
- "#,
-         )
-     }
--
-     #[test]
-     fn remove_underscore_in_function_parameter() {
-         check_assist(
+✓ Outputs are IDENTICAL

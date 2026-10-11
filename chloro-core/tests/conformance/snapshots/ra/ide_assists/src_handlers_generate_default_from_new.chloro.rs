@@ -86,8 +86,9 @@ fn generate_trait_impl_text_from_impl(
     code: &str,
 ) -> String {
     let generic_params = impl_.generic_param_list().map(|generic_params| {
-        let lifetime_params =
-            generic_params.lifetime_params().map(ast::GenericParam::LifetimeParam);
+        let lifetime_params = generic_params
+            .lifetime_params()
+            .map(ast::GenericParam::LifetimeParam);
         let ty_or_const_params = generic_params.type_or_const_params().filter_map(|param| {
             // remove defaults since they can't be specified in impls
             let param = match param {
@@ -152,7 +153,9 @@ fn is_default_implemented(ctx: &AssistContext<'_>, impl_: &Impl) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn generate_default() {
         check_assist(
@@ -188,6 +191,7 @@ fn main() {}
 "#,
         );
     }
+
     #[test]
     fn generate_default2() {
         check_assist(
@@ -219,6 +223,7 @@ impl Default for Test {
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generic() {
         check_assist(
@@ -254,6 +259,7 @@ impl<T> Default for Foo<T> {
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generics() {
         check_assist(
@@ -291,6 +297,7 @@ impl<T, B> Default for Foo<T, B> {
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generic_and_bound() {
         check_assist(
@@ -326,6 +333,7 @@ impl<T: From<i32>> Default for Foo<T> {
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generics_and_bounds() {
         check_assist(
@@ -363,6 +371,7 @@ impl<T: From<i32>, B: From<i64>> Default for Foo<T, B> {
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generic_and_where() {
         check_assist(
@@ -407,6 +416,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn new_function_with_generics_and_where() {
         check_assist(
@@ -453,6 +463,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn new_function_with_parameters() {
         cov_mark::check!(new_function_with_parameters);
@@ -470,6 +481,7 @@ impl Example {
 "#,
         );
     }
+
     #[test]
     fn other_function_than_new() {
         cov_mark::check!(other_function_than_new);
@@ -488,6 +500,7 @@ impl Example {
 "#,
         );
     }
+
     #[test]
     fn default_block_is_already_present() {
         cov_mark::check!(default_block_is_already_present);
@@ -511,6 +524,7 @@ impl Default for Example {
 "#,
         );
     }
+
     #[test]
     fn standalone_new_function() {
         check_assist_not_applicable(
@@ -522,6 +536,7 @@ fn n$0ew() -> u32 {
 "#,
         );
     }
+
     #[test]
     fn multiple_struct_blocks() {
         check_assist(
@@ -555,6 +570,7 @@ impl Default for Example {
 "#,
         );
     }
+
     #[test]
     fn when_struct_is_after_impl() {
         check_assist(
@@ -586,6 +602,7 @@ struct Example { _inner: () }
 "#,
         );
     }
+
     #[test]
     fn struct_in_module() {
         check_assist(
@@ -621,6 +638,7 @@ impl Default for Example {
 "#,
         );
     }
+
     #[test]
     fn struct_in_module_with_default() {
         cov_mark::check!(struct_in_module_with_default);
@@ -646,6 +664,7 @@ mod test {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_when_default_lang_item_is_missing() {
         check_assist_not_applicable(
@@ -658,6 +677,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_missing_self_ty() {
         // Regression test for #15398.

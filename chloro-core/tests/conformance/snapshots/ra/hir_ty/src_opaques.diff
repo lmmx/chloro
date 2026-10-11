@@ -2,48 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7261 bytes
-Chloro size:   7252 bytes
+Chloro size:   7430 bytes
 Rustfmt size:  7430 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     lower::{ImplTraitIdx, ImplTraits},
-     next_solver::{
-         DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
--        infer::{DbInternerInferExt, traits::ObligationCause},
--        obligation_ctxt::ObligationCtxt,
-+        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
-     },
- };
- 
-     }
- 
-     // FIXME: Collect opaques from `#[define_opaque]`.
--
-     fn extend_with_opaques<'db>(
-         db: &'db dyn HirDatabase,
-         opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
-                     entry.insert(EarlyBinder::bind(hidden_type));
-                 }
-                 la_arena::Entry::Occupied(entry) => {
--                    _ = ocx.eq(
--                        &cause,
--                        param_env,
--                        entry.get().instantiate_identity(),
--                        hidden_type,
--                    );
-+                    _ = ocx.eq(&cause, param_env, entry.get().instantiate_identity(), hidden_type);
-                 }
-             }
-         }
-             }
-             la_arena::Entry::Occupied(mut entry) => {
-                 *entry.get_mut() = entry.get().map_bound(|hidden_type| {
--                    infcx
--                        .resolve_vars_if_possible(hidden_type)
--                        .replace_infer_with_error(interner)
-+                    infcx.resolve_vars_if_possible(hidden_type).replace_infer_with_error(interner)
-                 });
-             }
-         }
+✓ Outputs are IDENTICAL

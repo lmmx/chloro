@@ -71,12 +71,13 @@ fn preserve_unsafe_extern_block() {
 }
 
 #[test]
-fn preserve_extern_block_with_attributed_variadic() {
+fn extern_block_variadic_loses_its_attribute() {
     let input = r#"extern "C" { fn printf(format: *const i8, #[attr] ...) -> i32; }"#;
+    // rustfmt rewrites an unnamed parameter as its type alone, dropping its attributes.
     let output = format_source(input);
     assert_snapshot!(output, @r#"
     extern "C" {
-        fn printf(format: *const i8, #[attr] ...) -> i32;
+        fn printf(format: *const i8, ...) -> i32;
     }
     "#);
 }
@@ -98,7 +99,7 @@ fn preserve_inner_attribute_full_content() {
 }
 
 #[test]
-fn preserve_multiple_inner_attributes_with_blank_line() {
+fn blank_line_between_inner_attributes_is_removed() {
     let input = r#"#![allow(non_camel_case_types)]
 #![allow(dead_code)]
 
@@ -108,7 +109,6 @@ fn preserve_multiple_inner_attributes_with_blank_line() {
     assert_snapshot!(output, @r#"
     #![allow(non_camel_case_types)]
     #![allow(dead_code)]
-
     #![recursion_limit = "128"]
     "#);
 }

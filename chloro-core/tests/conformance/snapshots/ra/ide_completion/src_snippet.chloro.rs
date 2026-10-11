@@ -140,8 +140,16 @@ impl Snippet {
         }
         let (requires, snippet, description) = validate_snippet(snippet, description, requires)?;
         Some(Snippet {
-            postfix_triggers: postfix_triggers.iter().map(String::as_str).map(Into::into).collect(),
-            prefix_triggers: prefix_triggers.iter().map(String::as_str).map(Into::into).collect(),
+            postfix_triggers: postfix_triggers
+                .iter()
+                .map(String::as_str)
+                .map(Into::into)
+                .collect(),
+            prefix_triggers: prefix_triggers
+                .iter()
+                .map(String::as_str)
+                .map(Into::into)
+                .collect(),
             scope,
             snippet,
             description,
@@ -195,13 +203,19 @@ fn validate_snippet(
     for path in requires.iter() {
         let use_path = ModPath::from_segments(
             hir::PathKind::Plain,
-            path.split("::").map(Symbol::intern).map(Name::new_symbol_root),
+            path.split("::")
+                .map(Symbol::intern)
+                .map(Name::new_symbol_root),
         );
         imports.push(use_path);
     }
     let snippet = snippet.iter().join("\n");
     let description = (!description.is_empty())
-        .then(|| description.split_once('\n').map_or(description, |(it, _)| it))
+        .then(|| {
+            description
+                .split_once('\n')
+                .map_or(description, |(it, _)| it)
+        })
         .map(ToOwned::to_owned)
         .map(Into::into);
     Some((imports.into_boxed_slice(), snippet, description))

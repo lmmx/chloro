@@ -3,7 +3,11 @@ use ide_db::{
 };
 use syntax::{
     SyntaxToken, T,
-    ast::{self, AstNode, HasLoopBody, make::{self, tokens}, syntax_factory::SyntaxFactory},
+    ast::{
+        self, AstNode, HasLoopBody,
+        make::{self, tokens},
+        syntax_factory::SyntaxFactory,
+    },
     syntax_editor::{Position, SyntaxEditor},
 };
 
@@ -95,7 +99,9 @@ fn insert_label_after_token(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn add_label() {
         check_assist(
@@ -116,6 +122,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn add_label_to_outer_loop() {
         check_assist(
@@ -144,6 +151,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn add_label_to_inner_loop() {
         check_assist(
@@ -172,6 +180,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn do_not_add_label_if_exists() {
         check_assist_not_applicable(

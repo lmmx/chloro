@@ -61,7 +61,9 @@ pub(crate) fn convert_named_struct_to_tuple_struct(
         .find_node_at_offset::<ast::Struct>()
         .map(Either::Left)
         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
-    let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+    let field_list = strukt_or_variant
+        .as_ref()
+        .either(|s| s.field_list(), |v| v.field_list())?;
 
     if ctx.offset() > field_list.syntax().text_range().start() {
         // Assist could be distracting after the braces
@@ -102,7 +104,9 @@ fn edit_struct_def(
         let mut editor = SyntaxEditor::new(field.syntax().clone());
         editor.insert_all(
             Position::first_child_of(field.syntax()),
-            f.attrs().map(|attr| attr.syntax().clone_subtree().clone_for_update().into()).collect(),
+            f.attrs()
+                .map(|attr| attr.syntax().clone_subtree().clone_for_update().into())
+                .collect(),
         );
         let field_syntax = editor.finish().new_root().clone();
         let field = ast::TupleField::cast(field_syntax)?;
@@ -123,9 +127,15 @@ fn edit_struct_def(
             where_clause.push(';');
 
             edit.delete(w.syntax().text_range());
-            edit.insert(record_fields_text_range.end(), ast::make::tokens::single_newline().text());
+            edit.insert(
+                record_fields_text_range.end(),
+                ast::make::tokens::single_newline().text(),
+            );
             edit.insert(record_fields_text_range.end(), where_clause);
-            edit.insert(record_fields_text_range.end(), ast::make::tokens::single_newline().text());
+            edit.insert(
+                record_fields_text_range.end(),
+                ast::make::tokens::single_newline().text(),
+            );
 
             if let Some(tok) = strukt
                 .generic_param_list()
@@ -143,7 +153,8 @@ fn edit_struct_def(
     if let Some(tok) = record_fields
         .l_curly_token()
         .and_then(|tok| tok.prev_token())
-        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE) {
+        .filter(|tok| tok.kind() == SyntaxKind::WHITESPACE)
+    {
         edit.delete(tok.text_range())
     }
 }
@@ -175,10 +186,17 @@ fn process_struct_name_reference(
     // First check if it's the last semgnet of a path that directly belongs to a record
     // expression/pattern.
     let name_ref = r.name.as_name_ref()?;
-    let path_segment = name_ref.syntax().parent().and_then(ast::PathSegment::cast)?;
+    let path_segment = name_ref
+        .syntax()
+        .parent()
+        .and_then(ast::PathSegment::cast)?;
     // A `PathSegment` always belongs to a `Path`, so there's at least one `Path` at this point.
-    let full_path =
-        path_segment.syntax().parent()?.ancestors().map_while(ast::Path::cast).last()?;
+    let full_path = path_segment
+        .syntax()
+        .parent()?
+        .ancestors()
+        .map_while(ast::Path::cast)
+        .last()?;
 
     if full_path.segment()?.name_ref()? != *name_ref {
         // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
@@ -246,7 +264,12 @@ fn edit_field_references(
             for r in refs {
                 if let Some(name_ref) = r.name.as_name_ref() {
                     // Only edit the field reference if it's part of a `.field` access
-                    if name_ref.syntax().parent().and_then(ast::FieldExpr::cast).is_some() {
+                    if name_ref
+                        .syntax()
+                        .parent()
+                        .and_then(ast::FieldExpr::cast)
+                        .is_some()
+                    {
                         edit.replace(r.range, index.to_string());
                     }
                 }
@@ -258,12 +281,15 @@ fn edit_field_references(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn not_applicable_other_than_record_struct() {
         check_assist_not_applicable(convert_named_struct_to_tuple_struct, r#"struct Foo$0(u32)"#);
         check_assist_not_applicable(convert_named_struct_to_tuple_struct, r#"struct Foo$0;"#);
     }
+
     #[test]
     fn convert_simple_struct() {
         check_assist(
@@ -304,6 +330,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_simple_struct_cursor_on_struct_keyword() {
         check_assist(
@@ -344,6 +371,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_and_rest_pat() {
         check_assist(
@@ -374,6 +402,7 @@ fn foo(A(inner, ..): A) {}
 "#,
         );
     }
+
     #[test]
     fn convert_simple_struct_cursor_on_visibility_keyword() {
         check_assist(
@@ -414,6 +443,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_referenced_via_self_kw() {
         check_assist(
@@ -454,6 +484,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_destructured_struct() {
         check_assist(
@@ -490,6 +521,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_visibility() {
         check_assist(
@@ -531,6 +563,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_wrapped_references() {
         check_assist(
@@ -613,6 +646,7 @@ impl Outer {
 }"#,
         );
     }
+
     #[test]
     fn convert_struct_with_multi_file_references() {
         check_assist(
@@ -645,6 +679,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn convert_struct_with_where_clause() {
         check_assist(
@@ -663,6 +698,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn not_applicable_other_than_record_variant() {
         check_assist_not_applicable(
@@ -674,6 +710,7 @@ where
             r#"enum Enum { Variant$0 }"#,
         );
     }
+
     #[test]
     fn convert_simple_variant() {
         check_assist(
@@ -720,6 +757,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_referenced_via_self_kw() {
         check_assist(
@@ -766,6 +804,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_destructured_variant() {
         check_assist(
@@ -804,6 +843,7 @@ impl A {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_with_wrapped_references() {
         check_assist(
@@ -886,6 +926,7 @@ impl Outer {
 }"#,
         );
     }
+
     #[test]
     fn convert_variant_with_multi_file_references() {
         check_assist(
@@ -922,6 +963,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn convert_directly_used_variant() {
         check_assist(
@@ -958,6 +1000,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn field_access_inside_macro_call() {
         check_assist(
@@ -988,6 +1031,7 @@ fn test(c: Struct) {
 "#,
         )
     }
+
     #[test]
     fn struct_usage_inside_macro_call() {
         check_assist(
@@ -1028,6 +1072,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn struct_name_ref_may_not_be_part_of_struct_expr_or_struct_pat() {
         check_assist(
@@ -1090,6 +1135,7 @@ impl HasAssoc for Struct {
 "#,
         );
     }
+
     #[test]
     fn fields_with_attrs() {
         check_assist(

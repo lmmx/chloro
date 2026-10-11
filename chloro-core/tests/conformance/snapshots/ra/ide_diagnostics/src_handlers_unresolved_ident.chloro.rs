@@ -7,27 +7,36 @@ pub(crate) fn unresolved_ident(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::UnresolvedIdent,
 ) -> Diagnostic {
-    let mut range =
-        ctx.sema.diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
+    let mut range = ctx
+        .sema
+        .diagnostics_display_range(d.node.map(|(node, _)| node.syntax_node_ptr()));
     if let Some(in_node_range) = d.node.value.1 {
         range.range = in_node_range + range.range.start();
     }
-    Diagnostic::new(DiagnosticCode::RustcHardError("E0425"), "no such value in this scope", range)
+    Diagnostic::new(
+        DiagnosticCode::RustcHardError("E0425"),
+        "no such value in this scope",
+        range,
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn feature() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 //- minicore: fmt
 fn main() {
     format_args!("{unresolved}");
                 // ^^^^^^^^^^ error: no such value in this scope
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn missing() {
         check_diagnostics(
@@ -39,6 +48,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn present() {
         check_diagnostics(
@@ -50,6 +60,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unresolved_self_val() {
         check_diagnostics(

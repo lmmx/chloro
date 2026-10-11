@@ -2,22 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 398 bytes
-Chloro size:   384 bytes
+Chloro size:   398 bytes
 Rustfmt size:  398 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Builtin macros and attributes
-+
- #[macro_use]
- pub mod quote;
- 
- pub use self::{
-     attr_macro::{BuiltinAttrExpander, find_builtin_attr, pseudo_derive_attr_expansion},
-     derive_macro::{BuiltinDeriveExpander, find_builtin_derive},
--    fn_macro::{
--        BuiltinFnLikeExpander, EagerExpander, find_builtin_macro, include_input_to_file_id,
--    },
-+    fn_macro::{BuiltinFnLikeExpander, EagerExpander, find_builtin_macro, include_input_to_file_id},
- };
+✓ Outputs are IDENTICAL

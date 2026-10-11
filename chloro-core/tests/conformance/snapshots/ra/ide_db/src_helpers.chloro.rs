@@ -31,7 +31,6 @@ pub fn pick_best_token(
 ) -> Option<SyntaxToken> {
     tokens.max_by_key(move |t| f(t.kind()))
 }
-
 pub fn pick_token<T: AstToken>(mut tokens: TokenAtOffset<SyntaxToken>) -> Option<T> {
     tokens.find_map(T::cast)
 }
@@ -75,11 +74,17 @@ pub fn visit_file_defs(
             && submodule.is_inline(db)
         {
             defs.extend(submodule.declarations(db));
-            submodule.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
+            submodule
+                .impl_defs(db)
+                .into_iter()
+                .for_each(|impl_| cb(impl_.into()));
         }
         cb(def.into());
     }
-    module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
+    module
+        .impl_defs(db)
+        .into_iter()
+        .for_each(|impl_| cb(impl_.into()));
 
     let is_root = module.is_crate_root();
     module
@@ -100,7 +105,8 @@ pub fn lint_eq_or_in_group(lint: &str, lint_is: &str) -> bool {
         .iter()
         .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())
         .chain(generated::lints::RUSTDOC_LINT_GROUPS.iter())
-        .find(|&check| check.lint.label == lint_is) {
+        .find(|&check| check.lint.label == lint_is)
+    {
         group.children.contains(&lint)
     } else {
         false

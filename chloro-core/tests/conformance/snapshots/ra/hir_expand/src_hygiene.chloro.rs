@@ -19,7 +19,6 @@
 //! # The Call-site Hierarchy
 //!
 //! `ExpnData::call_site` in rustc, [`MacroCallLoc::call_site`] in rust-analyzer.
-
 // FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
 // which contains a bunch of unrelated things
 
@@ -66,7 +65,13 @@ fn span_with_ctxt_from_mark(
     edition: Edition,
 ) -> Span {
     Span {
-        ctx: apply_mark(db, SyntaxContext::root(edition), expn_id, transparency, edition),
+        ctx: apply_mark(
+            db,
+            SyntaxContext::root(edition),
+            expn_id,
+            transparency,
+            edition,
+        ),
         ..span
     }
 }
@@ -122,13 +127,28 @@ fn apply_mark_internal(
 
     if transparency >= Transparency::Opaque {
         let parent = opaque;
-        opaque = SyntaxContext::new(db, call_id, transparency, edition, parent, identity, identity);
+        opaque = SyntaxContext::new(
+            db,
+            call_id,
+            transparency,
+            edition,
+            parent,
+            identity,
+            identity,
+        );
     }
 
     if transparency >= Transparency::SemiTransparent {
         let parent = opaque_and_semitransparent;
-        opaque_and_semitransparent =
-            SyntaxContext::new(db, call_id, transparency, edition, parent, |_| opaque, identity);
+        opaque_and_semitransparent = SyntaxContext::new(
+            db,
+            call_id,
+            transparency,
+            edition,
+            parent,
+            |_| opaque,
+            identity,
+        );
     }
 
     let parent = ctxt;

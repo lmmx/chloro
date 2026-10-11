@@ -8,7 +8,8 @@ use ide_db::{
 use syntax::{
     AstNode, AstPtr, TextSize,
     ast::{
-        self, BlockExpr, Expr, ExprStmt, HasArgList, edit::{AstNodeEdit, IndentLevel},
+        self, BlockExpr, Expr, ExprStmt, HasArgList,
+        edit::{AstNodeEdit, IndentLevel},
         syntax_factory::SyntaxFactory,
     },
 };
@@ -19,12 +20,11 @@ use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_dis
 //
 // This diagnostic is triggered when the type of an expression or pattern does not match
 // the expected type.
-pub(crate) fn type_mismatch(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::TypeMismatch<'_>,
-) -> Diagnostic {
+pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Diagnostic {
     let display_range = adjusted_display_range(ctx, d.expr_or_pat, &|node| {
-        let Either::Left(expr) = node else { return None };
+        let Either::Left(expr) = node else {
+            return None;
+        };
         let salient_token_range = match expr {
             ast::Expr::IfExpr(it) => it.if_token()?.text_range(),
             ast::Expr::LoopExpr(it) => it.loop_token()?.text_range(),
@@ -54,16 +54,17 @@ pub(crate) fn type_mismatch(
         ),
         display_range,
     )
-    .with_fixes(
-        fixes(ctx, d),
-    )
+    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
 
     if let Some(expr_ptr) = d.expr_or_pat.value.cast::<ast::Expr>() {
-        let expr_ptr = &InFile { file_id: d.expr_or_pat.file_id, value: expr_ptr };
+        let expr_ptr = &InFile {
+            file_id: d.expr_or_pat.file_id,
+            value: expr_ptr,
+        };
         add_reference(ctx, d, expr_ptr, &mut fixes);
         add_missing_ok_or_some(ctx, d, expr_ptr, &mut fixes);
         remove_unnecessary_wrapper(ctx, d, expr_ptr, &mut fixes);
@@ -71,11 +72,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<
         str_ref_to_owned(ctx, d, expr_ptr, &mut fixes);
     }
 
-    if fixes.is_empty() {
-        None
-    } else {
-        Some(fixes)
-    }
+    if fixes.is_empty() { None } else { Some(fixes) }
 }
 
 fn add_reference(
@@ -84,7 +81,9 @@ fn add_reference(
     expr_ptr: &InFile<AstPtr<ast::Expr>>,
     acc: &mut Vec<Assist>,
 ) -> Option<()> {
-    let range = ctx.sema.diagnostics_display_range((*expr_ptr).map(|it| it.into()));
+    let range = ctx
+        .sema
+        .diagnostics_display_range((*expr_ptr).map(|it| it.into()));
 
     let (_, mutability) = d.expected.as_reference()?;
     let actual_with_ref = d.actual.add_reference(mutability);
@@ -96,7 +95,12 @@ fn add_reference(
 
     let edit = TextEdit::insert(range.range.start(), ampersands);
     let source_change = SourceChange::from_text_edit(range.file_id, edit);
-    acc.push(fix("add_reference_here", "Add reference here", source_change, range.range));
+    acc.push(fix(
+        "add_reference_here",
+        "Add reference here",
+        source_change,
+        range.range,
+    ));
     Some(())
 }
 
@@ -122,7 +126,11 @@ fn add_missing_ok_or_some(
         return None;
     }
 
-    let variant_name = if Some(expected_enum) == core_result { "Ok" } else { "Some" };
+    let variant_name = if Some(expected_enum) == core_result {
+        "Ok"
+    } else {
+        "Some"
+    };
 
     let wrapped_actual_ty =
         expected_adt.ty_with_args(ctx.sema.db, std::iter::once(d.actual.clone()));
@@ -154,7 +162,10 @@ fn add_missing_ok_or_some(
                 }
 
                 let source_change = SourceChange::from_text_edit(
-                    expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                    expr_ptr
+                        .file_id
+                        .original_file(ctx.sema.db)
+                        .file_id(ctx.sema.db),
                     builder.finish(),
                 );
                 let name = format!("Insert {variant_name}(()) as the tail of this block");
@@ -165,10 +176,15 @@ fn add_missing_ok_or_some(
             // Fix for forms like `fn foo() -> Result<(), String> { return; }`
             if ret_expr.expr().is_none() {
                 let mut builder = TextEdit::builder();
-                builder
-                    .insert(ret_expr.syntax().text_range().end(), format!(" {variant_name}(())"));
+                builder.insert(
+                    ret_expr.syntax().text_range().end(),
+                    format!(" {variant_name}(())"),
+                );
                 let source_change = SourceChange::from_text_edit(
-                    expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                    expr_ptr
+                        .file_id
+                        .original_file(ctx.sema.db)
+                        .file_id(ctx.sema.db),
                     builder.finish(),
                 );
                 let name = format!("Insert {variant_name}(()) as the return value");
@@ -179,10 +195,16 @@ fn add_missing_ok_or_some(
     }
 
     let mut builder = TextEdit::builder();
-    builder.insert(expr.syntax().text_range().start(), format!("{variant_name}("));
+    builder.insert(
+        expr.syntax().text_range().start(),
+        format!("{variant_name}("),
+    );
     builder.insert(expr.syntax().text_range().end(), ")".to_owned());
     let source_change = SourceChange::from_text_edit(
-        expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        expr_ptr
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         builder.finish(),
     );
     let name = format!("Wrap in {variant_name}");
@@ -218,7 +240,10 @@ fn remove_unnecessary_wrapper(
         return None;
     }
 
-    let inner_type = variant.fields(db).first()?.ty_with_args(db, d.actual.type_arguments());
+    let inner_type = variant
+        .fields(db)
+        .first()?
+        .ty_with_args(db, d.actual.type_arguments());
     if !d.expected.could_unify_with(db, &inner_type) {
         return None;
     }
@@ -285,8 +310,10 @@ fn remove_semicolon(
         return None;
     }
     let block = BlockExpr::cast(expr.syntax().clone())?;
-    let expr_before_semi =
-        block.statements().last().and_then(|s| ExprStmt::cast(s.syntax().clone()))?;
+    let expr_before_semi = block
+        .statements()
+        .last()
+        .and_then(|s| ExprStmt::cast(s.syntax().clone()))?;
     let type_before_semi = ctx.sema.type_of_expr(&expr_before_semi.expr()?)?.original();
     if !type_before_semi.could_coerce_to(ctx.sema.db, &d.expected) {
         return None;
@@ -295,11 +322,19 @@ fn remove_semicolon(
 
     let edit = TextEdit::delete(semicolon_range);
     let source_change = SourceChange::from_text_edit(
-        expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        expr_ptr
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         edit,
     );
 
-    acc.push(fix("remove_semicolon", "Remove this semicolon", source_change, semicolon_range));
+    acc.push(fix(
+        "remove_semicolon",
+        "Remove this semicolon",
+        source_change,
+        semicolon_range,
+    ));
     Some(())
 }
 
@@ -324,10 +359,18 @@ fn str_ref_to_owned(
 
     let edit = TextEdit::insert(expr.syntax().text_range().end(), to_owned);
     let source_change = SourceChange::from_text_edit(
-        expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+        expr_ptr
+            .file_id
+            .original_file(ctx.sema.db)
+            .file_id(ctx.sema.db),
         edit,
     );
-    acc.push(fix("str_ref_to_owned", "Add .to_owned() here", source_change, expr_range));
+    acc.push(fix(
+        "str_ref_to_owned",
+        "Add .to_owned() here",
+        source_change,
+        expr_range,
+    ));
 
     Some(())
 }
@@ -337,6 +380,7 @@ mod tests {
     use crate::tests::{
         check_diagnostics, check_diagnostics_with_disabled, check_fix, check_has_fix, check_no_fix,
     };
+
     #[test]
     fn missing_reference() {
         check_diagnostics(
@@ -349,6 +393,7 @@ fn test(_arg: &i32) {}
 "#,
         );
     }
+
     #[test]
     fn add_reference_to_int() {
         check_fix(
@@ -366,6 +411,7 @@ fn test(_arg: &i32) {}
             "#,
         );
     }
+
     #[test]
     fn add_mutable_reference_to_int() {
         check_fix(
@@ -383,6 +429,7 @@ fn test(_arg: &mut i32) {}
             "#,
         );
     }
+
     #[test]
     fn add_reference_to_array() {
         check_fix(
@@ -401,6 +448,7 @@ fn test(_arg: &[i32]) {}
             "#,
         );
     }
+
     #[test]
     fn add_reference_with_autoderef() {
         check_fix(
@@ -433,6 +481,7 @@ fn test(_arg: &Bar) {}
             "#,
         );
     }
+
     #[test]
     fn add_reference_to_method_call() {
         check_fix(
@@ -456,6 +505,7 @@ impl Test {
             "#,
         );
     }
+
     #[test]
     fn add_reference_to_let_stmt() {
         check_fix(
@@ -471,6 +521,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn add_reference_to_macro_call() {
         check_fix(
@@ -498,6 +549,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn add_mutable_reference_to_let_stmt() {
         check_fix(
@@ -513,6 +565,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn const_generic_type_mismatch() {
         check_diagnostics(
@@ -529,6 +582,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn const_generic_unknown() {
         check_diagnostics(
@@ -542,6 +596,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type() {
         check_fix(
@@ -564,6 +619,7 @@ fn div(x: i32, y: i32) -> Result<i32, ()> {
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type_option() {
         check_fix(
@@ -586,6 +642,7 @@ fn div(x: i32, y: i32) -> Option<i32> {
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type_option_tails() {
         check_fix(
@@ -614,6 +671,7 @@ fn div(x: i32, y: i32) -> Option<i32> {
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type_handles_generic_functions() {
         check_fix(
@@ -636,6 +694,7 @@ fn div<T>(x: T) -> Result<T, i32> {
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type_handles_type_aliases() {
         check_fix(
@@ -662,6 +721,7 @@ fn div(x: i32, y: i32) -> MyResult<i32> {
 "#,
         );
     }
+
     #[test]
     fn wrapped_unit_as_block_tail_expr() {
         check_fix(
@@ -691,6 +751,7 @@ fn foo() -> Result<(), ()> {
             "#,
         );
     }
+
     #[test]
     fn wrapped_unit_as_return_expr() {
         check_fix(
@@ -713,6 +774,7 @@ fn foo(b: bool) -> Result<(), String> {
 }"#,
         );
     }
+
     #[test]
     fn wrap_in_const_and_static() {
         check_fix(
@@ -734,6 +796,7 @@ const _: Option<()> = {Some(())};
             "#,
         );
     }
+
     #[test]
     fn wrap_return_type_not_applicable_when_expr_type_does_not_match_ok_type() {
         check_no_fix(
@@ -743,6 +806,7 @@ fn foo() -> Result<(), i32> { 0$0 }
 "#,
         );
     }
+
     #[test]
     fn wrap_return_type_not_applicable_when_return_type_is_not_result_or_option() {
         check_no_fix(
@@ -754,6 +818,7 @@ fn foo() -> SomeOtherEnum { 0$0 }
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type() {
         check_fix(
@@ -776,6 +841,7 @@ fn div(x: i32, y: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_option() {
         check_fix(
@@ -798,6 +864,7 @@ fn div(x: i32, y: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_option_tails() {
         check_fix(
@@ -826,6 +893,7 @@ fn div(x: i32, y: i32) -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_option_tail_unit() {
         check_fix(
@@ -848,6 +916,7 @@ fn div(x: i32, y: i32) {
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_handles_generic_functions() {
         check_fix(
@@ -870,6 +939,7 @@ fn div<T>(x: T) -> T {
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_handles_type_aliases() {
         check_fix(
@@ -896,6 +966,7 @@ fn div(x: i32, y: i32) -> MyResult<i32> {
 "#,
         );
     }
+
     #[test]
     fn unwrap_tail_expr() {
         check_fix(
@@ -913,6 +984,7 @@ fn foo() -> () {
             "#,
         );
     }
+
     #[test]
     fn unwrap_to_empty_block() {
         check_fix(
@@ -927,6 +999,7 @@ fn foo() -> () {}
             "#,
         );
     }
+
     #[test]
     fn unwrap_to_return_expr() {
         check_has_fix(
@@ -949,6 +1022,7 @@ fn foo(b: bool) -> () {
 }"#,
         );
     }
+
     #[test]
     fn unwrap_in_const_and_static() {
         check_fix(
@@ -970,6 +1044,7 @@ const _: () = {};
             "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_not_applicable_when_inner_type_does_not_match_return_type() {
         check_no_fix(
@@ -979,6 +1054,7 @@ fn foo() -> i32 { $0Ok(()) }
 "#,
         );
     }
+
     #[test]
     fn unwrap_return_type_not_applicable_when_wrapper_type_is_not_result_or_option() {
         check_no_fix(
@@ -990,10 +1066,12 @@ fn foo() -> i32 { SomeOtherEnum::Ok($042) }
 "#,
         );
     }
+
     #[test]
     fn remove_semicolon() {
         check_fix(r#"fn f() -> i32 { 92$0; }"#, r#"fn f() -> i32 { 92 }"#);
     }
+
     #[test]
     fn str_ref_to_owned() {
         check_fix(
@@ -1013,6 +1091,7 @@ fn test() -> String {
             "#,
         );
     }
+
     #[test]
     fn type_mismatch_range_adjustment() {
         cov_mark::check!(type_mismatch_range_adjustment);
@@ -1037,6 +1116,7 @@ fn h() {
 "#,
         );
     }
+
     #[test]
     fn unknown_type_in_function_signature() {
         check_diagnostics(
@@ -1055,6 +1135,7 @@ fn test2() {
 "#,
         );
     }
+
     #[test]
     fn evaluate_const_generics_in_types() {
         check_diagnostics(
@@ -1076,6 +1157,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn type_mismatch_pat_smoke_test() {
         check_diagnostics(
@@ -1093,6 +1175,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn regression_14768() {
         check_diagnostics(
@@ -1112,6 +1195,7 @@ struct Bar {
 "#,
         );
     }
+
     #[test]
     fn trait_upcast_ok() {
         check_diagnostics(
@@ -1126,6 +1210,7 @@ fn test(a: &dyn A) -> &dyn B {
 "#,
         );
     }
+
     #[test]
     fn trait_upcast_err() {
         check_diagnostics(
@@ -1141,6 +1226,7 @@ fn test(a: &dyn A) -> &dyn B {
 "#,
         );
     }
+
     #[test]
     fn return_no_value() {
         check_diagnostics_with_disabled(
@@ -1155,6 +1241,7 @@ fn g() { return; }
             &["needless_return"],
         );
     }
+
     #[test]
     fn smoke_test_inner_items() {
         check_diagnostics(
@@ -1169,6 +1256,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn regression_17585() {
         check_diagnostics(
@@ -1180,6 +1268,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn complex_enum_variant_non_ref_pat() {
         check_diagnostics(
@@ -1200,6 +1289,7 @@ fn foo(v: &Enum) {
     "#,
         );
     }
+
     #[test]
     fn regression_19844() {
         check_diagnostics(

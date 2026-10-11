@@ -75,7 +75,10 @@ pub const BAZ: u32 = 0;
                 Default::default(),
                 None,
                 Env::default(),
-                CrateOrigin::Local { repo: None, name: Some(Symbol::intern(crate_name)) },
+                CrateOrigin::Local {
+                    repo: None,
+                    name: Some(Symbol::intern(crate_name)),
+                },
                 false,
                 Arc::new(
                     // FIXME: This is less than ideal
@@ -84,7 +87,10 @@ pub const BAZ: u32 = 0;
                     )
                     .unwrap(),
                 ),
-                Arc::new(CrateWorkspaceData { target: Err("".into()), toolchain: None }),
+                Arc::new(CrateWorkspaceData {
+                    target: Err("".into()),
+                    toolchain: None,
+                }),
             )
         };
         let a = add_crate("a", 0);
@@ -512,7 +518,10 @@ m!(Z);
             let (_, module_data) = crate_def_map.modules.iter().last().unwrap();
             assert_eq!(module_data.scope.resolutions().count(), 4);
         },
-        &[("file_item_tree_query", 6), ("parse_macro_expansion_shim", 3)],
+        &[
+            ("file_item_tree_query", 6),
+            ("parse_macro_expansion_shim", 3),
+        ],
         expect![[r#"
             [
                 "crate_local_def_map",
@@ -561,7 +570,10 @@ m!(Z);
             let (_, module_data) = crate_def_map.modules.iter().last().unwrap();
             assert_eq!(module_data.scope.resolutions().count(), 4);
         },
-        &[("file_item_tree_query", 1), ("parse_macro_expansion_shim", 0)],
+        &[
+            ("file_item_tree_query", 1),
+            ("parse_macro_expansion_shim", 0),
+        ],
         expect![[r#"
             [
                 "parse_shim",
@@ -640,7 +652,10 @@ fn execute_assert_events(
     let events = db.log_executed(f);
     for (event, count) in required {
         let n = events.iter().filter(|it| it.contains(event)).count();
-        assert_eq!(n, *count, "Expected {event} to be executed {count} times, but only got {n}");
+        assert_eq!(
+            n, *count,
+            "Expected {event} to be executed {count} times, but only got {n}"
+        );
     }
     expect.assert_debug_eq(&events);
 }

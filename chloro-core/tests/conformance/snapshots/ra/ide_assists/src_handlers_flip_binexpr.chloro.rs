@@ -33,7 +33,9 @@ pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
 
     let op_token = expr.op_token()?;
     // The assist should be applied only if the cursor is on the operator
-    let cursor_in_range = op_token.text_range().contains_range(ctx.selection_trimmed());
+    let cursor_in_range = op_token
+        .text_range()
+        .contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
@@ -159,27 +161,46 @@ pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn flip_binexpr_target_is_the_op() {
         check_assist_target(flip_binexpr, "fn f() { let res = 1 ==$0 2; }", "==")
     }
+
     #[test]
     fn flip_binexpr_not_applicable_for_assignment() {
         check_assist_not_applicable(flip_binexpr, "fn f() { let mut _x = 1; _x +=$0 2 }")
     }
+
     #[test]
     fn flip_binexpr_works_for_eq() {
-        check_assist(flip_binexpr, "fn f() { let res = 1 ==$0 2; }", "fn f() { let res = 2 == 1; }")
+        check_assist(
+            flip_binexpr,
+            "fn f() { let res = 1 ==$0 2; }",
+            "fn f() { let res = 2 == 1; }",
+        )
     }
+
     #[test]
     fn flip_binexpr_works_for_gt() {
-        check_assist(flip_binexpr, "fn f() { let res = 1 >$0 2; }", "fn f() { let res = 2 < 1; }")
+        check_assist(
+            flip_binexpr,
+            "fn f() { let res = 1 >$0 2; }",
+            "fn f() { let res = 2 < 1; }",
+        )
     }
+
     #[test]
     fn flip_binexpr_works_for_lteq() {
-        check_assist(flip_binexpr, "fn f() { let res = 1 <=$0 2; }", "fn f() { let res = 2 >= 1; }")
+        check_assist(
+            flip_binexpr,
+            "fn f() { let res = 1 <=$0 2; }",
+            "fn f() { let res = 2 >= 1; }",
+        )
     }
+
     #[test]
     fn flip_binexpr_works_for_complex_expr() {
         check_assist(
@@ -188,6 +209,7 @@ mod tests {
             "fn f() { let res = (2 + 2) == (1 + 1); }",
         )
     }
+
     #[test]
     fn flip_binexpr_works_for_lhs_arith() {
         check_assist(
@@ -196,6 +218,7 @@ mod tests {
             r"fn f() { let res = 1 + 4 + (2 - 3) + 5; }",
         )
     }
+
     #[test]
     fn flip_binexpr_works_for_lhs_cmp() {
         check_assist(
@@ -204,6 +227,7 @@ mod tests {
             r"fn f() { let res = 4 + 5 < 1 + (2 - 3); }",
         )
     }
+
     #[test]
     fn flip_binexpr_works_inside_match() {
         check_assist(

@@ -5,7 +5,6 @@
 //!     /* drop(x) */return;
 //! }
 //! ```
-
 use hir::{
     DefWithBody,
     db::{DefDatabase as _, HirDatabase as _},
@@ -94,7 +93,10 @@ pub(super) fn hints(
                 MirSpan::Unknown => continue,
             };
             let binding = &hir[binding_idx];
-            let name = binding.name.display_no_db(display_target.edition).to_smolstr();
+            let name = binding
+                .name
+                .display_no_db(display_target.edition)
+                .to_smolstr();
             if name.starts_with("<ra@") {
                 continue; // Ignore desugared variables
             }
@@ -147,7 +149,12 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
-    const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig { implicit_drop_hints: true, ..DISABLED_CONFIG };
+
+    const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
+        implicit_drop_hints: true,
+        ..DISABLED_CONFIG
+    };
+
     #[test]
     fn basic() {
         check_with_config(
@@ -165,6 +172,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn no_hint_for_copy_types_and_mutable_references() {
         // `T: Copy` and `T = &mut U` types do nothing on drop, so we should hide drop inlay hint for them.
@@ -189,6 +197,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn try_operator() {
         // We currently show drop inlay hint for every `?` operator that may potentially drop something. We probably need to
@@ -210,6 +219,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn if_let() {
         check_with_config(
@@ -227,6 +237,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn ignore_inlay_hint_for_macro_call() {
         check_with_config(

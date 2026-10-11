@@ -3,7 +3,6 @@
 //! we didn't do that.
 //!
 //! But we need this for at least LRU caching at the query level.
-
 pub use hir_def::db::DefDatabase;
 //     AttrsQuery, BlockDefMapQuery, BlockItemTreeQuery, BlockItemTreeWithSourceMapQuery, BodyQuery,
 //     BodyWithSourceMapQuery, ConstDataQuery, ConstVisibilityQuery, CrateDefMapQuery,

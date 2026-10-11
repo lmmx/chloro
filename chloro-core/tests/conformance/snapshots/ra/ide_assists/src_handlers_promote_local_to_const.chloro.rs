@@ -8,7 +8,7 @@ use syntax::{
 
 use crate::{
     assist_context::{AssistContext, Assists},
-    utils::self,
+    utils::{self},
 };
 
 // Assist: promote_local_to_const
@@ -76,7 +76,9 @@ pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>)
                 let name_ref = make.name_ref(&name);
 
                 for usage in usages {
-                    let Some(usage_name) = usage.name.as_name_ref().cloned() else { continue };
+                    let Some(usage_name) = usage.name.as_name_ref().cloned() else {
+                        continue;
+                    };
                     if let Some(record_field) = ast::RecordExprField::for_name_ref(&usage_name) {
                         let path = make.ident_path(&name);
                         let name_expr = make.expr_path(path);
@@ -106,7 +108,9 @@ pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>)
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn simple() {
         check_assist(
@@ -125,6 +129,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn multiple_uses() {
         check_assist(
@@ -145,6 +150,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn usage_in_field_shorthand() {
         check_assist(
@@ -171,6 +177,7 @@ fn main() {
 ",
         )
     }
+
     #[test]
     fn usage_in_macro() {
         check_assist(
@@ -201,6 +208,7 @@ fn baz() -> usize {
 ",
         )
     }
+
     #[test]
     fn usage_shorthand_in_macro() {
         check_assist(
@@ -239,6 +247,7 @@ fn baz() -> Foo {
 ",
         )
     }
+
     #[test]
     fn not_applicable_non_const_meth_call() {
         cov_mark::check!(promote_local_non_const);
@@ -255,6 +264,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn not_applicable_non_const_call() {
         check_assist_not_applicable(
@@ -267,6 +277,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn not_applicable_unknown_ty() {
         check_assist(
@@ -283,6 +294,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn not_applicable_non_simple_ident() {
         cov_mark::check!(promote_local_non_simple_ident);

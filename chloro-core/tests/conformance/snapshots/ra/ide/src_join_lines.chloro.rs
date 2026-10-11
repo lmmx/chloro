@@ -48,7 +48,10 @@ pub(crate) fn join_lines(
     let mut edit = TextEdit::builder();
     match file.syntax().covering_element(range) {
         NodeOrToken::Node(node) => {
-            for token in node.descendants_with_tokens().filter_map(|it| it.into_token()) {
+            for token in node
+                .descendants_with_tokens()
+                .filter_map(|it| it.into_token())
+            {
                 remove_newlines(config, &mut edit, &token, range)
             }
         }
@@ -125,7 +128,10 @@ fn remove_newline(
         match next.kind() {
             T![')'] | T![']'] => {
                 // Removes: trailing comma, newline (incl. surrounding whitespace)
-                edit.delete(TextRange::new(prev.text_range().start(), token.text_range().end()));
+                edit.delete(TextRange::new(
+                    prev.text_range().start(),
+                    token.text_range().end(),
+                ));
                 return;
             }
             T!['}'] => {
@@ -199,7 +205,10 @@ fn remove_newline(
     }
 
     // Remove newline but add a computed amount of whitespace characters
-    edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
+    edit.replace(
+        token.text_range(),
+        compute_ws(prev.kind(), next.kind()).to_owned(),
+    );
 }
 
 fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
@@ -227,7 +236,10 @@ fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Op
 fn join_single_use_tree(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
     let use_tree_list = ast::UseTreeList::cast(token.parent()?)?;
     let (tree,) = use_tree_list.use_trees().collect_tuple()?;
-    edit.replace(use_tree_list.syntax().text_range(), tree.syntax().text().to_string());
+    edit.replace(
+        use_tree_list.syntax().text_range(),
+        tree.syntax().text().to_string(),
+    );
     Some(())
 }
 
@@ -262,7 +274,12 @@ fn join_assignments(
         return None;
     }
 
-    edit.delete(let_stmt.semicolon_token()?.text_range().cover(lhs.syntax().text_range()));
+    edit.delete(
+        let_stmt
+            .semicolon_token()?
+            .text_range()
+            .cover(lhs.syntax().text_range()),
+    );
     Some(())
 }
 
@@ -300,7 +317,9 @@ fn compute_ws(left: SyntaxKind, right: SyntaxKind) -> &'static str {
 #[cfg(test)]
 mod tests {
     use test_utils::{add_cursor, assert_eq_text, extract_offset, extract_range};
+
     use super::*;
+
     fn check_join_lines(
         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
         #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
@@ -313,7 +332,9 @@ mod tests {
         };
 
         let (before_cursor_pos, before) = extract_offset(ra_fixture_before);
-        let file = SourceFile::parse(&before, span::Edition::CURRENT).ok().unwrap();
+        let file = SourceFile::parse(&before, span::Edition::CURRENT)
+            .ok()
+            .unwrap();
 
         let range = TextRange::empty(before_cursor_pos);
         let result = join_lines(&config, &file, range);
@@ -329,6 +350,7 @@ mod tests {
         let actual = add_cursor(&actual, actual_cursor_pos);
         assert_eq_text!(ra_fixture_after, &actual);
     }
+
     fn check_join_lines_sel(
         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
         #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
@@ -350,6 +372,7 @@ mod tests {
         };
         assert_eq_text!(ra_fixture_after, &actual);
     }
+
     #[test]
     fn test_join_lines_comma() {
         check_join_lines(
@@ -366,6 +389,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_lambda_block() {
         check_join_lines(
@@ -383,6 +407,7 @@ pub fn reparse(&self, edit: &AtomTextEdit) -> File {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_block() {
         check_join_lines(
@@ -398,6 +423,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_join_lines_diverging_block() {
         check_join_lines(
@@ -423,6 +449,7 @@ fn foo() {
         ",
         );
     }
+
     #[test]
     fn join_lines_adds_comma_for_block_in_match_arm() {
         check_join_lines(
@@ -444,6 +471,7 @@ fn foo(e: Result<U, V>) {
 }",
         );
     }
+
     #[test]
     fn join_lines_multiline_in_block() {
         check_join_lines(
@@ -471,6 +499,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn join_lines_keeps_comma_for_block_in_match_arm() {
         // We already have a comma
@@ -535,6 +564,7 @@ fn foo(e: Result<U, V>) {
 }",
         );
     }
+
     #[test]
     fn join_lines_keeps_comma_with_single_arg_tuple() {
         // A single arg tuple
@@ -581,6 +611,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_join_lines_use_items_left() {
         // No space after the '{'
@@ -594,6 +625,7 @@ $0use syntax::{TextSize, TextRange,
 };",
         );
     }
+
     #[test]
     fn test_join_lines_use_items_right() {
         // No space after the '}'
@@ -607,6 +639,7 @@ use syntax::{
 $0    TextSize, TextRange};",
         );
     }
+
     #[test]
     fn test_join_lines_use_items_right_comma() {
         // No space after the '}'
@@ -620,6 +653,7 @@ use syntax::{
 $0    TextSize, TextRange};",
         );
     }
+
     #[test]
     fn test_join_lines_use_tree() {
         check_join_lines(
@@ -637,6 +671,7 @@ use syntax::{
 };",
         );
     }
+
     #[test]
     fn test_join_lines_normal_comments() {
         check_join_lines(
@@ -653,6 +688,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_doc_comments() {
         check_join_lines(
@@ -669,6 +705,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_mod_comments() {
         check_join_lines(
@@ -685,6 +722,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_multiline_comments_1() {
         check_join_lines(
@@ -701,6 +739,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_multiline_comments_2() {
         check_join_lines(
@@ -721,6 +760,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_join_lines_selection_fn_args() {
         check_join_lines_sel(
@@ -739,6 +779,7 @@ fn foo() {
     ",
         );
     }
+
     #[test]
     fn test_join_lines_selection_struct() {
         check_join_lines_sel(
@@ -752,6 +793,7 @@ struct Foo { f: u32 }
     ",
         );
     }
+
     #[test]
     fn test_join_lines_selection_dot_chain() {
         check_join_lines_sel(
@@ -767,6 +809,7 @@ fn foo() {
 }",
         );
     }
+
     #[test]
     fn test_join_lines_selection_lambda_block_body() {
         check_join_lines_sel(
@@ -786,6 +829,7 @@ pub fn handle_find_matching_brace() {
 }",
         );
     }
+
     #[test]
     fn test_join_lines_commented_block() {
         check_join_lines(
@@ -808,6 +852,7 @@ fn main() {
         ",
         )
     }
+
     #[test]
     fn join_lines_mandatory_blocks_block() {
         check_join_lines(
@@ -870,6 +915,7 @@ fn foo() {
         ",
         );
     }
+
     #[test]
     fn join_string_literal() {
         {
@@ -939,6 +985,7 @@ $0hello world
 "#,
         );
     }
+
     #[test]
     fn join_last_line_empty() {
         check_join_lines(
@@ -950,6 +997,7 @@ fn main() {$0}
 "#,
         );
     }
+
     #[test]
     fn join_two_ifs() {
         cov_mark::check!(join_two_ifs);
@@ -975,6 +1023,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn join_two_ifs_with_existing_else() {
         cov_mark::check!(join_two_ifs_with_existing_else);
@@ -1004,6 +1053,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn join_assignments() {
         check_join_lines(

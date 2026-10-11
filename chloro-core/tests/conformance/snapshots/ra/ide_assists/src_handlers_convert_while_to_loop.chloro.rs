@@ -4,7 +4,11 @@ use either::Either;
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
     AstNode, T,
-    ast::{self, HasLoopBody, edit::{AstNodeEdit, IndentLevel}, make},
+    ast::{
+        self, HasLoopBody,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
 };
 
 use crate::{
@@ -60,7 +64,10 @@ pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) 
                 make::block_expr(stmts, None)
             } else {
                 let if_cond = invert_boolean_expression_legacy(while_cond);
-                let if_expr = make::expr_if(if_cond, break_block, None).syntax().clone().into();
+                let if_expr = make::expr_if(if_cond, break_block, None)
+                    .syntax()
+                    .clone()
+                    .into();
                 let elements = while_body.stmt_list().map_or_else(
                     || Either::Left(iter::empty()),
                     |stmts| {
@@ -84,7 +91,9 @@ pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) 
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn convert_inside_fn() {
         check_assist(
@@ -108,6 +117,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_busy_wait() {
         check_assist(
@@ -128,6 +138,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_trailing_expr() {
         check_assist(
@@ -151,6 +162,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn convert_while_let() {
         check_assist(
@@ -175,6 +187,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ignore_cursor_in_body() {
         check_assist_not_applicable(
@@ -188,6 +201,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn preserve_comments() {
         check_assist(

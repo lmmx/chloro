@@ -1,5 +1,4 @@
 //! Defines database & queries for name resolution.
-
 use base_db::{Crate, RootQueryDb, SourceDatabase};
 use either::Either;
 use hir_expand::{
@@ -14,12 +13,14 @@ use triomphe::Arc;
 use crate::{
     AssocItemId, AttrDefId, BlockId, BlockLoc, ConstId, ConstLoc, DefWithBodyId, EnumId, EnumLoc,
     EnumVariantId, EnumVariantLoc, ExternBlockId, ExternBlockLoc, ExternCrateId, ExternCrateLoc,
-    FunctionId, FunctionLoc, GenericDefId, ImplId, ImplLoc, LocalFieldId, MacroExpander, MacroId,
-    MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, Macro2Id, Macro2Loc, ProcMacroId,
+    FunctionId, FunctionLoc, GenericDefId, ImplId, ImplLoc, LocalFieldId, Macro2Id, Macro2Loc,
+    MacroExpander, MacroId, MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ProcMacroId,
     ProcMacroLoc, StaticId, StaticLoc, StructId, StructLoc, TraitId, TraitLoc, TypeAliasId,
     TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
     attr::{Attrs, AttrsWithOwner},
-    expr_store::{Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, scope::ExprScopes},
+    expr_store::{
+        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, scope::ExprScopes,
+    },
     hir::generics::GenericParams,
     import_map::ImportMap,
     item_tree::{ItemTree, file_item_tree_query},
@@ -36,7 +37,7 @@ use crate::{
 use salsa::plumbing::AsId;
 
 #[query_group::query_group(InternDatabaseStorage)]
-pub trait InternDatabase {
+pub trait InternDatabase: RootQueryDb {
     // region: items
     #[salsa::interned]
     fn intern_use(&self, loc: UseLoc) -> UseId;
@@ -92,7 +93,7 @@ pub trait InternDatabase {
 }
 
 #[query_group::query_group]
-pub trait DefDatabase {
+pub trait DefDatabase: InternDatabase + ExpandDatabase + SourceDatabase {
     /// Whether to expand procedural macros during name resolution.
     #[salsa::input]
     fn expand_proc_attr_macros(&self) -> bool;
@@ -235,7 +236,11 @@ pub trait DefDatabase {
     fn generic_params_and_store_and_source_map(
         &self,
         def: GenericDefId,
-    ) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>);
+    ) -> (
+        Arc<GenericParams>,
+        Arc<ExpressionStore>,
+        Arc<ExpressionStoreSourceMap>,
+    );
 
     // region:attrs
 
@@ -274,7 +279,6 @@ pub trait DefDatabase {
 
     #[salsa::invoke(crate::lang_item::notable_traits_in_deps)]
     fn notable_traits_in_deps(&self, krate: Crate) -> Arc<[Arc<[TraitId]>]>;
-
     #[salsa::invoke(crate::lang_item::crate_notable_traits)]
     fn crate_notable_traits(&self, krate: Crate) -> Option<Arc<[TraitId]>>;
 

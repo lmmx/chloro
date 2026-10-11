@@ -21,9 +21,14 @@ use syntax::AstNode;
 //
 // This diagnostic is triggered when an underscore expression is used in an invalid position.
 pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
-    let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
+    let display_range = ctx
+        .sema
+        .diagnostics_display_range(d.expr.map(|it| it.into()));
     let (message, fixes) = if d.expected.is_unknown() {
-        ("`_` expressions may only appear on the left-hand side of an assignment".to_owned(), None)
+        (
+            "`_` expressions may only appear on the left-hand side of an assignment".to_owned(),
+            None,
+        )
     } else {
         (
             format!(
@@ -36,16 +41,24 @@ pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -
         )
     };
 
-    Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range)
-        .stable()
-        .with_fixes(fixes)
+    Diagnostic::new(
+        DiagnosticCode::RustcHardError("typed-hole"),
+        message,
+        display_range,
+    )
+    .stable()
+    .with_fixes(fixes)
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Assist>> {
     let db = ctx.sema.db;
     let root = db.parse_or_expand(d.expr.file_id);
-    let (original_range, _) =
-        d.expr.as_ref().map(|it| it.to_node(&root)).syntax().original_file_range_opt(db)?;
+    let (original_range, _) = d
+        .expr
+        .as_ref()
+        .map(|it| it.to_node(&root))
+        .syntax()
+        .original_file_range_opt(db)?;
     let scope = ctx.sema.scope(d.expr.value.to_node(&root).syntax())?;
 
     let term_search_ctx = TermSearchCtx {
@@ -107,6 +120,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Ass
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fixes_unordered, check_has_fix};
+
     #[test]
     fn unknown() {
         check_diagnostics(
@@ -118,6 +132,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn concrete_expectation() {
         check_diagnostics(
@@ -133,6 +148,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn integer_ty_var() {
         check_diagnostics(
@@ -145,6 +161,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ty_var_resolved() {
         check_diagnostics(
@@ -159,6 +176,7 @@ fn t<T>() -> T { loop {} }
 "#,
         );
     }
+
     #[test]
     fn valid_positions() {
         check_diagnostics(
@@ -173,6 +191,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn check_quick_fix() {
         check_fixes_unordered(
@@ -252,6 +271,7 @@ fn main<const CP: Foo>(param: Foo) {
             ],
         );
     }
+
     #[test]
     fn local_item_use_trait() {
         check_has_fix(
@@ -289,6 +309,7 @@ fn asd() -> Bar {
 ",
         );
     }
+
     #[test]
     fn init_struct() {
         check_has_fix(
@@ -306,6 +327,7 @@ fn main() {
 }"#,
         );
     }
+
     #[test]
     fn ignore_impl_func_with_incorrect_return() {
         check_fixes_unordered(
@@ -355,6 +377,7 @@ fn main() {
             ],
         );
     }
+
     #[test]
     fn use_impl_func_with_correct_return() {
         check_has_fix(
@@ -390,6 +413,7 @@ fn main() {
 }"#,
         );
     }
+
     // FIXME
     #[test]
     fn local_shadow_fn() {
@@ -413,6 +437,7 @@ fn f() {
             ],
         );
     }
+
     #[test]
     fn underscore_in_asm() {
         check_diagnostics(

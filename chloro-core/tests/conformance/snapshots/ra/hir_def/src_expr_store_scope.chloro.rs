@@ -1,5 +1,4 @@
 //! Name resolution for expressions.
-
 use hir_expand::{MacroDefId, name::Name};
 use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
 use triomphe::Arc;
@@ -69,7 +68,7 @@ impl ExprScopes {
     }
 
     /// If `scope` refers to a macro def scope, returns the corresponding `MacroId`.
-    #[allow(clippy::borrowed_box)]
+    #[allow(clippy::borrowed_box)] // If we return `&MacroDefId` we need to move it, this way we just clone the `Box`.
     pub fn macro_def(&self, scope: ScopeId) -> Option<&Box<MacroDefId>> {
         self.scopes[scope].macro_def.as_ref()
     }
@@ -183,7 +182,11 @@ impl ExprScopes {
         hygiene: HygieneId,
     ) {
         let Binding { name, .. } = &store[binding];
-        let entry = self.scope_entries.alloc(ScopeEntry { name: name.clone(), binding, hygiene });
+        let entry = self.scope_entries.alloc(ScopeEntry {
+            name: name.clone(),
+            binding,
+            hygiene,
+        });
         self.scopes[scope].entries =
             IdxRange::new_inclusive(self.scopes[scope].entries.start()..=entry);
     }
@@ -198,7 +201,9 @@ impl ExprScopes {
     }
 
     fn add_params_bindings(&mut self, store: &ExpressionStore, scope: ScopeId, params: &[PatId]) {
-        params.iter().for_each(|pat| self.add_pat_bindings(store, scope, *pat));
+        params
+            .iter()
+            .for_each(|pat| self.add_pat_bindings(store, scope, *pat));
     }
 
     fn set_scope(&mut self, node: ExprId, scope: ScopeId) {
@@ -206,7 +211,11 @@ impl ExprScopes {
     }
 
     fn shrink_to_fit(&mut self) {
-        let ExprScopes { scopes, scope_entries, scope_by_expr } = self;
+        let ExprScopes {
+            scopes,
+            scope_entries,
+            scope_by_expr,
+        } = self;
         scopes.shrink_to_fit();
         scope_entries.shrink_to_fit();
         scope_by_expr.shrink_to_fit();
@@ -222,7 +231,12 @@ fn compute_block_scopes(
 ) {
     for stmt in statements {
         match stmt {
-            Statement::Let { pat, initializer, else_branch, .. } => {
+            Statement::Let {
+                pat,
+                initializer,
+                else_branch,
+                ..
+            } => {
                 if let Some(expr) = initializer {
                     compute_expr_scopes(*expr, store, scopes, scope);
                 }
@@ -262,7 +276,12 @@ fn compute_expr_scopes(
 
     scopes.set_scope(expr, *scope);
     match &store[expr] {
-        Expr::Block { statements, tail, id, label } => {
+        Expr::Block {
+            statements,
+            tail,
+            id,
+            label,
+        } => {
             let mut scope = scopes.new_block_scope(*scope, *id, make_label(label));
             // Overwrite the old scope for the block expr, so that every block scope can be found
             // via the block itself (important for blocks that only contain items, no expressions).
@@ -273,18 +292,34 @@ fn compute_expr_scopes(
             let mut scope = scopes.root_scope();
             compute_expr_scopes(scopes, *id, &mut scope);
         }
-        Expr::Unsafe { id, statements, tail } | Expr::Async { id, statements, tail } => {
+        Expr::Unsafe {
+            id,
+            statements,
+            tail,
+        }
+        | Expr::Async {
+            id,
+            statements,
+            tail,
+        } => {
             let mut scope = scopes.new_block_scope(*scope, *id, None);
             // Overwrite the old scope for the block expr, so that every block scope can be found
             // via the block itself (important for blocks that only contain items, no expressions).
             scopes.set_scope(expr, scope);
             compute_block_scopes(statements, *tail, store, scopes, &mut scope);
         }
-        Expr::Loop { body: body_expr, label } => {
+        Expr::Loop {
+            body: body_expr,
+            label,
+        } => {
             let mut scope = scopes.new_labeled_scope(*scope, make_label(label));
             compute_expr_scopes(scopes, *body_expr, &mut scope);
         }
-        Expr::Closure { args, body: body_expr, .. } => {
+        Expr::Closure {
+            args,
+            body: body_expr,
+            ..
+        } => {
             let mut scope = scopes.new_scope(*scope);
             scopes.add_params_bindings(store, scope, args);
             compute_expr_scopes(scopes, *body_expr, &mut scope);
@@ -301,7 +336,11 @@ fn compute_expr_scopes(
                 compute_expr_scopes(scopes, arm.expr, &mut scope);
             }
         }
-        &Expr::If { condition, then_branch, else_branch } => {
+        &Expr::If {
+            condition,
+            then_branch,
+            else_branch,
+        } => {
             let mut then_branch_scope = scopes.new_scope(*scope);
             compute_expr_scopes(scopes, condition, &mut then_branch_scope);
             compute_expr_scopes(scopes, then_branch, &mut then_branch_scope);
@@ -326,9 +365,11 @@ mod tests {
     use syntax::{AstNode, algo::find_node_at_offset, ast};
     use test_fixture::WithFixture;
     use test_utils::{assert_eq_text, extract_offset};
+
     use crate::{
         FunctionId, ModuleDefId, db::DefDatabase, nameres::crate_def_map, test_db::TestDB,
     };
+
     fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
         let krate = db.test_crate();
         let crate_def_map = crate_def_map(db, krate);
@@ -340,6 +381,7 @@ mod tests {
             _ => panic!(),
         }
     }
+
     fn do_check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &[&str]) {
         let (offset, code) = extract_offset(ra_fixture);
         let code = {
@@ -365,7 +407,10 @@ mod tests {
         let (_body, source_map) = db.body_with_source_map(function.into());
 
         let expr_id = source_map
-            .node_expr(InFile { file_id: editioned_file_id.into(), value: &marker.into() })
+            .node_expr(InFile {
+                file_id: editioned_file_id.into(),
+                value: &marker.into(),
+            })
             .unwrap()
             .as_expr()
             .unwrap();
@@ -380,6 +425,7 @@ mod tests {
         let expected = expected.join("\n");
         assert_eq_text!(&expected, &actual);
     }
+
     #[test]
     fn test_lambda_scope() {
         do_check(
@@ -392,6 +438,7 @@ mod tests {
             &["bar", "baz", "foo"],
         );
     }
+
     #[test]
     fn test_call_scope() {
         do_check(
@@ -402,6 +449,7 @@ mod tests {
             &["x"],
         );
     }
+
     #[test]
     fn test_method_call_scope() {
         do_check(
@@ -412,6 +460,7 @@ mod tests {
             &["x"],
         );
     }
+
     #[test]
     fn test_loop_scope() {
         do_check(
@@ -425,6 +474,7 @@ mod tests {
             &["x"],
         );
     }
+
     #[test]
     fn test_match() {
         do_check(
@@ -439,6 +489,7 @@ mod tests {
             &["x"],
         );
     }
+
     #[test]
     fn test_shadow_variable() {
         do_check(
@@ -449,6 +500,7 @@ mod tests {
             &["x"],
         );
     }
+
     #[test]
     fn test_bindings_after_at() {
         do_check(
@@ -465,6 +517,7 @@ fn foo() {
             &["opt", "unit"],
         );
     }
+
     #[test]
     fn macro_inner_item() {
         do_check(
@@ -484,6 +537,7 @@ fn foo() {
             &[],
         );
     }
+
     #[test]
     fn broken_inner_item() {
         do_check(
@@ -496,6 +550,7 @@ fn foo() {
             &[],
         );
     }
+
     fn do_check_local_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_offset: u32) {
         let (db, position) = TestDB::with_position(ra_fixture);
         let editioned_file_id = position.file_id;
@@ -514,22 +569,33 @@ fn foo() {
         let (_, source_map) = db.body_with_source_map(function.into());
 
         let expr_scope = {
-            let expr_ast = name_ref.syntax().ancestors().find_map(ast::Expr::cast).unwrap();
+            let expr_ast = name_ref
+                .syntax()
+                .ancestors()
+                .find_map(ast::Expr::cast)
+                .unwrap();
             let expr_id = source_map
-                .node_expr(InFile { file_id: editioned_file_id.into(), value: &expr_ast })
+                .node_expr(InFile {
+                    file_id: editioned_file_id.into(),
+                    value: &expr_ast,
+                })
                 .unwrap()
                 .as_expr()
                 .unwrap();
             scopes.scope_for(expr_id).unwrap()
         };
 
-        let resolved = scopes.resolve_name_in_scope(expr_scope, &name_ref.as_name()).unwrap();
-        let pat_src =
-            source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
+        let resolved = scopes
+            .resolve_name_in_scope(expr_scope, &name_ref.as_name())
+            .unwrap();
+        let pat_src = source_map
+            .pat_syntax(source_map.patterns_for_binding(resolved.binding())[0])
+            .unwrap();
 
         let local_name = pat_src.value.syntax_node_ptr().to_node(file.syntax());
         assert_eq!(local_name.text_range(), expected_name.syntax().text_range());
     }
+
     #[test]
     fn test_resolve_local_name() {
         do_check_local_name(
@@ -546,6 +612,7 @@ fn foo(x: i32, y: u32) {
             7,
         );
     }
+
     #[test]
     fn test_resolve_local_name_declaration() {
         do_check_local_name(
@@ -557,6 +624,7 @@ fn foo(x: String) {
             7,
         );
     }
+
     #[test]
     fn test_resolve_local_name_shadow() {
         do_check_local_name(
@@ -569,6 +637,7 @@ fn foo(x: String) {
             28,
         );
     }
+
     #[test]
     fn ref_patterns_contribute_bindings() {
         do_check_local_name(
@@ -582,6 +651,7 @@ fn foo() {
             28,
         );
     }
+
     #[test]
     fn while_let_adds_binding() {
         do_check_local_name(
@@ -607,6 +677,7 @@ fn test() {
             107,
         );
     }
+
     #[test]
     fn match_guard_if_let() {
         do_check_local_name(
@@ -621,6 +692,7 @@ fn test() {
             93,
         );
     }
+
     #[test]
     fn let_chains_can_reference_previous_lets() {
         do_check_local_name(

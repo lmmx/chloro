@@ -8,7 +8,10 @@ use ide_db::{
 use syntax::{
     NodeOrToken, SyntaxKind, T,
     ast::{
-        self, AstNode, Expr::BinExpr, HasArgList, prec::{ExprPrecedence, precedence},
+        self, AstNode,
+        Expr::BinExpr,
+        HasArgList,
+        prec::{ExprPrecedence, precedence},
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Position, SyntaxEditor},
@@ -135,7 +138,10 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                 bin_expr.syntax().parent().and_then(ast::ParenExpr::cast)
             {
                 cov_mark::hit!(demorgan_double_parens);
-                (paren_expr.syntax().clone(), add_bang_paren(&make, demorganed))
+                (
+                    paren_expr.syntax().clone(),
+                    add_bang_paren(&make, demorganed),
+                )
             } else {
                 (bin_expr.syntax().clone(), add_bang_paren(&make, demorganed))
             };
@@ -189,11 +195,16 @@ pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let (name, arg_expr) = validate_method_call_expr(ctx, &method_call)?;
 
-    let ast::Expr::ClosureExpr(closure_expr) = arg_expr else { return None };
+    let ast::Expr::ClosureExpr(closure_expr) = arg_expr else {
+        return None;
+    };
     let closure_body = closure_expr.body()?.clone_for_update();
 
     let op_range = method_call.syntax().text_range();
-    let label = format!("Apply De Morgan's law to `Iterator::{}`", name.text().as_str());
+    let label = format!(
+        "Apply De Morgan's law to `Iterator::{}`",
+        name.text().as_str()
+    );
     acc.add_group(
         &GroupLabel("Apply De Morgan's law".to_owned()),
         AssistId::refactor_rewrite("apply_demorgan_iterator"),
@@ -229,10 +240,15 @@ pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>
                 .filter(|prefix_expr| matches!(prefix_expr.op_kind(), Some(ast::UnaryOp::Not)))
             {
                 editor.delete(
-                    prefix_expr.op_token().expect("prefix expression always has an operator"),
+                    prefix_expr
+                        .op_token()
+                        .expect("prefix expression always has an operator"),
                 );
             } else {
-                editor.insert(Position::before(method_call.syntax()), make.token(SyntaxKind::BANG));
+                editor.insert(
+                    Position::before(method_call.syntax()),
+                    make.token(SyntaxKind::BANG),
+                );
             }
 
             editor.add_mappings(make.finish_with_mappings());
@@ -260,7 +276,9 @@ fn validate_method_call_expr(
     let krate = module.krate();
 
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
-    it_type.impls_trait(sema.db, iter_trait, &[]).then_some((name_ref, arg_expr))
+    it_type
+        .impls_trait(sema.db, iter_trait, &[])
+        .then_some((name_ref, arg_expr))
 }
 
 fn tail_cb_impl(editor: &mut SyntaxEditor, make: &SyntaxFactory, e: &ast::Expr) {
@@ -289,6 +307,7 @@ fn add_bang_paren(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn demorgan_handles_leq() {
         check_assist(
@@ -303,6 +322,7 @@ fn f() { !(S >= S || S > S) }
 "#,
         );
     }
+
     #[test]
     fn demorgan_handles_geq() {
         check_assist(
@@ -317,41 +337,82 @@ fn f() { !(S <= S || S < S) }
 "#,
         );
     }
+
     #[test]
     fn demorgan_turns_and_into_or() {
-        check_assist(apply_demorgan, "fn f() { !x &&$0 !x }", "fn f() { !(x || x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !x &&$0 !x }",
+            "fn f() { !(x || x) }",
+        )
     }
+
     #[test]
     fn demorgan_turns_or_into_and() {
-        check_assist(apply_demorgan, "fn f() { !x ||$0 !x }", "fn f() { !(x && x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !x ||$0 !x }",
+            "fn f() { !(x && x) }",
+        )
     }
+
     #[test]
     fn demorgan_removes_inequality() {
-        check_assist(apply_demorgan, "fn f() { x != x ||$0 !x }", "fn f() { !(x == x && x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { x != x ||$0 !x }",
+            "fn f() { !(x == x && x) }",
+        )
     }
+
     #[test]
     fn demorgan_general_case() {
-        check_assist(apply_demorgan, "fn f() { x ||$0 x }", "fn f() { !(!x && !x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { x ||$0 x }",
+            "fn f() { !(!x && !x) }",
+        )
     }
+
     #[test]
     fn demorgan_multiple_terms() {
-        check_assist(apply_demorgan, "fn f() { x ||$0 y || z }", "fn f() { !(!x && !y && !z) }");
-        check_assist(apply_demorgan, "fn f() { x || y ||$0 z }", "fn f() { !(!x && !y && !z) }");
+        check_assist(
+            apply_demorgan,
+            "fn f() { x ||$0 y || z }",
+            "fn f() { !(!x && !y && !z) }",
+        );
+        check_assist(
+            apply_demorgan,
+            "fn f() { x || y ||$0 z }",
+            "fn f() { !(!x && !y && !z) }",
+        );
     }
+
     #[test]
     fn demorgan_doesnt_apply_with_cursor_not_on_op() {
         check_assist_not_applicable(apply_demorgan, "fn f() { $0 !x || !x }")
     }
+
     #[test]
     fn demorgan_doesnt_double_negation() {
         cov_mark::check!(demorgan_double_negation);
-        check_assist(apply_demorgan, "fn f() { !(x ||$0 x) }", "fn f() { !x && !x }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { !(x ||$0 x) }",
+            "fn f() { !x && !x }",
+        )
     }
+
     #[test]
     fn demorgan_doesnt_double_parens() {
         cov_mark::check!(demorgan_double_parens);
-        check_assist(apply_demorgan, "fn f() { (x ||$0 x) }", "fn f() { !(!x && !x) }")
+        check_assist(
+            apply_demorgan,
+            "fn f() { (x ||$0 x) }",
+            "fn f() { !(!x && !x) }",
+        )
     }
+
     #[test]
     fn demorgan_doesnt_hang() {
         check_assist(
@@ -360,6 +421,7 @@ fn f() { !(S <= S || S < S) }
             "fn f() { 1 || !(!3 || !4) || 5 }",
         )
     }
+
     #[test]
     fn demorgan_on_not() {
         check_assist(
@@ -368,6 +430,7 @@ fn f() { !(S <= S || S < S) }
             "fn f() { !1 && !(3 && 4) && !5 }",
         )
     }
+
     #[test]
     fn demorgan_keep_pars_for_op_precedence() {
         check_assist(
@@ -382,6 +445,7 @@ fn f() { !(S <= S || S < S) }
 ",
         );
     }
+
     #[test]
     fn demorgan_keep_pars_for_op_precedence2() {
         cov_mark::check!(demorgan_keep_parens_for_op_precedence2);
@@ -391,6 +455,7 @@ fn f() { !(S <= S || S < S) }
             "fn f() { (a && (!b || !c); }",
         );
     }
+
     #[test]
     fn demorgan_keep_pars_for_op_precedence3() {
         check_assist(
@@ -399,6 +464,7 @@ fn f() { !(S <= S || S < S) }
             "fn f() { (a || (!b || !c); }",
         );
     }
+
     #[test]
     fn demorgan_keeps_pars_in_eq_precedence() {
         check_assist(
@@ -407,10 +473,16 @@ fn f() { !(S <= S || S < S) }
             "fn() { let x = a && (b && c); }",
         )
     }
+
     #[test]
     fn demorgan_removes_pars_for_op_precedence2() {
-        check_assist(apply_demorgan, "fn f() { (a || !(b ||$0 c); }", "fn f() { (a || !b && !c; }");
+        check_assist(
+            apply_demorgan,
+            "fn f() { (a || !(b ||$0 c); }",
+            "fn f() { (a || !b && !c; }",
+        );
     }
+
     #[test]
     fn demorgan_iterator_any_all_reverse() {
         check_assist(
@@ -434,6 +506,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_all_any() {
         check_assist(
@@ -457,6 +530,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_multiple_terms() {
         check_assist(
@@ -480,6 +554,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_double_negation() {
         check_assist(
@@ -503,6 +578,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_double_parens() {
         check_assist(
@@ -526,6 +602,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_multiline() {
         check_assist(
@@ -555,6 +632,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_block_closure() {
         check_assist(
@@ -590,6 +668,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_iterator_wrong_method() {
         check_assist_not_applicable(
@@ -605,6 +684,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn demorgan_method_call_receiver() {
         check_assist(
@@ -613,6 +693,7 @@ fn main() {
             "fn f() { (!(!x && y)).then_some(42) }",
         );
     }
+
     #[test]
     fn demorgan_method_call_receiver_complex() {
         check_assist(
@@ -621,6 +702,7 @@ fn main() {
             "fn f() { (!(!(a && b) && !(c && d))).then_some(42) }",
         );
     }
+
     #[test]
     fn demorgan_method_call_receiver_chained() {
         check_assist(

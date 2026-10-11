@@ -1,6 +1,5 @@
 //! Defines `ExpressionStore`: a lowered representation of functions, statics and
 //! consts.
-
 pub mod body;
 mod expander;
 pub mod lower;
@@ -49,6 +48,7 @@ pub use self::lower::{
 pub struct HygieneId(span::SyntaxContext);
 
 impl HygieneId {
+    // The edition doesn't matter here, we only use this for comparisons and to lookup the macro.
     pub const ROOT: Self = Self(span::SyntaxContext::root(Edition::Edition2015));
 
     pub fn new(mut ctx: span::SyntaxContext) -> Self {
@@ -68,41 +68,34 @@ impl HygieneId {
 }
 
 pub type ExprPtr = AstPtr<ast::Expr>;
-
 pub type ExprSource = InFile<ExprPtr>;
 
 pub type PatPtr = AstPtr<ast::Pat>;
-
 pub type PatSource = InFile<PatPtr>;
 
 pub type LabelPtr = AstPtr<ast::Label>;
-
 pub type LabelSource = InFile<LabelPtr>;
 
 pub type FieldPtr = AstPtr<ast::RecordExprField>;
-
 pub type FieldSource = InFile<FieldPtr>;
 
 pub type PatFieldPtr = AstPtr<Either<ast::RecordExprField, ast::RecordPatField>>;
-
 pub type PatFieldSource = InFile<PatFieldPtr>;
 
 pub type ExprOrPatPtr = AstPtr<Either<ast::Expr, ast::Pat>>;
-
 pub type ExprOrPatSource = InFile<ExprOrPatPtr>;
 
 pub type SelfParamPtr = AstPtr<ast::SelfParam>;
-
 pub type MacroCallPtr = AstPtr<ast::MacroCall>;
 
 pub type TypePtr = AstPtr<ast::Type>;
-
 pub type TypeSource = InFile<TypePtr>;
 
 pub type LifetimePtr = AstPtr<ast::Lifetime>;
-
 pub type LifetimeSource = InFile<LifetimePtr>;
 
+// We split the store into types-only and expressions, because most stores (e.g. generics)
+// don't store any expressions and this saves memory. Same thing for the source map.
 #[derive(Debug, PartialEq, Eq)]
 struct ExpressionOnlyStore {
     exprs: Arena<Expr>,
@@ -114,6 +107,7 @@ struct ExpressionOnlyStore {
     binding_owners: FxHashMap<BindingId, ExprId>,
     /// Block expressions in this store that may contain inner items.
     block_scopes: Box<[BlockId]>,
+
     /// A map from an variable usages to their hygiene ID.
     ///
     /// Expressions (and destructuing patterns) that can be recorded here are single segment path, although not all single segments path refer
@@ -134,22 +128,30 @@ struct ExpressionOnlySourceMap {
     // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
     expr_map: FxHashMap<ExprSource, ExprOrPatId>,
     expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
+
     pat_map: FxHashMap<PatSource, ExprOrPatId>,
     pat_map_back: ArenaMap<PatId, ExprOrPatSource>,
+
     label_map: FxHashMap<LabelSource, LabelId>,
     label_map_back: ArenaMap<LabelId, LabelSource>,
-    binding_definitions: ArenaMap<BindingId, SmallVec<[PatId; 2 * size_of::<usize>() / size_of::<PatId>()]>>,
+
+    binding_definitions:
+        ArenaMap<BindingId, SmallVec<[PatId; 2 * size_of::<usize>() / size_of::<PatId>()]>>,
+
     /// We don't create explicit nodes for record fields (`S { record_field: 92 }`).
     /// Instead, we use id of expression (`92`) to identify the field.
     field_map_back: FxHashMap<ExprId, FieldSource>,
     pat_field_map_back: FxHashMap<PatId, PatFieldSource>,
+
     template_map: Option<Box<FormatTemplate>>,
+
     expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
+
+    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
+    /// the source map (since they're just as volatile).
     //
     // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
     // maybe for cfgs, and they are also not common in type places).
-    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
-    /// the source map (since they're just as volatile).
     diagnostics: ThinVec<ExpressionStoreDiagnostics>,
 }
 
@@ -175,15 +177,22 @@ impl PartialEq for ExpressionOnlySourceMap {
             expansions,
             diagnostics,
         } = self;
-        *expr_map_back == other.expr_map_back && *pat_map_back == other.pat_map_back && *label_map_back == other.label_map_back && *template_map == other.template_map && *expansions == other.expansions && *diagnostics == other.diagnostics
+        *expr_map_back == other.expr_map_back
+            && *pat_map_back == other.pat_map_back
+            && *label_map_back == other.label_map_back
+            && *template_map == other.template_map
+            && *expansions == other.expansions
+            && *diagnostics == other.diagnostics
     }
 }
 
 #[derive(Debug, Eq, Default)]
 pub struct ExpressionStoreSourceMap {
     expr_only: Option<Box<ExpressionOnlySourceMap>>,
+
     types_map_back: ArenaMap<TypeRefId, TypeSource>,
     types_map: FxHashMap<TypeSource, TypeRefId>,
+
     lifetime_map_back: ArenaMap<LifetimeRefId, LifetimeSource>,
     #[expect(
         unused,
@@ -197,9 +206,16 @@ impl PartialEq for ExpressionStoreSourceMap {
         // we only need to compare one of the two mappings
         // as the other is a reverse mapping and thus will compare
         // the same as normal mapping
-        let Self { expr_only, types_map_back, types_map: _, lifetime_map_back, lifetime_map: _ } =
-            self;
-        *expr_only == other.expr_only && *types_map_back == other.types_map_back && *lifetime_map_back == other.lifetime_map_back
+        let Self {
+            expr_only,
+            types_map_back,
+            types_map: _,
+            lifetime_map_back,
+            lifetime_map: _,
+        } = self;
+        *expr_only == other.expr_only
+            && *types_map_back == other.types_map_back
+            && *lifetime_map_back == other.lifetime_map_back
     }
 }
 
@@ -215,30 +231,41 @@ pub struct ExpressionStoreBuilder {
     pub types: Arena<TypeRef>,
     block_scopes: Vec<BlockId>,
     ident_hygiene: FxHashMap<ExprOrPatId, HygieneId>,
+
     // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
     // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
     expr_map: FxHashMap<ExprSource, ExprOrPatId>,
     expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
+
     pat_map: FxHashMap<PatSource, ExprOrPatId>,
     pat_map_back: ArenaMap<PatId, ExprOrPatSource>,
+
     label_map: FxHashMap<LabelSource, LabelId>,
     label_map_back: ArenaMap<LabelId, LabelSource>,
+
     types_map_back: ArenaMap<TypeRefId, TypeSource>,
     types_map: FxHashMap<TypeSource, TypeRefId>,
+
     lifetime_map_back: ArenaMap<LifetimeRefId, LifetimeSource>,
     lifetime_map: FxHashMap<LifetimeSource, LifetimeRefId>,
-    binding_definitions: ArenaMap<BindingId, SmallVec<[PatId; 2 * size_of::<usize>() / size_of::<PatId>()]>>,
+
+    binding_definitions:
+        ArenaMap<BindingId, SmallVec<[PatId; 2 * size_of::<usize>() / size_of::<PatId>()]>>,
+
     /// We don't create explicit nodes for record fields (`S { record_field: 92 }`).
     /// Instead, we use id of expression (`92`) to identify the field.
     field_map_back: FxHashMap<ExprId, FieldSource>,
     pat_field_map_back: FxHashMap<PatId, PatFieldSource>,
+
     template_map: Option<Box<FormatTemplate>>,
+
     expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
+
+    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
+    /// the source map (since they're just as volatile).
     //
     // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
     // maybe for cfgs, and they are also not common in type places).
-    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
-    /// the source map (since they're just as volatile).
     pub(crate) diagnostics: Vec<ExpressionStoreDiagnostics>,
 }
 
@@ -362,7 +389,11 @@ impl ExpressionStoreBuilder {
             } else {
                 None
             };
-            ExpressionStore { expr_only, types, lifetimes }
+            ExpressionStore {
+                expr_only,
+                types,
+                lifetimes,
+            }
         };
 
         let source_map = {
@@ -447,7 +478,11 @@ impl ExpressionStore {
                 args.iter().copied().for_each(f);
             }
             Pat::Ref { pat, .. } => f(*pat),
-            Pat::Slice { prefix, slice, suffix } => {
+            Pat::Slice {
+                prefix,
+                slice,
+                suffix,
+            } => {
                 let total_iter = prefix.iter().chain(slice.iter()).chain(suffix.iter());
                 total_iter.copied().for_each(f);
             }
@@ -464,7 +499,9 @@ impl ExpressionStore {
     }
 
     pub fn is_binding_upvar(&self, binding: BindingId, relative_to: ExprId) -> bool {
-        let Some(expr_only) = &self.expr_only else { return false };
+        let Some(expr_only) = &self.expr_only else {
+            return false;
+        };
         match expr_only.binding_owners.get(&binding) {
             Some(it) => {
                 // We assign expression ids in a way that outer closures will receive
@@ -495,11 +532,15 @@ impl ExpressionStore {
             | Expr::Underscore => {}
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
-                | AsmOperand::Out { expr: Some(expr), .. }
+                | AsmOperand::Out {
+                    expr: Some(expr), ..
+                }
                 | AsmOperand::InOut { expr, .. }
                 | AsmOperand::Const(expr)
                 | AsmOperand::Label(expr) => f(*expr),
-                AsmOperand::SplitInOut { in_expr, out_expr, .. } => {
+                AsmOperand::SplitInOut {
+                    in_expr, out_expr, ..
+                } => {
                     f(*in_expr);
                     if let Some(out_expr) = out_expr {
                         f(*out_expr);
@@ -507,7 +548,11 @@ impl ExpressionStore {
                 }
                 AsmOperand::Out { expr: None, .. } | AsmOperand::Sym(_) => (),
             }),
-            Expr::If { condition, then_branch, else_branch } => {
+            Expr::If {
+                condition,
+                then_branch,
+                else_branch,
+            } => {
                 f(*condition);
                 f(*then_branch);
                 if let &Some(else_branch) = else_branch {
@@ -518,12 +563,23 @@ impl ExpressionStore {
                 self.walk_exprs_in_pat(*pat, &mut f);
                 f(*expr);
             }
-            Expr::Block { statements, tail, .. }
-            | Expr::Unsafe { statements, tail, .. }
-            | Expr::Async { statements, tail, .. } => {
+            Expr::Block {
+                statements, tail, ..
+            }
+            | Expr::Unsafe {
+                statements, tail, ..
+            }
+            | Expr::Async {
+                statements, tail, ..
+            } => {
                 for stmt in statements.iter() {
                     match stmt {
-                        Statement::Let { initializer, else_branch, pat, .. } => {
+                        Statement::Let {
+                            initializer,
+                            else_branch,
+                            pat,
+                            ..
+                        } => {
                             if let &Some(expr) = initializer {
                                 f(expr);
                             }
@@ -532,7 +588,9 @@ impl ExpressionStore {
                             }
                             self.walk_exprs_in_pat(*pat, &mut f);
                         }
-                        Statement::Expr { expr: expression, .. } => f(*expression),
+                        Statement::Expr {
+                            expr: expression, ..
+                        } => f(*expression),
                         Statement::Item(_) => (),
                     }
                 }
@@ -603,7 +661,10 @@ impl ExpressionStore {
             Expr::Tuple { exprs, .. } => exprs.iter().copied().for_each(f),
             Expr::Array(a) => match a {
                 Array::ElementList { elements, .. } => elements.iter().copied().for_each(f),
-                Array::Repeat { initializer, repeat } => {
+                Array::Repeat {
+                    initializer,
+                    repeat,
+                } => {
                     f(*initializer);
                     f(*repeat)
                 }
@@ -631,11 +692,15 @@ impl ExpressionStore {
             | Expr::Underscore => {}
             Expr::InlineAsm(it) => it.operands.iter().for_each(|(_, op)| match op {
                 AsmOperand::In { expr, .. }
-                | AsmOperand::Out { expr: Some(expr), .. }
+                | AsmOperand::Out {
+                    expr: Some(expr), ..
+                }
                 | AsmOperand::InOut { expr, .. }
                 | AsmOperand::Const(expr)
                 | AsmOperand::Label(expr) => f(*expr),
-                AsmOperand::SplitInOut { in_expr, out_expr, .. } => {
+                AsmOperand::SplitInOut {
+                    in_expr, out_expr, ..
+                } => {
                     f(*in_expr);
                     if let Some(out_expr) = out_expr {
                         f(*out_expr);
@@ -643,7 +708,11 @@ impl ExpressionStore {
                 }
                 AsmOperand::Out { expr: None, .. } | AsmOperand::Sym(_) => (),
             }),
-            Expr::If { condition, then_branch, else_branch } => {
+            Expr::If {
+                condition,
+                then_branch,
+                else_branch,
+            } => {
                 f(*condition);
                 f(*then_branch);
                 if let &Some(else_branch) = else_branch {
@@ -653,12 +722,22 @@ impl ExpressionStore {
             Expr::Let { expr, .. } => {
                 f(*expr);
             }
-            Expr::Block { statements, tail, .. }
-            | Expr::Unsafe { statements, tail, .. }
-            | Expr::Async { statements, tail, .. } => {
+            Expr::Block {
+                statements, tail, ..
+            }
+            | Expr::Unsafe {
+                statements, tail, ..
+            }
+            | Expr::Async {
+                statements, tail, ..
+            } => {
                 for stmt in statements.iter() {
                     match stmt {
-                        Statement::Let { initializer, else_branch, .. } => {
+                        Statement::Let {
+                            initializer,
+                            else_branch,
+                            ..
+                        } => {
                             if let &Some(expr) = initializer {
                                 f(expr);
                             }
@@ -666,7 +745,9 @@ impl ExpressionStore {
                                 f(expr);
                             }
                         }
-                        Statement::Expr { expr: expression, .. } => f(*expression),
+                        Statement::Expr {
+                            expr: expression, ..
+                        } => f(*expression),
                         Statement::Item(_) => (),
                     }
                 }
@@ -734,7 +815,10 @@ impl ExpressionStore {
             Expr::Tuple { exprs, .. } => exprs.iter().copied().for_each(f),
             Expr::Array(a) => match a {
                 Array::ElementList { elements, .. } => elements.iter().copied().for_each(f),
-                Array::Repeat { initializer, repeat } => {
+                Array::Repeat {
+                    initializer,
+                    repeat,
+                } => {
                     f(*initializer);
                     f(*repeat)
                 }
@@ -754,7 +838,9 @@ impl ExpressionStore {
     #[inline]
     #[track_caller]
     fn assert_expr_only(&self) -> &ExpressionOnlyStore {
-        self.expr_only.as_ref().expect("should have `ExpressionStore::expr_only`")
+        self.expr_only
+            .as_ref()
+            .expect("should have `ExpressionStore::expr_only`")
     }
 
     fn binding_hygiene(&self, binding: BindingId) -> HygieneId {
@@ -762,11 +848,19 @@ impl ExpressionStore {
     }
 
     pub fn expr_path_hygiene(&self, expr: ExprId) -> HygieneId {
-        self.assert_expr_only().ident_hygiene.get(&expr.into()).copied().unwrap_or(HygieneId::ROOT)
+        self.assert_expr_only()
+            .ident_hygiene
+            .get(&expr.into())
+            .copied()
+            .unwrap_or(HygieneId::ROOT)
     }
 
     pub fn pat_path_hygiene(&self, pat: PatId) -> HygieneId {
-        self.assert_expr_only().ident_hygiene.get(&pat.into()).copied().unwrap_or(HygieneId::ROOT)
+        self.assert_expr_only()
+            .ident_hygiene
+            .get(&pat.into())
+            .copied()
+            .unwrap_or(HygieneId::ROOT)
     }
 
     pub fn expr_or_pat_path_hygiene(&self, id: ExprOrPatId) -> HygieneId {
@@ -780,9 +874,7 @@ impl ExpressionStore {
     pub fn exprs(&self) -> impl Iterator<Item = (ExprId, &Expr)> {
         match &self.expr_only {
             Some(it) => it.exprs.iter(),
-            None => const {
-                &Arena::new()
-            }.iter(),
+            None => const { &Arena::new() }.iter(),
         }
     }
 
@@ -790,9 +882,7 @@ impl ExpressionStore {
     pub fn pats(&self) -> impl Iterator<Item = (PatId, &Pat)> {
         match &self.expr_only {
             Some(it) => it.pats.iter(),
-            None => const {
-                &Arena::new()
-            }.iter(),
+            None => const { &Arena::new() }.iter(),
         }
     }
 
@@ -800,9 +890,7 @@ impl ExpressionStore {
     pub fn bindings(&self) -> impl Iterator<Item = (BindingId, &Binding)> {
         match &self.expr_only {
             Some(it) => it.bindings.iter(),
-            None => const {
-                &Arena::new()
-            }.iter(),
+            None => const { &Arena::new() }.iter(),
         }
     }
 }
@@ -873,6 +961,8 @@ impl Index<PathId> for ExpressionStore {
     }
 }
 
+// FIXME: Change `node_` prefix to something more reasonable.
+// Perhaps `expr_syntax` and `expr_id`?
 impl ExpressionStoreSourceMap {
     pub fn expr_or_pat_syntax(&self, id: ExprOrPatId) -> Result<ExprOrPatSource, SyntheticSyntax> {
         match id {
@@ -894,11 +984,17 @@ impl ExpressionStoreSourceMap {
     #[inline]
     #[track_caller]
     fn assert_expr_only(&self) -> &ExpressionOnlySourceMap {
-        self.expr_only.as_ref().expect("should have `ExpressionStoreSourceMap::expr_only`")
+        self.expr_only
+            .as_ref()
+            .expect("should have `ExpressionStoreSourceMap::expr_only`")
     }
 
     pub fn expr_syntax(&self, expr: ExprId) -> Result<ExprOrPatSource, SyntheticSyntax> {
-        self.expr_or_synthetic()?.expr_map_back.get(expr).cloned().ok_or(SyntheticSyntax)
+        self.expr_or_synthetic()?
+            .expr_map_back
+            .get(expr)
+            .cloned()
+            .ok_or(SyntheticSyntax)
     }
 
     pub fn node_expr(&self, node: InFile<&ast::Expr>) -> Option<ExprOrPatId> {
@@ -912,15 +1008,24 @@ impl ExpressionStoreSourceMap {
     }
 
     pub fn macro_calls(&self) -> impl Iterator<Item = (InFile<MacroCallPtr>, MacroCallId)> + '_ {
-        self.expr_only().into_iter().flat_map(|it| it.expansions.iter().map(|(&a, &b)| (a, b)))
+        self.expr_only()
+            .into_iter()
+            .flat_map(|it| it.expansions.iter().map(|(&a, &b)| (a, b)))
     }
 
     pub fn pat_syntax(&self, pat: PatId) -> Result<ExprOrPatSource, SyntheticSyntax> {
-        self.expr_or_synthetic()?.pat_map_back.get(pat).cloned().ok_or(SyntheticSyntax)
+        self.expr_or_synthetic()?
+            .pat_map_back
+            .get(pat)
+            .cloned()
+            .ok_or(SyntheticSyntax)
     }
 
     pub fn node_pat(&self, node: InFile<&ast::Pat>) -> Option<ExprOrPatId> {
-        self.expr_only()?.pat_map.get(&node.map(AstPtr::new)).cloned()
+        self.expr_only()?
+            .pat_map
+            .get(&node.map(AstPtr::new))
+            .cloned()
     }
 
     pub fn type_syntax(&self, id: TypeRefId) -> Result<TypeSource, SyntheticSyntax> {
@@ -936,7 +1041,10 @@ impl ExpressionStoreSourceMap {
     }
 
     pub fn patterns_for_binding(&self, binding: BindingId) -> &[PatId] {
-        self.assert_expr_only().binding_definitions.get(binding).map_or(&[], Deref::deref)
+        self.assert_expr_only()
+            .binding_definitions
+            .get(binding)
+            .map_or(&[], Deref::deref)
     }
 
     pub fn node_label(&self, node: InFile<&ast::Label>) -> Option<LabelId> {
@@ -953,16 +1061,24 @@ impl ExpressionStoreSourceMap {
     }
 
     pub fn macro_expansion_expr(&self, node: InFile<&ast::MacroExpr>) -> Option<ExprOrPatId> {
-        let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::MacroExpr>).map(AstPtr::upcast);
+        let src = node
+            .map(AstPtr::new)
+            .map(AstPtr::upcast::<ast::MacroExpr>)
+            .map(AstPtr::upcast);
         self.expr_only()?.expr_map.get(&src).copied()
     }
 
     pub fn expansions(&self) -> impl Iterator<Item = (&InFile<MacroCallPtr>, &MacroCallId)> {
-        self.expr_only().into_iter().flat_map(|it| it.expansions.iter())
+        self.expr_only()
+            .into_iter()
+            .flat_map(|it| it.expansions.iter())
     }
 
     pub fn expansion(&self, node: InFile<&ast::MacroCall>) -> Option<MacroCallId> {
-        self.expr_only()?.expansions.get(&node.map(AstPtr::new)).copied()
+        self.expr_only()?
+            .expansions
+            .get(&node.map(AstPtr::new))
+            .copied()
     }
 
     pub fn implicit_format_args(
@@ -999,12 +1115,19 @@ impl ExpressionStoreSourceMap {
         let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::Expr>);
         let expr = expr_only.expr_map.get(&src)?.as_expr()?;
         Some(expr).zip(
-            expr_only.template_map.as_ref()?.asm_to_captures.get(&expr).map(std::ops::Deref::deref),
+            expr_only
+                .template_map
+                .as_ref()?
+                .asm_to_captures
+                .get(&expr)
+                .map(std::ops::Deref::deref),
         )
     }
 
     /// Get a reference to the source map's diagnostics.
     pub fn diagnostics(&self) -> &[ExpressionStoreDiagnostics] {
-        self.expr_only().map(|it| &*it.diagnostics).unwrap_or_default()
+        self.expr_only()
+            .map(|it| &*it.diagnostics)
+            .unwrap_or_default()
     }
 }

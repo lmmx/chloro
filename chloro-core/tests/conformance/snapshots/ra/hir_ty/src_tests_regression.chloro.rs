@@ -919,18 +919,21 @@ fn flush(&self) {
 
 #[test]
 fn param_overrides_fn() {
-    check_types(r#"
+    check_types(
+        r#"
         fn example(example: i32) {
             fn f() {}
             example;
           //^^^^^^^ i32
         }
-        "#)
+        "#,
+    )
 }
 
 #[test]
 fn lifetime_from_chalk_during_deref() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: deref
 struct Box<T: ?Sized>(T);
 impl<T: ?Sized> core::ops::Deref for Box<T> {
@@ -957,7 +960,8 @@ fn clone_iter<T>(s: Iter<T>) {
     s.inner.clone_box();
   //^^^^^^^^^^^^^^^^^^^ ()
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -1056,7 +1060,8 @@ fn cfg_tail() {
 
 #[test]
 fn impl_trait_in_option_9530() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: sized
 struct Option<T>(T);
 impl<T> Option<T> {
@@ -1070,12 +1075,14 @@ fn test() {
     o.unwrap();
   //^^^^^^^^^^ impl Copy
 }
-        "#)
+        "#,
+    )
 }
 
 #[test]
 fn bare_dyn_trait_binders_9639() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: fn, coerce_unsized, dispatch_from_dyn
 fn infix_parse<T, S>(_state: S, _level_code: &Fn(S)) -> T {
     loop {}
@@ -1084,7 +1091,8 @@ fn infix_parse<T, S>(_state: S, _level_code: &Fn(S)) -> T {
 fn parse_a_rule() {
     infix_parse((), &(|_recurse| ()))
 }
-        "#)
+        "#,
+    )
 }
 
 #[test]
@@ -1189,7 +1197,8 @@ fn multiexp_inner() {
 
 #[test]
 fn macro_expands_to_impl_trait() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 trait Foo {}
 
 macro_rules! ty {
@@ -1203,12 +1212,14 @@ fn foo(_: ty!()) {}
 fn bar() {
     foo(());
 }
-    "#)
+    "#,
+    )
 }
 
 #[test]
 fn nested_macro_in_fn_params() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 macro_rules! U32Inner {
     () => {
         u32
@@ -1224,7 +1235,8 @@ macro_rules! U32 {
 fn mamba(a: U32!(), p: u32) -> u32 {
     a
 }
-    "#)
+    "#,
+    )
 }
 
 #[test]
@@ -1437,7 +1449,8 @@ fn const_generic_impl_trait() {
 
 #[test]
 fn nalgebra_factorial() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
         const FACTORIAL: [u128; 4] = [1, 1, 2, 6];
 
         fn factorial(n: usize) -> u128 {
@@ -1446,7 +1459,8 @@ fn nalgebra_factorial() {
                 None => panic!("{}! is greater than u128::MAX", n),
             }
         }
-        "#)
+        "#,
+    )
 }
 
 #[test]
@@ -1516,7 +1530,8 @@ fn regression_11688_3() {
 
 #[test]
 fn regression_11688_4() {
-    check_types(r#"
+    check_types(
+        r#"
         //- minicore: dispatch_from_dyn
         trait Bar<const C: usize> {
             fn baz(&self) -> [i32; C];
@@ -1526,7 +1541,8 @@ fn regression_11688_4() {
             x.baz();
           //^^^^^^^ [i32; 2]
         }
-        "#)
+        "#,
+    )
 }
 
 #[test]
@@ -1926,7 +1942,8 @@ fn rustc_test_issue_52437() {
 
 #[test]
 fn incorrect_variant_form_through_alias_caught() {
-    check_types(r#"
+    check_types(
+        r#"
 enum Enum { Braced {}, Unit, Tuple() }
 type Alias = Enum;
 
@@ -1947,19 +1964,22 @@ fn main() {
     let Alias::Unit{} = loop {};
       //^^^^^^^^^^^^^ Enum
 }
-"#)
+"#,
+    )
 }
 
 #[test]
 fn cfg_first_trait_param_16141() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: sized, coerce_unsized
 trait Bar {
     fn bar(&self) {}
 }
 
 impl<#[cfg(feature = "a-feature")] A> Bar for (){}
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -2030,7 +2050,8 @@ fn main() {
 
 #[test]
 fn issue_17734() {
-    check_types(r#"
+    check_types(
+        r#"
 fn test() {
     let x = S::foo::<'static, &()>(&S);
      // ^ Wrap<'?, ()>
@@ -2057,12 +2078,14 @@ trait Trait<'a> {
 impl<'a, T> Trait<'a> for &'a T {
     type Proj = Wrap<'a, T>;
 }
-"#)
+"#,
+    )
 }
 
 #[test]
 fn issue_17738() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: index
 use core::ops::{Index, IndexMut};
 
@@ -2102,7 +2125,8 @@ fn test() {
      // ^^^^^^ Foo<&'? (), Bar>
     t2[&()].bar();
 }
-"#)
+"#,
+    )
 }
 
 #[test]

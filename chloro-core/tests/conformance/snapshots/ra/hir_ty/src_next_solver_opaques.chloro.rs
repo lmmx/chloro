@@ -8,10 +8,10 @@ use super::{DbInterner, SolverDefId, Ty, interned_vec_db, interned_vec_nolifetim
 pub type OpaqueTypeKey<'db> = rustc_type_ir::OpaqueTypeKey<DbInterner<'db>>;
 
 type PredefinedOpaque<'db> = (OpaqueTypeKey<'db>, Ty<'db>);
-
 interned_vec_db!(PredefinedOpaques, PredefinedOpaque);
 
-pub type ExternalConstraintsData<'db> = rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
+pub type ExternalConstraintsData<'db> =
+    rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
 
 interned_vec_nolifetime_salsa!(SolverDefIds, SolverDefId);
 
@@ -62,37 +62,36 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for ExternalConstraints<'
         Ok(ExternalConstraints::new(
             folder.cx(),
             ExternalConstraintsData {
-            region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
-            opaque_types: self
+                region_constraints: self.region_constraints.clone().try_fold_with(folder)?,
+                opaque_types: self
                     .opaque_types
                     .iter()
                     .cloned()
                     .map(|opaque| opaque.try_fold_with(folder))
                     .collect::<Result<_, F::Error>>()?,
-            normalization_nested_goals: self
+                normalization_nested_goals: self
                     .normalization_nested_goals
                     .clone()
                     .try_fold_with(folder)?,
-        },
+            },
         ))
     }
-
     fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         ExternalConstraints::new(
             folder.cx(),
             ExternalConstraintsData {
-            region_constraints: self.region_constraints.clone().fold_with(folder),
-            opaque_types: self
+                region_constraints: self.region_constraints.clone().fold_with(folder),
+                opaque_types: self
                     .opaque_types
                     .iter()
                     .cloned()
                     .map(|opaque| opaque.fold_with(folder))
                     .collect(),
-            normalization_nested_goals: self
+                normalization_nested_goals: self
                     .normalization_nested_goals
                     .clone()
                     .fold_with(folder),
-        },
+            },
         )
     }
 }

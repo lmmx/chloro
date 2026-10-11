@@ -5,8 +5,8 @@ use project_model::{CargoConfig, RustLibSource};
 use rustc_hash::FxHashSet;
 
 use hir::{Crate, Module, db::HirDatabase, sym};
-use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
 use ide::{AnalysisHost, AssistResolveStrategy, Diagnostic, DiagnosticsConfig, Severity};
+use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 
 use crate::cli::{flags, progress_report::ProgressReport};
@@ -25,7 +25,6 @@ impl flags::Diagnostics {
 
         handle.join()
     }
-
     fn run_(self) -> anyhow::Result<()> {
         let cargo_config = CargoConfig {
             sysroot: Some(RustLibSource::Discover),
@@ -69,8 +68,12 @@ impl flags::Diagnostics {
             if !visited_files.contains(&file_id) {
                 let message = format!("processing {}", _vfs.file_path(file_id.file_id(db)));
                 bar.set_message(move || message.clone());
-                let crate_name =
-                    module.krate().display_name(db).as_deref().unwrap_or(&sym::unknown).to_owned();
+                let crate_name = module
+                    .krate()
+                    .display_name(db)
+                    .as_deref()
+                    .unwrap_or(&sym::unknown)
+                    .to_owned();
                 for diagnostic in analysis
                     .full_diagnostics(
                         &DiagnosticsConfig::test_sample(),
@@ -93,7 +96,13 @@ impl flags::Diagnostics {
                         found_error = true;
                     }
 
-                    let Diagnostic { code, message, range, severity, .. } = diagnostic;
+                    let Diagnostic {
+                        code,
+                        message,
+                        range,
+                        severity,
+                        ..
+                    } = diagnostic;
                     let line_index = db.line_index(range.file_id);
                     let start = line_index.line_col(range.range.start());
                     let end = line_index.line_col(range.range.end());
@@ -122,8 +131,10 @@ impl flags::Diagnostics {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> =
-        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> = Crate::all(db)
+        .into_iter()
+        .map(|krate| krate.root_module())
+        .collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {

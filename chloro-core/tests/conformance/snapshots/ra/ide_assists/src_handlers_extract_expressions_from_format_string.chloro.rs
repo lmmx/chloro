@@ -33,7 +33,10 @@ pub(crate) fn extract_expressions_from_format_string(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
-    let tt = fmt_string.syntax().parent().and_then(ast::TokenTree::cast)?;
+    let tt = fmt_string
+        .syntax()
+        .parent()
+        .and_then(ast::TokenTree::cast)?;
     let tt_delimiter = tt.left_delimiter_token()?.kind();
 
     let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
@@ -47,7 +50,12 @@ pub(crate) fn extract_expressions_from_format_string(
         AssistId(
             "extract_expressions_from_format_string",
             // if there aren't any expressions, then make the assist a RefactorExtract
-            if extracted_args.iter().filter(|f| matches!(f, Arg::Expr(_))).count() == 0 {
+            if extracted_args
+                .iter()
+                .filter(|f| matches!(f, Arg::Expr(_)))
+                .count()
+                == 0
+            {
                 AssistKind::RefactorExtract
             } else {
                 AssistKind::QuickFix
@@ -181,6 +189,7 @@ fn format_str_index(
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_no_snippet_cap};
+
     #[test]
     fn multiple_middle_arg() {
         check_assist(
@@ -198,6 +207,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiple_middle_arg_on_write() {
         check_assist(
@@ -215,6 +225,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn single_arg() {
         check_assist(
@@ -232,6 +243,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiple_middle_placeholders_arg() {
         check_assist(
@@ -249,6 +261,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiple_trailing_args() {
         check_assist(
@@ -266,6 +279,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn improper_commas() {
         check_assist(
@@ -283,6 +297,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn nested_tt() {
         check_assist(
@@ -300,6 +315,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn extract_only_expressions() {
         check_assist(
@@ -319,6 +335,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn escaped_literals() {
         check_assist(
@@ -336,6 +353,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn without_snippets() {
         check_assist_no_snippet_cap(

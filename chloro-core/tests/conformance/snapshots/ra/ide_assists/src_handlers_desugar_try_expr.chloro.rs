@@ -6,7 +6,12 @@ use ide_db::{
 };
 use syntax::{
     AstNode, T,
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make, syntax_factory::SyntaxFactory},
+    ast::{
+        self,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+        syntax_factory::SyntaxFactory,
+    },
 };
 
 use crate::assist_context::{AssistContext, Assists};
@@ -175,7 +180,9 @@ pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_by_label, check_assist_not_applicable};
+
     #[test]
     fn test_desugar_try_expr_not_applicable() {
         check_assist_not_applicable(
@@ -187,6 +194,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn test_desugar_try_expr_option() {
         check_assist(
@@ -207,6 +215,7 @@ fn test() {
             "#,
         );
     }
+
     #[test]
     fn test_desugar_try_expr_result() {
         check_assist(
@@ -227,6 +236,7 @@ fn test() {
             "#,
         );
     }
+
     #[test]
     fn test_desugar_try_expr_option_let_else() {
         check_assist_by_label(
@@ -247,6 +257,7 @@ fn test() {
             "Replace try expression with let else",
         );
     }
+
     #[test]
     fn test_desugar_try_expr_result_let_else() {
         check_assist_by_label(

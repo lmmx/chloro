@@ -8,7 +8,10 @@ use crate::{
     Adjust, Adjustment, OverloadedDeref,
     autoderef::{Autoderef, AutoderefKind},
     infer::unify::InferenceTable,
-    next_solver::{Ty, infer::{InferOk, traits::PredicateObligations}},
+    next_solver::{
+        Ty,
+        infer::{InferOk, traits::PredicateObligations},
+    },
 };
 
 impl<'db> InferenceTable<'db> {
@@ -27,10 +30,17 @@ impl<'db> Autoderef<'_, 'db> {
     pub(crate) fn adjust_steps_as_infer_ok(&mut self) -> InferOk<'db, Vec<Adjustment<'db>>> {
         let steps = self.steps();
         if steps.is_empty() {
-            return InferOk { obligations: PredicateObligations::new(), value: vec![] };
+            return InferOk {
+                obligations: PredicateObligations::new(),
+                value: vec![],
+            };
         }
 
-        let targets = steps.iter().skip(1).map(|&(ty, _)| ty).chain(iter::once(self.final_ty()));
+        let targets = steps
+            .iter()
+            .skip(1)
+            .map(|&(ty, _)| ty)
+            .chain(iter::once(self.final_ty()));
         let steps: Vec<_> = steps
             .iter()
             .map(|&(_source, kind)| {
@@ -41,7 +51,10 @@ impl<'db> Autoderef<'_, 'db> {
                 }
             })
             .zip(targets)
-            .map(|(autoderef, target)| Adjustment { kind: Adjust::Deref(autoderef), target })
+            .map(|(autoderef, target)| Adjustment {
+                kind: Adjust::Deref(autoderef),
+                target,
+            })
             .collect();
 
         InferOk {

@@ -2,23 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   3552 bytes
+Chloro size:   3554 bytes
 Rustfmt size:  3554 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use super::*;
--
-     #[test]
-     fn test_into_suggestion() {
-         let test_vector = &[
-             assert_eq!(&snippet, output);
-         }
-     }
--
-     #[test]
-     fn test_into_suggestion_no_epxrs() {
-         let test_vector = &[
+✓ Outputs are IDENTICAL

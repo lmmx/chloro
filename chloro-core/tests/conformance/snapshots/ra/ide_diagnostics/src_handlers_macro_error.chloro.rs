@@ -15,7 +15,14 @@ pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> 
     // Use more accurate position if available.
     let display_range = ctx.resolve_precise_location(&d.node, d.precise_location);
     Diagnostic::new(
-        DiagnosticCode::Ra(d.kind, if d.error { Severity::Error } else { Severity::WeakWarning }),
+        DiagnosticCode::Ra(
+            d.kind,
+            if d.error {
+                Severity::Error
+            } else {
+                Severity::WeakWarning
+            },
+        ),
         d.message.clone(),
         display_range,
     )
@@ -43,6 +50,7 @@ mod tests {
         DiagnosticsConfig,
         tests::{check_diagnostics, check_diagnostics_with_config},
     };
+
     #[test]
     fn builtin_macro_fails_expansion() {
         check_diagnostics(
@@ -64,6 +72,7 @@ macro_rules! compile_error { () => {} }
             "#,
         );
     }
+
     #[test]
     fn eager_macro_concat() {
         check_diagnostics(
@@ -98,6 +107,7 @@ pub macro panic {
             "#,
         );
     }
+
     #[test]
     fn include_macro_should_allow_empty_content() {
         let mut config = DiagnosticsConfig::test_sample();
@@ -119,6 +129,7 @@ include!("foo/bar.rs");
 "#,
         );
     }
+
     #[test]
     fn good_out_dir_diagnostic() {
         // FIXME: The diagnostic here is duplicated for each eager expansion
@@ -138,6 +149,7 @@ macro_rules! concat { () => {} }
 "#,
         );
     }
+
     #[test]
     fn register_tool() {
         cov_mark::check!(register_tool);
@@ -151,6 +163,7 @@ struct S;
         );
         // NB: we don't currently emit diagnostics here
     }
+
     #[test]
     fn macro_diag_builtin() {
         check_diagnostics(
@@ -195,6 +208,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn macro_rules_diag() {
         check_diagnostics(
@@ -211,9 +225,11 @@ fn f() {
       "#,
         );
     }
+
     #[test]
     fn dollar_crate_in_builtin_macro() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 #[macro_export]
 #[rustc_builtin_macro]
 macro_rules! format_args {}
@@ -232,11 +248,14 @@ fn f() {
     outer!();
 } //^^^^^^ error: leftover tokens
   //^^^^^^ error: Syntax Error in Expansion: expected expression
-"#)
+"#,
+        )
     }
+
     #[test]
     fn def_diagnostic() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 macro_rules! foo {
            //^^^ error: expected subtree
     f => {};
@@ -247,11 +266,14 @@ fn f() {
   //^^^ error: macro definition has parse errors
 
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn expansion_syntax_diagnostic() {
-        check_diagnostics(r#"
+        check_diagnostics(
+            r#"
 macro_rules! foo {
     () => { struct; };
 }
@@ -260,8 +282,10 @@ fn f() {
     foo!();
   //^^^ error: Syntax Error in Expansion: expected a name
 }
-"#)
+"#,
+        )
     }
+
     #[test]
     fn include_does_not_break_diagnostics() {
         check_diagnostics(
@@ -277,6 +301,7 @@ mod prim_never {}
 "#,
         );
     }
+
     #[test]
     fn no_stack_overflow_for_missing_binding() {
         check_diagnostics(

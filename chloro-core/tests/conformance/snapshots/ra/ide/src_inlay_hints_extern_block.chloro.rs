@@ -1,5 +1,4 @@
 //! Extern block hints
-
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
 use syntax::{AstNode, SyntaxToken, ast};
 
@@ -43,7 +42,10 @@ pub(super) fn fn_hints(
         return None;
     }
     let fn_token = fn_.fn_token()?;
-    if sema.to_def(fn_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+    if sema
+        .to_def(fn_)
+        .is_some_and(|def| def.extern_block(sema.db).is_some())
+    {
         acc.push(item_hint(config, extern_block, fn_token));
     }
     Some(())
@@ -61,7 +63,10 @@ pub(super) fn static_hints(
         return None;
     }
     let static_token = static_.static_token()?;
-    if sema.to_def(static_).is_some_and(|def| def.extern_block(sema.db).is_some()) {
+    if sema
+        .to_def(static_)
+        .is_some_and(|def| def.extern_block(sema.db).is_some())
+    {
         acc.push(item_hint(config, extern_block, static_token));
     }
     Some(())
@@ -96,6 +101,7 @@ fn item_hint(
 #[cfg(test)]
 mod tests {
     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
+
     #[test]
     fn unadorned() {
         check_with_config(
@@ -119,6 +125,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn adorned() {
         check_with_config(

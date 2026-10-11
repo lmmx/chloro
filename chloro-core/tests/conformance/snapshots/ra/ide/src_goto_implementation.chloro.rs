@@ -141,12 +141,18 @@ fn impls_for_trait_item(
 mod tests {
     use ide_db::FileRange;
     use itertools::Itertools;
+
     use crate::{GotoImplementationConfig, fixture};
-    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig { filter_adjacent_derive_implementations: false };
+
+    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig {
+        filter_adjacent_derive_implementations: false,
+    };
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(TEST_CONFIG, ra_fixture);
     }
+
     #[track_caller]
     fn check_with_config(
         config: &GotoImplementationConfig,
@@ -154,19 +160,30 @@ mod tests {
     ) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
 
-        let navs = analysis.goto_implementation(config, position).unwrap().unwrap().info;
+        let navs = analysis
+            .goto_implementation(config, position)
+            .unwrap()
+            .unwrap()
+            .info;
 
         let cmp = |frange: &FileRange| (frange.file_id, frange.range.start());
 
         let actual = navs
             .into_iter()
-            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+            .map(|nav| FileRange {
+                file_id: nav.file_id,
+                range: nav.focus_or_full_range(),
+            })
             .sorted_by_key(cmp)
             .collect::<Vec<_>>();
-        let expected =
-            expected.into_iter().map(|(range, _)| range).sorted_by_key(cmp).collect::<Vec<_>>();
+        let expected = expected
+            .into_iter()
+            .map(|(range, _)| range)
+            .sorted_by_key(cmp)
+            .collect::<Vec<_>>();
         assert_eq!(expected, actual);
     }
+
     #[test]
     fn goto_implementation_works() {
         check(
@@ -177,6 +194,7 @@ impl Foo {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_works_multiple_blocks() {
         check(
@@ -189,6 +207,7 @@ impl Foo {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_works_multiple_mods() {
         check(
@@ -205,6 +224,7 @@ mod b {
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_works_multiple_files() {
         check(
@@ -222,6 +242,7 @@ impl crate::Foo {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_for_trait() {
         check(
@@ -233,6 +254,7 @@ impl T for Foo {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_for_trait_multiple_files() {
         check(
@@ -251,6 +273,7 @@ impl crate::T for crate::Foo {}
             "#,
         );
     }
+
     // FIXME(next-solver): it would be nice to be able to also point to `&Foo`
     #[test]
     fn goto_implementation_all_impls() {
@@ -267,6 +290,7 @@ impl T for &Foo {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_to_builtin_derive() {
         check(
@@ -278,6 +302,7 @@ struct Foo$0;
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_type_alias() {
         check(
@@ -293,6 +318,7 @@ impl Bar {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_adt_generic() {
         check(
@@ -306,6 +332,7 @@ impl Foo<str> {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_builtin() {
         check(
@@ -320,6 +347,7 @@ impl bool {}
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_trait_functions() {
         check(
@@ -339,6 +367,7 @@ impl Tr for S {
 "#,
         );
     }
+
     #[test]
     fn goto_implementation_trait_assoc_const() {
         check(
@@ -356,6 +385,7 @@ impl Tr for S {
 "#,
         );
     }
+
     #[test]
     fn goto_adt_implementation_inside_block() {
         check(
@@ -382,6 +412,7 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn goto_trait_implementation_inside_block() {
         check(
@@ -425,10 +456,13 @@ fn test() {
 "#,
         );
     }
+
     #[test]
     fn filter_adjacent_derives() {
         check_with_config(
-            &GotoImplementationConfig { filter_adjacent_derive_implementations: true },
+            &GotoImplementationConfig {
+                filter_adjacent_derive_implementations: true,
+            },
             r#"
 //- minicore: clone, copy, derive
 

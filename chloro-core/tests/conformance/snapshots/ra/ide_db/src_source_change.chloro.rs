@@ -78,7 +78,10 @@ impl SourceChange {
         match self.source_file_edits.entry(file_id.into()) {
             Entry::Occupied(mut entry) => {
                 let value = entry.get_mut();
-                never!(value.0.union(edit).is_err(), "overlapping edits for same file");
+                never!(
+                    value.0.union(edit).is_err(),
+                    "overlapping edits for same file"
+                );
                 never!(
                     value.1.is_some() && snippet_edit.is_some(),
                     "overlapping snippet edits for same file"
@@ -114,7 +117,10 @@ impl SourceChange {
 
 impl Extend<(FileId, TextEdit)> for SourceChange {
     fn extend<T: IntoIterator<Item = (FileId, TextEdit)>>(&mut self, iter: T) {
-        self.extend(iter.into_iter().map(|(file_id, edit)| (file_id, (edit, None))))
+        self.extend(
+            iter.into_iter()
+                .map(|(file_id, edit)| (file_id, (edit, None))),
+        )
     }
 }
 
@@ -123,22 +129,26 @@ impl Extend<(FileId, (TextEdit, Option<SnippetEdit>))> for SourceChange {
         &mut self,
         iter: T,
     ) {
-        iter.into_iter().for_each(|(file_id, (edit, snippet_edit))| {
-            self.insert_source_and_snippet_edit(file_id, edit, snippet_edit)
-        });
+        iter.into_iter()
+            .for_each(|(file_id, (edit, snippet_edit))| {
+                self.insert_source_and_snippet_edit(file_id, edit, snippet_edit)
+            });
     }
 }
 
 impl Extend<FileSystemEdit> for SourceChange {
     fn extend<T: IntoIterator<Item = FileSystemEdit>>(&mut self, iter: T) {
-        iter.into_iter().for_each(|edit| self.push_file_system_edit(edit));
+        iter.into_iter()
+            .for_each(|edit| self.push_file_system_edit(edit));
     }
 }
 
 impl From<IntMap<FileId, TextEdit>> for SourceChange {
     fn from(source_file_edits: IntMap<FileId, TextEdit>) -> SourceChange {
-        let source_file_edits =
-            source_file_edits.into_iter().map(|(file_id, edit)| (file_id, (edit, None))).collect();
+        let source_file_edits = source_file_edits
+            .into_iter()
+            .map(|(file_id, edit)| (file_id, (edit, None)))
+            .collect();
         SourceChange {
             source_file_edits,
             file_system_edits: Vec::new(),
@@ -222,10 +232,12 @@ pub struct SourceChangeBuilder {
     pub file_id: FileId,
     pub source_change: SourceChange,
     pub command: Option<Command>,
+
     /// Keeps track of all edits performed on each file
     pub file_editors: FxHashMap<FileId, SyntaxEditor>,
     /// Keeps track of which annotations correspond to which snippets
     pub snippet_annotations: Vec<(AnnotationSnippet, SyntaxAnnotation)>,
+
     /// Maps the original, immutable `SyntaxNode` to a `clone_for_update` twin.
     pub mutated_tree: Option<TreeMutator>,
     /// Keeps track of where to place snippets
@@ -247,7 +259,10 @@ impl TreeMutator {
     pub fn new(immutable: &SyntaxNode) -> TreeMutator {
         let immutable = immutable.ancestors().last().unwrap();
         let mutable_clone = immutable.clone_for_update();
-        TreeMutator { immutable, mutable_clone }
+        TreeMutator {
+            immutable,
+            mutable_clone,
+        }
     }
 
     pub fn make_mut<N: AstNode>(&self, node: &N) -> N {
@@ -339,18 +354,26 @@ impl SourceChangeBuilder {
             diff(edit_result.old_root(), edit_result.new_root()).into_text_edit(&mut edit);
             let edit = edit.finish();
 
-            let snippet_edit =
-                if !snippet_edit.is_empty() { Some(SnippetEdit::new(snippet_edit)) } else { None };
+            let snippet_edit = if !snippet_edit.is_empty() {
+                Some(SnippetEdit::new(snippet_edit))
+            } else {
+                None
+            };
 
             if !edit.is_empty() || snippet_edit.is_some() {
-                self.source_change.insert_source_and_snippet_edit(file_id, edit, snippet_edit);
+                self.source_change
+                    .insert_source_and_snippet_edit(file_id, edit, snippet_edit);
             }
         }
 
         // Apply mutable edits
         let snippet_edit = self.snippet_builder.take().map(|builder| {
             SnippetEdit::new(
-                builder.places.into_iter().flat_map(PlaceSnippet::finalize_position).collect(),
+                builder
+                    .places
+                    .into_iter()
+                    .flat_map(PlaceSnippet::finalize_position)
+                    .collect(),
             )
         });
 
@@ -360,12 +383,15 @@ impl SourceChangeBuilder {
 
         let edit = mem::take(&mut self.edit).finish();
         if !edit.is_empty() || snippet_edit.is_some() {
-            self.source_change.insert_source_and_snippet_edit(self.file_id, edit, snippet_edit);
+            self.source_change
+                .insert_source_and_snippet_edit(self.file_id, edit, snippet_edit);
         }
     }
 
     pub fn make_mut<N: AstNode>(&mut self, node: N) -> N {
-        self.mutated_tree.get_or_insert_with(|| TreeMutator::new(node.syntax())).make_mut(&node)
+        self.mutated_tree
+            .get_or_insert_with(|| TreeMutator::new(node.syntax()))
+            .make_mut(&node)
     }
 
     pub fn make_import_scope_mut(&mut self, scope: ImportScope) -> ImportScope {
@@ -375,10 +401,13 @@ impl SourceChangeBuilder {
                 ImportScopeKind::Module(it) => ImportScopeKind::Module(self.make_mut(it)),
                 ImportScopeKind::Block(it) => ImportScopeKind::Block(self.make_mut(it)),
             },
-            required_cfgs: scope.required_cfgs.iter().map(|it| self.make_mut(it.clone())).collect(),
+            required_cfgs: scope
+                .required_cfgs
+                .iter()
+                .map(|it| self.make_mut(it.clone()))
+                .collect(),
         }
     }
-
     /// Returns a copy of the `node`, suitable for mutation.
     ///
     /// Syntax trees in rust-analyzer are typically immutable, and mutating
@@ -390,35 +419,38 @@ impl SourceChangeBuilder {
     /// phase, and then get their mutable counterparts using `make_mut` in the
     /// mutable state.
     pub fn make_syntax_mut(&mut self, node: SyntaxNode) -> SyntaxNode {
-        self.mutated_tree.get_or_insert_with(|| TreeMutator::new(&node)).make_syntax_mut(&node)
+        self.mutated_tree
+            .get_or_insert_with(|| TreeMutator::new(&node))
+            .make_syntax_mut(&node)
     }
 
     /// Remove specified `range` of text.
     pub fn delete(&mut self, range: TextRange) {
         self.edit.delete(range)
     }
-
     /// Append specified `text` at the given `offset`
     pub fn insert(&mut self, offset: TextSize, text: impl Into<String>) {
         self.edit.insert(offset, text.into())
     }
-
     /// Replaces specified `range` of text with a given string.
     pub fn replace(&mut self, range: TextRange, replace_with: impl Into<String>) {
         self.edit.replace(range, replace_with.into())
     }
-
     pub fn replace_ast<N: AstNode>(&mut self, old: N, new: N) {
         diff(old.syntax(), new.syntax()).into_text_edit(&mut self.edit)
     }
-
     pub fn create_file(&mut self, dst: AnchoredPathBuf, content: impl Into<String>) {
-        let file_system_edit = FileSystemEdit::CreateFile { dst, initial_contents: content.into() };
+        let file_system_edit = FileSystemEdit::CreateFile {
+            dst,
+            initial_contents: content.into(),
+        };
         self.source_change.push_file_system_edit(file_system_edit);
     }
-
     pub fn move_file(&mut self, src: impl Into<FileId>, dst: AnchoredPathBuf) {
-        let file_system_edit = FileSystemEdit::MoveFile { src: src.into(), dst };
+        let file_system_edit = FileSystemEdit::MoveFile {
+            src: src.into(),
+            dst,
+        };
         self.source_change.push_file_system_edit(file_system_edit);
     }
 
@@ -480,7 +512,9 @@ impl SourceChangeBuilder {
     }
 
     fn add_snippet(&mut self, snippet: PlaceSnippet) {
-        let snippet_builder = self.snippet_builder.get_or_insert(SnippetBuilder { places: vec![] });
+        let snippet_builder = self
+            .snippet_builder
+            .get_or_insert(SnippetBuilder { places: vec![] });
         snippet_builder.places.push(snippet);
         self.source_change.is_snippet = true;
     }
@@ -532,6 +566,7 @@ impl From<FileSystemEdit> for SourceChange {
             source_file_edits: Default::default(),
             file_system_edits: vec![edit],
             is_snippet: false,
+            ..SourceChange::default()
         }
     }
 }
@@ -578,7 +613,9 @@ impl PlaceSnippet {
             PlaceSnippet::After(it) => vec![Snippet::Tabstop(it.text_range().end())],
             PlaceSnippet::Over(it) => vec![Snippet::Placeholder(it.text_range())],
             PlaceSnippet::OverGroup(it) => {
-                vec![Snippet::PlaceholderGroup(it.into_iter().map(|it| it.text_range()).collect())]
+                vec![Snippet::PlaceholderGroup(
+                    it.into_iter().map(|it| it.text_range()).collect(),
+                )]
             }
         }
     }

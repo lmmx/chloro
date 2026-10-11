@@ -2,42 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4245 bytes
-Chloro size:   4587 bytes
+Chloro size:   4722 bytes
 Rustfmt size:  4722 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     ) -> Self {
-         Self {
-             in_module: container,
--            kind: DefDiagnosticKind::UnresolvedModule {
--                ast: declaration,
--                candidates,
--            },
-+            kind: DefDiagnosticKind::UnresolvedModule { ast: declaration, candidates },
-         }
-     }
- 
-     ) -> Self {
-         Self {
-             in_module: container,
--            kind: DefDiagnosticKind::InvalidDeriveTarget {
--                ast,
--                id: id.ast_index(),
--            },
-+            kind: DefDiagnosticKind::InvalidDeriveTarget { ast, id: id.ast_index() },
-         }
-     }
- 
-     ) -> Self {
-         Self {
-             in_module: container,
--            kind: DefDiagnosticKind::MalformedDerive {
--                ast,
--                id: id.ast_index(),
--            },
-+            kind: DefDiagnosticKind::MalformedDerive { ast, id: id.ast_index() },
-         }
-     }
- }
+✓ Outputs are IDENTICAL

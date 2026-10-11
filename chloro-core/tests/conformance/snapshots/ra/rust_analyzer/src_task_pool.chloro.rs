@@ -15,7 +15,10 @@ pub(crate) struct TaskPool<T> {
 
 impl<T> TaskPool<T> {
     pub(crate) fn new_with_threads(sender: Sender<T>, threads: usize) -> TaskPool<T> {
-        TaskPool { sender, pool: Pool::new(threads) }
+        TaskPool {
+            sender,
+            pool: Pool::new(threads),
+        }
     }
 
     pub(crate) fn spawn<F>(&mut self, intent: ThreadIntent, task: F)

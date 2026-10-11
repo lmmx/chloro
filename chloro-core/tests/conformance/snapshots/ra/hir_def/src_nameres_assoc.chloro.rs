@@ -25,7 +25,8 @@ use crate::{
     db::DefDatabase,
     macro_call_as_call_id,
     nameres::{
-        DefMap, LocalDefMap, MacroSubNs, attr_resolution::ResolvedAttr,
+        DefMap, LocalDefMap, MacroSubNs,
+        attr_resolution::ResolvedAttr,
         diagnostics::{DefDiagnostic, DefDiagnostics},
     },
 };
@@ -49,13 +50,19 @@ impl TraitItems {
         db: &dyn DefDatabase,
         tr: TraitId,
     ) -> (TraitItems, DefDiagnostics) {
-        let ItemLoc { container: module_id, id: ast_id } = tr.lookup(db);
+        let ItemLoc {
+            container: module_id,
+            id: ast_id,
+        } = tr.lookup(db);
         let ast_id_map = db.ast_id_map(ast_id.file_id);
         let source = ast_id.with_value(ast_id_map.get(ast_id.value)).to_node(db);
         if source.eq_token().is_some() {
             // FIXME(trait-alias) probably needs special handling here
             return (
-                TraitItems { macro_calls: ThinVec::new(), items: Box::default() },
+                TraitItems {
+                    macro_calls: ThinVec::new(),
+                    items: Box::default(),
+                },
                 DefDiagnostics::new(vec![]),
             );
         }
@@ -64,7 +71,10 @@ impl TraitItems {
             AssocItemCollector::new(db, module_id, ItemContainerId::TraitId(tr), ast_id.file_id);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
 
-        (TraitItems { macro_calls, items }, DefDiagnostics::new(diagnostics))
+        (
+            TraitItems { macro_calls, items },
+            DefDiagnostics::new(diagnostics),
+        )
     }
 
     pub fn associated_types(&self) -> impl Iterator<Item = TypeAliasId> + '_ {
@@ -89,12 +99,14 @@ impl TraitItems {
     }
 
     pub fn assoc_item_by_name(&self, name: &Name) -> Option<AssocItemId> {
-        self.items.iter().find_map(|&(ref item_name, item)| match item {
-            AssocItemId::FunctionId(_) if item_name == name => Some(item),
-            AssocItemId::TypeAliasId(_) if item_name == name => Some(item),
-            AssocItemId::ConstId(_) if item_name == name => Some(item),
-            _ => None,
-        })
+        self.items
+            .iter()
+            .find_map(|&(ref item_name, item)| match item {
+                AssocItemId::FunctionId(_) if item_name == name => Some(item),
+                AssocItemId::TypeAliasId(_) if item_name == name => Some(item),
+                AssocItemId::ConstId(_) if item_name == name => Some(item),
+                _ => None,
+            })
     }
 
     pub fn macro_calls(&self) -> impl Iterator<Item = (AstId<ast::Item>, MacroCallId)> + '_ {
@@ -114,14 +126,22 @@ impl ImplItems {
     #[salsa::tracked(returns(ref))]
     pub fn of(db: &dyn DefDatabase, id: ImplId) -> (ImplItems, DefDiagnostics) {
         let _p = tracing::info_span!("impl_items_with_diagnostics_query").entered();
-        let ItemLoc { container: module_id, id: ast_id } = id.lookup(db);
+        let ItemLoc {
+            container: module_id,
+            id: ast_id,
+        } = id.lookup(db);
 
         let collector =
             AssocItemCollector::new(db, module_id, ItemContainerId::ImplId(id), ast_id.file_id);
-        let source = ast_id.with_value(collector.ast_id_map.get(ast_id.value)).to_node(db);
+        let source = ast_id
+            .with_value(collector.ast_id_map.get(ast_id.value))
+            .to_node(db);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
 
-        (ImplItems { items, macro_calls }, DefDiagnostics::new(diagnostics))
+        (
+            ImplItems { items, macro_calls },
+            DefDiagnostics::new(diagnostics),
+        )
     }
 }
 
@@ -142,6 +162,7 @@ struct AssocItemCollector<'a> {
     file_id: HirFileId,
     diagnostics: Vec<DefDiagnostic>,
     container: ItemContainerId,
+
     depth: usize,
     items: Vec<(Name, AssocItemId)>,
     macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
@@ -176,14 +197,22 @@ impl<'a> AssocItemCollector<'a> {
     fn collect(
         mut self,
         item_list: Option<ast::AssocItemList>,
-    ) -> (Box<[(Name, AssocItemId)]>, ThinVec<(AstId<ast::Item>, MacroCallId)>, Vec<DefDiagnostic>) {
+    ) -> (
+        Box<[(Name, AssocItemId)]>,
+        ThinVec<(AstId<ast::Item>, MacroCallId)>,
+        Vec<DefDiagnostic>,
+    ) {
         if let Some(item_list) = item_list {
             for item in item_list.assoc_items() {
                 self.collect_item(item);
             }
         }
         self.macro_calls.shrink_to_fit();
-        (self.items.into_boxed_slice(), self.macro_calls, self.diagnostics)
+        (
+            self.items.into_boxed_slice(),
+            self.macro_calls,
+            self.diagnostics,
+        )
     }
 
     fn collect_item(&mut self, item: ast::AssocItem) {
@@ -201,7 +230,10 @@ impl<'a> AssocItemCollector<'a> {
         let ast_id = InFile::new(self.file_id, ast_id.upcast());
 
         'attrs: for attr in &*attrs {
-            let ast_id_with_path = AstIdWithPath { path: attr.path.clone(), ast_id };
+            let ast_id_with_path = AstIdWithPath {
+                path: attr.path.clone(),
+                ast_id,
+            };
 
             match self.def_map.resolve_attr_macro(
                 self.local_def_map,
@@ -237,7 +269,11 @@ impl<'a> AssocItemCollector<'a> {
                 Err(_) => {
                     self.diagnostics.push(DefDiagnostic::unresolved_macro_call(
                         self.module_id.local_id,
-                        MacroCallKind::Attr { ast_id, attr_args: None, invoc_attr_index: attr.id },
+                        MacroCallKind::Attr {
+                            ast_id,
+                            attr_args: None,
+                            invoc_attr_index: attr.id,
+                        },
                         attr.path().clone(),
                     ));
                 }
@@ -260,7 +296,9 @@ impl<'a> AssocItemCollector<'a> {
                 self.items.push((name.as_name(), def.into()));
             }
             ast::AssocItem::TypeAlias(type_alias) => {
-                let Some(name) = type_alias.name() else { return };
+                let Some(name) = type_alias.name() else {
+                    return;
+                };
                 let ast_id = self.ast_id_map.ast_id(&type_alias);
                 let def = TypeAliasLoc {
                     container: self.container,
@@ -272,9 +310,11 @@ impl<'a> AssocItemCollector<'a> {
             ast::AssocItem::Const(konst) => {
                 let Some(name) = konst.name() else { return };
                 let ast_id = self.ast_id_map.ast_id(&konst);
-                let def =
-                    ConstLoc { container: self.container, id: InFile::new(self.file_id, ast_id) }
-                        .intern(self.db);
+                let def = ConstLoc {
+                    container: self.container,
+                    id: InFile::new(self.file_id, ast_id),
+                }
+                .intern(self.db);
                 self.items.push((name.as_name(), def.into()));
             }
             ast::AssocItem::MacroCall(call) => {
@@ -313,7 +353,8 @@ impl<'a> AssocItemCollector<'a> {
                     self.module_id.krate(),
                     resolver,
                     &mut |ptr, call_id| {
-                        self.macro_calls.push((ptr.map(|(_, it)| it.upcast()), call_id))
+                        self.macro_calls
+                            .push((ptr.map(|(_, it)| it.upcast()), call_id))
                     },
                 ) {
                     // FIXME: Expansion error?

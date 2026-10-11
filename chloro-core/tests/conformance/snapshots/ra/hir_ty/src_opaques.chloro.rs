@@ -15,7 +15,8 @@ use crate::{
     lower::{ImplTraitIdx, ImplTraits},
     next_solver::{
         DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
-        infer::{DbInternerInferExt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
+        infer::{DbInternerInferExt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
 };
 
@@ -71,6 +72,7 @@ pub(crate) fn opaque_types_defined_by(
     }
 
     // FIXME: Collect opaques from `#[define_opaque]`.
+
     fn extend_with_opaques<'db>(
         db: &'db dyn HirDatabase,
         opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
@@ -139,7 +141,12 @@ pub(crate) fn tait_hidden_types<'db>(
                     entry.insert(EarlyBinder::bind(hidden_type));
                 }
                 la_arena::Entry::Occupied(entry) => {
-                    _ = ocx.eq(&cause, param_env, entry.get().instantiate_identity(), hidden_type);
+                    _ = ocx.eq(
+                        &cause,
+                        param_env,
+                        entry.get().instantiate_identity(),
+                        hidden_type,
+                    );
                 }
             }
         }
@@ -156,7 +163,9 @@ pub(crate) fn tait_hidden_types<'db>(
             }
             la_arena::Entry::Occupied(mut entry) => {
                 *entry.get_mut() = entry.get().map_bound(|hidden_type| {
-                    infcx.resolve_vars_if_possible(hidden_type).replace_infer_with_error(interner)
+                    infcx
+                        .resolve_vars_if_possible(hidden_type)
+                        .replace_infer_with_error(interner)
                 });
             }
         }

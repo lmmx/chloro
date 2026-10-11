@@ -3,7 +3,6 @@
 //! Sometimes, we want to display a "rich text" in the UI. At the moment, we use
 //! markdown for this purpose. It doesn't feel like a right option, but that's
 //! what is used by LSP, so let's keep it simple.
-
 use std::fmt;
 
 use ide_db::impl_empty_upmap_from_ra_fixture;
@@ -35,11 +34,9 @@ impl Markup {
     pub fn as_str(&self) -> &str {
         self.text.as_str()
     }
-
     pub fn fenced_block(contents: impl fmt::Display) -> Markup {
         format!("```rust\n{contents}\n```").into()
     }
-
     pub fn fenced_block_text(contents: impl fmt::Display) -> Markup {
         format!("```text\n{contents}\n```").into()
     }

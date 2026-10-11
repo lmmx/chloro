@@ -2,25 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3645 bytes
-Chloro size:   3642 bytes
+Chloro size:   3645 bytes
 Rustfmt size:  3645 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use crate::tests::check_assist;
--
-     use super::*;
--
-     #[test]
-     fn unwrap_tuples() {
-         check_assist(
- "#,
-         );
-     }
--
-     #[test]
-     fn unwrap_tuple_with_types() {
-         check_assist(
+✓ Outputs are IDENTICAL

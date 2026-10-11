@@ -6,10 +6,7 @@ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_ran
 // Diagnostic: incoherent-impl
 //
 // This diagnostic is triggered if the targe type of an impl is from a foreign crate.
-pub(crate) fn incoherent_impl(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::IncoherentImpl,
-) -> Diagnostic {
+pub(crate) fn incoherent_impl(ctx: &DiagnosticsContext<'_>, d: &hir::IncoherentImpl) -> Diagnostic {
     let display_range = adjusted_display_range(ctx, InFile::new(d.file_id, d.impl_), &|node| {
         Some(TextRange::new(
             node.syntax().text_range().start(),
@@ -28,6 +25,7 @@ pub(crate) fn incoherent_impl(
 #[cfg(test)]
 mod change_case {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn primitive() {
         check_diagnostics(
@@ -37,6 +35,7 @@ mod change_case {
 "#,
         );
     }
+
     #[test]
     fn primitive_rustc_allow_incoherent_impl() {
         check_diagnostics(
@@ -48,6 +47,7 @@ impl bool {
 "#,
         );
     }
+
     #[test]
     fn rustc_allow_incoherent_impl() {
         check_diagnostics(

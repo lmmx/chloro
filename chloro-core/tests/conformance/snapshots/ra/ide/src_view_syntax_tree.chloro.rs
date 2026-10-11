@@ -23,7 +23,10 @@ pub(crate) fn view_syntax_tree(db: &RootDatabase, file_id: FileId) -> String {
     let line_index = db.line_index(file_id);
     let parse = sema.parse_guess_edition(file_id);
 
-    let ctx = SyntaxTreeCtx { line_index, in_string: None };
+    let ctx = SyntaxTreeCtx {
+        line_index,
+        in_string: None,
+    };
 
     syntax_node_to_json(parse.syntax(), &ctx)
 }
@@ -57,7 +60,10 @@ fn syntax_node_to_json(node: &SyntaxNode, ctx: &SyntaxTreeCtx) -> String {
 
                         let true_range = TextRange::new(true_start.into(), true_end.into());
 
-                        (true_range, format!(r#","istart":{start_pos},"iend":{end_pos}"#,))
+                        (
+                            true_range,
+                            format!(r#","istart":{start_pos},"iend":{end_pos}"#,),
+                        )
                     }
                     None => (it.text_range(), "".to_owned()),
                 };
@@ -73,7 +79,11 @@ fn syntax_node_to_json(node: &SyntaxNode, ctx: &SyntaxTreeCtx) -> String {
                         );
                     }
                     NodeOrToken::Token(token) => {
-                        let comma = if token.next_sibling_or_token().is_some() { "," } else { "" };
+                        let comma = if token.next_sibling_or_token().is_some() {
+                            ","
+                        } else {
+                            ""
+                        };
                         match parse_rust_string(token, ctx) {
                             Some(parsed) => {
                                 format_to!(
@@ -91,7 +101,11 @@ fn syntax_node_to_json(node: &SyntaxNode, ctx: &SyntaxTreeCtx) -> String {
             }
             WalkEvent::Leave(it) => match it {
                 NodeOrToken::Node(node) => {
-                    let comma = if node.next_sibling_or_token().is_some() { "," } else { "" };
+                    let comma = if node.next_sibling_or_token().is_some() {
+                        ","
+                    } else {
+                        ""
+                    };
                     format_to!(result, "]}}{comma}")
                 }
                 NodeOrToken::Token(_) => (),
@@ -174,12 +188,15 @@ struct InStringCtx {
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::fixture;
+
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: expect_test::Expect) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let syn = analysis.view_syntax_tree(file_id).unwrap();
         expect.assert_eq(&syn)
     }
+
     #[test]
     fn view_syntax_tree() {
         // Basic syntax
@@ -203,6 +220,7 @@ fn test() {
             ]],
         )
     }
+
     #[test]
     fn view_syntax_tree_inside_string() {
         check(

@@ -6,11 +6,11 @@ use rustc_hash::FxHashMap;
 use rustc_type_ir::error::TypeError;
 use rustc_type_ir::inherent::{Const as _, IntoKind, Ty as _};
 use rustc_type_ir::relate::VarianceDiagInfo;
-use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
 use rustc_type_ir::{
     AliasRelationDirection, ConstVid, InferConst, InferCtxtLike, InferTy, RegionKind, TermKind,
     TyVid, UniverseIndex, Variance,
 };
+use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
 use tracing::{debug, instrument, warn};
 
 use super::{
@@ -47,7 +47,13 @@ impl<'db> InferCtxt<'db> {
         instantiation_variance: Variance,
         source_ty: Ty<'db>,
     ) -> RelateResult<'db, ()> {
-        debug_assert!(self.inner.borrow_mut().type_variables().probe(target_vid).is_unknown());
+        debug_assert!(
+            self.inner
+                .borrow_mut()
+                .type_variables()
+                .probe(target_vid)
+                .is_unknown()
+        );
 
         // Generalize `source_ty` depending on the current variance. As an example, assume
         // `?target <: &'x ?1`, where `'x` is some free region and `?1` is an inference
@@ -58,19 +64,27 @@ impl<'db> InferCtxt<'db> {
         //
         // We then relate `generalized_ty <: source_ty`, adding constraints like `'x: '?2` and
         // `?1 <: ?3`.
-        let Generalization { value_may_be_infer: generalized_ty, has_unconstrained_ty_var } = self
-            .generalize(
-                relation.structurally_relate_aliases(),
-                target_vid,
-                instantiation_variance,
-                source_ty,
-            )?;
+        let Generalization {
+            value_may_be_infer: generalized_ty,
+            has_unconstrained_ty_var,
+        } = self.generalize(
+            relation.structurally_relate_aliases(),
+            target_vid,
+            instantiation_variance,
+            source_ty,
+        )?;
 
         // Constrain `b_vid` to the generalized type `generalized_ty`.
         if let TyKind::Infer(InferTy::TyVar(generalized_vid)) = generalized_ty.kind() {
-            self.inner.borrow_mut().type_variables().equate(target_vid, generalized_vid);
+            self.inner
+                .borrow_mut()
+                .type_variables()
+                .equate(target_vid, generalized_vid);
         } else {
-            self.inner.borrow_mut().type_variables().instantiate(target_vid, generalized_ty);
+            self.inner
+                .borrow_mut()
+                .type_variables()
+                .instantiate(target_vid, generalized_ty);
         }
 
         // See the comment on `Generalization::has_unconstrained_ty_var`.
@@ -91,15 +105,21 @@ impl<'db> InferCtxt<'db> {
             // the alias can be normalized to something which does not
             // mention `?0`.
             let (lhs, rhs, direction) = match instantiation_variance {
-                Variance::Invariant => {
-                    (generalized_ty.into(), source_ty.into(), AliasRelationDirection::Equate)
-                }
-                Variance::Covariant => {
-                    (generalized_ty.into(), source_ty.into(), AliasRelationDirection::Subtype)
-                }
-                Variance::Contravariant => {
-                    (source_ty.into(), generalized_ty.into(), AliasRelationDirection::Subtype)
-                }
+                Variance::Invariant => (
+                    generalized_ty.into(),
+                    source_ty.into(),
+                    AliasRelationDirection::Equate,
+                ),
+                Variance::Covariant => (
+                    generalized_ty.into(),
+                    source_ty.into(),
+                    AliasRelationDirection::Subtype,
+                ),
+                Variance::Contravariant => (
+                    source_ty.into(),
+                    generalized_ty.into(),
+                    AliasRelationDirection::Subtype,
+                ),
                 Variance::Bivariant => unreachable!("bivariant generalization"),
             };
 
@@ -177,13 +197,15 @@ impl<'db> InferCtxt<'db> {
     ) -> RelateResult<'db, ()> {
         // FIXME(generic_const_exprs): Occurs check failures for unevaluated
         // constants and generic expressions are not yet handled correctly.
-        let Generalization { value_may_be_infer: generalized_ct, has_unconstrained_ty_var } = self
-            .generalize(
-                relation.structurally_relate_aliases(),
-                target_vid,
-                Variance::Invariant,
-                source_ct,
-            )?;
+        let Generalization {
+            value_may_be_infer: generalized_ct,
+            has_unconstrained_ty_var,
+        } = self.generalize(
+            relation.structurally_relate_aliases(),
+            target_vid,
+            Variance::Invariant,
+            source_ct,
+        )?;
 
         debug_assert!(!generalized_ct.is_ct_infer());
         if has_unconstrained_ty_var {
@@ -193,7 +215,12 @@ impl<'db> InferCtxt<'db> {
         self.inner
             .borrow_mut()
             .const_unification_table()
-            .union_value(target_vid, ConstVariableValue::Known { value: generalized_ct });
+            .union_value(
+                target_vid,
+                ConstVariableValue::Known {
+                    value: generalized_ct,
+                },
+            );
 
         // Make sure that the order is correct when relating the
         // generalized const and the source.
@@ -227,12 +254,19 @@ impl<'db> InferCtxt<'db> {
     ) -> RelateResult<'db, Generalization<T>> {
         assert!(!source_term.clone().has_escaping_bound_vars());
         let (for_universe, root_vid) = match target_vid.into() {
-            TermVid::Ty(ty_vid) => {
-                (self.probe_ty_var(ty_vid).unwrap_err(), TermVid::Ty(self.root_var(ty_vid)))
-            }
+            TermVid::Ty(ty_vid) => (
+                self.probe_ty_var(ty_vid).unwrap_err(),
+                TermVid::Ty(self.root_var(ty_vid)),
+            ),
             TermVid::Const(ct_vid) => (
                 self.probe_const_var(ct_vid).unwrap_err(),
-                TermVid::Const(self.inner.borrow_mut().const_unification_table().find(ct_vid).vid),
+                TermVid::Const(
+                    self.inner
+                        .borrow_mut()
+                        .const_unification_table()
+                        .find(ct_vid)
+                        .vid,
+                ),
             ),
         };
 
@@ -250,7 +284,10 @@ impl<'db> InferCtxt<'db> {
 
         let value_may_be_infer = generalizer.relate(source_term, source_term)?;
         let has_unconstrained_ty_var = generalizer.has_unconstrained_ty_var;
-        Ok(Generalization { value_may_be_infer, has_unconstrained_ty_var })
+        Ok(Generalization {
+            value_may_be_infer,
+            has_unconstrained_ty_var,
+        })
     }
 }
 
@@ -269,29 +306,37 @@ impl<'db> InferCtxt<'db> {
 /// [blog post]: https://is.gd/0hKvIr
 struct Generalizer<'me, 'db> {
     infcx: &'me InferCtxt<'db>,
+
     /// Whether aliases should be related structurally. If not, we have to
     /// be careful when generalizing aliases.
     structurally_relate_aliases: StructurallyRelateAliases,
+
     /// The vid of the type variable that is in the process of being
     /// instantiated. If we find this within the value we are folding,
     /// that means we would have created a cyclic value.
     root_vid: TermVid,
+
     /// The universe of the type variable that is in the process of being
     /// instantiated. If we find anything that this universe cannot name,
     /// we reject the relation.
     for_universe: UniverseIndex,
+
     /// The root term (const or type) we're generalizing. Used for cycle errors.
     root_term: Term<'db>,
+
     /// After we generalize this type, we are going to relate it to
     /// some other type. What will be the variance at this point?
     ambient_variance: Variance,
+
     /// This is set once we're generalizing the arguments of an alias.
     ///
     /// This is necessary to correctly handle
     /// `<T as Bar<<?0 as Foo>::Assoc>::Assoc == ?0`. This equality can
     /// hold by either normalizing the outer or the inner associated type.
     in_alias: bool,
+
     cache: FxHashMap<(Ty<'db>, Variance, bool), Ty<'db>>,
+
     /// See the field `has_unconstrained_ty_var` in `Generalization`.
     has_unconstrained_ty_var: bool,
 }
@@ -534,7 +579,8 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
             _ => relate::structurally_relate_tys(self, t, t),
         }?;
 
-        self.cache.insert((t, self.ambient_variance, self.in_alias), g);
+        self.cache
+            .insert((t, self.ambient_variance, self.in_alias), g);
         Ok(g)
     }
 
@@ -587,7 +633,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                 // `vid` are related and we'd be inferring an infinitely
                 // deep const.
                 if TermVid::Const(
-                    self.infcx.inner.borrow_mut().const_unification_table().find(vid).vid,
+                    self.infcx
+                        .inner
+                        .borrow_mut()
+                        .const_unification_table()
+                        .find(vid)
+                        .vid,
                 ) == self.root_vid
                 {
                     return Err(self.cyclic_term_error());
@@ -639,7 +690,10 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
                     args,
                     args,
                 )?;
-                Ok(Const::new_unevaluated(self.infcx.interner, UnevaluatedConst { def, args }))
+                Ok(Const::new_unevaluated(
+                    self.infcx.interner,
+                    UnevaluatedConst { def, args },
+                ))
             }
             ConstKind::Placeholder(placeholder) => {
                 if self.for_universe.can_name(placeholder.universe) {
@@ -684,6 +738,7 @@ struct Generalization<T> {
     /// otherwise very easily result in infinite
     /// recursion.
     pub value_may_be_infer: T,
+
     /// In general, we do not check whether all types which occur during
     /// type checking are well-formed. We only check wf of user-provided types
     /// and when actually using a type, e.g. for method calls.

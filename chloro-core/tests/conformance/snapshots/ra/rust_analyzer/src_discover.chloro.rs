@@ -1,6 +1,5 @@
 //! Infrastructure for lazy project discovery. Currently only support rust-project.json discovery
 //! via a custom discover command.
-
 use std::{io, path::Path};
 
 use crossbeam_channel::Sender;
@@ -25,8 +24,8 @@ pub(crate) struct DiscoverCommand {
 #[derive(PartialEq, Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) enum DiscoverArgument {
-    Path(AbsPathBuf),
-    Buildfile(AbsPathBuf),
+    Path(#[serde(serialize_with = "serialize_abs_pathbuf")] AbsPathBuf),
+    Buildfile(#[serde(serialize_with = "serialize_abs_pathbuf")] AbsPathBuf),
 }
 
 fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
@@ -78,8 +77,7 @@ impl DiscoverCommand {
 #[derive(Debug)]
 pub(crate) struct DiscoverHandle {
     _handle: CommandHandle<DiscoverProjectMessage>,
-    // not accessed, but used to log on drop.
-    #[allow(dead_code)]
+    #[allow(dead_code)] // not accessed, but used to log on drop.
     span: EnteredSpan,
 }
 
@@ -120,7 +118,9 @@ pub(crate) enum DiscoverProjectMessage {
 impl DiscoverProjectMessage {
     fn new(data: DiscoverProjectData) -> Self {
         match data {
-            DiscoverProjectData::Finished { project, buildfile, .. } => {
+            DiscoverProjectData::Finished {
+                project, buildfile, ..
+            } => {
                 let buildfile = buildfile.try_into().expect("Unable to make path absolute");
                 DiscoverProjectMessage::Finished { project, buildfile }
             }
@@ -144,8 +144,10 @@ impl CargoParser<DiscoverProjectMessage> for DiscoverProjectParser {
                 Some(msg)
             }
             Err(err) => {
-                let err =
-                    DiscoverProjectData::Error { error: format!("{err:#?}\n{line}"), source: None };
+                let err = DiscoverProjectData::Error {
+                    error: format!("{err:#?}\n{line}"),
+                    source: None,
+                };
                 Some(DiscoverProjectMessage::new(err))
             }
         }

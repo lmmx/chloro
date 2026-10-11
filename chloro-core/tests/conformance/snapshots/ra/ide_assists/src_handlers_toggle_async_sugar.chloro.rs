@@ -132,7 +132,9 @@ pub(crate) fn desugar_async_into_impl_future(
 
     let scope = ctx.sema.scope(function.syntax())?;
     let module = scope.module();
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
     let future_trait = FamousDefs(&ctx.sema, scope.krate()).core_future_Future()?;
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(future_trait), cfg)?;
     let edition = scope.krate().edition(ctx.db());
@@ -186,6 +188,7 @@ fn following_whitespace(nt: NodeOrToken<&SyntaxNode, SyntaxToken>) -> Option<Tex
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn sugar_with_use() {
         check_assist(
@@ -222,6 +225,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn desugar_with_use() {
         check_assist(
@@ -292,6 +296,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn sugar_without_use() {
         check_assist(
@@ -324,6 +329,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn desugar_without_use() {
         check_assist(
@@ -356,6 +362,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn not_applicable() {
         check_assist_not_applicable(
@@ -403,6 +410,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn sugar_definition_with_use() {
         check_assist(
@@ -431,6 +439,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn sugar_definition_without_use() {
         check_assist(
@@ -455,6 +464,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn sugar_more_types() {
         check_assist(
@@ -512,6 +522,7 @@ mod tests {
     "#,
         );
     }
+
     #[test]
     fn sugar_with_modifiers() {
         check_assist_not_applicable(

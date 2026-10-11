@@ -75,7 +75,10 @@ impl ProjectJsonTargetSpec {
         match kind {
             RunnableKind::Bin => {
                 for runnable in &self.shell_runnables {
-                    if matches!(runnable.kind, project_model::project_json::RunnableKind::Run) {
+                    if matches!(
+                        runnable.kind,
+                        project_model::project_json::RunnableKind::Run
+                    ) {
                         return Some(runnable.clone());
                     }
                 }
@@ -84,7 +87,10 @@ impl ProjectJsonTargetSpec {
             }
             RunnableKind::Test { test_id, .. } => {
                 for runnable in &self.shell_runnables {
-                    if matches!(runnable.kind, project_model::project_json::RunnableKind::TestOne) {
+                    if matches!(
+                        runnable.kind,
+                        project_model::project_json::RunnableKind::TestOne
+                    ) {
                         let mut runnable = runnable.clone();
 
                         let replaced_args: Vec<_> = runnable
@@ -154,7 +160,10 @@ impl CargoTargetSpec {
             }
             RunnableKind::Bin => {
                 let subcommand = match spec {
-                    Some(CargoTargetSpec { target_kind: TargetKind::Test, .. }) => "test",
+                    Some(CargoTargetSpec {
+                        target_kind: TargetKind::Test,
+                        ..
+                    }) => "test",
                     _ => "run",
                 };
                 cargo_args.push(subcommand.to_owned());
@@ -180,14 +189,20 @@ impl CargoTargetSpec {
                     cargo_args.push(feature);
                 }
             }
-            CargoFeatures::Selected { features, no_default_features } => {
+            CargoFeatures::Selected {
+                features,
+                no_default_features,
+            } => {
                 let mut feats = Vec::new();
                 if let Some(cfg) = cfg.as_ref() {
                     required_features(cfg, &mut feats);
                 }
 
                 feats.extend(
-                    features.iter().filter(|&feat| allowed_features.contains(feat)).cloned(),
+                    features
+                        .iter()
+                        .filter(|&feat| allowed_features.contains(feat))
+                        .cloned(),
                 );
                 feats.extend(target_required_features);
 
@@ -246,7 +261,9 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
             features.push(value.to_string())
         }
         CfgExpr::All(preds) => {
-            preds.iter().for_each(|cfg| required_features(cfg, features));
+            preds
+                .iter()
+                .for_each(|cfg| required_features(cfg, features));
         }
         CfgExpr::Any(preds) => {
             for cfg in preds.iter() {
@@ -264,6 +281,7 @@ fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use ide::Edition;
     use syntax::{
         SmolStr,
@@ -274,10 +292,15 @@ mod tests {
         dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
         syntax_node_to_token_tree,
     };
+
     fn check(cfg: &str, expected_features: &[&str]) {
         let cfg_expr = {
             let source_file = ast::SourceFile::parse(cfg, Edition::CURRENT).ok().unwrap();
-            let tt = source_file.syntax().descendants().find_map(ast::TokenTree::cast).unwrap();
+            let tt = source_file
+                .syntax()
+                .descendants()
+                .find_map(ast::TokenTree::cast)
+                .unwrap();
             let tt = syntax_node_to_token_tree(
                 tt.syntax(),
                 &DummyTestSpanMap,
@@ -290,16 +313,25 @@ mod tests {
         let mut features = vec![];
         required_features(&cfg_expr, &mut features);
 
-        let expected_features =
-            expected_features.iter().map(|&it| SmolStr::new(it)).collect::<Vec<_>>();
+        let expected_features = expected_features
+            .iter()
+            .map(|&it| SmolStr::new(it))
+            .collect::<Vec<_>>();
 
         assert_eq!(features, expected_features);
     }
+
     #[test]
     fn test_cfg_expr_minimal_features_needed() {
         check(r#"#![cfg(feature = "baz")]"#, &["baz"]);
-        check(r#"#![cfg(all(feature = "baz", feature = "foo"))]"#, &["baz", "foo"]);
-        check(r#"#![cfg(any(feature = "baz", feature = "foo", unix))]"#, &["baz"]);
+        check(
+            r#"#![cfg(all(feature = "baz", feature = "foo"))]"#,
+            &["baz", "foo"],
+        );
+        check(
+            r#"#![cfg(any(feature = "baz", feature = "foo", unix))]"#,
+            &["baz"],
+        );
         check(r#"#![cfg(foo)]"#, &[]);
     }
 }

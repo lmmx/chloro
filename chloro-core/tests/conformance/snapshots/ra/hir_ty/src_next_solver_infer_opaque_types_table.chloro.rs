@@ -55,15 +55,23 @@ impl<'db> OpaqueTypeStorage<'db> {
     }
 
     pub(crate) fn is_empty(&self) -> bool {
-        let OpaqueTypeStorage { opaque_types, duplicate_entries } = self;
+        let OpaqueTypeStorage {
+            opaque_types,
+            duplicate_entries,
+        } = self;
         opaque_types.is_empty() && duplicate_entries.is_empty()
     }
 
     pub(crate) fn take_opaque_types(
         &mut self,
     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        let OpaqueTypeStorage { opaque_types, duplicate_entries } = self;
-        std::mem::take(opaque_types).into_iter().chain(std::mem::take(duplicate_entries))
+        let OpaqueTypeStorage {
+            opaque_types,
+            duplicate_entries,
+        } = self;
+        std::mem::take(opaque_types)
+            .into_iter()
+            .chain(std::mem::take(duplicate_entries))
     }
 
     pub(crate) fn num_entries(&self) -> OpaqueTypeStorageEntries {
@@ -81,7 +89,12 @@ impl<'db> OpaqueTypeStorage<'db> {
             .iter()
             .skip(prev_entries.opaque_types)
             .map(|(k, v)| (*k, *v))
-            .chain(self.duplicate_entries.iter().skip(prev_entries.duplicate_entries).copied())
+            .chain(
+                self.duplicate_entries
+                    .iter()
+                    .skip(prev_entries.duplicate_entries)
+                    .copied(),
+            )
     }
 
     /// Only returns the opaque types from the lookup table. These are used
@@ -109,8 +122,14 @@ impl<'db> OpaqueTypeStorage<'db> {
     pub(crate) fn iter_opaque_types(
         &self,
     ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-        let OpaqueTypeStorage { opaque_types, duplicate_entries } = self;
-        opaque_types.iter().map(|(k, v)| (*k, *v)).chain(duplicate_entries.iter().copied())
+        let OpaqueTypeStorage {
+            opaque_types,
+            duplicate_entries,
+        } = self;
+        opaque_types
+            .iter()
+            .map(|(k, v)| (*k, *v))
+            .chain(duplicate_entries.iter().copied())
     }
 
     #[inline]
@@ -118,18 +137,20 @@ impl<'db> OpaqueTypeStorage<'db> {
         &'a mut self,
         undo_log: &'a mut InferCtxtUndoLogs<'db>,
     ) -> OpaqueTypeTable<'a, 'db> {
-        OpaqueTypeTable { storage: self, undo_log }
+        OpaqueTypeTable {
+            storage: self,
+            undo_log,
+        }
     }
 }
 
 pub(crate) struct OpaqueTypeTable<'a, 'db> {
     storage: &'a mut OpaqueTypeStorage<'db>,
+
     undo_log: &'a mut InferCtxtUndoLogs<'db>,
 }
-
 impl<'db> Deref for OpaqueTypeTable<'_, 'db> {
     type Target = OpaqueTypeStorage<'db>;
-
     fn deref(&self) -> &Self::Target {
         self.storage
     }

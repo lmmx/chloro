@@ -11,7 +11,13 @@ pub(super) fn complete_repr(
     input: ast::TokenTree,
 ) {
     if let Some(existing_reprs) = super::parse_comma_sep_expr(input) {
-        for &ReprCompletion { label, snippet, lookup, collides } in REPR_COMPLETIONS {
+        for &ReprCompletion {
+            label,
+            snippet,
+            lookup,
+            collides,
+        } in REPR_COMPLETIONS
+        {
             let repr_already_annotated = existing_reprs
                 .iter()
                 .filter_map(|expr| match expr {
@@ -55,7 +61,12 @@ struct ReprCompletion {
 }
 
 const fn attr(label: &'static str, collides: &'static [&'static str]) -> ReprCompletion {
-    ReprCompletion { label, snippet: None, lookup: None, collides }
+    ReprCompletion {
+        label,
+        snippet: None,
+        lookup: None,
+        collides,
+    }
 }
 
 #[rustfmt::skip]

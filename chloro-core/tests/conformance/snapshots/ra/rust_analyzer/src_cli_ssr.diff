@@ -2,22 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3507 bytes
-Chloro size:   3507 bytes
+Chloro size:   3539 bytes
 Rustfmt size:  3539 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     /// for much else.
-     pub fn run(self) -> anyhow::Result<()> {
-         use ide_db::base_db::SourceDatabase;
--        let cargo_config = CargoConfig {
--            all_targets: true,
--            set_test: true,
--            ..CargoConfig::default()
--        };
-+        let cargo_config =
-+            CargoConfig { all_targets: true, set_test: true, ..CargoConfig::default() };
-         let load_cargo_config = LoadCargoConfig {
-             load_out_dirs_from_check: true,
-             with_proc_macro_server: ProcMacroServerChoice::Sysroot,
+✓ Outputs are IDENTICAL

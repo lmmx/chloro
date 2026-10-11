@@ -1,5 +1,4 @@
 //! ABI-related things in the next-trait-solver.
-
 use rustc_type_ir::{error::TypeError, relate::Relate};
 
 use crate::FnAbi;
@@ -19,7 +18,9 @@ impl<'db> Relate<DbInterner<'db>> for Safety {
         b: Self,
     ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         if a != b {
-            Err(TypeError::SafetyMismatch(rustc_type_ir::error::ExpectedFound::new(a, b)))
+            Err(TypeError::SafetyMismatch(
+                rustc_type_ir::error::ExpectedFound::new(a, b),
+            ))
         } else {
             Ok(a)
         }
@@ -52,7 +53,9 @@ impl<'db> Relate<DbInterner<'db>> for FnAbi {
         if a == b {
             Ok(a)
         } else {
-            Err(TypeError::AbiMismatch(rustc_type_ir::error::ExpectedFound::new(a, b)))
+            Err(TypeError::AbiMismatch(
+                rustc_type_ir::error::ExpectedFound::new(a, b),
+            ))
         }
     }
 }

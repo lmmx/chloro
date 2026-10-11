@@ -22,7 +22,11 @@ pub(crate) fn format_string(
     let cursor_in_lit = cursor - lit_start;
 
     let prefix = &original.text()[..cursor_in_lit.into()];
-    let braces = prefix.char_indices().rev().skip_while(|&(_, c)| c.is_alphanumeric()).next_tuple();
+    let braces = prefix
+        .char_indices()
+        .rev()
+        .skip_while(|&(_, c)| c.is_alphanumeric())
+        .next_tuple();
     let brace_offset = match braces {
         // escaped brace
         Some(((_, '{'), (_, '{'))) => return,
@@ -31,15 +35,18 @@ pub(crate) fn format_string(
     };
 
     let source_range = TextRange::new(brace_offset, cursor);
-    ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()).for_each(|(name, _)| {
-        CompletionItem::new(
-            CompletionItemKind::Binding,
-            source_range,
-            name.display_no_db(ctx.edition).to_smolstr(),
-            ctx.edition,
-        )
-        .add_to(acc, ctx.db);
-    });
+    ctx.locals
+        .iter()
+        .sorted_by_key(|&(k, _)| k.clone())
+        .for_each(|(name, _)| {
+            CompletionItem::new(
+                CompletionItemKind::Binding,
+                source_range,
+                name.display_no_db(ctx.edition).to_smolstr(),
+                ctx.edition,
+            )
+            .add_to(acc, ctx.db);
+        });
     ctx.scope.process_all_names(&mut |name, scope| {
         if let ScopeDef::ModuleDef(module_def) = scope {
             let symbol_kind = match module_def {
@@ -62,7 +69,9 @@ pub(crate) fn format_string(
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use crate::tests::{check_edit, check_no_kw};
+
     #[test]
     fn works_when_wrapped() {
         check_no_kw(
@@ -79,6 +88,7 @@ fn main() {
             expect![[]],
         );
     }
+
     #[test]
     fn no_completion_without_brace() {
         check_no_kw(
@@ -92,6 +102,7 @@ fn main() {
             expect![[]],
         );
     }
+
     #[test]
     fn completes_locals() {
         check_edit(
@@ -127,6 +138,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_constants() {
         check_edit(
@@ -163,6 +175,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn completes_static_constants() {
         check_edit(

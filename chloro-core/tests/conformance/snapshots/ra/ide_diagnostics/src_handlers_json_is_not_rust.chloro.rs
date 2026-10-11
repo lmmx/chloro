@@ -84,11 +84,7 @@ impl State {
         match value {
             serde_json::Value::Null => make::ty_unit(),
             serde_json::Value::Bool(_) => make::ty("bool"),
-            serde_json::Value::Number(it) => make::ty(if it.is_i64() {
-                "i64"
-            } else {
-                "f64"
-            }),
+            serde_json::Value::Number(it) => make::ty(if it.is_i64() { "i64" } else { "f64" }),
             serde_json::Value::String(_) => make::ty("String"),
             serde_json::Value::Array(it) => {
                 let ty = match it.iter().next() {
@@ -137,7 +133,10 @@ pub(crate) fn json_in_items(
                     Diagnostic::new(
                         DiagnosticCode::Ra("json-is-not-rust", Severity::WeakWarning),
                         "JSON syntax is not valid as a Rust item",
-                        FileRange { file_id: vfs_file_id, range },
+                        FileRange {
+                            file_id: vfs_file_id,
+                            range,
+                        },
                     )
                     .stable()
                     .with_fixes(Some(vec![{
@@ -176,7 +175,12 @@ pub(crate) fn json_in_items(
                         }
                         let mut sc = scb.finish();
                         sc.insert_source_edit(vfs_file_id, edit.finish());
-                        fix("convert_json_to_struct", "Convert JSON to struct", sc, range)
+                        fix(
+                            "convert_json_to_struct",
+                            "Convert JSON to struct",
+                            sc,
+                            range,
+                        )
                     }])),
                 );
             }
@@ -191,6 +195,7 @@ mod tests {
         DiagnosticsConfig,
         tests::{check_diagnostics_with_config, check_fix, check_no_fix},
     };
+
     #[test]
     fn diagnostic_for_simple_case() {
         let mut config = DiagnosticsConfig::test_sample();
@@ -203,6 +208,7 @@ mod tests {
 "#,
         );
     }
+
     #[test]
     fn types_of_primitives() {
         check_fix(
@@ -240,6 +246,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn nested_structs() {
         check_fix(
@@ -260,6 +267,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn naming() {
         check_fix(
@@ -294,6 +302,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn arrays() {
         check_fix(
@@ -332,6 +341,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn no_emit_outside_of_item_position() {
         check_no_fix(

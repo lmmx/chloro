@@ -1,5 +1,4 @@
 //! See [`import_on_the_fly`].
-
 use hir::{ItemInNs, ModuleDef};
 use ide_db::imports::{
     import_assets::{ImportAssets, LocatedImport},
@@ -143,7 +142,9 @@ pub(crate) fn import_on_the_fly_path(
         ctx,
         path_ctx,
         import_assets,
-        qualifier.map(|it| it.syntax().clone()).or_else(|| ctx.original_token.parent())?,
+        qualifier
+            .map(|it| it.syntax().clone())
+            .or_else(|| ctx.original_token.parent())?,
         potential_import_name,
     )
 }
@@ -156,7 +157,11 @@ pub(crate) fn import_on_the_fly_pat(
     if !ctx.config.enable_imports_on_the_fly {
         return None;
     }
-    if let PatternContext { record_pat: Some(_), .. } = pattern_ctx {
+    if let PatternContext {
+        record_pat: Some(_),
+        ..
+    } = pattern_ctx
+    {
         return None;
     }
 
@@ -385,7 +390,9 @@ fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport
     let method_imported = import.item_to_import != import.original_item;
     if method_imported
         && (is_exclude_flyimport.is_some()
-            || ctx.exclude_flyimport.contains_key(&import.original_item.into_module_def()))
+            || ctx
+                .exclude_flyimport
+                .contains_key(&import.original_item.into_module_def()))
     {
         // If this is a method, exclude it either if it was excluded itself (which may not be caught above,
         // because `item_to_import` is the trait), or if its trait was excluded. We don't need to check

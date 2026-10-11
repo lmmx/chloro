@@ -20,6 +20,7 @@ pub(crate) fn parenthesized_generic_args_without_fn_trait(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn fn_traits_work() {
         check_diagnostics(
@@ -36,6 +37,7 @@ fn foo<
         "#,
         );
     }
+
     #[test]
     fn non_fn_trait() {
         check_diagnostics(

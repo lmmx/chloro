@@ -60,7 +60,8 @@ impl TargetFeatures {
 // Ideally we'd depend on rustc for this, but rustc_target doesn't compile on stable,
 // and t-compiler prefers for it to stay this way.
 
-static TARGET_FEATURE_IMPLICATIONS: LazyLock<FxHashMap<Symbol, Box<[Symbol]>>> = LazyLock::new(|| {
+static TARGET_FEATURE_IMPLICATIONS: LazyLock<FxHashMap<Symbol, Box<[Symbol]>>> =
+    LazyLock::new(|| {
         let mut result = FxHashMap::<Symbol, FxHashSet<Symbol>>::default();
         for &(feature_str, implications) in TARGET_FEATURE_IMPLICATIONS_RAW {
             let feature = Symbol::intern(feature_str);
@@ -78,6 +79,7 @@ static TARGET_FEATURE_IMPLICATIONS: LazyLock<FxHashMap<Symbol, Box<[Symbol]>>> =
         result
     });
 
+// spellchecker:off
 const TARGET_FEATURE_IMPLICATIONS_RAW: &[(&str, &[&str])] = &[
     // Arm
     ("aes", &["neon"]),
@@ -247,8 +249,14 @@ const TARGET_FEATURE_IMPLICATIONS_RAW: &[(&str, &[&str])] = &[
     ("vector-enhancements-1", &["vector"]),
     ("vector-enhancements-2", &["vector-enhancements-1"]),
     ("vector-packed-decimal", &["vector"]),
-    ("vector-packed-decimal-enhancement", &["vector-packed-decimal"]),
-    ("vector-packed-decimal-enhancement-2", &["vector-packed-decimal-enhancement"]),
+    (
+        "vector-packed-decimal-enhancement",
+        &["vector-packed-decimal"],
+    ),
+    (
+        "vector-packed-decimal-enhancement-2",
+        &["vector-packed-decimal-enhancement"],
+    ),
     // SPARC
     // m68k
     ("isa-68010", &["isa-68000"]),

@@ -78,6 +78,7 @@ pub(crate) fn add_format_like_completions(
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_into_suggestion() {
         let test_vector = &[
@@ -97,6 +98,7 @@ mod tests {
             assert_eq!(&snippet, output);
         }
     }
+
     #[test]
     fn test_into_suggestion_no_epxrs() {
         let test_vector = &[

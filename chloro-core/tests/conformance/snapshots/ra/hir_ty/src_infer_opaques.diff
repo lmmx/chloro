@@ -2,30 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5724 bytes
+Chloro size:   5762 bytes
 Rustfmt size:  5762 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-         debug!(?opaque_types);
- 
-         let interner = self.interner();
--        let TypingMode::Analysis {
--            defining_opaque_types_and_generators,
--        } = self.table.infer_ctxt.typing_mode()
-+        let TypingMode::Analysis { defining_opaque_types_and_generators } =
-+            self.table.infer_ctxt.typing_mode()
-         else {
-             unreachable!();
-         };
-         let at = self.table.infer_ctxt.at(&cause, self.table.trait_env.env);
-         let hidden_type = match at.deeply_normalize(hidden_type) {
-             Ok(hidden_type) => hidden_type,
--            Err(_errors) => OpaqueHiddenType {
--                ty: self.types.error,
--            },
-+            Err(_errors) => OpaqueHiddenType { ty: self.types.error },
-         };
-         let hidden_type = fold_regions(self.interner(), hidden_type, |_, _| self.types.re_erased);
-         UsageKind::HasDefiningUse(hidden_type)
+✓ Outputs are IDENTICAL

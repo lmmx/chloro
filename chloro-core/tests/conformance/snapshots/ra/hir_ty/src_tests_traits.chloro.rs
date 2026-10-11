@@ -783,7 +783,8 @@ fn test(s: Arc<S>) {
 
 #[test]
 fn deref_trait_with_implicit_sized_requirement_on_inference_var() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: deref, phantom_data
 use core::marker::PhantomData;
 
@@ -797,7 +798,8 @@ fn test() {
   //^^^^ ()
     let _: Foo<u8> = foo;
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -1433,7 +1435,8 @@ fn foo<const C: u8, T>() -> (impl FnOnce(&str, T), impl Trait<u8>) {
 #[test]
 fn return_pos_impl_trait_in_projection() {
     // Note that the unused type param `X` is significant; see #13307.
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: sized
 trait Future { type Output; }
 impl Future for () { type Output = i32; }
@@ -1441,7 +1444,8 @@ type Foo<F> = (<F as Future>::Output, F);
 fn foo<X>() -> Foo<impl Future<Output = i32>> {
     (0, ())
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -2726,7 +2730,8 @@ fn test<T: Trait>() {
 
 #[test]
 fn associated_type_in_type_bound() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: deref
 fn fb(f: Foo<&u8>) {
     f.foobar();
@@ -2747,7 +2752,8 @@ impl<F: core::ops::Deref<Target = impl Bar>> Foo<F> {
         self.foo.deref().bar()
     }
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -3677,7 +3683,8 @@ fn minimized() {
 
 #[test]
 fn no_builtin_binop_expectation_for_non_builtin_types() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 //- minicore: default, eq
 struct S;
 impl Default for S { fn default() -> Self { S } }
@@ -3691,7 +3698,8 @@ fn test() {
     let _eq = 0 == s;
     take_s(s);
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -3963,7 +3971,8 @@ fn f() {
 
 #[test]
 fn regression_14443_trait_solve() {
-    check_no_mismatches(r#"
+    check_no_mismatches(
+        r#"
 trait T {
     fn f(&self) {}
 }
@@ -3985,7 +3994,8 @@ fn main() {
     a.f();
     b.f();
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -4020,7 +4030,8 @@ fn f<F: Foo>() {
 
 #[test]
 fn dyn_map() {
-    check_types(r#"
+    check_types(
+        r#"
 pub struct Key<K, V, P = (K, V)> {}
 
 pub trait Policy {
@@ -4050,7 +4061,8 @@ fn test() {
     let result = key_map.get(key);
       //^^^^^^ FunctionId
 }
-"#)
+"#,
+    )
 }
 
 #[test]
@@ -4733,7 +4745,8 @@ fn f<T: Send, U>() {
 
 #[test]
 fn dyn_trait_with_lifetime_in_rpit() {
-    check_types(r#"
+    check_types(
+        r#"
 //- minicore: future
 pub struct Box<T> {}
 
@@ -4747,7 +4760,8 @@ fn foo() {
     foo_async();
   //^^^^^^^^^^^impl Future<Output = Box<dyn Trait + '?>> + ?Sized
 }
-"#)
+"#,
+    )
 }
 
 #[test]

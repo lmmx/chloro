@@ -69,10 +69,12 @@ impl<'a> AssistContext<'a> {
         let end = frange.range.end();
         let left = source_file.syntax().token_at_offset(start);
         let right = source_file.syntax().token_at_offset(end);
-        let left =
-            left.right_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
-        let right =
-            right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
+        let left = left
+            .right_biased()
+            .and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
+        let right = right
+            .left_biased()
+            .and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
         let left = left.map(|t| t.text_range().start().clamp(start, end));
         let right = right.map(|t| t.text_range().end().clamp(start, end));
 
@@ -133,31 +135,25 @@ impl<'a> AssistContext<'a> {
     pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
         self.token_at_offset.clone()
     }
-
     pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
         self.token_at_offset().find(|it| it.kind() == kind)
     }
-
     pub(crate) fn find_token_at_offset<T: AstToken>(&self) -> Option<T> {
         self.token_at_offset().find_map(T::cast)
     }
-
     pub(crate) fn find_node_at_offset<N: AstNode>(&self) -> Option<N> {
         find_node_at_offset(self.source_file.syntax(), self.offset())
     }
-
     pub(crate) fn find_node_at_trimmed_offset<N: AstNode>(&self) -> Option<N> {
         find_node_at_offset(self.source_file.syntax(), self.trimmed_range.start())
     }
-
     pub(crate) fn find_node_at_range<N: AstNode>(&self) -> Option<N> {
         find_node_at_range(self.source_file.syntax(), self.trimmed_range)
     }
-
     pub(crate) fn find_node_at_offset_with_descend<N: AstNode>(&self) -> Option<N> {
-        self.sema.find_node_at_offset_with_descend(self.source_file.syntax(), self.offset())
+        self.sema
+            .find_node_at_offset_with_descend(self.source_file.syntax(), self.offset())
     }
-
     /// Returns the element covered by the selection range, this excludes trailing whitespace in the selection.
     pub(crate) fn covering_element(&self) -> SyntaxElement {
         self.covering_element.clone()
@@ -194,7 +190,9 @@ impl Assists {
         f: impl FnOnce(&mut SourceChangeBuilder),
     ) -> Option<()> {
         let mut f = Some(f);
-        self.add_impl(None, id, label.into(), target, &mut |it| f.take().unwrap()(it))
+        self.add_impl(None, id, label.into(), target, &mut |it| {
+            f.take().unwrap()(it)
+        })
     }
 
     pub(crate) fn add_group(
@@ -206,7 +204,9 @@ impl Assists {
         f: impl FnOnce(&mut SourceChangeBuilder),
     ) -> Option<()> {
         let mut f = Some(f);
-        self.add_impl(Some(group), id, label.into(), target, &mut |it| f.take().unwrap()(it))
+        self.add_impl(Some(group), id, label.into(), target, &mut |it| {
+            f.take().unwrap()(it)
+        })
     }
 
     fn add_impl(
@@ -233,7 +233,14 @@ impl Assists {
 
         let label = Label::new(label);
         let group = group.cloned();
-        self.buf.push(Assist { id, label, group, target, source_change, command });
+        self.buf.push(Assist {
+            id,
+            label,
+            group,
+            target,
+            source_change,
+            command,
+        });
         Some(())
     }
 

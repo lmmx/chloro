@@ -826,6 +826,7 @@ pub macro Clone {}
 fn unresolved_attributes_fall_back_track_per_file_moditems() {
     // Tests that we track per-file ModItems when ignoring an unresolved attribute.
     // Just tracking the `ModItem` leads to `Foo` getting ignored.
+
     check(
         r#"
         //- /main.rs crate:main
@@ -1042,6 +1043,7 @@ pub fn derive_macro_2(_item: TokenStream) -> TokenStream {
 #[test]
 fn proc_macro_censoring() {
     // Make sure that only proc macros are publicly exported from proc-macro crates.
+
     check(
         r#"
 //- /main.rs crate:main deps:macros
@@ -1099,7 +1101,10 @@ pub fn derive_macro_2(_item: TokenStream) -> TokenStream {
     assert_eq!(def_map.data.exported_derives.len(), 1);
     match def_map.data.exported_derives.values().next() {
         Some(helpers) => match &**helpers {
-            [attr] => assert_eq!(attr.display(&db, Edition::CURRENT).to_string(), "helper_attr"),
+            [attr] => assert_eq!(
+                attr.display(&db, Edition::CURRENT).to_string(),
+                "helper_attr"
+            ),
             _ => unreachable!(),
         },
         _ => unreachable!(),
@@ -1167,6 +1172,7 @@ m!(
 fn eager_macro_correctly_resolves_contents() {
     // Eager macros resolve any contained macros when expanded. This should work correctly with the
     // usual name resolution rules, so both of these `include!`s should include the right file.
+
     check(
         r#"
 //- /lib.rs

@@ -3,7 +3,8 @@ use ide_db::{FxHashSet, path_transform::PathTransform};
 use syntax::{
     ast::{
         self, AstNode, HasGenericParams, HasName, HasVisibility as _,
-        edit::{AstNodeEdit, IndentLevel}, make,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
     },
     syntax_editor::Position,
 };
@@ -62,14 +63,22 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
         Some(field) => {
             let field_name = field.name()?;
             let field_ty = field.ty()?;
-            (field_name.to_string(), field_ty, field.syntax().text_range())
+            (
+                field_name.to_string(),
+                field_ty,
+                field.syntax().text_range(),
+            )
         }
         None => {
             let field = ctx.find_node_at_offset::<ast::TupleField>()?;
             let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
             let field_list_index = field_list.fields().position(|it| it == field)?;
             let field_ty = field.ty()?;
-            (field_list_index.to_string(), field_ty, field.syntax().text_range())
+            (
+                field_list_index.to_string(),
+                field_ty,
+                field.syntax().text_range(),
+            )
         }
     };
 
@@ -104,7 +113,11 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
         acc.add_group(
             &GroupLabel("Generate delegate methods…".to_owned()),
-            AssistId("generate_delegate_methods", AssistKind::Generate, Some(index)),
+            AssistId(
+                "generate_delegate_methods",
+                AssistKind::Generate,
+                Some(index),
+            ),
             format!("Generate delegate for `{field_name}.{name}()`",),
             target,
             |edit| {
@@ -136,8 +149,9 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
                 let type_params = method_source.generic_param_list();
                 let where_clause = method_source.where_clause();
-                let params =
-                    method_source.param_list().unwrap_or_else(|| make::param_list(None, []));
+                let params = method_source
+                    .param_list()
+                    .unwrap_or_else(|| make::param_list(None, []));
 
                 // compute the `body`
                 let arg_list = method_source
@@ -147,8 +161,11 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
 
                 let tail_expr =
                     make::expr_method_call(field, make::name_ref(&name), arg_list).into();
-                let tail_expr_finished =
-                    if is_async { make::expr_await(tail_expr) } else { tail_expr };
+                let tail_expr_finished = if is_async {
+                    make::expr_await(tail_expr)
+                } else {
+                    tail_expr
+                };
                 let body = make::block_expr([], Some(tail_expr_finished));
 
                 let ret_type = method_source.ret_type();
@@ -217,7 +234,9 @@ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'
                                 impl_def.syntax().clone().into(),
                             ],
                         );
-                        impl_def.assoc_item_list().and_then(|list| list.assoc_items().next())
+                        impl_def
+                            .assoc_item_list()
+                            .and_then(|list| list.assoc_items().next())
                     }
                 };
 
@@ -239,7 +258,9 @@ mod tests {
     use crate::tests::{
         check_assist, check_assist_not_applicable, check_assist_not_applicable_no_grouping,
     };
+
     use super::*;
+
     #[test]
     fn test_generate_delegate_create_impl_block() {
         check_assist(
@@ -274,6 +295,7 @@ impl Person {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_delegate_create_impl_block_match_indent() {
         check_assist(
@@ -312,6 +334,7 @@ mod indent {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_delegate_update_impl_block() {
         check_assist(
@@ -348,6 +371,7 @@ impl Person {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_delegate_update_impl_block_match_indent() {
         check_assist(
@@ -388,6 +412,7 @@ mod indent {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_delegate_tuple_struct() {
         check_assist(
@@ -418,6 +443,7 @@ impl Person {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_delegate_enable_all_attributes() {
         check_assist(
@@ -452,6 +478,7 @@ impl<T> Person<T> {
 }"#,
         );
     }
+
     #[test]
     fn test_generates_delegate_autoderef() {
         check_assist(
@@ -489,6 +516,7 @@ impl Person {
 }"#,
         );
     }
+
     #[test]
     fn test_preserve_where_clause() {
         check_assist(
@@ -535,6 +563,7 @@ impl<T> Struct<T> {
 "#,
         );
     }
+
     #[test]
     fn test_fixes_basic_self_references() {
         check_assist(
@@ -573,6 +602,7 @@ impl Bar {
 "#,
         );
     }
+
     #[test]
     fn test_fixes_nested_self_references() {
         check_assist(
@@ -607,6 +637,7 @@ impl Bar {
 "#,
         );
     }
+
     #[test]
     fn test_fixes_self_references_with_lifetimes_and_generics() {
         check_assist(
@@ -645,6 +676,7 @@ impl<'a, T> Bar<'a, T> {
 "#,
         );
     }
+
     #[test]
     fn test_fixes_self_references_across_macros() {
         check_assist(
@@ -687,6 +719,7 @@ impl Foo {
 "#,
         );
     }
+
     #[test]
     fn test_generate_delegate_visibility() {
         check_assist_not_applicable(
@@ -706,6 +739,7 @@ struct Person {
 }"#,
         )
     }
+
     #[test]
     fn test_generate_not_eligible_if_fn_exists() {
         check_assist_not_applicable(
@@ -727,6 +761,7 @@ impl Person {
 "#,
         );
     }
+
     #[test]
     fn delegate_method_skipped_when_no_grouping() {
         check_assist_not_applicable_no_grouping(

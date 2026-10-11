@@ -1,6 +1,10 @@
 use syntax::{
     AstNode, SyntaxKind, T, TextRange,
-    ast::{self, edit::{AstNodeEdit, IndentLevel}, make},
+    ast::{
+        self,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
 };
 
 use crate::{AssistContext, AssistId, Assists};
@@ -30,19 +34,19 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let target = block.syntax().text_range();
     let mut parent = block.syntax().parent()?;
     if ast::MatchArm::can_cast(parent.kind()) {
-        parent = parent.ancestors().find(|it| ast::MatchExpr::can_cast(it.kind()))?
+        parent = parent
+            .ancestors()
+            .find(|it| ast::MatchExpr::can_cast(it.kind()))?
     }
 
     let kind = parent.kind();
     if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
-        acc.add(
-            assist_id,
-            assist_label,
-            target,
-            |builder| {
-            builder.replace(block.syntax().text_range(), update_expr_string(block.to_string()));
-        },
-        )
+        acc.add(assist_id, assist_label, target, |builder| {
+            builder.replace(
+                block.syntax().text_range(),
+                update_expr_string(block.to_string()),
+            );
+        })
     } else if matches!(kind, SyntaxKind::LET_STMT) {
         let parent = ast::LetStmt::cast(parent)?;
         let pattern = ast::Pat::cast(parent.syntax().first_child()?)?;
@@ -55,7 +59,11 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 let let_stmt = make::let_stmt(pattern, ty, Some(initializer));
                 if !stmts.is_empty() {
                     let block = make::block_expr(stmts, None);
-                    format!("{}\n    {}", update_expr_string(block.to_string()), let_stmt)
+                    format!(
+                        "{}\n    {}",
+                        update_expr_string(block.to_string()),
+                        let_stmt
+                    )
                 } else {
                     let_stmt.to_string()
                 }
@@ -65,14 +73,9 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                 make::let_stmt(pattern, ty, Some(empty_tuple)).to_string()
             }
         };
-        acc.add(
-            assist_id,
-            assist_label,
-            target,
-            |builder| {
+        acc.add(assist_id, assist_label, target, |builder| {
             builder.replace(parent.syntax().text_range(), replaced);
-        },
-        )
+        })
     } else {
         let parent = ast::Expr::cast(parent)?;
         match parent.clone() {
@@ -111,21 +114,22 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
                         );
 
                         edit.delete(range_to_del);
-                        edit.replace(target, update_expr_string_without_newline(block.to_string()));
+                        edit.replace(
+                            target,
+                            update_expr_string_without_newline(block.to_string()),
+                        );
                     });
                 }
             }
             _ => return None,
         };
 
-        acc.add(
-            assist_id,
-            assist_label,
-            target,
-            |builder| {
-            builder.replace(parent.syntax().text_range(), update_expr_string(block.to_string()));
-        },
-        )
+        acc.add(assist_id, assist_label, target, |builder| {
+            builder.replace(
+                parent.syntax().text_range(),
+                update_expr_string(block.to_string()),
+            );
+        })
     }
 }
 
@@ -160,7 +164,9 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn unwrap_tail_expr_block() {
         check_assist(
@@ -179,6 +185,7 @@ fn main() {
 "#,
         )
     }
+
     #[test]
     fn unwrap_stmt_expr_block() {
         check_assist(
@@ -217,6 +224,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if() {
         check_assist(
@@ -245,6 +253,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_else() {
         check_assist(
@@ -276,6 +285,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_else_if() {
         check_assist(
@@ -309,6 +319,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_else_if_nested() {
         check_assist(
@@ -344,6 +355,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_else_if_nested_else() {
         check_assist(
@@ -383,6 +395,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_else_if_nested_middle() {
         check_assist(
@@ -420,6 +433,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_bad_cursor_position() {
         check_assist_not_applicable(
@@ -439,6 +453,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_for() {
         check_assist(
@@ -471,6 +486,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_in_for() {
         check_assist(
@@ -501,6 +517,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_loop() {
         check_assist(
@@ -533,6 +550,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_while() {
         check_assist(
@@ -565,6 +583,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unwrap_match_arm() {
         check_assist(
@@ -588,6 +607,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_in_while_bad_cursor_position() {
         check_assist_not_applicable(
@@ -608,6 +628,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_single_line() {
         check_assist(
@@ -624,6 +645,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_nested_block() {
         check_assist(
@@ -646,6 +668,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn nested_single_line() {
         check_assist(
@@ -676,6 +699,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn simple_if_single_line() {
         check_assist(
@@ -692,6 +716,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn if_single_statement() {
         check_assist(
@@ -710,6 +735,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn multiple_statements() {
         check_assist(
@@ -732,6 +758,7 @@ fn main() -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_block_in_let_initializers() {
         // https://github.com/rust-lang/rust-analyzer/issues/13679
@@ -792,6 +819,7 @@ fn main() -> i32 {
 "#,
         );
     }
+
     #[test]
     fn unwrap_if_in_let_initializers() {
         // https://github.com/rust-lang/rust-analyzer/issues/13679
@@ -815,6 +843,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unwrap_block_with_modifiers() {
         // https://github.com/rust-lang/rust-analyzer/issues/17964

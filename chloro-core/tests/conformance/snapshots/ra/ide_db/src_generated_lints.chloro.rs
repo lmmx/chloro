@@ -1699,7 +1699,11 @@ pub const DEFAULT_LINT_GROUPS: &[LintGroup] = &[
             warn_since: None,
             deny_since: None,
         },
-        children: &["non_camel_case_types", "non_snake_case", "non_upper_case_globals"],
+        children: &[
+            "non_camel_case_types",
+            "non_snake_case",
+            "non_upper_case_globals",
+        ],
     },
     LintGroup {
         lint: Lint {
@@ -1709,7 +1713,10 @@ pub const DEFAULT_LINT_GROUPS: &[LintGroup] = &[
             warn_since: None,
             deny_since: None,
         },
-        children: &["refining_impl_trait_reachable", "refining_impl_trait_internal"],
+        children: &[
+            "refining_impl_trait_reachable",
+            "refining_impl_trait_internal",
+        ],
     },
     LintGroup {
         lint: Lint {
@@ -18759,7 +18766,6 @@ zero-sized types"##,
         deny_since: None,
     },
 ];
-
 pub const CLIPPY_LINT_GROUPS: &[LintGroup] = &[
     LintGroup {
         lint: Lint {

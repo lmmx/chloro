@@ -1,5 +1,4 @@
 //! Completion for derives
-
 use hir::ScopeDef;
 use ide_db::{SymbolKind, documentation::HasDocs};
 use itertools::Itertools;
@@ -29,7 +28,9 @@ pub(crate) fn complete_derive_path(
 
             for (name, def) in module.scope(ctx.db, Some(ctx.module)) {
                 match def {
-                    ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac)) if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) => {
+                    ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac))
+                        if !existing_derives.contains(&mac) && mac.is_derive(ctx.db) =>
+                    {
                         acc.add_macro(ctx, path_ctx, mac, name)
                     }
                     ScopeDef::ModuleDef(hir::ModuleDef::Module(m)) => {
@@ -108,8 +109,20 @@ struct DeriveDependencies {
 /// Standard Rust derives that have dependencies
 /// (the dependencies are needed so that the main derive don't break the compilation when added)
 const DEFAULT_DERIVE_DEPENDENCIES: &[DeriveDependencies] = &[
-    DeriveDependencies { label: "Copy", dependencies: &["Clone"] },
-    DeriveDependencies { label: "Eq", dependencies: &["PartialEq"] },
-    DeriveDependencies { label: "Ord", dependencies: &["PartialOrd", "Eq", "PartialEq"] },
-    DeriveDependencies { label: "PartialOrd", dependencies: &["PartialEq"] },
+    DeriveDependencies {
+        label: "Copy",
+        dependencies: &["Clone"],
+    },
+    DeriveDependencies {
+        label: "Eq",
+        dependencies: &["PartialEq"],
+    },
+    DeriveDependencies {
+        label: "Ord",
+        dependencies: &["PartialOrd", "Eq", "PartialEq"],
+    },
+    DeriveDependencies {
+        label: "PartialOrd",
+        dependencies: &["PartialEq"],
+    },
 ];

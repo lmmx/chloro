@@ -102,9 +102,13 @@ struct LookupTable<'db> {
 impl<'db> LookupTable<'db> {
     /// Initialize lookup table
     fn new(many_threshold: usize, goal: Type<'db>) -> Self {
-        let mut res = Self { many_threshold, ..Default::default() };
+        let mut res = Self {
+            many_threshold,
+            ..Default::default()
+        };
         res.new_types.insert(NewTypesKey::ImplMethod, Vec::new());
-        res.new_types.insert(NewTypesKey::StructProjection, Vec::new());
+        res.new_types
+            .insert(NewTypesKey::StructProjection, Vec::new());
         res.types_wishlist.insert(goal);
         res
     }
@@ -135,11 +139,7 @@ impl<'db> LookupTable<'db> {
     ///
     /// For example if we have type `i32` in data and we query for `&i32` it map all the type
     /// trees we have for `i32` with `Expr::Reference` and returns them.
-    fn find_autoref(
-        &mut self,
-        db: &'db dyn HirDatabase,
-        ty: &Type<'db>,
-    ) -> Option<Vec<Expr<'db>>> {
+    fn find_autoref(&mut self, db: &'db dyn HirDatabase, ty: &Type<'db>) -> Option<Vec<Expr<'db>>> {
         let res = self
             .data
             .iter()
@@ -149,7 +149,8 @@ impl<'db> LookupTable<'db> {
                 self.data
                     .iter()
                     .find(|(t, _)| {
-                        t.add_reference(Mutability::Shared).could_unify_with_deeply(db, ty)
+                        t.add_reference(Mutability::Shared)
+                            .could_unify_with_deeply(db, ty)
                     })
                     .map(|(t, it)| {
                         it.exprs(t)
@@ -187,7 +188,10 @@ impl<'db> LookupTable<'db> {
                 }
             }
             None => {
-                self.data.insert(ty.clone(), AlternativeExprs::new(self.many_threshold, exprs));
+                self.data.insert(
+                    ty.clone(),
+                    AlternativeExprs::new(self.many_threshold, exprs),
+                );
                 for it in self.new_types.values_mut() {
                     it.push(ty.clone());
                 }
@@ -299,13 +303,47 @@ pub fn term_search<'db, DB: HirDatabase>(ctx: &'db TermSearchCtx<'db, DB>) -> Ve
     solutions.extend(tactics::assoc_const(ctx, &defs, &mut lookup));
 
     while should_continue() {
-        solutions.extend(tactics::data_constructor(ctx, &defs, &mut lookup, should_continue));
-        solutions.extend(tactics::free_function(ctx, &defs, &mut lookup, should_continue));
-        solutions.extend(tactics::impl_method(ctx, &defs, &mut lookup, should_continue));
-        solutions.extend(tactics::struct_projection(ctx, &defs, &mut lookup, should_continue));
-        solutions.extend(tactics::impl_static_method(ctx, &defs, &mut lookup, should_continue));
-        solutions.extend(tactics::make_tuple(ctx, &defs, &mut lookup, should_continue));
+        solutions.extend(tactics::data_constructor(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
+        solutions.extend(tactics::free_function(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
+        solutions.extend(tactics::impl_method(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
+        solutions.extend(tactics::struct_projection(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
+        solutions.extend(tactics::impl_static_method(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
+        solutions.extend(tactics::make_tuple(
+            ctx,
+            &defs,
+            &mut lookup,
+            should_continue,
+        ));
     }
 
-    solutions.into_iter().filter(|it| !it.is_many()).unique().collect()
+    solutions
+        .into_iter()
+        .filter(|it| !it.is_many())
+        .unique()
+        .collect()
 }

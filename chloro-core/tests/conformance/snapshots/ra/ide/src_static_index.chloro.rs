@@ -80,7 +80,10 @@ impl TokenStore {
     }
 
     pub fn iter(self) -> impl Iterator<Item = (TokenId, TokenStaticData)> {
-        self.0.into_iter().enumerate().map(|(id, data)| (TokenId(id), data))
+        self.0
+            .into_iter()
+            .enumerate()
+            .map(|(id, data)| (TokenId(id), data))
     }
 }
 
@@ -93,8 +96,10 @@ pub struct StaticIndexedFile {
 }
 
 fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
-    let mut worklist: Vec<_> =
-        Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+    let mut worklist: Vec<_> = Crate::all(db)
+        .into_iter()
+        .map(|krate| krate.root_module())
+        .collect();
     let mut modules = Vec::new();
 
     while let Some(module) = worklist.pop() {
@@ -143,9 +148,7 @@ fn get_definitions(
 }
 
 pub enum VendoredLibrariesConfig<'a> {
-    Included {
-        workspace_root: &'a VfsPath,
-    },
+    Included { workspace_root: &'a VfsPath },
     Excluded,
 }
 
@@ -226,7 +229,12 @@ impl StaticIndex<'_> {
                 IDENT | INT_NUMBER | LIFETIME_IDENT | T![self] | T![super] | T![crate] | T![Self]
             )
         });
-        let mut result = StaticIndexedFile { file_id, inlay_hints, folds, tokens: vec![] };
+        let mut result = StaticIndexedFile {
+            file_id,
+            inlay_hints,
+            folds,
+            tokens: vec![],
+        };
 
         let mut add_token = |def: Definition, range: TextRange, scope_node: &SyntaxNode| {
             let id = if let Some(it) = self.def_map.get(&def) {
@@ -246,9 +254,13 @@ impl StaticIndex<'_> {
                         edition,
                         display_target,
                     )),
-                    definition: def.try_to_nav(&sema).map(UpmappingResult::call_site).map(|it| {
-                        FileRange { file_id: it.file_id, range: it.focus_or_full_range() }
-                    }),
+                    definition: def
+                        .try_to_nav(&sema)
+                        .map(UpmappingResult::call_site)
+                        .map(|it| FileRange {
+                            file_id: it.file_id,
+                            range: it.focus_or_full_range(),
+                        }),
                     references: vec![],
                     moniker: current_crate.and_then(|cc| def_to_moniker(self.db, def, cc)),
                     display_name: def
@@ -297,13 +309,12 @@ impl StaticIndex<'_> {
         vendored_libs_config: VendoredLibrariesConfig<'_>,
     ) -> StaticIndex<'a> {
         let db = &analysis.db;
-        hir::attach_db(
-            db,
-            || {
+        hir::attach_db(db, || {
             let work = all_modules(db).into_iter().filter(|module| {
                 let file_id = module.definition_source_file_id(db).original_file(db);
-                let source_root =
-                    db.file_source_root(file_id.file_id(&analysis.db)).source_root_id(db);
+                let source_root = db
+                    .file_source_root(file_id.file_id(&analysis.db))
+                    .source_root_id(db);
                 let source_root = db.source_root(source_root).source_root(db);
                 let is_vendored = match vendored_libs_config {
                     VendoredLibrariesConfig::Included { workspace_root } => source_root
@@ -332,8 +343,7 @@ impl StaticIndex<'_> {
                 visited_files.insert(file_id);
             }
             this
-        },
-        )
+        })
     }
 }
 
@@ -342,7 +352,9 @@ mod tests {
     use crate::{StaticIndex, fixture};
     use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
     use syntax::TextSize;
+
     use super::VendoredLibrariesConfig;
+
     fn check_all_ranges(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         vendored_libs_config: VendoredLibrariesConfig<'_>,
@@ -356,7 +368,10 @@ mod tests {
                     // ignore whole file range corresponding to module definition
                     continue;
                 }
-                let it = FileRange { file_id: f.file_id, range };
+                let it = FileRange {
+                    file_id: f.file_id,
+                    range,
+                };
                 if !range_set.contains(&it) {
                     panic!("additional range {it:?}");
                 }
@@ -367,6 +382,7 @@ mod tests {
             panic!("unfound ranges {range_set:?}");
         }
     }
+
     #[track_caller]
     fn check_definitions(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -391,6 +407,7 @@ mod tests {
             panic!("unfound definitions {range_set:?}");
         }
     }
+
     #[track_caller]
     fn check_references(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -428,6 +445,7 @@ mod tests {
             }
         }
     }
+
     #[test]
     fn field_initialization() {
         check_references(
@@ -454,6 +472,7 @@ struct Point {
             },
         );
     }
+
     #[test]
     fn struct_and_enum() {
         check_all_ranges(
@@ -490,6 +509,7 @@ enum E { X(Foo) }
             },
         );
     }
+
     #[test]
     fn multi_crate() {
         check_definitions(
@@ -514,6 +534,7 @@ pub func() {
             },
         );
     }
+
     #[test]
     fn vendored_crate() {
         check_all_ranges(
@@ -534,6 +555,7 @@ struct VendoredLibrary(i32);
             },
         );
     }
+
     #[test]
     fn vendored_crate_excluded() {
         check_all_ranges(
@@ -551,6 +573,7 @@ struct VendoredLibrary(i32);
             VendoredLibrariesConfig::Excluded,
         )
     }
+
     #[test]
     fn derives() {
         check_all_ranges(

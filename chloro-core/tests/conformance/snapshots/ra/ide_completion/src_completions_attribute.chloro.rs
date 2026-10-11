@@ -42,7 +42,10 @@ pub(crate) fn complete_known_attribute_input(
 ) -> Option<()> {
     let attribute = fake_attribute_under_caret;
     let path = attribute.path()?;
-    let segments = path.segments().map(|s| s.name_ref()).collect::<Option<Vec<_>>>()?;
+    let segments = path
+        .segments()
+        .map(|s| s.name_ref())
+        .collect::<Option<Vec<_>>>()?;
     let segments = segments.iter().map(|n| n.text()).collect::<Vec<_>>();
     let segments = segments.iter().map(|t| t.as_str()).collect::<Vec<_>>();
     let tt = attribute.token_tree()?;
@@ -87,7 +90,11 @@ pub(crate) fn complete_attribute_path(
     acc: &mut Completions,
     ctx: &CompletionContext<'_>,
     path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
-    &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx,
+    &AttrCtx {
+        kind,
+        annotated_item_kind,
+        ref derive_helpers,
+    }: &AttrCtx,
 ) {
     let is_inner = kind == AttrKind::Inner;
 
@@ -140,8 +147,11 @@ pub(crate) fn complete_attribute_path(
         }
         Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
     }
-    let qualifier_path =
-        if let Qualified::With { path, .. } = qualified { Some(path) } else { None };
+    let qualifier_path = if let Qualified::With { path, .. } = qualified {
+        Some(path)
+    } else {
+        None
+    };
 
     let attributes = annotated_item_kind.and_then(|kind| {
         if ast::Expr::can_cast(kind) {
@@ -156,7 +166,10 @@ pub(crate) fn complete_attribute_path(
         // add the missing parts to the label and snippet
         let mut label = attr_completion.label.to_owned();
         let mut snippet = attr_completion.snippet.map(|s| s.to_owned());
-        let segments = qualifier_path.iter().flat_map(|q| q.segments()).collect::<Vec<_>>();
+        let segments = qualifier_path
+            .iter()
+            .flat_map(|q| q.segments())
+            .collect::<Vec<_>>();
         let qualifiers = attr_completion.qualifiers;
         let matching_qualifiers = segments
             .iter()
@@ -171,8 +184,12 @@ pub(crate) fn complete_attribute_path(
             }
         }
 
-        let mut item =
-            CompletionItem::new(SymbolKind::Attribute, ctx.source_range(), label, ctx.edition);
+        let mut item = CompletionItem::new(
+            SymbolKind::Attribute,
+            ctx.source_range(),
+            label,
+            ctx.edition,
+        );
 
         if let Some(lookup) = attr_completion.lookup {
             item.lookup_by(lookup);
@@ -190,11 +207,18 @@ pub(crate) fn complete_attribute_path(
     match attributes {
         Some(applicable) => applicable
             .iter()
-            .flat_map(|name| ATTRIBUTES.binary_search_by(|attr| attr.key().cmp(name)).ok())
+            .flat_map(|name| {
+                ATTRIBUTES
+                    .binary_search_by(|attr| attr.key().cmp(name))
+                    .ok()
+            })
             .flat_map(|idx| ATTRIBUTES.get(idx))
             .for_each(add_completion),
         None if is_inner => ATTRIBUTES.iter().for_each(add_completion),
-        None => ATTRIBUTES.iter().filter(|compl| !compl.prefer_inner).for_each(add_completion),
+        None => ATTRIBUTES
+            .iter()
+            .filter(|compl| !compl.prefer_inner)
+            .for_each(add_completion),
     }
 }
 
@@ -216,7 +240,10 @@ impl AttrCompletion {
     }
 
     const fn prefer_inner(self) -> AttrCompletion {
-        AttrCompletion { prefer_inner: true, ..self }
+        AttrCompletion {
+            prefer_inner: true,
+            ..self
+        }
     }
 }
 
@@ -225,7 +252,13 @@ const fn attr(
     lookup: Option<&'static str>,
     snippet: Option<&'static str>,
 ) -> AttrCompletion {
-    AttrCompletion { label, lookup, snippet, qualifiers: &[], prefer_inner: false }
+    AttrCompletion {
+        label,
+        lookup,
+        snippet,
+        qualifiers: &[],
+        prefer_inner: false,
+    }
 }
 
 macro_rules! attrs {
@@ -319,23 +352,35 @@ static KIND_TO_ATTRIBUTES: LazyLock<FxHashMap<SyntaxKind, &[&str]>> = LazyLock::
     .into_iter()
     .collect()
 });
-
 const EXPR_ATTRIBUTES: &[&str] = attrs!();
 
 /// <https://doc.rust-lang.org/reference/attributes.html#built-in-attributes-index>
+// Keep these sorted for the binary search!
 const ATTRIBUTES: &[AttrCompletion] = &[
     attr("allow(…)", Some("allow"), Some("allow(${0:lint})")),
     attr("automatically_derived", None, None),
     attr("cfg(…)", Some("cfg"), Some("cfg(${0:predicate})")),
-    attr("cfg_attr(…)", Some("cfg_attr"), Some("cfg_attr(${1:predicate}, ${0:attr})")),
+    attr(
+        "cfg_attr(…)",
+        Some("cfg_attr"),
+        Some("cfg_attr(${1:predicate}, ${0:attr})"),
+    ),
     attr("cold", None, None),
-    attr(r#"crate_name = """#, Some("crate_name"), Some(r#"crate_name = "${0:crate_name}""#))
-        .prefer_inner(),
+    attr(
+        r#"crate_name = """#,
+        Some("crate_name"),
+        Some(r#"crate_name = "${0:crate_name}""#),
+    )
+    .prefer_inner(),
     attr("deny(…)", Some("deny"), Some("deny(${0:lint})")),
     attr(r#"deprecated"#, Some("deprecated"), Some(r#"deprecated"#)),
     attr("derive(…)", Some("derive"), Some(r#"derive(${0:Debug})"#)),
-    attr("do_not_recommend", Some("diagnostic::do_not_recommend"), None)
-        .qualifiers(&["diagnostic"]),
+    attr(
+        "do_not_recommend",
+        Some("diagnostic::do_not_recommend"),
+        None,
+    )
+    .qualifiers(&["diagnostic"]),
     attr(
         "on_unimplemented",
         Some("diagnostic::on_unimplemented"),
@@ -343,9 +388,17 @@ const ATTRIBUTES: &[AttrCompletion] = &[
     )
     .qualifiers(&["diagnostic"]),
     attr(r#"doc = "…""#, Some("doc"), Some(r#"doc = "${0:docs}""#)),
-    attr(r#"doc(alias = "…")"#, Some("docalias"), Some(r#"doc(alias = "${0:docs}")"#)),
+    attr(
+        r#"doc(alias = "…")"#,
+        Some("docalias"),
+        Some(r#"doc(alias = "${0:docs}")"#),
+    ),
     attr(r#"doc(hidden)"#, Some("dochidden"), Some(r#"doc(hidden)"#)),
-    attr(r#"doc = include_str!("…")"#, Some("docinclude"), Some(r#"doc = include_str!("$0")"#)),
+    attr(
+        r#"doc = include_str!("…")"#,
+        Some("docinclude"),
+        Some(r#"doc = include_str!("$0")"#),
+    ),
     attr("expect(…)", Some("expect"), Some("expect(${0:lint})")),
     attr(
         r#"export_name = "…""#,
@@ -355,10 +408,18 @@ const ATTRIBUTES: &[AttrCompletion] = &[
     attr("feature(…)", Some("feature"), Some("feature(${0:flag})")).prefer_inner(),
     attr("forbid(…)", Some("forbid"), Some("forbid(${0:lint})")),
     attr("global_allocator", None, None),
-    attr(r#"ignore = "…""#, Some("ignore"), Some(r#"ignore = "${0:reason}""#)),
+    attr(
+        r#"ignore = "…""#,
+        Some("ignore"),
+        Some(r#"ignore = "${0:reason}""#),
+    ),
     attr("inline", Some("inline"), Some("inline")),
     attr("link", None, None),
-    attr(r#"link_name = "…""#, Some("link_name"), Some(r#"link_name = "${0:symbol_name}""#)),
+    attr(
+        r#"link_name = "…""#,
+        Some("link_name"),
+        Some(r#"link_name = "${0:symbol_name}""#),
+    ),
     attr(
         r#"link_section = "…""#,
         Some("link_section"),
@@ -377,7 +438,11 @@ const ATTRIBUTES: &[AttrCompletion] = &[
     attr(r#"path = "…""#, Some("path"), Some(r#"path ="${0:path}""#)),
     attr("proc_macro", None, None),
     attr("proc_macro_attribute", None, None),
-    attr("proc_macro_derive(…)", Some("proc_macro_derive"), Some("proc_macro_derive(${0:Trait})")),
+    attr(
+        "proc_macro_derive(…)",
+        Some("proc_macro_derive"),
+        Some("proc_macro_derive(${0:Trait})"),
+    ),
     attr(
         r#"recursion_limit = "…""#,
         Some("recursion_limit"),
@@ -385,7 +450,11 @@ const ATTRIBUTES: &[AttrCompletion] = &[
     )
     .prefer_inner(),
     attr("repr(…)", Some("repr"), Some("repr(${0:C})")),
-    attr("should_panic", Some("should_panic"), Some(r#"should_panic"#)),
+    attr(
+        "should_panic",
+        Some("should_panic"),
+        Some(r#"should_panic"#),
+    ),
     attr(
         r#"target_feature(enable = "…")"#,
         Some("target_feature"),
@@ -393,8 +462,12 @@ const ATTRIBUTES: &[AttrCompletion] = &[
     ),
     attr("test", None, None),
     attr("track_caller", None, None),
-    attr("type_length_limit = …", Some("type_length_limit"), Some("type_length_limit = ${0:128}"))
-        .prefer_inner(),
+    attr(
+        "type_length_limit = …",
+        Some("type_length_limit"),
+        Some("type_length_limit = ${0:128}"),
+    )
+    .prefer_inner(),
     attr("used", None, None),
     attr("warn(…)", Some("warn"), Some("warn(${0:lint})")),
     attr(

@@ -33,6 +33,7 @@ use crate::SourceChange;
 
 pub(crate) use on_enter::on_enter;
 
+// Don't forget to add new trigger characters to `server_capabilities` in `caps.rs`.
 pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
 
 struct ExtendedTextEdit {
@@ -104,13 +105,14 @@ fn on_char_typed_(
         '+' => on_plus_typed(&file.tree(), offset),
         _ => None,
     }
-    .map(
-        conv,
-    )
+    .map(conv)
 }
 
 fn conv(edit: TextEdit) -> ExtendedTextEdit {
-    ExtendedTextEdit { edit, is_snippet: false }
+    ExtendedTextEdit {
+        edit,
+        is_snippet: false,
+    }
 }
 
 /// Inserts a closing delimiter when the user types an opening bracket, wrapping an existing expression in a
@@ -123,18 +125,33 @@ fn on_opening_delimiter_typed(
 ) -> Option<TextEdit> {
     type FilterFn = fn(SyntaxKind) -> bool;
     let (closing_bracket, expected_ast_bracket, allowed_kinds) = match opening_bracket {
-        '{' => ('}', SyntaxKind::L_CURLY, &[ast::Expr::can_cast as FilterFn] as &[FilterFn]),
+        '{' => (
+            '}',
+            SyntaxKind::L_CURLY,
+            &[ast::Expr::can_cast as FilterFn] as &[FilterFn],
+        ),
         '(' => (
             ')',
             SyntaxKind::L_PAREN,
-            &[ast::Expr::can_cast as FilterFn, ast::Pat::can_cast, ast::Type::can_cast]
-                as &[FilterFn],
+            &[
+                ast::Expr::can_cast as FilterFn,
+                ast::Pat::can_cast,
+                ast::Type::can_cast,
+            ] as &[FilterFn],
         ),
-        '<' => ('>', SyntaxKind::L_ANGLE, &[ast::Type::can_cast as FilterFn] as &[FilterFn]),
+        '<' => (
+            '>',
+            SyntaxKind::L_ANGLE,
+            &[ast::Type::can_cast as FilterFn] as &[FilterFn],
+        ),
         _ => return None,
     };
 
-    let brace_token = file.tree().syntax().token_at_offset(offset).right_biased()?;
+    let brace_token = file
+        .tree()
+        .syntax()
+        .token_at_offset(offset)
+        .right_biased()?;
     if brace_token.kind() != expected_ast_bracket {
         return None;
     }
@@ -146,9 +163,13 @@ fn on_opening_delimiter_typed(
     }
     let reparsed = file.reparse(range, "", edition).tree();
 
-    if let Some(edit) =
-        on_delimited_node_typed(&reparsed, offset, opening_bracket, closing_bracket, allowed_kinds)
-    {
+    if let Some(edit) = on_delimited_node_typed(
+        &reparsed,
+        offset,
+        opening_bracket,
+        closing_bracket,
+        allowed_kinds,
+    ) {
         return Some(edit);
     }
 
@@ -167,7 +188,10 @@ fn on_left_brace_typed(reparsed: &SourceFile, offset: TextSize) -> Option<TextEd
 
     let tree: ast::UseTree = find_node_at_offset(reparsed.syntax(), offset)?;
 
-    Some(TextEdit::insert(tree.syntax().text_range().end() + TextSize::of("{"), "}".to_owned()))
+    Some(TextEdit::insert(
+        tree.syntax().text_range().end() + TextSize::of("{"),
+        "}".to_owned(),
+    ))
 }
 
 fn on_delimited_node_typed(
@@ -184,7 +208,12 @@ fn on_delimited_node_typed(
     let (filter, node) = t
         .parent_ancestors()
         .take_while(|n| n.text_range().start() == offset)
-        .find_map(|n| kinds.iter().find(|&kind_filter| kind_filter(n.kind())).zip(Some(n)))?;
+        .find_map(|n| {
+            kinds
+                .iter()
+                .find(|&kind_filter| kind_filter(n.kind()))
+                .zip(Some(n))
+        })?;
     let mut node = node
         .ancestors()
         .take_while(|n| n.text_range().start() == offset && filter(n.kind()))
@@ -215,10 +244,9 @@ fn on_delimited_node_typed(
         closing_bracket.to_string(),
     ))
 }
-
-// FIXME: use a snippet completion instead of this hack here.
 /// Returns an edit which should be applied after `=` was typed. Primarily,
 /// this works when adding `let =`.
+// FIXME: use a snippet completion instead of this hack here.
 fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let text = file.syntax().text();
     let has_newline = iter::successors(Some(offset), |&offset| Some(offset + TextSize::new(1)))
@@ -245,7 +273,10 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 
     fn assign_expr(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
-        if !matches!(binop.op_kind(), Some(ast::BinaryOp::Assignment { op: None })) {
+        if !matches!(
+            binop.op_kind(),
+            Some(ast::BinaryOp::Assignment { op: None })
+        ) {
             return None;
         }
 
@@ -263,7 +294,12 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         if expr_range.contains(offset) && offset != expr_range.start() {
             return None;
         }
-        if file.syntax().text().slice(offset..expr_range.start()).contains_char('\n') {
+        if file
+            .syntax()
+            .text()
+            .slice(offset..expr_range.start())
+            .contains_char('\n')
+        {
             return None;
         }
         let offset = expr.syntax().text_range().end();
@@ -273,8 +309,10 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     /// `a =$0 b;` removes the semicolon if an expression is valid in this context.
     fn assign_to_eq(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
-        if !matches!(binop.op_kind(), Some(ast::BinaryOp::CmpOp(ast::CmpOp::Eq { negated: false })))
-        {
+        if !matches!(
+            binop.op_kind(),
+            Some(ast::BinaryOp::CmpOp(ast::CmpOp::Eq { negated: false }))
+        ) {
             return None;
         }
 
@@ -299,11 +337,20 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         if expr_range.contains(offset) && offset != expr_range.start() {
             return None;
         }
-        if file.syntax().text().slice(offset..expr_range.start()).contains_char('\n') {
+        if file
+            .syntax()
+            .text()
+            .slice(offset..expr_range.start())
+            .contains_char('\n')
+        {
             return None;
         }
         // Good indicator that we will insert into a bad spot, so bail out.
-        if expr.syntax().descendants().any(|it| it.kind() == SyntaxKind::ERROR) {
+        if expr
+            .syntax()
+            .descendants()
+            .any(|it| it.kind() == SyntaxKind::ERROR)
+        {
             return None;
         }
         let offset = let_stmt.syntax().text_range().end();
@@ -313,8 +360,11 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 
 /// Returns an edit which should be applied when a dot ('.') is typed on a blank line, indenting the line appropriately.
 fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
-    let whitespace =
-        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
+    let whitespace = file
+        .syntax()
+        .token_at_offset(offset)
+        .left_biased()
+        .and_then(ast::Whitespace::cast)?;
 
     // if prior is fn call over multiple lines dont indent
     // or if previous is method call over multiples lines keep that indent
@@ -359,7 +409,10 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         return None;
     }
 
-    Some(TextEdit::replace(TextRange::new(offset - current_indent_len, offset), target_indent))
+    Some(TextEdit::replace(
+        TextRange::new(offset - current_indent_len, offset),
+        target_indent,
+    ))
 }
 
 /// Add closing `>` for generic arguments/parameters.
@@ -385,9 +438,13 @@ fn on_left_angle_typed(
             ast::GenericParamList::can_cast(n.kind())
                 || ast::GenericArgList::can_cast(n.kind())
                 || ast::UseBoundGenericArgs::can_cast(n.kind())
-        }) {
+        })
+    {
         // Insert the closing bracket right after
-        Some(TextEdit::insert(offset + TextSize::of('<'), '>'.to_string()))
+        Some(TextEdit::insert(
+            offset + TextSize::of('<'),
+            '>'.to_string(),
+        ))
     } else {
         None
     }
@@ -398,7 +455,12 @@ fn on_pipe_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     if pipe_token.kind() != SyntaxKind::PIPE {
         return None;
     }
-    if pipe_token.parent().and_then(ast::ParamList::cast)?.r_paren_token().is_some() {
+    if pipe_token
+        .parent()
+        .and_then(ast::ParamList::cast)?
+        .r_paren_token()
+        .is_some()
+    {
         return None;
     }
     let after_lpipe = offset + TextSize::of('|');
@@ -412,11 +474,13 @@ fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     }
     let mut ancestors = plus_token.parent_ancestors();
     ancestors.next().and_then(ast::TypeBoundList::cast)?;
-    let trait_type =
-        ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
+    let trait_type = ancestors
+        .next()
+        .and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
     let kind = ancestors.next()?.kind();
 
-    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind) {
+    if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
+    {
         let mut builder = TextEdit::builder();
         builder.insert(trait_type.syntax().text_range().start(), "(".to_owned());
         builder.insert(trait_type.syntax().text_range().end(), ")".to_owned());
@@ -441,12 +505,15 @@ fn on_right_angle_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit>
 #[cfg(test)]
 mod tests {
     use test_utils::{assert_eq_text, extract_offset};
+
     use super::*;
+
     impl ExtendedTextEdit {
         fn apply(&self, text: &mut String) {
             self.edit.apply(text);
         }
     }
+
     fn do_type_char(char_typed: char, before: &str) -> Option<String> {
         let (offset, mut before) = extract_offset(before);
         let edit = TextEdit::insert(offset, char_typed.to_string());
@@ -457,6 +524,7 @@ mod tests {
             before.to_string()
         })
     }
+
     fn type_char(
         char_typed: char,
         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
@@ -467,10 +535,12 @@ mod tests {
 
         assert_eq_text!(ra_fixture_after, &actual);
     }
+
     fn type_char_noop(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str) {
         let file_change = do_type_char(char_typed, ra_fixture_before);
         assert_eq!(file_change, None)
     }
+
     #[test]
     fn test_semi_after_let() {
         type_char_noop(
@@ -523,6 +593,7 @@ fn foo() {
 ",
         );
     }
+
     #[test]
     fn test_semi_after_assign() {
         type_char(
@@ -586,6 +657,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn assign_to_eq() {
         type_char(
@@ -632,6 +704,7 @@ fn f(a: u8) {
 "#,
         );
     }
+
     #[test]
     fn indents_new_chain_call() {
         type_char(
@@ -649,13 +722,17 @@ fn main() {
 }
             "#,
         );
-        type_char_noop('.', r#"
+        type_char_noop(
+            '.',
+            r#"
 fn main() {
     xs.foo()
         $0
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn indents_new_chain_call_with_semi() {
         type_char(
@@ -673,13 +750,17 @@ fn main() {
 }
             "#,
         );
-        type_char_noop('.', r#"
+        type_char_noop(
+            '.',
+            r#"
 fn main() {
     xs.foo()
         $0;
 }
-            "#)
+            "#,
+        )
     }
+
     #[test]
     fn indents_new_chain_call_with_let() {
         type_char(
@@ -700,6 +781,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn indents_continued_chain_call() {
         type_char(
@@ -730,6 +812,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn indents_middle_of_chain_call() {
         type_char(
@@ -763,6 +846,7 @@ fn source_impl() {
             "#,
         );
     }
+
     #[test]
     fn dont_indent_freestanding_dot() {
         type_char_noop(
@@ -782,6 +866,7 @@ $0
             "#,
         );
     }
+
     #[test]
     fn adds_space_after_return_type() {
         type_char(
@@ -794,6 +879,7 @@ fn foo() -> { 92 }
 "#,
         );
     }
+
     #[test]
     fn adds_closing_brace_for_expr() {
         type_char(
@@ -889,6 +975,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn noop_in_string_literal() {
         // Regression test for #9351
@@ -911,6 +998,7 @@ sdasdasdasdasd
             "##,
         );
     }
+
     #[test]
     fn noop_in_item_position_with_macro() {
         type_char_noop('{', r#"$0println!();"#);
@@ -921,6 +1009,7 @@ fn main() $0println!("hello");
 }"#,
         );
     }
+
     #[test]
     fn adds_closing_brace_for_use_tree() {
         type_char(
@@ -1003,6 +1092,7 @@ use some::pa$0th::to::Item;
             "#,
         );
     }
+
     #[test]
     fn adds_closing_parenthesis_for_expr() {
         type_char(
@@ -1096,6 +1186,7 @@ fn f() {
                     "#,
         );
     }
+
     #[test]
     fn preceding_whitespace_is_significant_for_closing_brackets() {
         type_char_noop(
@@ -1111,6 +1202,7 @@ fn f() { foo$0{} }
 "#,
         );
     }
+
     #[test]
     fn adds_closing_parenthesis_for_pat() {
         type_char(
@@ -1132,6 +1224,7 @@ fn f((n): ()) {}
 "#,
         );
     }
+
     #[test]
     fn adds_closing_parenthesis_for_ty() {
         type_char(
@@ -1153,6 +1246,7 @@ fn f(n: (a::b::<d>::c)) {}
 "#,
         );
     }
+
     #[test]
     fn adds_closing_angles_for_ty() {
         type_char(
@@ -1183,6 +1277,7 @@ fn f(n: a<>b::<d>::c) {}
 "#,
         );
     }
+
     #[test]
     fn parenthesis_noop_in_string_literal() {
         // Regression test for #9351
@@ -1205,6 +1300,7 @@ sdasdasdasdasd
             "##,
         );
     }
+
     #[test]
     fn parenthesis_noop_in_item_position_with_macro() {
         type_char_noop('(', r#"$0println!();"#);
@@ -1215,6 +1311,7 @@ fn main() $0println!("hello");
 }"#,
         );
     }
+
     #[test]
     fn parenthesis_noop_in_use_tree() {
         type_char_noop(
@@ -1279,6 +1376,7 @@ use some::pa$0th::to::Item;
             "#,
         );
     }
+
     #[test]
     fn adds_closing_angle_bracket_for_generic_args() {
         type_char(
@@ -1309,6 +1407,7 @@ fn foo(bar: &[u64]) {
             "#,
         );
     }
+
     #[test]
     fn adds_closing_angle_bracket_for_generic_params() {
         type_char(
@@ -1402,6 +1501,7 @@ impl Foo<> {}
             "#,
         );
     }
+
     #[test]
     fn dont_add_closing_angle_bracket_for_comparison() {
         type_char_noop(
@@ -1430,6 +1530,7 @@ fn main() {
             "#,
         );
     }
+
     #[test]
     fn dont_add_closing_angle_bracket_if_it_is_already_there() {
         type_char_noop(
@@ -1515,6 +1616,7 @@ impl Foo$0> {}
             "#,
         );
     }
+
     #[test]
     fn regression_629() {
         type_char_noop(
@@ -1545,6 +1647,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn completes_pipe_param_list() {
         type_char(
@@ -1582,6 +1685,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn adds_parentheses_around_trait_object_in_ref_type() {
         type_char(
@@ -1615,6 +1719,7 @@ fn foo(x: Box<dyn A$0>) {}
 "#,
         );
     }
+
     #[test]
     fn adds_parentheses_around_trait_object_in_ptr_type() {
         type_char(
@@ -1627,6 +1732,7 @@ fn foo(x: *const (dyn A+)) {}
 "#,
         );
     }
+
     #[test]
     fn adds_parentheses_around_trait_object_in_return_type() {
         type_char(

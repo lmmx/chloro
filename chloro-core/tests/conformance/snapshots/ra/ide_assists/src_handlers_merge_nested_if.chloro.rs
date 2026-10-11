@@ -74,23 +74,23 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         "Merge nested if",
         if_range,
         |edit| {
-        let cond_text = if has_logic_op_or(&cond) {
-            format!("({})", cond.syntax().text())
-        } else {
-            cond.syntax().text().to_string()
-        };
+            let cond_text = if has_logic_op_or(&cond) {
+                format!("({})", cond.syntax().text())
+            } else {
+                cond.syntax().text().to_string()
+            };
 
-        let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
-            format!("({})", nested_if_cond.syntax().text())
-        } else {
-            nested_if_cond.syntax().text().to_string()
-        };
+            let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
+                format!("({})", nested_if_cond.syntax().text())
+            } else {
+                nested_if_cond.syntax().text().to_string()
+            };
 
-        let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
+            let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
 
-        edit.replace(cond_range, replace_cond);
-        edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
-    },
+            edit.replace(cond_range, replace_cond);
+            edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
+        },
     )
 }
 
@@ -112,6 +112,7 @@ fn has_logic_op_or(expr: &ast::Expr) -> bool {
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     #[test]
     fn merge_nested_if_test1() {
         check_assist(
@@ -120,6 +121,7 @@ mod tests {
             "fn f() { if x == 3 && y == 4 { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test2() {
         check_assist(
@@ -128,6 +130,7 @@ mod tests {
             "fn f() { if (x == 3 || y == 1) && z == 4 { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test3() {
         check_assist(
@@ -136,6 +139,7 @@ mod tests {
             "fn f() { if x == 3 && y == 1 && z == 4 { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test4() {
         check_assist(
@@ -144,6 +148,7 @@ mod tests {
             "fn f() { if x == 3 && y == 1 && z == 4 && q == 3 { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test5() {
         check_assist(
@@ -152,6 +157,7 @@ mod tests {
             "fn f() { if x == 3 && y == 1 && (z == 4 || q == 3) { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test6() {
         check_assist(
@@ -160,6 +166,7 @@ mod tests {
             "fn f() { if (x == 3 || y == 1) && (z == 4 || q == 3) { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_test7() {
         check_assist(
@@ -168,6 +175,7 @@ mod tests {
             "fn f() { if (x == 3 || y == 1) && z == 4 && q == 3 { 1 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_to_if_with_else_branch() {
         check_assist_not_applicable(
@@ -175,6 +183,7 @@ mod tests {
             "fn f() { i$0f x == 3 { if y == 4 { 1 } } else { 2 } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_to_nested_if_with_else_branch() {
         check_assist_not_applicable(
@@ -182,6 +191,7 @@ mod tests {
             "fn f() { i$0f x == 3 { if y == 4 { 1 } else { 2 } } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_to_if_let() {
         check_assist_not_applicable(
@@ -189,6 +199,7 @@ mod tests {
             "fn f() { i$0f let Some(x) = y { if x == 4 { 1 } } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_to_nested_if_let() {
         check_assist_not_applicable(
@@ -196,6 +207,7 @@ mod tests {
             "fn f() { i$0f y == 0 { if let Some(x) = y { 1 } } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_to_if_with_else_branch_and_nested_if() {
         check_assist_not_applicable(
@@ -203,10 +215,12 @@ mod tests {
             "fn f() { i$0f x == 3 { if y == 4 { 1 } } else { if z == 5 { 2 } } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_with_cursor_not_on_if() {
         check_assist_not_applicable(merge_nested_if, "fn f() { if $0x==0 { if y == 3 { 1 } } }")
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_with_mulpiple_if() {
         check_assist_not_applicable(
@@ -221,6 +235,7 @@ mod tests {
             "fn f() { i$0f x == 0 { if y == 3 { foo(); } foo(); } }",
         )
     }
+
     #[test]
     fn merge_nested_if_do_not_apply_with_multiply_nested_if() {
         check_assist_not_applicable(

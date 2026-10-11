@@ -37,7 +37,11 @@ pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_
 
     let method_name_lazy = format!(
         "{method_name}{}",
-        if method_name.text().ends_with("or") { "_else" } else { "_with" }
+        if method_name.text().ends_with("or") {
+            "_else"
+        } else {
+            "_with"
+        }
     );
 
     receiver_ty.iterate_method_candidates_with_traits(
@@ -74,14 +78,16 @@ pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_
 fn into_closure(param: &Expr) -> Expr {
     (|| {
         if let ast::Expr::CallExpr(call) = param {
-            if call.arg_list()?.args().count() == 0 { Some(call.expr()?) } else { None }
+            if call.arg_list()?.args().count() == 0 {
+                Some(call.expr()?)
+            } else {
+                None
+            }
         } else {
             None
         }
     })()
-    .unwrap_or_else(
-        || make::expr_closure(None, param.clone()).into(),
-    )
+    .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
 }
 
 // Assist: replace_with_eager_method
@@ -152,20 +158,24 @@ pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'
 fn into_call(param: &Expr) -> Expr {
     (|| {
         if let ast::Expr::ClosureExpr(closure) = param {
-            if closure.param_list()?.params().count() == 0 { Some(closure.body()?) } else { None }
+            if closure.param_list()?.params().count() == 0 {
+                Some(closure.body()?)
+            } else {
+                None
+            }
         } else {
             None
         }
     })()
-    .unwrap_or_else(
-        || make::expr_call(param.clone(), make::arg_list(Vec::new())).into(),
-    )
+    .unwrap_or_else(|| make::expr_call(param.clone(), make::arg_list(Vec::new())).into())
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tests::check_assist;
+
     use super::*;
+
     #[test]
     fn replace_or_with_or_else_simple() {
         check_assist(
@@ -185,6 +195,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn replace_or_with_or_else_call() {
         check_assist(
@@ -204,6 +215,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn replace_or_with_or_else_block() {
         check_assist(
@@ -235,6 +247,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn replace_or_else_with_or_simple() {
         check_assist(
@@ -254,6 +267,7 @@ fn foo() {
 "#,
         )
     }
+
     #[test]
     fn replace_or_else_with_or_call() {
         check_assist(
@@ -277,6 +291,7 @@ fn x() -> i32 { 0 }
 "#,
         )
     }
+
     #[test]
     fn replace_or_else_with_or_map() {
         check_assist(

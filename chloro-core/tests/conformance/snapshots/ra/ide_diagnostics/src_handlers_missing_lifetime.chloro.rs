@@ -18,6 +18,7 @@ pub(crate) fn missing_lifetime(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn in_fields() {
         check_diagnostics(
@@ -28,6 +29,7 @@ struct Bar(Foo);
         "#,
         );
     }
+
     #[test]
     fn bounds() {
         check_diagnostics(
@@ -50,6 +52,7 @@ where
         "#,
         );
     }
+
     #[test]
     fn generic_defaults() {
         check_diagnostics(
@@ -61,6 +64,7 @@ struct Bar<T = Foo>(T);
         "#,
         );
     }
+
     #[test]
     fn type_alias_type() {
         check_diagnostics(
@@ -72,6 +76,7 @@ type Bar = Foo;
         "#,
         );
     }
+
     #[test]
     fn const_param_ty() {
         check_diagnostics(
@@ -83,6 +88,7 @@ fn bar<const F: Foo>() {}
         "#,
         );
     }
+
     #[test]
     fn fn_traits() {
         check_diagnostics(

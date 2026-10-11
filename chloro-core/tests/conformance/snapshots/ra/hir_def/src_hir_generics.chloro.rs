@@ -1,5 +1,4 @@
 //! Pre-type IR item generics
-
 use std::{ops, sync::LazyLock};
 
 use hir_expand::name::Name;
@@ -16,7 +15,6 @@ use crate::{
 };
 
 pub type LocalTypeOrConstParamId = Idx<TypeOrConstParamData>;
-
 pub type LocalLifetimeParamId = Idx<LifetimeParamData>;
 
 /// Data about a generic type parameter (to a function, struct, impl, ...).
@@ -154,7 +152,6 @@ pub struct GenericParams {
 
 impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
     type Output = TypeOrConstParamData;
-
     fn index(&self, index: LocalTypeOrConstParamId) -> &TypeOrConstParamData {
         &self.type_or_consts[index]
     }
@@ -162,7 +159,6 @@ impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
 
 impl ops::Index<LocalLifetimeParamId> for GenericParams {
     type Output = LifetimeParamData;
-
     fn index(&self, index: LocalLifetimeParamId) -> &LifetimeParamData {
         &self.lifetimes[index]
     }
@@ -199,7 +195,8 @@ static EMPTY: LazyLock<Arc<GenericParams>> = LazyLock::new(|| {
 
 impl GenericParams {
     /// The index of the self param in the generic of the non-parent definition.
-    pub(crate) const SELF_PARAM_ID_IN_SELF: la_arena::Idx<TypeOrConstParamData> = LocalTypeOrConstParamId::from_raw(RawIdx::from_u32(0));
+    pub(crate) const SELF_PARAM_ID_IN_SELF: la_arena::Idx<TypeOrConstParamData> =
+        LocalTypeOrConstParamId::from_raw(RawIdx::from_u32(0));
 
     pub fn new(db: &dyn DefDatabase, def: GenericDefId) -> Arc<GenericParams> {
         match def {
@@ -217,9 +214,10 @@ impl GenericParams {
             GenericDefId::ImplId(impl_id) => db.impl_signature(impl_id).generic_params.clone(),
             GenericDefId::StaticId(_) => EMPTY.clone(),
             GenericDefId::TraitId(trait_id) => db.trait_signature(trait_id).generic_params.clone(),
-            GenericDefId::TypeAliasId(type_alias_id) => {
-                db.type_alias_signature(type_alias_id).generic_params.clone()
-            }
+            GenericDefId::TypeAliasId(type_alias_id) => db
+                .type_alias_signature(type_alias_id)
+                .generic_params
+                .clone(),
         }
     }
 
@@ -270,7 +268,11 @@ impl GenericParams {
     pub fn generic_params_and_store_and_source_map(
         db: &dyn DefDatabase,
         def: GenericDefId,
-    ) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>) {
+    ) -> (
+        Arc<GenericParams>,
+        Arc<ExpressionStore>,
+        Arc<ExpressionStoreSourceMap>,
+    ) {
         match def {
             GenericDefId::AdtId(AdtId::EnumId(id)) => {
                 let (sig, sm) = db.enum_signature_with_source_map(id);
@@ -361,7 +363,10 @@ impl GenericParams {
     pub fn find_type_by_name(&self, name: &Name, parent: GenericDefId) -> Option<TypeParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.type_param().is_some() {
-                Some(TypeParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))
+                Some(TypeParamId::from_unchecked(TypeOrConstParamId {
+                    local_id: id,
+                    parent,
+                }))
             } else {
                 None
             }
@@ -371,7 +376,10 @@ impl GenericParams {
     pub fn find_const_by_name(&self, name: &Name, parent: GenericDefId) -> Option<ConstParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.const_param().is_some() {
-                Some(ConstParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))
+                Some(ConstParamId::from_unchecked(TypeOrConstParamId {
+                    local_id: id,
+                    parent,
+                }))
             } else {
                 None
             }
@@ -390,9 +398,7 @@ impl GenericParams {
                 ..
             })
         )
-        .then(
-            || Self::SELF_PARAM_ID_IN_SELF,
-        )
+        .then(|| Self::SELF_PARAM_ID_IN_SELF)
     }
 
     pub fn find_lifetime_by_name(
@@ -401,7 +407,14 @@ impl GenericParams {
         parent: GenericDefId,
     ) -> Option<LifetimeParamId> {
         self.lifetimes.iter().find_map(|(id, p)| {
-            if &p.name == name { Some(LifetimeParamId { local_id: id, parent }) } else { None }
+            if &p.name == name {
+                Some(LifetimeParamId {
+                    local_id: id,
+                    parent,
+                })
+            } else {
+                None
+            }
         })
     }
 }

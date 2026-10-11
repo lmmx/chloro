@@ -85,7 +85,10 @@ impl DefDiagnostic {
     ) -> Self {
         Self {
             in_module: container,
-            kind: DefDiagnosticKind::UnresolvedModule { ast: declaration, candidates },
+            kind: DefDiagnosticKind::UnresolvedModule {
+                ast: declaration,
+                candidates,
+            },
         }
     }
 
@@ -163,7 +166,10 @@ impl DefDiagnostic {
     ) -> Self {
         Self {
             in_module: container,
-            kind: DefDiagnosticKind::InvalidDeriveTarget { ast, id: id.ast_index() },
+            kind: DefDiagnosticKind::InvalidDeriveTarget {
+                ast,
+                id: id.ast_index(),
+            },
         }
     }
 
@@ -174,7 +180,10 @@ impl DefDiagnostic {
     ) -> Self {
         Self {
             in_module: container,
-            kind: DefDiagnosticKind::MalformedDerive { ast, id: id.ast_index() },
+            kind: DefDiagnosticKind::MalformedDerive {
+                ast,
+                id: id.ast_index(),
+            },
         }
     }
 }

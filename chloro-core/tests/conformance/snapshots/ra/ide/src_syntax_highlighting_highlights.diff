@@ -2,55 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2643 bytes
-Chloro size:   2644 bytes
+Chloro size:   2800 bytes
 Rustfmt size:  2800 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Collects a tree of highlighted ranges and flattens it.
-+
- use std::iter;
- 
- use stdx::equal_range_by;
- impl Highlights {
-     pub(super) fn new(range: TextRange) -> Highlights {
-         Highlights {
--            root: Node::new(HlRange {
--                range,
--                highlight: HlTag::None.into(),
--                binding_hash: None,
--            }),
-+            root: Node::new(HlRange { range, highlight: HlTag::None.into(), binding_hash: None }),
-         }
-     }
- 
- 
- impl Node {
-     fn new(hl_range: HlRange) -> Node {
--        Node {
--            hl_range,
--            nested: Vec::new(),
--        }
-+        Node { hl_range, nested: Vec::new() }
-     }
- 
-     fn add(&mut self, hl_range: HlRange) {
-             }
-         }
- 
--        let overlapping = equal_range_by(&self.nested, |n| {
--            TextRange::ordering(n.hl_range.range, hl_range.range)
--        });
-+        let overlapping =
-+            equal_range_by(&self.nested, |n| TextRange::ordering(n.hl_range.range, hl_range.range));
- 
-         if overlapping.len() == 1
--            && self.nested[overlapping.start]
--                .hl_range
--                .range
--                .contains_range(hl_range.range)
-+            && self.nested[overlapping.start].hl_range.range.contains_range(hl_range.range)
-         {
-             return self.nested[overlapping.start].add(hl_range);
-         }
+✓ Outputs are IDENTICAL

@@ -1,5 +1,4 @@
 //! Handle syntactic aspects of merging UseTrees.
-
 use std::cmp::Ordering;
 
 use itertools::{EitherOrBoth, Itertools};
@@ -7,8 +6,8 @@ use parser::T;
 use syntax::{
     Direction, SyntaxElement, algo,
     ast::{
-        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind,
-        edit_in_place::Removable, make,
+        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
+        make,
     },
     ted::{self, Position},
 };
@@ -83,11 +82,7 @@ pub fn try_merge_trees(
     Some(lhs)
 }
 
-fn try_merge_trees_mut(
-    lhs: &ast::UseTree,
-    rhs: &ast::UseTree,
-    merge: MergeBehavior,
-) -> Option<()> {
+fn try_merge_trees_mut(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior) -> Option<()> {
     if merge == MergeBehavior::One {
         lhs.wrap_in_tree_list();
         rhs.wrap_in_tree_list();
@@ -134,7 +129,11 @@ fn recursive_merge(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior)
     // Sorts the use trees similar to rustfmt's algorithm for ordering imports
     // (see `use_tree_cmp` doc).
     use_trees.sort_unstable_by(use_tree_cmp);
-    for rhs_t in rhs.use_tree_list().into_iter().flat_map(|list| list.use_trees()) {
+    for rhs_t in rhs
+        .use_tree_list()
+        .into_iter()
+        .flat_map(|list| list.use_trees())
+    {
         if !merge.is_tree_allowed(&rhs_t) {
             return None;
         }
@@ -328,7 +327,10 @@ fn recursive_normalize(use_tree: &ast::UseTree, style: NormalizationStyle) -> Op
                     inner_use_tree_list.syntax(),
                 );
             } else if single_subtree.star_token().is_some() {
-                ted::insert_raw(Position::last_child_of(use_tree.syntax()), make::token(T![*]));
+                ted::insert_raw(
+                    Position::last_child_of(use_tree.syntax()),
+                    make::token(T![*]),
+                );
             } else if let Some(rename) = single_subtree.rename() {
                 ted::insert_raw(
                     Position::last_child_of(use_tree.syntax()),
@@ -722,7 +724,9 @@ fn get_single_subtree(use_tree: &ast::UseTree) -> Option<ast::UseTree> {
 }
 
 fn remove_subtree_if_only_self(use_tree: &ast::UseTree) {
-    let Some(single_subtree) = get_single_subtree(use_tree) else { return };
+    let Some(single_subtree) = get_single_subtree(use_tree) else {
+        return;
+    };
     match (use_tree.path(), single_subtree.path()) {
         (Some(_), Some(inner)) if path_is_self(&inner) => {
             ted::remove_all_iter(single_subtree.syntax().children_with_tokens());
@@ -737,12 +741,16 @@ mod version_sort {
     // Original rustfmt code contains some clippy lints.
     // Suppress them to minimize changes from upstream.
     #![allow(clippy::all)]
+
     use std::cmp::Ordering;
+
     use itertools::{EitherOrBoth, Itertools};
+
     struct VersionChunkIter<'a> {
         ident: &'a str,
         start: usize,
     }
+
     impl<'a> VersionChunkIter<'a> {
         pub(crate) fn new(ident: &'a str) -> Self {
             Self { ident, start: 0 }
@@ -779,7 +787,11 @@ mod version_sort {
             let zeros = source.chars().take_while(|c| *c == '0').count();
             let value = source.parse::<usize>().ok()?;
 
-            Some(VersionChunk::Number { value, zeros, source })
+            Some(VersionChunk::Number {
+                value,
+                zeros,
+                source,
+            })
         }
 
         fn parse_str_chunk(
@@ -818,6 +830,7 @@ mod version_sort {
             Some(VersionChunk::Str(source))
         }
     }
+
     impl<'a> Iterator for VersionChunkIter<'a> {
         type Item = VersionChunk<'a>;
 
@@ -837,6 +850,7 @@ mod version_sort {
             self.parse_str_chunk(chars)
         }
     }
+
     /// Represents a chunk in the version-sort algorithm
     #[derive(Debug, PartialEq, Eq)]
     enum VersionChunk<'a> {
@@ -851,6 +865,7 @@ mod version_sort {
             source: &'a str,
         },
     }
+
     /// Determine which side of the version-sort comparison had more leading zeros.
     #[derive(Debug, PartialEq, Eq)]
     enum MoreLeadingZeros {
@@ -858,6 +873,7 @@ mod version_sort {
         Right,
         Equal,
     }
+
     pub(super) fn version_sort(a: &str, b: &str) -> Ordering {
         let iter_a = VersionChunkIter::new(a);
         let iter_b = VersionChunkIter::new(b);
@@ -884,8 +900,16 @@ mod version_sort {
                         }
                     }
                     (
-                        VersionChunk::Number { value: va, zeros: lza, .. },
-                        VersionChunk::Number { value: vb, zeros: lzb, .. },
+                        VersionChunk::Number {
+                            value: va,
+                            zeros: lza,
+                            ..
+                        },
+                        VersionChunk::Number {
+                            value: vb,
+                            zeros: lzb,
+                            ..
+                        },
                     ) => match va.cmp(&vb) {
                         std::cmp::Ordering::Equal => {
                             if lza == lzb {

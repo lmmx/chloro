@@ -1,8 +1,9 @@
-/// chloro-core: minimal Rust code formatter
+//! chloro-core: the formatter behind chloro, a reproduction of `rustfmt --edition 2024`.
 pub mod debug;
 pub mod formatter;
 
-pub use formatter::format_source;
+pub use formatter::config::Config;
+pub use formatter::{format_source, format_source_with_config};
 
 /// Macro for debug output in chloro.
 ///

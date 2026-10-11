@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2218 bytes
-Chloro size:   2217 bytes
+Chloro size:   2218 bytes
 Rustfmt size:  2218 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- mod tests {
-     use super::*;
-     use crate::tests::check_assist_not_applicable;
--
-     #[test]
-     fn test_remove_else_branches_not_on_else_token() {
-         check_assist_not_applicable(
+✓ Outputs are IDENTICAL

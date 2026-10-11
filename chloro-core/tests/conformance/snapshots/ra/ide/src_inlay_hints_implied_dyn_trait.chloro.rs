@@ -1,7 +1,6 @@
 //! Implementation of trait bound hints.
 //!
 //! Currently this renders the implied `Sized` bound.
-
 use either::Either;
 use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
 
@@ -31,7 +30,8 @@ pub(super) fn hints(
                     it.trait_().map_or(
                         // only show it for impl type if the impl is not incomplete, otherwise we
                         // are likely typing a trait impl
-                        it.assoc_item_list().is_none_or(|it| it.l_curly_token().is_none()),
+                        it.assoc_item_list()
+                            .is_none_or(|it| it.l_curly_token().is_none()),
                         |trait_| trait_.syntax() == path.syntax(),
                     )
                 })
@@ -68,13 +68,24 @@ pub(super) fn hints(
 
 #[cfg(test)]
 mod tests {
+
     use expect_test::expect;
+
     use crate::inlay_hints::InlayHintsConfig;
+
     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_edit, check_with_config};
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-        check_with_config(InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG }, ra_fixture);
+        check_with_config(
+            InlayHintsConfig {
+                sized_bound: true,
+                ..DISABLED_CONFIG
+            },
+            ra_fixture,
+        );
     }
+
     #[test]
     fn path_works() {
         check(
@@ -94,6 +105,7 @@ impl T
 "#,
         );
     }
+
     #[test]
     fn missing_dyn_bounds() {
         check(
@@ -116,6 +128,7 @@ fn foo(
 "#,
         );
     }
+
     #[test]
     fn edit() {
         check_edit(
@@ -134,6 +147,7 @@ fn foo(
             "#]],
         );
     }
+
     #[test]
     fn hrtb_bound_does_not_add_dyn() {
         check(
@@ -144,6 +158,7 @@ fn test<F>(f: F) where F: for<'a> FnOnce(&'a i32) {}
         "#,
         );
     }
+
     #[test]
     fn with_parentheses() {
         check(

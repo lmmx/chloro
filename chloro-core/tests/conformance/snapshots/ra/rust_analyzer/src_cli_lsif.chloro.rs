@@ -2,13 +2,13 @@
 
 use std::env;
 use std::time::Instant;
-use ide_db::{LineIndexDatabase, line_index::WideEncoding};
 
 use ide::{
     Analysis, AnalysisHost, FileId, FileRange, MonikerKind, MonikerResult, PackageInformation,
     RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
     VendoredLibrariesConfig,
 };
+use ide_db::{LineIndexDatabase, line_index::WideEncoding};
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
 use lsp_types::lsif;
 use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
@@ -66,7 +66,13 @@ impl LsifManager<'_, '_> {
 
     fn add(&mut self, data: lsif::Element) -> Id {
         let id = Id(self.count);
-        self.emit(&serde_json::to_string(&lsif::Entry { id: id.into(), data }).unwrap());
+        self.emit(
+            &serde_json::to_string(&lsif::Entry {
+                id: id.into(),
+                data,
+            })
+            .unwrap(),
+        );
         self.count += 1;
         id
     }
@@ -213,7 +219,9 @@ impl LsifManager<'_, '_> {
             let mut edges = token.references.iter().fold(
                 FxHashMap::<_, Vec<lsp_types::NumberOrString>>::default(),
                 |mut edges, it| {
-                    let entry = edges.entry((it.range.file_id, it.is_definition)).or_default();
+                    let entry = edges
+                        .entry((it.range.file_id, it.is_definition))
+                        .or_default();
                     entry.push((*self.range_map.get(&it.range).unwrap()).into());
                     edges
                 },
@@ -238,7 +246,12 @@ impl LsifManager<'_, '_> {
     }
 
     fn add_file(&mut self, file: StaticIndexedFile) {
-        let StaticIndexedFile { file_id, tokens, folds, .. } = file;
+        let StaticIndexedFile {
+            file_id,
+            tokens,
+            folds,
+            ..
+        } = file;
         let doc_id = self.get_file_id(file_id);
         let text = self.analysis.file_text(file_id).unwrap();
         let line_index = self.db.line_index(file_id);
@@ -263,7 +276,8 @@ impl LsifManager<'_, '_> {
                     range: to_proto::range(&line_index, range),
                     tag: None,
                 });
-                self.range_map.insert(FileRange { file_id, range }, range_id);
+                self.range_map
+                    .insert(FileRange { file_id, range }, range_id);
                 let result_set_id = self.get_token_id(id);
                 self.add_edge(lsif::Edge::Next(lsif::EdgeData {
                     in_v: result_set_id.into(),
@@ -286,8 +300,12 @@ impl flags::Lsif {
         sysroot: Option<RustLibSource>,
     ) -> anyhow::Result<()> {
         let now = Instant::now();
-        let cargo_config =
-            &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
+        let cargo_config = &CargoConfig {
+            sysroot,
+            all_targets: true,
+            set_test: true,
+            ..Default::default()
+        };
         let no_progress = &|_| ();
         let load_cargo_config = LoadCargoConfig {
             load_out_dirs_from_check: true,
@@ -311,7 +329,9 @@ impl flags::Lsif {
         let vendored_libs_config = if self.exclude_vendored_libraries {
             VendoredLibrariesConfig::Excluded
         } else {
-            VendoredLibrariesConfig::Included { workspace_root: &path.clone().into() }
+            VendoredLibrariesConfig::Included {
+                workspace_root: &path.clone().into(),
+            }
         };
 
         let si = StaticIndex::compute(&analysis, vendored_libs_config);

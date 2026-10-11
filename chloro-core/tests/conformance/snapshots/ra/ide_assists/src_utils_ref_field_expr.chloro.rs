@@ -3,7 +3,6 @@
 //!
 //! It determines whether to deref the new expression and/or wrap it in parentheses,
 //! based on the parent of the existing expression.
-
 use syntax::{
     AstNode, T,
     ast::{self, FieldExpr, MethodCallExpr, make},
@@ -18,7 +17,10 @@ pub(crate) fn determine_ref_and_parens(
     field_expr: &FieldExpr,
 ) -> (ast::Expr, RefData) {
     let s = field_expr.syntax();
-    let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
+    let mut ref_data = RefData {
+        needs_deref: true,
+        needs_parentheses: true,
+    };
     let mut target_node = field_expr.clone().into();
 
     let parent = match s.parent().map(ast::Expr::cast) {

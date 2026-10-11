@@ -26,7 +26,7 @@ use crate::{
 };
 
 #[query_group::query_group]
-pub trait HirDatabase {
+pub trait HirDatabase: DefDatabase + std::fmt::Debug {
     #[salsa::invoke(crate::infer::infer_query)]
     #[salsa::cycle(cycle_result = crate::infer::infer_cycle_result)]
     fn infer<'db>(&'db self, def: DefWithBodyId) -> Arc<InferenceResult<'db>>;
@@ -81,10 +81,7 @@ pub trait HirDatabase {
 
     #[salsa::invoke(crate::consteval::const_eval_static_query)]
     #[salsa::cycle(cycle_result = crate::consteval::const_eval_static_cycle_result)]
-    fn const_eval_static<'db>(
-        &'db self,
-        def: StaticId,
-    ) -> Result<Const<'db>, ConstEvalError<'db>>;
+    fn const_eval_static<'db>(&'db self, def: StaticId) -> Result<Const<'db>, ConstEvalError<'db>>;
 
     #[salsa::invoke(crate::consteval::const_eval_discriminant_variant)]
     #[salsa::cycle(cycle_result = crate::consteval::const_eval_discriminant_cycle_result)]
@@ -157,10 +154,8 @@ pub trait HirDatabase {
     // FIXME: Make this a non-interned query.
     #[salsa::invoke_interned(crate::lower::const_param_ty_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::const_param_ty_with_diagnostics_cycle_result)]
-    fn const_param_ty_with_diagnostics<'db>(
-        &'db self,
-        def: ConstParamId,
-    ) -> (Ty<'db>, Diagnostics);
+    fn const_param_ty_with_diagnostics<'db>(&'db self, def: ConstParamId)
+    -> (Ty<'db>, Diagnostics);
 
     #[salsa::invoke(crate::lower::const_param_ty_query)]
     #[salsa::transparent]
@@ -180,7 +175,10 @@ pub trait HirDatabase {
     fn field_types_with_diagnostics<'db>(
         &'db self,
         var: VariantId,
-    ) -> (Arc<ArenaMap<LocalFieldId, EarlyBinder<'db, Ty<'db>>>>, Diagnostics);
+    ) -> (
+        Arc<ArenaMap<LocalFieldId, EarlyBinder<'db, Ty<'db>>>>,
+        Diagnostics,
+    );
 
     #[salsa::invoke(crate::lower::field_types_query)]
     #[salsa::transparent]
@@ -234,10 +232,8 @@ pub trait HirDatabase {
 
     #[salsa::invoke(crate::lower::trait_environment_for_body_query)]
     #[salsa::transparent]
-    fn trait_environment_for_body<'db>(
-        &'db self,
-        def: DefWithBodyId,
-    ) -> Arc<TraitEnvironment<'db>>;
+    fn trait_environment_for_body<'db>(&'db self, def: DefWithBodyId)
+    -> Arc<TraitEnvironment<'db>>;
 
     #[salsa::invoke(crate::lower::trait_environment_query)]
     fn trait_environment<'db>(&'db self, def: GenericDefId) -> Arc<TraitEnvironment<'db>>;

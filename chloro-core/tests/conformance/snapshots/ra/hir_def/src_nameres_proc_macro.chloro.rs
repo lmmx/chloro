@@ -14,9 +14,7 @@ pub struct ProcMacroDef {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ProcMacroKind {
-    Derive {
-        helpers: Box<[Name]>,
-    },
+    Derive { helpers: Box<[Name]> },
     Bang,
     Attr,
 }
@@ -46,12 +44,15 @@ impl Attrs {
         } else if self.by_key(sym::proc_macro_derive).exists() {
             let derive = self.parse_proc_macro_derive();
             Some(match derive {
-                Some((name, helpers)) => {
-                    ProcMacroDef { name, kind: ProcMacroKind::Derive { helpers } }
-                }
+                Some((name, helpers)) => ProcMacroDef {
+                    name,
+                    kind: ProcMacroKind::Derive { helpers },
+                },
                 None => ProcMacroDef {
                     name: func_name.clone(),
-                    kind: ProcMacroKind::Derive { helpers: Box::default() },
+                    kind: ProcMacroKind::Derive {
+                        helpers: Box::default(),
+                    },
                 },
             })
         } else {
@@ -87,7 +88,8 @@ pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name
             TokenTree::Leaf(Leaf::Ident(attributes)),
             TokenTree::Subtree(_),
             ..
-        ] if comma.char == ',' && attributes.sym == sym::attributes => {
+        ] if comma.char == ',' && attributes.sym == sym::attributes =>
+        {
             let helpers = tt::TokenTreesView::new(&tt.token_trees().flat_tokens()[3..]).try_into_subtree()?;
             let helpers = helpers
                 .iter()

@@ -1,5 +1,4 @@
 //! This module resolves `mod foo;` declaration to file.
-
 use arrayvec::ArrayVec;
 use base_db::AnchoredPath;
 use hir_expand::{EditionedFileId, name::Name};
@@ -58,7 +57,11 @@ impl ModDir {
             cov_mark::hit!(circular_mods);
             return None;
         }
-        Some(ModDir { dir_path, root_non_dir_owner, depth })
+        Some(ModDir {
+            dir_path,
+            root_non_dir_owner,
+            depth,
+        })
     }
 
     pub(super) fn resolve_declaration(
@@ -83,7 +86,10 @@ impl ModDir {
 
         let orig_file_id = file_id.original_file_respecting_includes(db);
         for candidate in candidate_files.iter() {
-            let path = AnchoredPath { anchor: orig_file_id.file_id(db), path: candidate.as_str() };
+            let path = AnchoredPath {
+                anchor: orig_file_id.file_id(db),
+                path: candidate.as_str(),
+            };
             if let Some(file_id) = db.resolve_path(path) {
                 let is_mod_rs = candidate.ends_with("/mod.rs");
 
@@ -114,32 +120,28 @@ impl DirPath {
     fn assert_invariant(&self) {
         assert!(self.0.is_empty() || self.0.ends_with('/'));
     }
-
     fn new(repr: String) -> DirPath {
         let res = DirPath(repr);
         res.assert_invariant();
         res
     }
-
     fn empty() -> DirPath {
         DirPath::new(String::new())
     }
-
     fn push(&mut self, name: &str) {
         self.0.push_str(name);
         self.0.push('/');
         self.assert_invariant();
     }
-
     fn parent(&self) -> Option<&str> {
         if self.0.is_empty() {
             return None;
         };
-        let idx =
-            self.0[..self.0.len() - '/'.len_utf8()].rfind('/').map_or(0, |it| it + '/'.len_utf8());
+        let idx = self.0[..self.0.len() - '/'.len_utf8()]
+            .rfind('/')
+            .map_or(0, |it| it + '/'.len_utf8());
         Some(&self.0[..idx])
     }
-
     /// So this is the case which doesn't really work I think if we try to be
     /// 100% platform agnostic:
     ///
@@ -154,7 +156,11 @@ impl DirPath {
     /// attribute. Ideally, we should somehow losslessly communicate the whole
     /// construction to `FileLoader`.
     fn join_attr(&self, mut attr: &str, relative_to_parent: bool) -> String {
-        let base = if relative_to_parent { self.parent().unwrap() } else { &self.0 };
+        let base = if relative_to_parent {
+            self.parent().unwrap()
+        } else {
+            &self.0
+        };
 
         if attr.starts_with("./") {
             attr = &attr["./".len()..];

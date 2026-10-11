@@ -12,7 +12,7 @@ fn format_simple_macro_call() {
 fn format_macro_call_with_braces() {
     let input = r#"vec! { 1, 2, 3 };"#;
     let output = format_source(input);
-    assert_snapshot!(output, @"vec! { 1, 2, 3 }");
+    assert_snapshot!(output, @"vec! { 1, 2, 3 };");
 }
 
 #[test]
@@ -111,10 +111,9 @@ fn format_macro_call_after_function() {
     let input = r#"fn foo() {}
 some_macro! { content }"#;
     let output = format_source(input);
-    // Should have blank line between function and macro call
+    // rustfmt does not insert blank lines between items
     assert_snapshot!(output, @r"
     fn foo() {}
-
     some_macro! { content }
     ");
 }
@@ -124,10 +123,9 @@ fn format_function_after_macro_call() {
     let input = r#"some_macro! { content }
 fn foo() {}"#;
     let output = format_source(input);
-    // Should have blank line between macro call and function
+    // rustfmt does not insert blank lines between items
     assert_snapshot!(output, @r"
     some_macro! { content }
-
     fn foo() {}
     ");
 }

@@ -1,7 +1,6 @@
 //! Advertises the capabilities of the LSP Server.
-
-use ide_db::{FxHashSet, line_index::WideEncoding};
 use ide::{CompletionFieldsToResolve, InlayFieldsToResolve};
+use ide_db::{FxHashSet, line_index::WideEncoding};
 use lsp_types::{
     CallHierarchyServerCapability, CodeActionKind, CodeActionOptions, CodeActionProviderCapability,
     CodeLensOptions, CompletionOptions, CompletionOptionsCompletionItem, DeclarationCapability,
@@ -33,17 +32,21 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                 _ => None,
             },
         },
-        text_document_sync: Some(TextDocumentSyncCapability::Options(TextDocumentSyncOptions {
-            open_close: Some(true),
-            change: Some(TextDocumentSyncKind::INCREMENTAL),
-            will_save: None,
-            will_save_wait_until: None,
-            save: Some(SaveOptions::default().into()),
-        })),
+        text_document_sync: Some(TextDocumentSyncCapability::Options(
+            TextDocumentSyncOptions {
+                open_close: Some(true),
+                change: Some(TextDocumentSyncKind::INCREMENTAL),
+                will_save: None,
+                will_save_wait_until: None,
+                save: Some(SaveOptions::default().into()),
+            },
+        )),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
         completion_provider: Some(CompletionOptions {
             resolve_provider: if config.client_is_neovim() {
-                config.has_completion_item_resolve_additionalTextEdits().then_some(true)
+                config
+                    .has_completion_item_resolve_additionalTextEdits()
+                    .then_some(true)
             } else {
                 Some(config.caps().completions_resolve_provider())
             },
@@ -55,12 +58,16 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             ]),
             all_commit_characters: None,
             completion_item: config.caps().completion_item(),
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+            work_done_progress_options: WorkDoneProgressOptions {
+                work_done_progress: None,
+            },
         }),
         signature_help_provider: Some(SignatureHelpOptions {
             trigger_characters: Some(vec!["(".to_owned(), ",".to_owned(), "<".to_owned()]),
             retrigger_characters: None,
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+            work_done_progress_options: WorkDoneProgressOptions {
+                work_done_progress: None,
+            },
         }),
         declaration_provider: Some(DeclarationCapability::Simple(true)),
         definition_provider: Some(OneOf::Left(true)),
@@ -71,10 +78,15 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
         document_symbol_provider: Some(OneOf::Left(true)),
         workspace_symbol_provider: Some(OneOf::Left(true)),
         code_action_provider: Some(config.caps().code_action_capabilities()),
-        code_lens_provider: Some(CodeLensOptions { resolve_provider: Some(true) }),
+        code_lens_provider: Some(CodeLensOptions {
+            resolve_provider: Some(true),
+        }),
         document_formatting_provider: Some(OneOf::Left(true)),
         document_range_formatting_provider: match config.rustfmt(None) {
-            RustfmtConfig::Rustfmt { enable_range_formatting: true, .. } => Some(OneOf::Left(true)),
+            RustfmtConfig::Rustfmt {
+                enable_range_formatting: true,
+                ..
+            } => Some(OneOf::Left(true)),
             _ => Some(OneOf::Left(false)),
         },
         document_on_type_formatting_provider: Some({
@@ -88,7 +100,9 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
         folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
         rename_provider: Some(OneOf::Right(RenameOptions {
             prepare_provider: Some(true),
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
+            work_done_progress_options: WorkDoneProgressOptions {
+                work_done_progress: None,
+            },
         })),
         linked_editing_range_provider: None,
         document_link_provider: None,
@@ -128,21 +142,26 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             }),
         }),
         call_hierarchy_provider: Some(CallHierarchyServerCapability::Simple(true)),
-        semantic_tokens_provider: Some(SemanticTokensOptions {
-            legend: SemanticTokensLegend {
-                token_types: semantic_tokens::SUPPORTED_TYPES.to_vec(),
-                token_modifiers: semantic_tokens::SUPPORTED_MODIFIERS.to_vec(),
-            },
-            full: Some(SemanticTokensFullOptions::Delta { delta: Some(true) }),
-            range: Some(true),
-            work_done_progress_options: Default::default(),
-        }
-        .into()),
+        semantic_tokens_provider: Some(
+            SemanticTokensOptions {
+                legend: SemanticTokensLegend {
+                    token_types: semantic_tokens::SUPPORTED_TYPES.to_vec(),
+                    token_modifiers: semantic_tokens::SUPPORTED_MODIFIERS.to_vec(),
+                },
+
+                full: Some(SemanticTokensFullOptions::Delta { delta: Some(true) }),
+                range: Some(true),
+                work_done_progress_options: Default::default(),
+            }
+            .into(),
+        ),
         moniker_provider: None,
-        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(InlayHintOptions {
-            work_done_progress_options: Default::default(),
-            resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
-        }))),
+        inlay_hint_provider: Some(OneOf::Right(InlayHintServerCapabilities::Options(
+            InlayHintOptions {
+                work_done_progress_options: Default::default(),
+                resolve_provider: Some(config.caps().inlay_hints_resolve_provider()),
+            },
+        ))),
         inline_value_provider: None,
         experimental: Some(json!({
             "externalDocs": true,
@@ -160,12 +179,17 @@ pub fn server_capabilities(config: &Config) -> ServerCapabilities {
             "ssr": true,
             "workspaceSymbolScopeKindFiltering": true,
         })),
-        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(lsp_types::DiagnosticOptions {
-            identifier: Some("rust-analyzer".to_owned()),
-            inter_file_dependencies: true,
-            workspace_diagnostics: false,
-            work_done_progress_options: WorkDoneProgressOptions { work_done_progress: None },
-        })),
+        diagnostic_provider: Some(lsp_types::DiagnosticServerCapabilities::Options(
+            lsp_types::DiagnosticOptions {
+                identifier: Some("rust-analyzer".to_owned()),
+                inter_file_dependencies: true,
+                // FIXME
+                workspace_diagnostics: false,
+                work_done_progress_options: WorkDoneProgressOptions {
+                    work_done_progress: None,
+                },
+            },
+        )),
         inline_completion_provider: None,
     }
 }
@@ -285,16 +309,25 @@ impl ClientCapabilities {
     pub fn workspace_edit_resource_operations(
         &self,
     ) -> Option<&[lsp_types::ResourceOperationKind]> {
-        self.0.workspace.as_ref()?.workspace_edit.as_ref()?.resource_operations.as_deref()
+        self.0
+            .workspace
+            .as_ref()?
+            .workspace_edit
+            .as_ref()?
+            .resource_operations
+            .as_deref()
     }
 
     pub fn semantics_tokens_augments_syntax_tokens(&self) -> bool {
         (|| -> _ {
-            self.0.text_document.as_ref()?.semantic_tokens.as_ref()?.augments_syntax_tokens
+            self.0
+                .text_document
+                .as_ref()?
+                .semantic_tokens
+                .as_ref()?
+                .augments_syntax_tokens
         })()
-        .unwrap_or(
-            false,
-        )
+        .unwrap_or(false)
     }
 
     pub fn did_save_text_document_dynamic_registration(&self) -> bool {
@@ -305,14 +338,24 @@ impl ClientCapabilities {
 
     pub fn did_change_watched_files_dynamic_registration(&self) -> bool {
         (|| -> _ {
-            self.0.workspace.as_ref()?.did_change_watched_files.as_ref()?.dynamic_registration
+            self.0
+                .workspace
+                .as_ref()?
+                .did_change_watched_files
+                .as_ref()?
+                .dynamic_registration
         })()
         .unwrap_or_default()
     }
 
     pub fn did_change_watched_files_relative_pattern_support(&self) -> bool {
         (|| -> _ {
-            self.0.workspace.as_ref()?.did_change_watched_files.as_ref()?.relative_pattern_support
+            self.0
+                .workspace
+                .as_ref()?
+                .did_change_watched_files
+                .as_ref()?
+                .relative_pattern_support
         })()
         .unwrap_or_default()
     }
@@ -322,7 +365,14 @@ impl ClientCapabilities {
     }
 
     pub fn line_folding_only(&self) -> bool {
-        (|| -> _ { self.0.text_document.as_ref()?.folding_range.as_ref()?.line_folding_only })()
+        (|| -> _ {
+            self.0
+                .text_document
+                .as_ref()?
+                .folding_range
+                .as_ref()?
+                .line_folding_only
+        })()
         .unwrap_or_default()
     }
 
@@ -356,13 +406,26 @@ impl ClientCapabilities {
     }
 
     pub fn will_rename(&self) -> bool {
-        (|| -> _ { self.0.workspace.as_ref()?.file_operations.as_ref()?.will_rename })()
+        (|| -> _ {
+            self.0
+                .workspace
+                .as_ref()?
+                .file_operations
+                .as_ref()?
+                .will_rename
+        })()
         .unwrap_or_default()
     }
 
     pub fn change_annotation_support(&self) -> bool {
         (|| -> _ {
-            self.0.workspace.as_ref()?.workspace_edit.as_ref()?.change_annotation_support.as_ref()
+            self.0
+                .workspace
+                .as_ref()?
+                .workspace_edit
+                .as_ref()?
+                .change_annotation_support
+                .as_ref()
         })()
         .is_some()
     }
@@ -407,7 +470,14 @@ impl ClientCapabilities {
     }
 
     pub fn text_document_diagnostic_related_document_support(&self) -> bool {
-        (|| -> _ { self.0.text_document.as_ref()?.diagnostic.as_ref()?.related_document_support })() == Some(true)
+        (|| -> _ {
+            self.0
+                .text_document
+                .as_ref()?
+                .diagnostic
+                .as_ref()?
+                .related_document_support
+        })() == Some(true)
     }
 
     pub fn code_action_group(&self) -> bool {
@@ -462,22 +532,50 @@ impl ClientCapabilities {
     }
 
     pub fn semantic_tokens_refresh(&self) -> bool {
-        (|| -> _ { self.0.workspace.as_ref()?.semantic_tokens.as_ref()?.refresh_support })()
+        (|| -> _ {
+            self.0
+                .workspace
+                .as_ref()?
+                .semantic_tokens
+                .as_ref()?
+                .refresh_support
+        })()
         .unwrap_or_default()
     }
 
     pub fn code_lens_refresh(&self) -> bool {
-        (|| -> _ { self.0.workspace.as_ref()?.code_lens.as_ref()?.refresh_support })()
+        (|| -> _ {
+            self.0
+                .workspace
+                .as_ref()?
+                .code_lens
+                .as_ref()?
+                .refresh_support
+        })()
         .unwrap_or_default()
     }
 
     pub fn inlay_hints_refresh(&self) -> bool {
-        (|| -> _ { self.0.workspace.as_ref()?.inlay_hint.as_ref()?.refresh_support })()
+        (|| -> _ {
+            self.0
+                .workspace
+                .as_ref()?
+                .inlay_hint
+                .as_ref()?
+                .refresh_support
+        })()
         .unwrap_or_default()
     }
 
     pub fn diagnostics_refresh(&self) -> bool {
-        (|| -> _ { self.0.workspace.as_ref()?.diagnostic.as_ref()?.refresh_support })()
+        (|| -> _ {
+            self.0
+                .workspace
+                .as_ref()?
+                .diagnostic
+                .as_ref()?
+                .refresh_support
+        })()
         .unwrap_or_default()
     }
 
@@ -510,7 +608,16 @@ impl ClientCapabilities {
 
     pub fn hover_markdown_support(&self) -> bool {
         (|| -> _ {
-            Some(self.0.text_document.as_ref()?.hover.as_ref()?.content_format.as_ref()?.as_slice())
+            Some(
+                self.0
+                    .text_document
+                    .as_ref()?
+                    .hover
+                    .as_ref()?
+                    .content_format
+                    .as_ref()?
+                    .as_slice(),
+            )
         })()
         .unwrap_or_default()
         .contains(&lsp_types::MarkupKind::Markdown)

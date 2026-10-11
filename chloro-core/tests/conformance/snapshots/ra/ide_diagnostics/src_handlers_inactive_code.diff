@@ -2,69 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6321 bytes
-Chloro size:   6312 bytes
+Chloro size:   6321 bytes
 Rustfmt size:  6321 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use crate::{DiagnosticsConfig, tests::check_diagnostics_with_config};
--
-     #[track_caller]
-     pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-         let config = DiagnosticsConfig {
-         };
-         check_diagnostics_with_config(config, ra_fixture)
-     }
--
-     #[test]
-     fn cfg_diagnostics() {
-         check(
-         "#,
-         );
-     }
--
-     #[test]
-     fn inactive_item() {
-         // Additional tests in `cfg` crate. This only tests disabled cfgs.
--
-         check(
-             r#"
-     #[cfg(no)] pub fn f() {}
- "#,
-         );
-     }
--
-     #[test]
-     fn inactive_assoc_item() {
-         check(
- "#,
-         );
-     }
--
-     /// Tests that `cfg` attributes behind `cfg_attr` is handled properly.
-     #[test]
-     fn inactive_via_cfg_attr() {
- "#,
-         );
-     }
--
-     #[test]
-     fn inactive_fields_and_variants() {
-         check(
- "#,
-         );
-     }
--
-     #[test]
-     fn modules() {
-         check(
- "#,
-         );
-     }
--
-     #[test]
-     fn cfg_true_false() {
-         check(
+✓ Outputs are IDENTICAL

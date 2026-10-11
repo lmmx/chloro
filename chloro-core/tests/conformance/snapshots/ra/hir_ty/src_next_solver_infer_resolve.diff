@@ -2,20 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3193 bytes
+Chloro size:   3226 bytes
 Rustfmt size:  3226 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- impl<'a, 'db> OpportunisticVarResolver<'a, 'db> {
-     #[inline]
-     pub fn new(infcx: &'a InferCtxt<'db>) -> Self {
--        OpportunisticVarResolver {
--            infcx,
--            cache: Default::default(),
--        }
-+        OpportunisticVarResolver { infcx, cache: Default::default() }
-     }
- }
- 
+✓ Outputs are IDENTICAL

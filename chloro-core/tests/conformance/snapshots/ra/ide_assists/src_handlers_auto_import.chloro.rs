@@ -109,19 +109,31 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 
-    let current_module = ctx.sema.scope(scope.as_syntax_node()).map(|scope| scope.module());
+    let current_module = ctx
+        .sema
+        .scope(scope.as_syntax_node())
+        .map(|scope| scope.module());
     // prioritize more relevant imports
     proposed_imports.sort_by_key(|import| {
-        Reverse(relevance_score(ctx, import, expected.as_ref(), current_module.as_ref()))
+        Reverse(relevance_score(
+            ctx,
+            import,
+            expected.as_ref(),
+            current_module.as_ref(),
+        ))
     });
-    let edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
+    let edition = current_module
+        .map(|it| it.krate().edition(ctx.db()))
+        .unwrap_or(Edition::CURRENT);
 
     let group_label = group_label(import_assets.import_candidate());
     for import in proposed_imports {
         let import_path = import.import_path;
 
-        let (assist_id, import_name) =
-            (AssistId::quick_fix("auto_import"), import_path.display(ctx.db(), edition));
+        let (assist_id, import_name) = (
+            AssistId::quick_fix("auto_import"),
+            import_path.display(ctx.db(), edition),
+        );
         acc.add_group(
             &group_label,
             assist_id,
@@ -129,14 +141,20 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             range,
             |builder| {
                 let scope = builder.make_import_scope_mut(scope.clone());
-                insert_use(&scope, mod_path_to_ast(&import_path, edition), &ctx.config.insert_use);
+                insert_use(
+                    &scope,
+                    mod_path_to_ast(&import_path, edition),
+                    &ctx.config.insert_use,
+                );
             },
         );
 
         match import_assets.import_candidate() {
             ImportCandidate::TraitAssocItem(name) | ImportCandidate::TraitMethod(name) => {
-                let is_method =
-                    matches!(import_assets.import_candidate(), ImportCandidate::TraitMethod(_));
+                let is_method = matches!(
+                    import_assets.import_candidate(),
+                    ImportCandidate::TraitMethod(_)
+                );
                 let type_ = if is_method { "method" } else { "item" };
                 let group_label = GroupLabel(format!(
                     "Import a trait for {} {} by alias",
@@ -203,23 +221,29 @@ pub(super) fn find_importable_node<'a: 'db, 'db>(
     };
 
     if let Some(path_under_caret) = ctx.find_node_at_offset_with_descend::<ast::Path>() {
-        let expected =
-            path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
+        let expected = path_under_caret
+            .top_path()
+            .syntax()
+            .parent()
+            .and_then(Either::cast)
+            .and_then(expected);
         ImportAssets::for_exact_path(&path_under_caret, &ctx.sema)
-        .map(
-            |it| (it, path_under_caret.syntax().clone(), expected),
-        )
-    } else if let Some(method_under_caret) = ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>() {
+            .map(|it| (it, path_under_caret.syntax().clone(), expected))
+    } else if let Some(method_under_caret) =
+        ctx.find_node_at_offset_with_descend::<ast::MethodCallExpr>()
+    {
         let expected = expected(Either::Left(method_under_caret.clone().into()));
         ImportAssets::for_method_call(&method_under_caret, &ctx.sema)
-        .map(
-            |it| (it, method_under_caret.syntax().clone(), expected),
-        )
-    } else if ctx.find_node_at_offset_with_descend::<ast::Param>().is_some() {
+            .map(|it| (it, method_under_caret.syntax().clone(), expected))
+    } else if ctx
+        .find_node_at_offset_with_descend::<ast::Param>()
+        .is_some()
+    {
         None
     } else if let Some(pat) = ctx
         .find_node_at_offset_with_descend::<ast::IdentPat>()
-        .filter(ast::IdentPat::is_simple_ident) {
+        .filter(ast::IdentPat::is_simple_ident)
+    {
         let expected = expected(Either::Right(pat.clone().into()));
         ImportAssets::for_ident_pat(&ctx.sema, &pat).map(|it| (it, pat.syntax().clone(), expected))
     } else {
@@ -231,10 +255,16 @@ fn group_label(import_candidate: &ImportCandidate<'_>) -> GroupLabel {
     let name = match import_candidate {
         ImportCandidate::Path(candidate) => format!("Import {}", candidate.name.text()),
         ImportCandidate::TraitAssocItem(candidate) => {
-            format!("Import a trait for item {}", candidate.assoc_item_name.text())
+            format!(
+                "Import a trait for item {}",
+                candidate.assoc_item_name.text()
+            )
         }
         ImportCandidate::TraitMethod(candidate) => {
-            format!("Import a trait for method {}", candidate.assoc_item_name.text())
+            format!(
+                "Import a trait for method {}",
+                candidate.assoc_item_name.text()
+            )
         }
     };
     GroupLabel(name)
@@ -311,7 +341,11 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
     item_path.reverse();
 
     // length of the common prefix of the two paths
-    let prefix_length = current_path.iter().zip(&item_path).take_while(|(a, b)| a == b).count();
+    let prefix_length = current_path
+        .iter()
+        .zip(&item_path)
+        .take_while(|(a, b)| a == b)
+        .count();
 
     // how many modules differ between the two paths (all modules, removing any duplicates)
     let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
@@ -333,16 +367,22 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use hir::{FileRange, Semantics};
     use ide_db::{RootDatabase, assists::AssistResolveStrategy};
     use test_fixture::WithFixture;
+
     use crate::tests::{
         TEST_CONFIG, check_assist, check_assist_by_label, check_assist_not_applicable,
         check_assist_target,
     };
+
     fn check_auto_import_order(before: &str, order: &[&str]) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
-        let frange = FileRange { file_id, range: range_or_offset.into() };
+        let frange = FileRange {
+            file_id,
+            range: range_or_offset.into(),
+        };
 
         let sema = Semantics::new(&db);
         let config = TEST_CONFIG;
@@ -351,10 +391,14 @@ mod tests {
         auto_import(&mut acc, &ctx);
         let assists = acc.finish();
 
-        let labels = assists.iter().map(|assist| assist.label.to_string()).collect::<Vec<_>>();
+        let labels = assists
+            .iter()
+            .map(|assist| assist.label.to_string())
+            .collect::<Vec<_>>();
 
         assert_eq!(labels, order);
     }
+
     #[test]
     fn ignore_parameter_name() {
         check_assist_not_applicable(
@@ -368,6 +412,7 @@ mod tests {
             ",
         );
     }
+
     #[test]
     fn prefer_shorter_paths() {
         let before = r"
@@ -383,9 +428,13 @@ pub mod collections { pub mod hash_map { pub struct HashMap; } }
 
         check_auto_import_order(
             before,
-            &["Import `foo::collections::HashMap`", "Import `bar::collections::hash_map::HashMap`"],
+            &[
+                "Import `foo::collections::HashMap`",
+                "Import `bar::collections::hash_map::HashMap`",
+            ],
         )
     }
+
     #[test]
     fn prefer_same_crate() {
         let before = r"
@@ -404,9 +453,13 @@ pub struct HashMap;
 
         check_auto_import_order(
             before,
-            &["Import `collections::hash_map::HashMap`", "Import `foo::HashMap`"],
+            &[
+                "Import `collections::hash_map::HashMap`",
+                "Import `foo::HashMap`",
+            ],
         )
     }
+
     #[test]
     fn prefer_workspace() {
         let before = r"
@@ -422,8 +475,12 @@ pub mod module {
 pub struct HashMap;
         ";
 
-        check_auto_import_order(before, &["Import `foo::module::HashMap`", "Import `bar::HashMap`"])
+        check_auto_import_order(
+            before,
+            &["Import `foo::module::HashMap`", "Import `bar::HashMap`"],
+        )
     }
+
     #[test]
     fn prefer_non_local_over_long_path() {
         let before = r"
@@ -445,9 +502,13 @@ pub struct HashMap;
 
         check_auto_import_order(
             before,
-            &["Import `bar::HashMap`", "Import `foo::deeply::nested::module::HashMap`"],
+            &[
+                "Import `bar::HashMap`",
+                "Import `foo::deeply::nested::module::HashMap`",
+            ],
         )
     }
+
     #[test]
     fn not_applicable_if_scope_inside_macro() {
         check_assist_not_applicable(
@@ -469,6 +530,7 @@ foo! {
 ",
         );
     }
+
     #[test]
     fn applicable_in_attributes() {
         check_assist(
@@ -500,6 +562,7 @@ mod baz {
 ",
         );
     }
+
     #[test]
     fn applicable_when_found_an_import_partial() {
         check_assist(
@@ -528,6 +591,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn applicable_when_found_an_import() {
         check_assist(
@@ -550,6 +614,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn applicable_when_found_an_import_in_macros() {
         check_assist(
@@ -578,6 +643,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn applicable_when_found_multiple_imports() {
         check_assist(
@@ -612,6 +678,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn not_applicable_for_already_imported_types() {
         check_assist_not_applicable(
@@ -627,6 +694,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn not_applicable_for_types_with_private_paths() {
         check_assist_not_applicable(
@@ -640,6 +708,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn not_applicable_when_no_imports_found() {
         check_assist_not_applicable(
@@ -648,6 +717,7 @@ mod baz {
             PubStruct$0",
         );
     }
+
     #[test]
     fn function_import() {
         check_assist(
@@ -670,6 +740,7 @@ mod baz {
             ",
         );
     }
+
     #[test]
     fn macro_import() {
         check_assist(
@@ -694,6 +765,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn auto_import_target() {
         check_assist_target(
@@ -708,6 +780,7 @@ fn main() {
             "GroupLabel",
         )
     }
+
     #[test]
     fn not_applicable_when_path_start_is_imported() {
         check_assist_not_applicable(
@@ -728,6 +801,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn not_applicable_for_imported_function() {
         check_assist_not_applicable(
@@ -744,6 +818,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn associated_struct_function() {
         check_assist(
@@ -776,6 +851,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn associated_struct_const() {
         check_assist(
@@ -808,6 +884,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn associated_trait_function() {
         check_assist_by_label(
@@ -884,6 +961,7 @@ fn main() {
             "Import `test_mod::TestTrait as _`",
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_function() {
         check_assist_not_applicable(
@@ -915,6 +993,7 @@ fn main() {
             ",
         )
     }
+
     #[test]
     fn associated_trait_const() {
         check_assist_by_label(
@@ -991,6 +1070,7 @@ fn main() {
             "Import `test_mod::TestTrait`",
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_const() {
         check_assist_not_applicable(
@@ -1022,6 +1102,7 @@ fn main() {
             ",
         )
     }
+
     #[test]
     fn trait_method() {
         check_assist_by_label(
@@ -1102,6 +1183,7 @@ fn main() {
             "Import `test_mod::TestTrait`",
         );
     }
+
     #[test]
     fn trait_method_cross_crate() {
         check_assist_by_label(
@@ -1164,6 +1246,7 @@ fn main() {
             "Import `dep::test_mod::TestTrait`",
         );
     }
+
     #[test]
     fn assoc_fn_cross_crate() {
         check_assist_by_label(
@@ -1222,6 +1305,7 @@ fn main() {
             "Import `dep::test_mod::TestTrait`",
         );
     }
+
     #[test]
     fn assoc_const_cross_crate() {
         check_assist_by_label(
@@ -1280,6 +1364,7 @@ fn main() {
             "Import `dep::test_mod::TestTrait`",
         );
     }
+
     #[test]
     fn assoc_fn_as_method_cross_crate() {
         check_assist_not_applicable(
@@ -1303,6 +1388,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn private_trait_cross_crate() {
         check_assist_not_applicable(
@@ -1326,6 +1412,7 @@ fn main() {
             ",
         );
     }
+
     #[test]
     fn not_applicable_for_imported_trait_for_method() {
         check_assist_not_applicable(
@@ -1358,6 +1445,7 @@ fn main() {
             ",
         )
     }
+
     #[test]
     fn dep_import() {
         check_assist(
@@ -1379,6 +1467,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn whole_segment() {
         // Tests that only imports whose last segment matches the identifier get suggested.
@@ -1405,6 +1494,7 @@ impl fmt::Display for S {}
 ",
         );
     }
+
     #[test]
     fn macro_generated() {
         // Tests that macro-generated items are suggested from external crates.
@@ -1433,6 +1523,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn casing() {
         // Tests that differently cased names don't interfere and we only suggest the matching one.
@@ -1456,6 +1547,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn inner_items() {
         check_assist(
@@ -1488,6 +1580,7 @@ mod bar {
 "#,
         );
     }
+
     #[test]
     fn uses_abs_path_with_extern_crate_clash() {
         cov_mark::check!(ambiguous_crate_start);
@@ -1514,6 +1607,7 @@ const _: () = {
 "#,
         );
     }
+
     #[test]
     fn works_on_ident_patterns() {
         check_assist(
@@ -1538,6 +1632,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn works_in_derives() {
         check_assist(
@@ -1563,6 +1658,7 @@ struct Foo;
 "#,
         );
     }
+
     #[test]
     fn works_in_use_start() {
         check_assist(
@@ -1586,6 +1682,7 @@ use foo::Foo;
 "#,
         );
     }
+
     #[test]
     fn not_applicable_in_non_start_use() {
         check_assist_not_applicable(
@@ -1600,6 +1697,7 @@ use foo::Foo$0;
 ",
         );
     }
+
     #[test]
     fn considers_pub_crate() {
         check_assist(
@@ -1634,6 +1732,7 @@ mod bar {
 "#,
         );
     }
+
     #[test]
     fn local_inline_import_has_alias() {
         // FIXME wrong import
@@ -1659,6 +1758,7 @@ mod foo {
 "#,
         );
     }
+
     #[test]
     fn alias_local() {
         // FIXME wrong import
@@ -1684,6 +1784,7 @@ mod foo {
 "#,
         );
     }
+
     #[test]
     fn preserve_raw_identifiers_strict() {
         check_assist(
@@ -1706,6 +1807,7 @@ mod foo {
             ",
         );
     }
+
     #[test]
     fn preserve_raw_identifiers_reserved() {
         check_assist(
@@ -1728,6 +1830,7 @@ mod foo {
             ",
         );
     }
+
     #[test]
     fn prefers_type_match() {
         check_assist(
@@ -1773,6 +1876,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn prefers_type_match2() {
         check_assist(
@@ -1818,6 +1922,7 @@ fn main() {
 ",
         );
     }
+
     #[test]
     fn carries_cfg_attr() {
         check_assist(

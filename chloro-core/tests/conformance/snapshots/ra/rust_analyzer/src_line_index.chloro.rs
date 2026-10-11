@@ -34,6 +34,7 @@ impl LineEndings {
         // While we *can* call `as_mut_vec` and do surgery on the live string
         // directly, let's rather steal the contents of `src`. This makes the code
         // safe even if a panic occurs.
+
         let mut buf = src.into_bytes();
         let mut gap_len = 0;
         let mut tail = buf.as_mut_slice();
@@ -45,7 +46,12 @@ impl LineEndings {
             let idx = match finder.find(&tail[gap_len..]) {
                 None if crlf_seen => tail.len(),
                 // SAFETY: buf is unchanged and therefore still contains utf8 data
-                None => return (unsafe { String::from_utf8_unchecked(buf) }, LineEndings::Unix),
+                None => {
+                    return (
+                        unsafe { String::from_utf8_unchecked(buf) },
+                        LineEndings::Unix,
+                    );
+                }
                 Some(idx) => {
                     crlf_seen = true;
                     idx + gap_len
@@ -73,6 +79,7 @@ impl LineEndings {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn unix() {
         let src = "a\nb\nc\n\n\n\n";
@@ -80,6 +87,7 @@ mod tests {
         assert_eq!(endings, LineEndings::Unix);
         assert_eq!(res, src);
     }
+
     #[test]
     fn dos() {
         let src = "\r\na\r\n\r\nb\r\nc\r\n\r\n\r\n\r\n";
@@ -87,6 +95,7 @@ mod tests {
         assert_eq!(endings, LineEndings::Dos);
         assert_eq!(res, "\na\n\nb\nc\n\n\n\n");
     }
+
     #[test]
     fn mixed() {
         let src = "a\r\nb\r\nc\r\n\n\r\n\n";
@@ -94,6 +103,7 @@ mod tests {
         assert_eq!(endings, LineEndings::Dos);
         assert_eq!(res, "a\nb\nc\n\n\n\n");
     }
+
     #[test]
     fn none() {
         let src = "abc";

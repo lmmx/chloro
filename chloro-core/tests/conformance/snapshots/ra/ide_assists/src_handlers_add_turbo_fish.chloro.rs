@@ -29,8 +29,10 @@ use crate::{
 // }
 // ```
 pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-    let turbofish_target =
-        ctx.find_node_at_offset::<ast::PathSegment>().map(Either::Left).or_else(|| {
+    let turbofish_target = ctx
+        .find_node_at_offset::<ast::PathSegment>()
+        .map(Either::Left)
+        .or_else(|| {
             let callable_expr = ctx.find_node_at_offset::<ast::CallableExpr>()?;
 
             if callable_expr.arg_list()?.args().next().is_some() {
@@ -130,7 +132,10 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     let number_of_arguments = generics
         .iter()
         .filter(|param| {
-            matches!(param, hir::GenericParam::TypeParam(_) | hir::GenericParam::ConstParam(_))
+            matches!(
+                param,
+                hir::GenericParam::TypeParam(_) | hir::GenericParam::ConstParam(_)
+            )
         })
         .count();
 
@@ -198,7 +203,9 @@ mod tests {
         check_assist, check_assist_by_label, check_assist_not_applicable,
         check_assist_not_applicable_by_label,
     };
+
     use super::*;
+
     #[test]
     fn add_turbo_fish_function() {
         check_assist(
@@ -217,6 +224,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_function_multiple_generic_types() {
         check_assist(
@@ -235,6 +243,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_function_many_generic_types() {
         check_assist(
@@ -253,6 +262,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_after_call() {
         cov_mark::check!(add_turbo_fish_after_call);
@@ -272,6 +282,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_method() {
         check_assist(
@@ -296,6 +307,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_one_fish_is_enough() {
         cov_mark::check!(add_turbo_fish_one_fish_is_enough);
@@ -309,6 +321,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_non_generic() {
         cov_mark::check!(add_turbo_fish_non_generic);
@@ -322,6 +335,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_type_ascription_function() {
         check_assist_by_label(
@@ -341,6 +355,7 @@ fn main() {
             "Add `: _` before assignment operator",
         );
     }
+
     #[test]
     fn add_type_ascription_after_call() {
         cov_mark::check!(add_type_ascription_after_call);
@@ -361,6 +376,7 @@ fn main() {
             "Add `: _` before assignment operator",
         );
     }
+
     #[test]
     fn add_type_ascription_method() {
         check_assist_by_label(
@@ -386,6 +402,7 @@ fn main() {
             "Add `: _` before assignment operator",
         );
     }
+
     #[test]
     fn add_type_ascription_already_typed() {
         cov_mark::check!(add_type_ascription_already_typed);
@@ -405,6 +422,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_type_ascription_append_semicolon() {
         check_assist_by_label(
@@ -424,6 +442,7 @@ fn main() {
             "Add `: _` before assignment operator",
         );
     }
+
     #[test]
     fn add_type_ascription_missing_pattern() {
         check_assist_not_applicable_by_label(
@@ -437,6 +456,7 @@ fn main() {
             "Add `: _` before assignment operator",
         );
     }
+
     #[test]
     fn add_turbo_fish_function_lifetime_parameter() {
         check_assist(
@@ -455,6 +475,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_turbo_fish_function_const_parameter() {
         check_assist(

@@ -19,7 +19,9 @@ macro_rules! format_ty {
 //
 // This diagnostic is triggered if the code contains an illegal cast
 pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_>) -> Diagnostic {
-    let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
+    let display_range = ctx
+        .sema
+        .diagnostics_display_range(d.expr.map(|it| it.into()));
     let (code, message) = match d.error {
         CastError::CastToBool => (
             DiagnosticCode::RustcHardError("E0054"),
@@ -53,7 +55,12 @@ pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_
         ),
         CastError::IntToFatCast => (
             DiagnosticCode::RustcHardError("E0606"),
-            format_ty!(ctx, "cannot cast `{}` to a fat pointer `{}`", d.expr_ty, d.cast_ty),
+            format_ty!(
+                ctx,
+                "cannot cast `{}` to a fat pointer `{}`",
+                d.expr_ty,
+                d.cast_ty
+            ),
         ),
         CastError::NeedDeref => (
             DiagnosticCode::RustcHardError("E0606"),
@@ -93,7 +100,12 @@ pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_
         ),
         CastError::NonScalar => (
             DiagnosticCode::RustcHardError("E0605"),
-            format_ty!(ctx, "non-primitive cast: `{}` as `{}`", d.expr_ty, d.cast_ty),
+            format_ty!(
+                ctx,
+                "non-primitive cast: `{}` as `{}`",
+                d.expr_ty,
+                d.cast_ty
+            ),
         ),
         // CastError::UnknownCastPtrKind | CastError::UnknownExprPtrKind => (
         //     DiagnosticCode::RustcHardError("E0641"),
@@ -110,7 +122,9 @@ pub(crate) fn cast_to_unsized(
     ctx: &DiagnosticsContext<'_>,
     d: &hir::CastToUnsized<'_>,
 ) -> Diagnostic {
-    let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
+    let display_range = ctx
+        .sema
+        .diagnostics_display_range(d.expr.map(|it| it.into()));
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0620"),
         format_ty!(ctx, "cast to unsized type: `{}`", d.cast_ty),
@@ -122,6 +136,7 @@ pub(crate) fn cast_to_unsized(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_diagnostics_with_disabled};
+
     #[test]
     fn cast_as_bool() {
         check_diagnostics(
@@ -174,6 +189,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn cast_pointee_projection() {
         check_diagnostics(
@@ -197,6 +213,7 @@ fn main() {}
 "#,
         );
     }
+
     #[test]
     fn cast_region_to_int() {
         check_diagnostics(
@@ -209,6 +226,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn cast_to_bare_fn() {
         check_diagnostics(
@@ -227,6 +245,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn cast_to_unit() {
         check_diagnostics(
@@ -239,6 +258,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn cast_to_slice() {
         check_diagnostics_with_disabled(
@@ -260,6 +280,7 @@ fn main() {
             &["E0308"],
         );
     }
+
     #[test]
     fn cast() {
         check_diagnostics(
@@ -281,6 +302,7 @@ pub fn main() {
 "#,
         );
     }
+
     #[test]
     fn dyn_tail_need_normalization() {
         check_diagnostics(
@@ -306,6 +328,7 @@ fn cast(x: *mut TraitObject) {
 "#,
         );
     }
+
     #[test]
     fn enum_to_numeric_cast() {
         check_diagnostics(
@@ -360,6 +383,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn fat_ptr_cast() {
         check_diagnostics_with_disabled(
@@ -451,6 +475,7 @@ fn foo<T: ?Sized>() {
             &["E0308", "unused_variables"],
         );
     }
+
     //     #[test]
     //     fn order_dependent_cast_inference() {
     //         check_diagnostics(
@@ -465,6 +490,7 @@ fn foo<T: ?Sized>() {
     // "#,
     //         );
     //     }
+
     #[test]
     fn ptr_to_ptr_different_regions() {
         check_diagnostics(
@@ -491,6 +517,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ptr_to_trait_obj_add_auto() {
         check_diagnostics(
@@ -509,6 +536,7 @@ fn add_multiple_auto<'a>(x: *mut dyn Trait<'a>) -> *mut (dyn Trait<'a> + Send + 
 "#,
         );
     }
+
     #[test]
     fn ptr_to_trait_obj_add_super_auto() {
         check_diagnostics(
@@ -524,6 +552,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn ptr_to_trait_obj_ok() {
         check_diagnostics(
@@ -545,6 +574,7 @@ fn unprincipled<'a, 'b>(x: *mut (dyn Send + 'a)) -> *mut (dyn Sync + 'b) {
 "#,
         );
     }
+
     #[ignore = "issue #18047"]
     #[test]
     fn ptr_to_trait_obj_wrap_upcast() {
@@ -567,6 +597,7 @@ fn cast(ptr: *const dyn Sub) -> *const Wrapper<dyn Super> {
 "#,
         );
     }
+
     #[test]
     fn supported_cast() {
         check_diagnostics(
@@ -782,6 +813,7 @@ pub fn main() {
 "#,
         );
     }
+
     #[test]
     fn unsized_struct_cast() {
         check_diagnostics(
@@ -796,6 +828,7 @@ fn foo(x: &[u8]) {
 "#,
         );
     }
+
     #[test]
     fn unsupported_cast() {
         check_diagnostics(
@@ -810,6 +843,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn issue_17897() {
         check_diagnostics(
@@ -822,6 +856,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_10991() {
         check_diagnostics(
@@ -835,6 +870,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_17444() {
         check_diagnostics(
@@ -851,6 +887,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_43825() {
         check_diagnostics(
@@ -866,6 +903,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_84213() {
         check_diagnostics(
@@ -907,6 +945,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_88621() {
         check_diagnostics(
@@ -926,6 +965,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_89497() {
         check_diagnostics(
@@ -950,6 +990,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn rustc_issue_106883() {
         check_diagnostics_with_disabled(
@@ -983,6 +1024,7 @@ fn _slice(bar: &[i32]) -> bool {
             &["E0308"],
         );
     }
+
     #[test]
     fn trait_upcasting() {
         check_diagnostics(
@@ -1000,6 +1042,7 @@ impl dyn Bar {
 "#,
         );
     }
+
     #[test]
     fn issue_18047() {
         check_diagnostics(
@@ -1076,6 +1119,7 @@ where
 "#,
         );
     }
+
     #[test]
     fn cast_literal_to_char() {
         check_diagnostics(
@@ -1086,6 +1130,7 @@ fn foo() {
             "#,
         );
     }
+
     #[test]
     fn cast_isize_to_infer_pointer() {
         check_diagnostics(
@@ -1103,6 +1148,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn regression_18682() {
         check_diagnostics(
@@ -1137,6 +1183,7 @@ fn test(ptr: *mut [u8]) -> *mut ZerocopyKnownLayoutMaybeUninit {
 "#,
         );
     }
+
     #[test]
     fn regression_19431() {
         check_diagnostics(

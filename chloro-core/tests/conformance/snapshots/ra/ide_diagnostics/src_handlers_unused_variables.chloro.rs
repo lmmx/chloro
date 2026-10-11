@@ -40,13 +40,14 @@ pub(crate) fn unused_variables(
         .and_then(syntax::ast::RecordPatField::cast)
         .is_some_and(|field| field.colon_token().is_none());
     let var_name = d.local.name(ctx.sema.db);
-    Some(Diagnostic::new_with_syntax_node_ptr(
-        ctx,
-        DiagnosticCode::RustcLint("unused_variables"),
-        "unused variable",
-        ast,
-    )
-    .with_fixes(name_range.and_then(|it| {
+    Some(
+        Diagnostic::new_with_syntax_node_ptr(
+            ctx,
+            DiagnosticCode::RustcLint("unused_variables"),
+            "unused variable",
+            ast,
+        )
+        .with_fixes(name_range.and_then(|it| {
             fixes(
                 ctx.sema.db,
                 var_name,
@@ -56,7 +57,8 @@ pub(crate) fn unused_variables(
                 is_shorthand_field,
                 ctx.edition,
             )
-        })))
+        })),
+    )
 }
 
 fn fixes(
@@ -73,7 +75,11 @@ fn fixes(
     }
     let name = var_name.display(db, edition).to_smolstr();
     let name = name.strip_prefix("r#").unwrap_or(&name);
-    let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
+    let new_name = if is_shorthand_field {
+        format!("{name}: _{name}")
+    } else {
+        format!("_{name}")
+    };
 
     Some(vec![Assist {
         id: AssistId::quick_fix("unscore_unused_variable_name"),
@@ -91,6 +97,7 @@ fn fixes(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn unused_variables_simple() {
         check_diagnostics(
@@ -128,6 +135,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unused_self() {
         check_diagnostics(
@@ -148,6 +156,7 @@ impl S {
 "#,
         );
     }
+
     #[test]
     fn allow_unused_variables_for_identifiers_starting_with_underline() {
         check_diagnostics(
@@ -158,6 +167,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn respect_lint_attributes_for_unused_variables() {
         check_diagnostics(
@@ -175,6 +185,7 @@ fn main2() {
 "#,
         );
     }
+
     #[test]
     fn fix_unused_variable() {
         check_fix(
@@ -241,6 +252,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn no_fix_for_marco() {
         check_diagnostics(
@@ -274,6 +286,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unused_variable_in_record_field() {
         check_fix(
@@ -293,6 +306,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn unused_variable_in_shorthand_record_field() {
         check_fix(
@@ -312,6 +326,7 @@ fn main() {
 "#,
         );
     }
+
     // regression test as we used to panic in this scenario
     #[test]
     fn unknown_struct_pattern_param_type() {

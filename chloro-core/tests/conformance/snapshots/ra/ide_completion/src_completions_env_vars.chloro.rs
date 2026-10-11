@@ -1,6 +1,5 @@
 //! Completes environment variables defined by Cargo
 //! (<https://doc.rust-lang.org/cargo/reference/environment-variables.html>)
-
 use ide_db::syntax_helpers::node_ext::macro_call_for_string_token;
 use syntax::{
     AstToken,
@@ -13,25 +12,64 @@ use crate::{
 
 const CARGO_DEFINED_VARS: &[(&str, &str)] = &[
     ("CARGO", "Path to the cargo binary performing the build"),
-    ("CARGO_MANIFEST_DIR", "The directory containing the manifest of your package"),
-    ("CARGO_MANIFEST_PATH", "The path to the manifest of your package"),
+    (
+        "CARGO_MANIFEST_DIR",
+        "The directory containing the manifest of your package",
+    ),
+    (
+        "CARGO_MANIFEST_PATH",
+        "The path to the manifest of your package",
+    ),
     ("CARGO_PKG_VERSION", "The full version of your package"),
-    ("CARGO_PKG_VERSION_MAJOR", "The major version of your package"),
-    ("CARGO_PKG_VERSION_MINOR", "The minor version of your package"),
-    ("CARGO_PKG_VERSION_PATCH", "The patch version of your package"),
-    ("CARGO_PKG_VERSION_PRE", "The pre-release version of your package"),
-    ("CARGO_PKG_AUTHORS", "Colon separated list of authors from the manifest of your package"),
+    (
+        "CARGO_PKG_VERSION_MAJOR",
+        "The major version of your package",
+    ),
+    (
+        "CARGO_PKG_VERSION_MINOR",
+        "The minor version of your package",
+    ),
+    (
+        "CARGO_PKG_VERSION_PATCH",
+        "The patch version of your package",
+    ),
+    (
+        "CARGO_PKG_VERSION_PRE",
+        "The pre-release version of your package",
+    ),
+    (
+        "CARGO_PKG_AUTHORS",
+        "Colon separated list of authors from the manifest of your package",
+    ),
     ("CARGO_PKG_NAME", "The name of your package"),
-    ("CARGO_PKG_DESCRIPTION", "The description from the manifest of your package"),
-    ("CARGO_PKG_HOMEPAGE", "The home page from the manifest of your package"),
-    ("CARGO_PKG_REPOSITORY", "The repository from the manifest of your package"),
-    ("CARGO_PKG_LICENSE", "The license from the manifest of your package"),
-    ("CARGO_PKG_LICENSE_FILE", "The license file from the manifest of your package"),
+    (
+        "CARGO_PKG_DESCRIPTION",
+        "The description from the manifest of your package",
+    ),
+    (
+        "CARGO_PKG_HOMEPAGE",
+        "The home page from the manifest of your package",
+    ),
+    (
+        "CARGO_PKG_REPOSITORY",
+        "The repository from the manifest of your package",
+    ),
+    (
+        "CARGO_PKG_LICENSE",
+        "The license from the manifest of your package",
+    ),
+    (
+        "CARGO_PKG_LICENSE_FILE",
+        "The license file from the manifest of your package",
+    ),
     (
         "CARGO_PKG_RUST_VERSION",
         "The Rust version from the manifest of your package. Note that this is the minimum Rust version supported by the package, not the current Rust version",
     ),
-    ("CARGO_CRATE_NAME", "The name of the crate that is currently being compiled"),
+    (
+        "CARGO_CRATE_NAME",
+        "The name of the crate that is currently being compiled",
+    ),
     (
         "CARGO_BIN_NAME",
         "The name of the binary that is currently being compiled (if it is a binary). This name does not include any file extension, such as .exe",
@@ -80,6 +118,7 @@ pub(crate) fn complete_cargo_env_vars(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_edit, completion_list};
+
     #[test]
     fn completes_env_variable_in_env() {
         check_edit(
@@ -97,6 +136,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn completes_env_variable_in_option_env() {
         check_edit(
@@ -114,6 +154,7 @@ fn main() {
         "#,
         );
     }
+
     #[test]
     fn doesnt_complete_in_random_strings() {
         let fixture = r#"
@@ -123,8 +164,12 @@ fn main() {
         "#;
 
         let completions = completion_list(fixture);
-        assert!(completions.is_empty(), "Completions weren't empty: {completions}");
+        assert!(
+            completions.is_empty(),
+            "Completions weren't empty: {completions}"
+        );
     }
+
     #[test]
     fn doesnt_complete_in_random_macro() {
         let fixture = r#"
@@ -139,8 +184,12 @@ fn main() {
         "#;
 
         let completions = completion_list(fixture);
-        assert!(completions.is_empty(), "Completions weren't empty: {completions}");
+        assert!(
+            completions.is_empty(),
+            "Completions weren't empty: {completions}"
+        );
     }
+
     #[test]
     fn doesnt_complete_for_shadowed_macro() {
         let fixture = r#"
@@ -154,6 +203,9 @@ fn main() {
         "#;
 
         let completions = completion_list(fixture);
-        assert!(completions.is_empty(), "Completions weren't empty: {completions}")
+        assert!(
+            completions.is_empty(),
+            "Completions weren't empty: {completions}"
+        )
     }
 }

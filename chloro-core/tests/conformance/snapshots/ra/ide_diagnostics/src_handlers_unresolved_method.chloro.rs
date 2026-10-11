@@ -34,10 +34,7 @@ pub(crate) fn unresolved_method(
             d.name.display(ctx.sema.db, ctx.edition),
             d.receiver.display(ctx.sema.db, ctx.display_target)
         ),
-        adjusted_display_range(
-        ctx,
-        d.expr,
-        &|expr| {
+        adjusted_display_range(ctx, d.expr, &|expr| {
             Some(
                 match expr.left()? {
                     ast::Expr::MethodCallExpr(it) => it.name_ref(),
@@ -47,12 +44,9 @@ pub(crate) fn unresolved_method(
                 .syntax()
                 .text_range(),
             )
-        },
-    ),
+        }),
     )
-    .with_fixes(
-        fixes(ctx, d),
-    )
+    .with_fixes(fixes(ctx, d))
 }
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Option<Vec<Assist>> {
@@ -73,11 +67,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Opt
         fixes.push(assoc_func_fix);
     }
 
-    if fixes.is_empty() {
-        None
-    } else {
-        Some(fixes)
-    }
+    if fixes.is_empty() { None } else { Some(fixes) }
 }
 
 fn field_fix(
@@ -95,8 +85,10 @@ fn field_fix(
         ast::Expr::MethodCallExpr(mcall) => {
             let FileRange { range, file_id } =
                 ctx.sema.original_range_opt(mcall.receiver()?.syntax())?;
-            let FileRange { range: range2, file_id: file_id2 } =
-                ctx.sema.original_range_opt(mcall.name_ref()?.syntax())?;
+            let FileRange {
+                range: range2,
+                file_id: file_id2,
+            } = ctx.sema.original_range_opt(mcall.name_ref()?.syntax())?;
             if file_id != file_id2 {
                 return None;
             }
@@ -110,8 +102,14 @@ fn field_fix(
         group: None,
         target: range,
         source_change: Some(SourceChange::from_iter([
-            (file_id.file_id(ctx.sema.db), TextEdit::insert(range.start(), "(".to_owned())),
-            (file_id.file_id(ctx.sema.db), TextEdit::insert(range.end(), ")".to_owned())),
+            (
+                file_id.file_id(ctx.sema.db),
+                TextEdit::insert(range.start(), "(".to_owned()),
+            ),
+            (
+                file_id.file_id(ctx.sema.db),
+                TextEdit::insert(range.end(), ")".to_owned()),
+            ),
         ])),
         command: None,
     })
@@ -156,11 +154,15 @@ fn assoc_func_fix(
                 .unwrap_or(false)
         };
 
-        let mut receiver_type_adt_name =
-            receiver_type.as_adt()?.name(db).display_no_db(ctx.edition).to_smolstr();
+        let mut receiver_type_adt_name = receiver_type
+            .as_adt()?
+            .name(db)
+            .display_no_db(ctx.edition)
+            .to_smolstr();
 
-        let generic_parameters: Vec<SmolStr> =
-            receiver_type.generic_parameters(db, ctx.display_target).collect();
+        let generic_parameters: Vec<SmolStr> = receiver_type
+            .generic_parameters(db, ctx.display_target)
+            .collect();
         // if receiver should be pass as first arg in the assoc func,
         // we could omit generic parameters cause compiler can deduce it automatically
         if !need_to_take_receiver_as_first_arg && !generic_parameters.is_empty() {
@@ -175,7 +177,9 @@ fn assoc_func_fix(
         let assoc_func_path = make::expr_path(make::path_from_text(&assoc_func_path));
 
         let args: Vec<_> = if need_to_take_receiver_as_first_arg {
-            std::iter::once(receiver).chain(call.arg_list()?.args()).collect()
+            std::iter::once(receiver)
+                .chain(call.arg_list()?.args())
+                .collect()
         } else {
             call.arg_list()?.args().collect()
         };
@@ -204,6 +208,7 @@ fn assoc_func_fix(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_diagnostics, check_fix};
+
     #[test]
     fn test_assoc_func_fix() {
         check_fix(
@@ -231,6 +236,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_assoc_func_diagnostic() {
         check_diagnostics(
@@ -247,6 +253,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_assoc_func_fix_with_generic() {
         check_fix(
@@ -280,6 +287,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn smoke_test() {
         check_diagnostics(
@@ -291,6 +299,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn smoke_test_in_macro_def_site() {
         check_diagnostics(
@@ -307,6 +316,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn smoke_test_in_macro_call_site() {
         check_diagnostics(
@@ -323,6 +333,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn field() {
         check_diagnostics(
@@ -335,6 +346,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn callable_field() {
         check_fix(
@@ -353,6 +365,7 @@ fn foo() {
 "#,
         );
     }
+
     #[test]
     fn iter_collect() {
         check_diagnostics(

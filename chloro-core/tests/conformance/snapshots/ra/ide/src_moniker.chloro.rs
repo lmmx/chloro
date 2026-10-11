@@ -27,6 +27,7 @@ pub enum MonikerDescriptorKind {
     Meta,
 }
 
+// Subset of scip_types::SymbolInformation::Kind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SymbolInformationKind {
     AssociatedType,
@@ -97,7 +98,10 @@ pub struct MonikerIdentifier {
 impl fmt::Display for MonikerIdentifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.crate_name)?;
-        f.write_fmt(format_args!("::{}", self.description.iter().map(|x| &x.name).join("::")))
+        f.write_fmt(format_args!(
+            "::{}",
+            self.description.iter().map(|x| &x.name).join("::")
+        ))
     }
 }
 
@@ -113,9 +117,7 @@ pub enum MonikerResult {
     Moniker(Moniker),
     /// Specifies that the definition is a local, and so does not have a unique identifier. Provides
     /// a unique identifier for the container.
-    Local {
-        enclosing_moniker: Option<Moniker>,
-    },
+    Local { enclosing_moniker: Option<Moniker> },
 }
 
 impl MonikerResult {
@@ -169,9 +171,12 @@ pub(crate) fn moniker(
         .descend_into_macros_exact(original_token.clone())
         .into_iter()
         .filter_map(|token| {
-            IdentClass::classify_token(sema, &token).map(IdentClass::definitions_no_ops).map(|it| {
-                it.into_iter().flat_map(|def| def_to_moniker(sema.db, def, current_crate))
-            })
+            IdentClass::classify_token(sema, &token)
+                .map(IdentClass::definitions_no_ops)
+                .map(|it| {
+                    it.into_iter()
+                        .flat_map(|def| def_to_moniker(sema.db, def, current_crate))
+                })
         })
         .flatten()
         .unique()
@@ -195,11 +200,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
         Definition::Function(it) => {
             if it.as_assoc_item(db).is_some() {
                 if it.has_self_param(db) {
-                    if it.has_body(db) {
-                        Method
-                    } else {
-                        TraitMethod
-                    }
+                    if it.has_body(db) { Method } else { TraitMethod }
                 } else {
                     StaticMethod
                 }
@@ -234,8 +235,7 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
                 Variable
             }
         }
-        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable,
-        // For lack of a better variant
+        Definition::Label(..) | Definition::InlineAsmOperand(_) => Variable, // For lack of a better variant
         Definition::DeriveHelper(..) => Attribute,
         Definition::BuiltinAttr(..) => Attribute,
         Definition::ToolModule(..) => Module,
@@ -267,7 +267,9 @@ pub(crate) fn def_to_moniker(
         }
         _ => {}
     }
-    Some(MonikerResult::Moniker(def_to_non_local_moniker(db, definition, from_crate)?))
+    Some(MonikerResult::Moniker(def_to_non_local_moniker(
+        db, definition, from_crate,
+    )?))
 }
 
 fn enclosing_def_to_moniker(
@@ -389,7 +391,11 @@ fn def_to_non_local_moniker(
                     }),
                 ),
             };
-            PackageInformation { name: name.as_str().to_owned(), repo, version }
+            PackageInformation {
+                name: name.as_str().to_owned(),
+                repo,
+                version,
+            }
         },
     })
 }
@@ -399,7 +405,9 @@ fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, 
         Ok(result) => result,
         // Fallback on display variant that always succeeds
         Err(_) => {
-            let fallback_result = it.display(db, module.krate().to_display_target(db)).to_string();
+            let fallback_result = it
+                .display(db, module.krate().to_display_target(db))
+                .to_string();
             tracing::error!(
                 display = %fallback_result, "`display_source_code` failed; falling back to using display"
             );
@@ -411,15 +419,22 @@ fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, 
 #[cfg(test)]
 mod tests {
     use crate::{MonikerResult, fixture};
+
     use super::MonikerKind;
+
     #[allow(dead_code)]
     #[track_caller]
     fn no_moniker(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position) = fixture::position(ra_fixture);
         if let Some(x) = analysis.moniker(position).unwrap() {
-            assert_eq!(x.info.len(), 0, "Moniker found but no moniker expected: {x:?}");
+            assert_eq!(
+                x.info.len(),
+                0,
+                "Moniker found but no moniker expected: {x:?}"
+            );
         }
     }
+
     #[track_caller]
     fn check_local_moniker(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -428,15 +443,23 @@ mod tests {
         kind: MonikerKind,
     ) {
         let (analysis, position) = fixture::position(ra_fixture);
-        let x = analysis.moniker(position).unwrap().expect("no moniker found").info;
+        let x = analysis
+            .moniker(position)
+            .unwrap()
+            .expect("no moniker found")
+            .info;
         assert_eq!(x.len(), 1);
         match x.into_iter().next().unwrap() {
-            MonikerResult::Local { enclosing_moniker: Some(x) } => {
+            MonikerResult::Local {
+                enclosing_moniker: Some(x),
+            } => {
                 assert_eq!(identifier, x.identifier.to_string());
                 assert_eq!(package, format!("{:?}", x.package_information));
                 assert_eq!(kind, x.kind);
             }
-            MonikerResult::Local { enclosing_moniker: None } => {
+            MonikerResult::Local {
+                enclosing_moniker: None,
+            } => {
                 panic!("Unexpected local with no enclosing moniker");
             }
             MonikerResult::Moniker(_) => {
@@ -444,6 +467,7 @@ mod tests {
             }
         }
     }
+
     #[track_caller]
     fn check_moniker(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
@@ -452,7 +476,11 @@ mod tests {
         kind: MonikerKind,
     ) {
         let (analysis, position) = fixture::position(ra_fixture);
-        let x = analysis.moniker(position).unwrap().expect("no moniker found").info;
+        let x = analysis
+            .moniker(position)
+            .unwrap()
+            .expect("no moniker found")
+            .info;
         assert_eq!(x.len(), 1);
         match x.into_iter().next().unwrap() {
             MonikerResult::Local { enclosing_moniker } => {
@@ -465,6 +493,7 @@ mod tests {
             }
         }
     }
+
     #[test]
     fn basic() {
         check_moniker(
@@ -500,6 +529,7 @@ pub mod module {
             MonikerKind::Export,
         );
     }
+
     #[test]
     fn moniker_for_trait() {
         check_moniker(
@@ -516,6 +546,7 @@ pub mod module {
             MonikerKind::Export,
         );
     }
+
     #[test]
     fn moniker_for_trait_constant() {
         check_moniker(
@@ -532,6 +563,7 @@ pub mod module {
             MonikerKind::Export,
         );
     }
+
     #[test]
     fn moniker_for_trait_type() {
         check_moniker(
@@ -548,6 +580,7 @@ pub mod module {
             MonikerKind::Export,
         );
     }
+
     #[test]
     fn moniker_for_trait_impl_function() {
         check_moniker(
@@ -568,6 +601,7 @@ pub mod module {
             MonikerKind::Export,
         );
     }
+
     #[test]
     fn moniker_for_field() {
         check_moniker(
@@ -587,6 +621,7 @@ pub struct St {
             MonikerKind::Import,
         );
     }
+
     #[test]
     fn local() {
         check_local_moniker(

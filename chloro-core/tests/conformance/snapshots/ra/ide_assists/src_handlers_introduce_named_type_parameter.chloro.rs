@@ -20,7 +20,10 @@ pub(crate) fn introduce_named_type_parameter(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let impl_trait_type = ctx.find_node_at_offset::<ast::ImplTraitType>()?;
-    let param = impl_trait_type.syntax().ancestors().find_map(ast::Param::cast)?;
+    let param = impl_trait_type
+        .syntax()
+        .ancestors()
+        .find_map(ast::Param::cast)?;
     let fn_ = param.syntax().ancestors().nth(2).and_then(ast::Fn::cast)?;
     let type_bound_list = impl_trait_type.type_bound_list()?;
 
@@ -67,7 +70,9 @@ pub(crate) fn introduce_named_type_parameter(
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::check_assist;
+
     #[test]
     fn introduce_named_generic_params() {
         check_assist(
@@ -76,6 +81,7 @@ mod tests {
             r#"fn foo<G, $0B: Bar>(bar: B) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_trait_without_generic_params() {
         check_assist(
@@ -84,6 +90,7 @@ mod tests {
             r#"fn foo<$0B: Bar>(bar: B) {}"#,
         );
     }
+
     #[test]
     fn replace_two_impl_trait_with_generic_params() {
         check_assist(
@@ -92,6 +99,7 @@ mod tests {
             r#"fn foo<G, $0B: Bar>(foo: impl Foo, bar: B) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_trait_with_empty_generic_params() {
         check_assist(
@@ -100,6 +108,7 @@ mod tests {
             r#"fn foo<$0B: Bar>(bar: B) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_trait_with_empty_multiline_generic_params() {
         check_assist(
@@ -114,6 +123,7 @@ fn foo<$0B: Bar
 "#,
         );
     }
+
     #[test]
     fn replace_impl_trait_with_exist_generic_letter() {
         check_assist(
@@ -122,6 +132,7 @@ fn foo<$0B: Bar
             r#"fn foo<B, $0B1: Bar>(bar: B1) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_trait_with_more_exist_generic_letter() {
         check_assist(
@@ -130,6 +141,7 @@ fn foo<$0B: Bar
             r#"fn foo<B, B0, B1, B3, $0B4: Bar>(bar: B4) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_trait_with_multiline_generic_params() {
         check_assist(
@@ -150,6 +162,7 @@ fn foo<
 "#,
         );
     }
+
     #[test]
     fn replace_impl_trait_multiple() {
         check_assist(
@@ -158,6 +171,7 @@ fn foo<
             r#"fn foo<$0F: Foo + Bar>(bar: F) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_with_mut() {
         check_assist(
@@ -166,6 +180,7 @@ fn foo<
             r#"fn f<$0I: Iterator<Item = i32>>(iter: &mut I) {}"#,
         );
     }
+
     #[test]
     fn replace_impl_inside() {
         check_assist(

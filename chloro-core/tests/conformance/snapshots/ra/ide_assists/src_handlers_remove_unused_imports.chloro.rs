@@ -173,7 +173,11 @@ fn is_trait_unused_in_scope(
     t: &hir::Trait,
 ) -> bool {
     !std::iter::once((Definition::Trait(*t), u.rename()))
-        .chain(t.items(ctx.db()).into_iter().map(|item| (item.into(), None)))
+        .chain(
+            t.items(ctx.db())
+                .into_iter()
+                .map(|item| (item.into(), None)),
+        )
         .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
 }
 
@@ -211,7 +215,11 @@ fn used_once_in_scope(
 fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
     let (file_id, range) = {
         let InFile { file_id, value } = module.definition_source(db);
-        if let Some(InRealFile { file_id, value: call_source }) = file_id.original_call_node(db) {
+        if let Some(InRealFile {
+            file_id,
+            value: call_source,
+        }) = file_id.original_call_node(db)
+        {
             (file_id, Some(call_source.text_range()))
         } else {
             (
@@ -231,7 +239,10 @@ fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScop
             let start_range = TextRange::new(first.start(), intersect.start());
 
             if intersect.end() < first.end() {
-                (start_range, Some(TextRange::new(intersect.end(), first.end())))
+                (
+                    start_range,
+                    Some(TextRange::new(intersect.end(), first.end())),
+                )
             } else {
                 (start_range, None)
             }
@@ -273,7 +284,9 @@ fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScop
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn remove_unused() {
         check_assist(
@@ -294,6 +307,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_is_precise() {
         check_assist(
@@ -321,6 +335,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn trait_name_use_is_use() {
         check_assist_not_applicable(
@@ -345,6 +360,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn trait_item_use_is_use() {
         check_assist_not_applicable(
@@ -370,6 +386,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn renamed_trait_item_use_is_use() {
         check_assist_not_applicable(
@@ -395,6 +412,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn renamed_underscore_trait_item_use_is_use() {
         check_assist_not_applicable(
@@ -420,6 +438,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn dont_remove_used() {
         check_assist_not_applicable(
@@ -439,6 +458,7 @@ fn w() {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_in_braces() {
         check_assist(
@@ -467,6 +487,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_under_cursor() {
         check_assist(
@@ -484,6 +505,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_multi_use_block() {
         check_assist(
@@ -506,6 +528,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_nested() {
         check_assist(
@@ -536,6 +559,7 @@ mod y {
 "#,
         );
     }
+
     #[test]
     fn remove_nested_first_item() {
         check_assist(
@@ -566,6 +590,7 @@ mod y {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_auto_remove_brace_nested() {
         check_assist(
@@ -638,6 +663,7 @@ mod b {
 "#,
         );
     }
+
     #[test]
     fn remove_comma_after_auto_remove_brace() {
         check_assist(
@@ -742,6 +768,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn remove_nested_all_unused() {
         check_assist(
@@ -765,6 +792,7 @@ mod y {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_glob() {
         check_assist(
@@ -784,6 +812,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_braced_glob() {
         check_assist(
@@ -803,6 +832,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn remove_unused_fixes_nested_self() {
         check_assist(
@@ -836,6 +866,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn dont_remove_used_glob() {
         check_assist_not_applicable(
@@ -853,6 +884,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn only_remove_from_selection() {
         check_assist(
@@ -880,6 +912,7 @@ mod w {
 "#,
         );
     }
+
     #[test]
     fn test_several_files() {
         check_assist(
@@ -907,6 +940,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn use_in_submodule_doesnt_count() {
         check_assist(
@@ -940,6 +974,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn use_in_submodule_file_doesnt_count() {
         check_assist(
@@ -968,6 +1003,7 @@ mod z {
 "#,
         );
     }
+
     #[test]
     fn use_as_alias() {
         check_assist_not_applicable(
@@ -1023,6 +1059,7 @@ fn test(_: Bar) {
 "#,
         );
     }
+
     #[test]
     fn test_unused_macro() {
         check_assist(
@@ -1076,6 +1113,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_conflict_derive_macro() {
         check_assist_not_applicable(

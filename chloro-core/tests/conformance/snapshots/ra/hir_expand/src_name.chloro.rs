@@ -44,6 +44,7 @@ impl PartialOrd for Name {
     }
 }
 
+// No need to strip `r#`, all comparisons are done against well-known symbols.
 impl PartialEq<Symbol> for Name {
     fn eq(&self, sym: &Symbol) -> bool {
         self.symbol == *sym
@@ -176,10 +177,10 @@ impl Name {
         is_raw_identifier(self.symbol.as_str(), edition)
     }
 
-    // FIXME: This should take a database argument to hide the interning
     /// Returns the text this name represents if it isn't a tuple field.
     ///
     /// Do not use this for user-facing text, use `display` instead to handle editions properly.
+    // FIXME: This should take a database argument to hide the interning
     pub fn as_str(&self) -> &str {
         self.symbol.as_str()
     }
@@ -196,7 +197,10 @@ impl Name {
     // FIXME: Remove this in favor of `display`, see fixme on `as_str`
     #[doc(hidden)]
     pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
-        Display { name: self, edition }
+        Display {
+            name: self,
+            edition,
+        }
     }
 
     pub fn symbol(&self) -> &Symbol {

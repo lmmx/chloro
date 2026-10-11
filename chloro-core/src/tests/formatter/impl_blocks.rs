@@ -3,7 +3,7 @@ use super::*;
 use insta::assert_snapshot;
 
 #[test]
-fn impl_methods_have_blank_lines() {
+fn impl_methods_keep_their_spacing() {
     let input = r#"impl Foo {
     pub fn method_a(&self) -> i32 {
         1
@@ -14,8 +14,8 @@ fn impl_methods_have_blank_lines() {
 }
 "#;
     let output = format_source(input);
-    // Methods should be separated by blank lines
-    assert!(output.contains("}\n\n    pub fn method_b"));
+    // rustfmt does not insert blank lines between items.
+    assert_eq!(output, input);
 }
 
 #[test]

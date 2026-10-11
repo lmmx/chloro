@@ -21,7 +21,6 @@ use crate::{
 use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};
 
 pub type ConstKind<'db> = rustc_type_ir::ConstKind<DbInterner<'db>>;
-
 pub type UnevaluatedConst<'db> = rustc_type_ir::UnevaluatedConst<DbInterner<'db>>;
 
 #[salsa::interned(constructor = new_)]
@@ -63,7 +62,10 @@ impl<'db> Const<'db> {
     }
 
     pub fn new_bound(interner: DbInterner<'db>, index: DebruijnIndex, bound: BoundConst) -> Self {
-        Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Bound(index), bound))
+        Const::new(
+            interner,
+            ConstKind::Bound(BoundVarIndexKind::Bound(index), bound),
+        )
     }
 
     pub fn new_valtree(
@@ -279,7 +281,6 @@ impl<'db> TypeFoldable<DbInterner<'db>> for Const<'db> {
     ) -> Result<Self, F::Error> {
         folder.try_fold_const(self)
     }
-
     fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         folder.fold_const(self)
     }
@@ -307,7 +308,6 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Const<'db> {
             Ok(self)
         }
     }
-
     fn super_fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
         self,
         folder: &mut F,
@@ -361,7 +361,10 @@ impl<'db> rustc_type_ir::inherent::Const<DbInterner<'db>> for Const<'db> {
     }
 
     fn new_bound(interner: DbInterner<'db>, debruijn: DebruijnIndex, var: BoundConst) -> Self {
-        Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), var))
+        Const::new(
+            interner,
+            ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), var),
+        )
     }
 
     fn new_anon_bound(interner: DbInterner<'db>, debruijn: DebruijnIndex, var: BoundVar) -> Self {
@@ -372,7 +375,10 @@ impl<'db> rustc_type_ir::inherent::Const<DbInterner<'db>> for Const<'db> {
     }
 
     fn new_canonical_bound(interner: DbInterner<'db>, var: BoundVar) -> Self {
-        Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Canonical, BoundConst { var }))
+        Const::new(
+            interner,
+            ConstKind::Bound(BoundVarIndexKind::Canonical, BoundConst { var }),
+        )
     }
 
     fn new_placeholder(
@@ -437,7 +443,6 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderConst {
             bound: var,
         }
     }
-
     fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
         Placeholder {
             universe: ui,

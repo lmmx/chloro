@@ -1,7 +1,8 @@
 use either::Either;
 use syntax::{
     ast::{
-        self, AstNode, HasName, HasTypeBounds, edit_in_place::{GenericParamsOwnerEdit, Removable},
+        self, AstNode, HasName, HasTypeBounds,
+        edit_in_place::{GenericParamsOwnerEdit, Removable},
         make,
     },
     match_ast,
@@ -102,7 +103,9 @@ fn build_predicate(param: ast::GenericParam) -> Option<ast::WherePred> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::check_assist;
+
     #[test]
     fn move_bounds_to_where_clause_fn() {
         check_assist(
@@ -111,6 +114,7 @@ mod tests {
             r#"fn foo<T, F>() where T: u32, F: FnOnce(T) -> T {}"#,
         );
     }
+
     #[test]
     fn move_bounds_to_where_clause_impl() {
         check_assist(
@@ -119,6 +123,7 @@ mod tests {
             r#"impl<U, T> A<U, T> where U: u32 {}"#,
         );
     }
+
     #[test]
     fn move_bounds_to_where_clause_struct() {
         check_assist(
@@ -127,6 +132,7 @@ mod tests {
             r#"struct A<T> where T: Iterator<Item = u32> {}"#,
         );
     }
+
     #[test]
     fn move_bounds_to_where_clause_tuple_struct() {
         check_assist(
@@ -135,6 +141,7 @@ mod tests {
             r#"struct Pair<T>(T, T) where T: u32;"#,
         );
     }
+
     #[test]
     fn move_bounds_to_where_clause_trait() {
         check_assist(

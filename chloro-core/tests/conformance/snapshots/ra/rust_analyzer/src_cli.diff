@@ -2,25 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2201 bytes
-Chloro size:   2202 bytes
+Chloro size:   2201 bytes
 Rustfmt size:  2201 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- use std::io::Read;
- 
- use anyhow::Result;
--use hir::{Module, Name};
- use hir_ty::db::HirDatabase;
-+use hir::{Module, Name};
- use ide::{AnalysisHost, Edition};
- use itertools::Itertools;
- use vfs::Vfs;
-     pub fn is_verbose(self) -> bool {
-         matches!(self, Verbosity::Verbose | Verbosity::Spammy)
-     }
-+
-     pub fn is_spammy(self) -> bool {
-         matches!(self, Verbosity::Spammy)
-     }
+✓ Outputs are IDENTICAL

@@ -24,7 +24,6 @@ use crate::{
 
 pub trait HasAttrs {
     fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner;
-
     #[doc(hidden)]
     fn attr_id(self) -> AttrDefId;
 }
@@ -73,7 +72,6 @@ macro_rules! impl_has_attrs_enum {
 }
 
 impl_has_attrs_enum![Struct, Union, Enum for Adt];
-
 impl_has_attrs_enum![TypeParam, ConstParam, LifetimeParam for GenericParam];
 
 impl HasAttrs for AssocItem {
@@ -84,7 +82,6 @@ impl HasAttrs for AssocItem {
             AssocItem::TypeAlias(it) => it.attrs(db),
         }
     }
-
     fn attr_id(self) -> AttrDefId {
         match self {
             AssocItem::Function(it) => it.attr_id(),
@@ -99,7 +96,6 @@ impl HasAttrs for crate::Crate {
         let def = AttrDefId::ModuleId(self.root_module().id);
         AttrsWithOwner::new(db, def)
     }
-
     fn attr_id(self) -> AttrDefId {
         AttrDefId::ModuleId(self.root_module().id)
     }
@@ -182,46 +178,49 @@ fn resolve_assoc_or_field(
     // trait itself.
     let base_def = resolver.resolve_path_in_type_ns_fully(db, &path)?;
 
-    let ty = match base_def {
-        TypeNs::SelfType(id) => Impl::from(id).self_ty(db),
-        TypeNs::GenericParam(_) => {
-            // Even if this generic parameter has some trait bounds, rustdoc doesn't
-            // resolve `name` to trait items.
-            return None;
-        }
-        TypeNs::AdtId(id) | TypeNs::AdtSelfType(id) => Adt::from(id).ty(db),
-        TypeNs::EnumVariantId(id) => {
-            // Enum variants don't have path candidates.
-            let variant = Variant::from(id);
-            return resolve_field(db, variant.into(), name, ns);
-        }
-        TypeNs::TypeAliasId(id) => {
-            let alias = TypeAlias::from(id);
-            if alias.as_assoc_item(db).is_some() {
-                // We don't normalize associated type aliases, so we have nothing to
-                // resolve `name` to.
+    let ty =
+        match base_def {
+            TypeNs::SelfType(id) => Impl::from(id).self_ty(db),
+            TypeNs::GenericParam(_) => {
+                // Even if this generic parameter has some trait bounds, rustdoc doesn't
+                // resolve `name` to trait items.
                 return None;
             }
-            alias.ty(db)
-        }
-        TypeNs::BuiltinType(id) => BuiltinType::from(id).ty(db),
-        TypeNs::TraitId(id) => {
-            // Doc paths in this context may only resolve to an item of this trait
-            // (i.e. no items of its supertraits), so we need to handle them here
-            // independently of others.
-            return id.trait_items(db).items.iter().find(|it| it.0 == name).map(|(_, assoc_id)| {
-                let def = match *assoc_id {
-                    AssocItemId::FunctionId(it) => ModuleDef::Function(it.into()),
-                    AssocItemId::ConstId(it) => ModuleDef::Const(it.into()),
-                    AssocItemId::TypeAliasId(it) => ModuleDef::TypeAlias(it.into()),
-                };
-                DocLinkDef::ModuleDef(def)
-            });
-        }
-        TypeNs::ModuleId(_) => {
-            return None;
-        }
-    };
+            TypeNs::AdtId(id) | TypeNs::AdtSelfType(id) => Adt::from(id).ty(db),
+            TypeNs::EnumVariantId(id) => {
+                // Enum variants don't have path candidates.
+                let variant = Variant::from(id);
+                return resolve_field(db, variant.into(), name, ns);
+            }
+            TypeNs::TypeAliasId(id) => {
+                let alias = TypeAlias::from(id);
+                if alias.as_assoc_item(db).is_some() {
+                    // We don't normalize associated type aliases, so we have nothing to
+                    // resolve `name` to.
+                    return None;
+                }
+                alias.ty(db)
+            }
+            TypeNs::BuiltinType(id) => BuiltinType::from(id).ty(db),
+            TypeNs::TraitId(id) => {
+                // Doc paths in this context may only resolve to an item of this trait
+                // (i.e. no items of its supertraits), so we need to handle them here
+                // independently of others.
+                return id.trait_items(db).items.iter().find(|it| it.0 == name).map(
+                    |(_, assoc_id)| {
+                        let def = match *assoc_id {
+                            AssocItemId::FunctionId(it) => ModuleDef::Function(it.into()),
+                            AssocItemId::ConstId(it) => ModuleDef::Const(it.into()),
+                            AssocItemId::TypeAliasId(it) => ModuleDef::TypeAlias(it.into()),
+                        };
+                        DocLinkDef::ModuleDef(def)
+                    },
+                );
+            }
+            TypeNs::ModuleId(_) => {
+                return None;
+            }
+        };
 
     // Resolve inherent items first, then trait items, then fields.
     if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
@@ -246,16 +245,12 @@ fn resolve_assoc_item<'db>(
     name: &Name,
     ns: Option<Namespace>,
 ) -> Option<DocLinkDef> {
-    ty.iterate_assoc_items(
-        db,
-        ty.krate(db),
-        move |assoc_item| {
+    ty.iterate_assoc_items(db, ty.krate(db), move |assoc_item| {
         if assoc_item.name(db)? != *name {
             return None;
         }
         as_module_def_if_namespace_matches(assoc_item, ns)
-    },
-    )
+    })
 }
 
 fn resolve_impl_trait_item<'db>(
@@ -267,9 +262,10 @@ fn resolve_impl_trait_item<'db>(
 ) -> Option<DocLinkDef> {
     let canonical = ty.canonical(db);
     let krate = ty.krate(db);
-    let environment = resolver
-        .generic_def()
-        .map_or_else(|| crate::TraitEnvironment::empty(krate.id), |d| db.trait_environment(d));
+    let environment = resolver.generic_def().map_or_else(
+        || crate::TraitEnvironment::empty(krate.id),
+        |d| db.trait_environment(d),
+    );
     let traits_in_scope = resolver.traits_in_scope(db);
 
     let mut result = None;
@@ -291,7 +287,11 @@ fn resolve_impl_trait_item<'db>(
             // disambiguation) so we just pick the first one we find as well.
             result = as_module_def_if_namespace_matches(assoc_item_id.into(), ns);
 
-            if result.is_some() { ControlFlow::Break(()) } else { ControlFlow::Continue(()) }
+            if result.is_some() {
+                ControlFlow::Break(())
+            } else {
+                ControlFlow::Continue(())
+            }
         },
     );
 
@@ -307,7 +307,10 @@ fn resolve_field(
     if let Some(Namespace::Types | Namespace::Macros) = ns {
         return None;
     }
-    def.fields(db).into_iter().find(|f| f.name(db) == name).map(DocLinkDef::Field)
+    def.fields(db)
+        .into_iter()
+        .find(|f| f.name(db) == name)
+        .map(DocLinkDef::Field)
 }
 
 fn as_module_def_if_namespace_matches(
@@ -349,10 +352,13 @@ fn doc_modpath_from_str(link: &str) -> Option<ModPath> {
                 PathKind::Plain
             }
         };
-        let parts = first_segment.into_iter().chain(parts).map(|segment| match segment.parse() {
-            Ok(idx) => Name::new_tuple_field(idx),
-            Err(_) => Name::new_root(segment.split_once('<').map_or(segment, |it| it.0)),
-        });
+        let parts = first_segment
+            .into_iter()
+            .chain(parts)
+            .map(|segment| match segment.parse() {
+                Ok(idx) => Name::new_tuple_field(idx),
+                Err(_) => Name::new_root(segment.split_once('<').map_or(segment, |it| it.0)),
+            });
         Some(ModPath::from_segments(kind, parts))
     };
     try_get_modpath(link)

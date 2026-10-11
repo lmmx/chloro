@@ -20,7 +20,9 @@ const USELESS_TRAITS: &[&str] = &["Send", "Sync", "Copy", "Clone", "Eq", "Partia
 /// Identifier names that won't be suggested, ever
 ///
 /// **NOTE**: they all must be snake lower case
-const USELESS_NAMES: &[&str] = &["new", "default", "option", "some", "none", "ok", "err", "str", "string", "from", "into"];
+const USELESS_NAMES: &[&str] = &[
+    "new", "default", "option", "some", "none", "ok", "err", "str", "string", "from", "into",
+];
 
 const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
 
@@ -253,8 +255,9 @@ impl NameGenerator {
     /// # Examples
     /// `a1b2c3` -> `a1b2c`
     fn split_numeric_suffix(name: &str) -> (&str, Option<usize>) {
-        let pos =
-            name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
+        let pos = name
+            .rfind(|c: char| !c.is_numeric())
+            .expect("Name cannot be empty or all-numeric");
         let (prefix, suffix) = name.split_at(pos + 1);
         (prefix, suffix.parse().ok())
     }
@@ -267,7 +270,10 @@ fn normalize(name: &str) -> Option<SmolStr> {
         return None;
     }
 
-    if USELESS_NAME_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
+    if USELESS_NAME_PREFIXES
+        .iter()
+        .any(|prefix| name.starts_with(prefix))
+    {
         return None;
     }
 
@@ -453,48 +459,66 @@ fn from_field_name(expr: &ast::Expr) -> Option<SmolStr> {
 mod tests {
     use hir::FileRange;
     use test_fixture::WithFixture;
+
     use super::*;
+
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
-        let frange = FileRange { file_id, range: range_or_offset.into() };
+        let frange = FileRange {
+            file_id,
+            range: range_or_offset.into(),
+        };
         let sema = Semantics::new(&db);
 
         let source_file = sema.parse(frange.file_id);
 
         let element = source_file.syntax().covering_element(frange.range);
-        let expr =
-            element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
+        let expr = element
+            .ancestors()
+            .find_map(ast::Expr::cast)
+            .expect("selection is not an expression");
         assert_eq!(
             expr.syntax().text_range(),
             frange.range,
             "selection is not an expression(yet contained in one)"
         );
-        let name = hir::attach_db(sema.db, || NameGenerator::default().for_variable(&expr, &sema));
+        let name = hir::attach_db(sema.db, || {
+            NameGenerator::default().for_variable(&expr, &sema)
+        });
         assert_eq!(&name, expected);
     }
+
     #[test]
     fn no_args() {
         check(r#"fn foo() { $0bar()$0 }"#, "bar");
         check(r#"fn foo() { $0bar.frobnicate()$0 }"#, "frobnicate");
     }
+
     #[test]
     fn single_arg() {
         check(r#"fn foo() { $0bar(1)$0 }"#, "bar");
     }
+
     #[test]
     fn many_args() {
         check(r#"fn foo() { $0bar(1, 2, 3)$0 }"#, "bar");
     }
+
     #[test]
     fn path() {
         check(r#"fn foo() { $0i32::bar(1, 2, 3)$0 }"#, "bar");
     }
+
     #[test]
     fn generic_params() {
         check(r#"fn foo() { $0bar::<i32>(1, 2, 3)$0 }"#, "bar");
-        check(r#"fn foo() { $0bar.frobnicate::<i32, u32>()$0 }"#, "frobnicate");
+        check(
+            r#"fn foo() { $0bar.frobnicate::<i32, u32>()$0 }"#,
+            "frobnicate",
+        );
     }
+
     #[test]
     fn to_name() {
         check(
@@ -511,6 +535,7 @@ fn foo() {
             "config",
         );
     }
+
     #[test]
     fn plain_func() {
         check(
@@ -521,6 +546,7 @@ fn foo() { bar($01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn mut_param() {
         check(
@@ -531,10 +557,12 @@ fn foo() { bar($01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn func_does_not_exist() {
         check(r#"fn foo() { bar($01$0, 2) }"#, "var_name");
     }
+
     #[test]
     fn unnamed_param() {
         check(
@@ -545,6 +573,7 @@ fn foo() { bar($01$0, 2) }
             "var_name",
         );
     }
+
     #[test]
     fn tuple_pat() {
         check(
@@ -557,6 +586,7 @@ fn foo() {
             "var_name",
         );
     }
+
     #[test]
     fn ref_pat() {
         check(
@@ -567,6 +597,7 @@ fn foo() { bar($0&1$0, 3) }
             "n",
         );
     }
+
     #[test]
     fn box_pat() {
         check(
@@ -577,6 +608,7 @@ fn foo() { bar($01$0, 3) }
             "n",
         );
     }
+
     #[test]
     fn param_out_of_index() {
         check(
@@ -587,6 +619,7 @@ fn foo() { bar(1, 2, $03$0) }
             "var_name",
         );
     }
+
     #[test]
     fn generic_param_resolved() {
         check(
@@ -597,6 +630,7 @@ fn foo() { bar($01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn generic_param_unresolved() {
         check(
@@ -607,6 +641,7 @@ fn foo<T>(x: T) { bar($0x$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn method() {
         check(
@@ -618,6 +653,7 @@ fn foo() { S.bar($01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn method_on_impl_trait() {
         check(
@@ -632,6 +668,7 @@ fn foo() { S.bar($01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn method_ufcs() {
         check(
@@ -643,6 +680,7 @@ fn foo() { S::bar(&S, $01$0, 2) }
             "n",
         );
     }
+
     #[test]
     fn method_self() {
         check(
@@ -654,6 +692,7 @@ fn foo() { S::bar($0&S$0, 1, 2) }
             "s",
         );
     }
+
     #[test]
     fn method_self_named() {
         check(
@@ -665,18 +704,22 @@ fn foo() { S::bar($0&S$0, 1, 2) }
             "strukt",
         );
     }
+
     #[test]
     fn i32() {
         check(r#"fn foo() { let _: i32 = $01$0; }"#, "var_name");
     }
+
     #[test]
     fn u64() {
         check(r#"fn foo() { let _: u64 = $01$0; }"#, "var_name");
     }
+
     #[test]
     fn bool() {
         check(r#"fn foo() { let _: bool = $0true$0; }"#, "var_name");
     }
+
     #[test]
     fn struct_unit() {
         check(
@@ -687,6 +730,7 @@ fn foo() { let _ = $0Seed$0; }
             "seed",
         );
     }
+
     #[test]
     fn struct_unit_to_snake() {
         check(
@@ -697,6 +741,7 @@ fn foo() { let _ = $0SeedState$0; }
             "seed_state",
         );
     }
+
     #[test]
     fn struct_single_arg() {
         check(
@@ -707,6 +752,7 @@ fn foo() { let _ = $0Seed(0)$0; }
             "seed",
         );
     }
+
     #[test]
     fn struct_with_fields() {
         check(
@@ -717,6 +763,7 @@ fn foo() { let _ = $0Seed { value: 0 }$0; }
             "seed",
         );
     }
+
     #[test]
     fn enum_() {
         check(
@@ -727,6 +774,7 @@ fn foo() { let _ = $0Kind::A$0; }
             "kind",
         );
     }
+
     #[test]
     fn enum_generic_resolved() {
         check(
@@ -737,6 +785,7 @@ fn foo() { let _ = $0Kind::A { x:1 }$0; }
             "kind",
         );
     }
+
     #[test]
     fn enum_generic_unresolved() {
         check(
@@ -747,6 +796,7 @@ fn foo<T>(x: T) { let _ = $0Kind::A { x }$0; }
             "kind",
         );
     }
+
     #[test]
     fn dyn_trait() {
         check(
@@ -758,6 +808,7 @@ fn foo() { $0(bar())$0; }
             "dyn_handler",
         );
     }
+
     #[test]
     fn impl_trait() {
         check(
@@ -769,6 +820,7 @@ fn foo() { $0(bar())$0; }
             "static_handler",
         );
     }
+
     #[test]
     fn impl_trait_plus_clone() {
         check(
@@ -781,6 +833,7 @@ fn foo() { $0(bar())$0; }
             "static_handler",
         );
     }
+
     #[test]
     fn impl_trait_plus_lifetime() {
         check(
@@ -793,6 +846,7 @@ fn foo() { $0(bar(&1))$0; }
             "static_handler",
         );
     }
+
     #[test]
     fn impl_trait_plus_trait() {
         check(
@@ -805,6 +859,7 @@ fn foo() { $0(bar())$0; }
             "bar",
         );
     }
+
     #[test]
     fn ref_value() {
         check(
@@ -816,6 +871,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn box_value() {
         check(
@@ -828,6 +884,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn box_generic() {
         check(
@@ -839,6 +896,7 @@ fn foo<T>() { $0(bar::<T>())$0; }
             "bar",
         );
     }
+
     #[test]
     fn option_value() {
         check(
@@ -851,6 +909,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn result_value() {
         check(
@@ -864,6 +923,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn arc_value() {
         check(
@@ -876,6 +936,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn rc_value() {
         check(
@@ -888,6 +949,7 @@ fn foo() { $0(bar())$0; }
             "seed",
         );
     }
+
     #[test]
     fn vec_value() {
         check(
@@ -900,6 +962,7 @@ fn foo() { $0(bar())$0; }
             "seeds",
         );
     }
+
     #[test]
     fn vec_value_ends_with_s() {
         check(
@@ -912,6 +975,7 @@ fn foo() { $0(bar())$0; }
             "items",
         );
     }
+
     #[test]
     fn vecdeque_value() {
         check(
@@ -924,6 +988,7 @@ fn foo() { $0(bar())$0; }
             "seeds",
         );
     }
+
     #[test]
     fn slice_value() {
         check(
@@ -936,6 +1001,7 @@ fn foo() { $0(bar())$0; }
             "seeds",
         );
     }
+
     #[test]
     fn ref_call() {
         check(
@@ -945,6 +1011,7 @@ fn foo() { $0&bar(1, 3)$0 }
             "bar",
         );
     }
+
     #[test]
     fn name_to_string() {
         check(
@@ -954,6 +1021,7 @@ fn foo() { $0function.name().to_string()$0 }
             "name",
         );
     }
+
     #[test]
     fn nested_useless_method() {
         check(
@@ -963,6 +1031,7 @@ fn foo() { $0function.name().as_ref().unwrap().to_string()$0 }
             "name",
         );
     }
+
     #[test]
     fn struct_field_name() {
         check(
@@ -975,6 +1044,7 @@ fn foo<T>(some_struct: S<T>) { $0some_struct.some_field$0 }
             "some_field",
         );
     }
+
     #[test]
     fn from_and_to_func() {
         check(
@@ -1021,6 +1091,7 @@ fn main() {
             "bar",
         );
     }
+
     #[test]
     fn useless_name_prefix() {
         check(
@@ -1061,6 +1132,7 @@ fn main() {
             "bar",
         );
     }
+
     #[test]
     fn conflicts_with_existing_names() {
         let mut generator = NameGenerator::default();

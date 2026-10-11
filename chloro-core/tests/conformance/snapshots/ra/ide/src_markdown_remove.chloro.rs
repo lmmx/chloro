@@ -1,5 +1,4 @@
 //! Removes markdown from strings.
-
 use pulldown_cmark::{Event, Parser, Tag};
 
 /// Removes all markdown, keeping the text and code blocks
@@ -37,7 +36,9 @@ pub(crate) fn remove_markdown(markdown: &str) -> String {
 #[cfg(test)]
 mod tests {
     use expect_test::expect;
+
     use super::*;
+
     #[test]
     fn smoke_test() {
         let res = remove_markdown(
@@ -153,6 +154,7 @@ book] or the [Reference].
 
             For more information on the various types of functions and how they're used, consult the Rust book or the Reference."#]].assert_eq(&res);
     }
+
     #[test]
     fn on_char_boundary() {
         expect!["a┘"].assert_eq(&remove_markdown("```text\na┘\n```"));

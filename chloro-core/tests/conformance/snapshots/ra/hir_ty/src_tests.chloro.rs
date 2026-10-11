@@ -96,7 +96,10 @@ fn check_impl(
                 } else if expected.starts_with("adjustments:") {
                     adjustments.insert(
                         file_range,
-                        expected.trim_start_matches("adjustments:").trim().to_owned(),
+                        expected
+                            .trim_start_matches("adjustments:")
+                            .trim()
+                            .to_owned(),
                     );
                 } else {
                     panic!("unexpected annotation: {expected} @ {range:?}");
@@ -164,7 +167,11 @@ fn check_impl(
                     } else {
                         ty.display_test(&db, display_target).to_string()
                     };
-                    assert_eq!(actual, expected, "type annotation differs at {:#?}", range.range);
+                    assert_eq!(
+                        actual, expected,
+                        "type annotation differs at {:#?}",
+                        range.range
+                    );
                 }
             }
 
@@ -180,7 +187,11 @@ fn check_impl(
                     } else {
                         ty.display_test(&db, display_target).to_string()
                     };
-                    assert_eq!(actual, expected, "type annotation differs at {:#?}", range.range);
+                    assert_eq!(
+                        actual, expected,
+                        "type annotation differs at {:#?}",
+                        range.range
+                    );
                 }
                 if let Some(expected) = adjustments.remove(&range) {
                     let adjustments = inference_result
@@ -215,7 +226,12 @@ fn check_impl(
                 match mismatches.remove(&range) {
                     Some(annotation) => assert_eq!(actual, annotation),
                     None => {
-                        format_to!(unexpected_type_mismatches, "{:?}: {}\n", range.range, actual)
+                        format_to!(
+                            unexpected_type_mismatches,
+                            "{:?}: {}\n",
+                            range.range,
+                            actual
+                        )
                     }
                 }
             }
@@ -223,7 +239,11 @@ fn check_impl(
 
         let mut buf = String::new();
         if !unexpected_type_mismatches.is_empty() {
-            format_to!(buf, "Unexpected type mismatches:\n{}", unexpected_type_mismatches);
+            format_to!(
+                buf,
+                "Unexpected type mismatches:\n{}",
+                unexpected_type_mismatches
+            );
         }
         if !mismatches.is_empty() {
             format_to!(buf, "Unchecked mismatch annotations:\n");
@@ -283,9 +303,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
 
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let mut buf = String::new();
 
         let mut infer_def = |inference_result: Arc<InferenceResult<'_>>,
@@ -344,9 +362,15 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
             for (node, ty) in &types {
                 let (range, text) =
                     if let Some(self_param) = ast::SelfParam::cast(node.value.clone()) {
-                        (self_param.name().unwrap().syntax().text_range(), "self".to_owned())
+                        (
+                            self_param.name().unwrap().syntax().text_range(),
+                            "self".to_owned(),
+                        )
                     } else {
-                        (node.value.text_range(), node.value.text().to_string().replace('\n', " "))
+                        (
+                            node.value.text_range(),
+                            node.value.text().to_string().replace('\n', " "),
+                        )
                     };
                 let macro_prefix = if node.file_id != file_id { "!" } else { "" };
                 format_to!(
@@ -418,8 +442,7 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
 
         buf.truncate(buf.trim_end().len());
         buf
-    },
-    )
+    })
 }
 
 pub(crate) fn visit_module(
@@ -472,11 +495,14 @@ pub(crate) fn visit_module(
                     visit_body(db, &body, cb);
                 }
                 ModuleDefId::AdtId(hir_def::AdtId::EnumId(it)) => {
-                    it.enum_variants(db).variants.iter().for_each(|&(it, _, _)| {
-                        let body = db.body(it.into());
-                        cb(it.into());
-                        visit_body(db, &body, cb);
-                    });
+                    it.enum_variants(db)
+                        .variants
+                        .iter()
+                        .for_each(|&(it, _, _)| {
+                            let body = db.body(it.into());
+                            cb(it.into());
+                            visit_body(db, &body, cb);
+                        });
                 }
                 ModuleDefId::TraitId(it) => {
                     let trait_data = it.trait_items(db);
@@ -602,9 +628,7 @@ fn salsa_bug() {
 
     db.set_file_text(pos.file_id.file_id(&db), new_text);
 
-    crate::attach_db(
-        &db,
-        || {
+    crate::attach_db(&db, || {
         let module = db.module_for_file(pos.file_id.file_id(&db));
         let crate_def_map = module.def_map(&db);
         visit_module(&db, crate_def_map, module.local_id, &mut |def| {
@@ -616,6 +640,5 @@ fn salsa_bug() {
                 _ => return,
             });
         });
-    },
-    )
+    })
 }

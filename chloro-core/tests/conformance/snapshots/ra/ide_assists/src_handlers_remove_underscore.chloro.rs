@@ -62,7 +62,9 @@ pub(crate) fn remove_underscore(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         "Remove underscore from a used variable",
         text_range,
         |builder| {
-            let changes = def.rename(&ctx.sema, new_name, RenameDefinition::Yes).unwrap();
+            let changes = def
+                .rename(&ctx.sema, new_name, RenameDefinition::Yes)
+                .unwrap();
             builder.source_change = changes;
         },
     )
@@ -71,7 +73,9 @@ pub(crate) fn remove_underscore(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn remove_underscore_from_used_variable() {
         check_assist(
@@ -90,6 +94,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_unused() {
         check_assist_not_applicable(
@@ -101,6 +106,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn not_applicable_for_no_underscore() {
         check_assist_not_applicable(
@@ -113,6 +119,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn remove_multiple_underscores() {
         check_assist(
@@ -131,6 +138,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn remove_underscore_on_usage() {
         check_assist(
@@ -149,6 +157,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn remove_underscore_in_function_parameter_usage() {
         check_assist(
@@ -165,6 +174,7 @@ fn foo(foo: i32) {
 "#,
         )
     }
+
     #[test]
     fn remove_underscore_in_function_parameter() {
         check_assist(

@@ -1,5 +1,4 @@
 //! Type inhabitedness logic.
-
 use std::ops::ControlFlow::{self, Break, Continue};
 
 use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
@@ -16,7 +15,8 @@ use crate::{
     db::HirDatabase,
     next_solver::{
         DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt,
+        infer::{InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
     },
 };
 
@@ -60,9 +60,7 @@ struct UninhabitedFrom<'a, 'db> {
 }
 
 const CONTINUE_OPAQUELY_INHABITED: ControlFlow<VisiblyUninhabited> = Continue(());
-
 const BREAK_VISIBLY_UNINHABITED: ControlFlow<VisiblyUninhabited> = Break(VisiblyUninhabited);
-
 #[derive(PartialEq, Eq)]
 struct VisiblyUninhabited;
 
@@ -108,7 +106,13 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
         target_mod: ModuleId,
         env: Arc<TraitEnvironment<'db>>,
     ) -> Self {
-        Self { target_mod, recursive_ty: FxHashSet::default(), max_depth: 500, infcx, env }
+        Self {
+            target_mod,
+            recursive_ty: FxHashSet::default(),
+            max_depth: 500,
+            infcx,
+            env,
+        }
     }
 
     #[inline]
@@ -159,7 +163,11 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
 
         let is_enum = matches!(variant, VariantId::EnumVariantId(..));
         let field_tys = self.db().field_types(variant);
-        let field_vis = if is_enum { None } else { Some(self.db().field_visibilities(variant)) };
+        let field_vis = if is_enum {
+            None
+        } else {
+            Some(self.db().field_visibilities(variant))
+        };
 
         for (fid, _) in fields.iter() {
             self.visit_field(field_vis.as_ref().map(|it| it[fid]), &field_tys[fid], subst)?;

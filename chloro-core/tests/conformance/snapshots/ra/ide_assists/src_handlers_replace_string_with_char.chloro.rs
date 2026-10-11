@@ -23,7 +23,9 @@ use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
 // }
 // ```
 pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-    let token = ctx.find_token_syntax_at_offset(STRING).and_then(ast::String::cast)?;
+    let token = ctx
+        .find_token_syntax_at_offset(STRING)
+        .and_then(ast::String::cast)?;
     let value = token.value().ok()?;
     let target = token.syntax().text_range();
 
@@ -89,7 +91,9 @@ pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn replace_string_with_char_assist() {
         check_assist(
@@ -106,6 +110,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_string_with_char_has_suffix() {
         check_assist(
@@ -122,6 +127,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_string_with_char_assist_with_multi_byte_char() {
         check_assist(
@@ -138,6 +144,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_string_with_char_multiple_chars() {
         check_assist_not_applicable(
@@ -149,6 +156,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_char_works_inside_macros() {
         check_assist(
@@ -165,6 +173,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_string_with_char_newline() {
         check_assist(
@@ -181,6 +190,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_string_with_char_unicode_escape() {
         check_assist(
@@ -197,6 +207,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_raw_string_with_char() {
         check_assist(
@@ -213,6 +224,7 @@ fn f() {
 "##,
         )
     }
+
     #[test]
     fn replace_char_with_string_assist() {
         check_assist(
@@ -229,6 +241,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_assist_with_multi_byte_char() {
         check_assist(
@@ -245,6 +258,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_newline() {
         check_assist(
@@ -261,6 +275,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_unicode_escape() {
         check_assist(
@@ -277,6 +292,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_quote() {
         check_assist(
@@ -293,6 +309,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_quote_has_suffix() {
         check_assist(
@@ -309,6 +326,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_char_with_string_escaped_quote_has_suffix() {
         check_assist(
@@ -325,6 +343,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_char_quote() {
         check_assist(
@@ -341,6 +360,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_escaped_char_quote() {
         check_assist(
@@ -357,6 +377,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_char_quote_has_suffix() {
         check_assist(
@@ -373,6 +394,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_escaped_char_quote_has_suffix() {
         check_assist(
@@ -389,6 +411,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_raw_string_with_char_quote() {
         check_assist(
@@ -405,6 +428,7 @@ fn f() {
 "#,
         )
     }
+
     #[test]
     fn replace_string_with_code_escaped_char_quote() {
         check_assist(

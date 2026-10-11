@@ -63,6 +63,7 @@ impl<'db> HirDisplay<'db> for Function {
         };
 
         // Write signature of the function
+
         // Block-local impls are "hoisted" to the nearest (non-block) module.
         if let Some(AssocItemContainer::Impl(_)) = container {
             module = module.nearest_non_block_module(db);
@@ -104,7 +105,12 @@ impl<'db> HirDisplay<'db> for Function {
 
         // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
         let body = db.body(self.id.into());
-        for (type_ref, param) in data.params.iter().zip(self.assoc_fn_params(db)).skip(skip_self) {
+        for (type_ref, param) in data
+            .params
+            .iter()
+            .zip(self.assoc_fn_params(db))
+            .skip(skip_self)
+        {
             if !first {
                 f.write_str(", ")?;
             } else {
@@ -211,7 +217,8 @@ impl<'db> HirDisplay<'db> for SelfParam {
         let param = *data.params.first().unwrap();
         match &data.store[param] {
             TypeRef::Path(p) if p.is_self_type() => f.write_str("self"),
-            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) => {
+            TypeRef::Reference(ref_) if matches!(&data.store[ref_.ty], TypeRef::Path(p) if p.is_self_type()) =>
+            {
                 f.write_char('&')?;
                 if let Some(lifetime) = &ref_.lifetime {
                     lifetime.hir_fmt(f, &data.store)?;
@@ -257,7 +264,10 @@ impl<'db> HirDisplay<'db> for Struct {
                 let mut it = variant_data.fields().iter().peekable();
 
                 while let Some((id, _)) = it.next() {
-                    let field = Field { parent: (*self).into(), id };
+                    let field = Field {
+                        parent: (*self).into(),
+                        id,
+                    };
                     write_visibility(module_id, field.visibility(f.db), f)?;
                     field.ty(f.db).hir_fmt(f)?;
                     if it.peek().is_some() {
@@ -325,7 +335,11 @@ fn write_fields<'db>(
     let (indent, separator) = if in_line { ("", ' ') } else { ("    ", '\n') };
     f.write_char(if !has_where_clause { ' ' } else { separator })?;
     if count == 0 {
-        f.write_str(if fields.is_empty() { "{}" } else { "{ /* … */ }" })?;
+        f.write_str(if fields.is_empty() {
+            "{}"
+        } else {
+            "{ /* … */ }"
+        })?;
     } else {
         f.write_char('{')?;
 
@@ -357,7 +371,11 @@ fn write_variants<'db>(
     let count = variants.len().min(limit);
     f.write_char(if !has_where_clause { ' ' } else { '\n' })?;
     if count == 0 {
-        let variants = if variants.is_empty() { "{}" } else { "{ /* … */ }" };
+        let variants = if variants.is_empty() {
+            "{}"
+        } else {
+            "{ /* … */ }"
+        };
         f.write_str(variants)?;
     } else {
         f.write_str("{\n")?;
@@ -365,13 +383,19 @@ fn write_variants<'db>(
             write!(f, "    {}", variant.name(f.db).display(f.db, f.edition()))?;
             match variant.kind(f.db) {
                 StructKind::Tuple => {
-                    let fields_str =
-                        if variant.fields(f.db).is_empty() { "()" } else { "( /* … */ )" };
+                    let fields_str = if variant.fields(f.db).is_empty() {
+                        "()"
+                    } else {
+                        "( /* … */ )"
+                    };
                     f.write_str(fields_str)?;
                 }
                 StructKind::Record => {
-                    let fields_str =
-                        if variant.fields(f.db).is_empty() { " {}" } else { " { /* … */ }" };
+                    let fields_str = if variant.fields(f.db).is_empty() {
+                        " {}"
+                    } else {
+                        " { /* … */ }"
+                    };
                     f.write_str(fields_str)?;
                 }
                 StructKind::Unit => {}
@@ -521,10 +545,12 @@ impl<'db> HirDisplay<'db> for TypeParam {
 
         let sized_trait = LangItem::Sized.resolve_trait(f.db, krate);
         let has_only_sized_bound =
-            predicates.iter().all(move |pred| match pred.kind().skip_binder() {
-                ClauseKind::Trait(it) => Some(it.def_id().0) == sized_trait,
-                _ => false,
-            });
+            predicates
+                .iter()
+                .all(move |pred| match pred.kind().skip_binder() {
+                    ClauseKind::Trait(it) => Some(it.def_id().0) == sized_trait,
+                    _ => false,
+                });
         let has_only_not_sized_bound = predicates.is_empty();
         if !has_only_sized_bound || has_only_not_sized_bound {
             let default_sized = SizedByDefault::Sized { anchor: krate };
@@ -559,7 +585,9 @@ fn write_generic_params<'db>(
 ) -> Result<(), HirDisplayError> {
     let (params, store) = f.db.generic_params_and_store(def);
     if params.iter_lt().next().is_none()
-        && params.iter_type_or_consts().all(|it| it.1.const_param().is_none())
+        && params
+            .iter_type_or_consts()
+            .all(|it| it.1.const_param().is_none())
         && params
             .iter_type_or_consts()
             .filter_map(|it| it.1.type_param())
@@ -663,8 +691,16 @@ fn write_where_predicates<'db>(
         (TypeBound { target: t1, .. }, TypeBound { target: t2, .. }) => t1 == t2,
         (Lifetime { target: t1, .. }, Lifetime { target: t2, .. }) => t1 == t2,
         (
-            ForLifetime { lifetimes: l1, target: t1, .. },
-            ForLifetime { lifetimes: l2, target: t2, .. },
+            ForLifetime {
+                lifetimes: l1,
+                target: t1,
+                ..
+            },
+            ForLifetime {
+                lifetimes: l2,
+                target: t2,
+                ..
+            },
         ) => l1 == l2 && t1 == t2,
         _ => false,
     };
@@ -687,8 +723,15 @@ fn write_where_predicates<'db>(
                 write!(f, ": ")?;
                 bound.hir_fmt(f, store)?;
             }
-            ForLifetime { lifetimes, target, bound } => {
-                let lifetimes = lifetimes.iter().map(|it| it.display(f.db, f.edition())).join(", ");
+            ForLifetime {
+                lifetimes,
+                target,
+                bound,
+            } => {
+                let lifetimes = lifetimes
+                    .iter()
+                    .map(|it| it.display(f.db, f.edition()))
+                    .join(", ");
                 write!(f, "for<{lifetimes}> ")?;
                 target.hir_fmt(f, store)?;
                 f.write_str(": ")?;
@@ -817,7 +860,9 @@ impl<'db> HirDisplay<'db> for TypeAlias {
         if !data.bounds.is_empty() {
             f.write_str(": ")?;
             f.write_joined(
-                data.bounds.iter().map(|bound| hir_display_with_store(bound, &data.store)),
+                data.bounds
+                    .iter()
+                    .map(|bound| hir_display_with_store(bound, &data.store)),
                 " + ",
             )?;
         }

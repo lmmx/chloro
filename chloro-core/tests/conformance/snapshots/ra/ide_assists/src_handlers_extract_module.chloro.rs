@@ -14,7 +14,11 @@ use syntax::{
     SyntaxKind::{self, WHITESPACE},
     SyntaxNode, TextRange, TextSize,
     algo::find_node_at_range,
-    ast::{self, HasVisibility, edit::{AstNodeEdit, IndentLevel}, make},
+    ast::{
+        self, HasVisibility,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
     match_ast, ted,
 };
 
@@ -78,10 +82,16 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     }
 
     let mut old_item_indent = module.body_items[0].indent_level();
-    let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
+    let old_items: Vec<_> = module
+        .use_items
+        .iter()
+        .chain(&module.body_items)
+        .cloned()
+        .collect();
 
     // If the selection is inside impl block, we need to place new module outside impl block,
     // as impl blocks cannot contain modules
+
     let mut impl_parent: Option<ast::Impl> = None;
     let mut impl_child_count: usize = 0;
     if let Some(parent_assoc_list) = module.body_items[0].syntax().parent()
@@ -117,9 +127,11 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                 module.get_usages_and_record_fields(ctx, module_text_range);
 
             builder.edit_file(ctx.vfs_file_id());
-            use_stmts_to_be_inserted.into_iter().for_each(|(_, use_stmt)| {
-                builder.insert(ctx.selection_trimmed().end(), format!("\n{use_stmt}"));
-            });
+            use_stmts_to_be_inserted
+                .into_iter()
+                .for_each(|(_, use_stmt)| {
+                    builder.insert(ctx.selection_trimmed().end(), format!("\n{use_stmt}"));
+                });
 
             let import_items = module.resolve_imports(curr_parent_module, ctx);
             module.change_visibility(record_fields);
@@ -179,7 +191,11 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 
 fn generate_module_def(
     parent_impl: &Option<ast::Impl>,
-    Module { name, body_items, use_items }: &Module,
+    Module {
+        name,
+        body_items,
+        use_items,
+    }: &Module,
 ) -> ast::Module {
     let items: Vec<_> = if let Some(impl_) = parent_impl.as_ref()
         && let Some(self_ty) = impl_.self_ty()
@@ -192,7 +208,10 @@ fn generate_module_def(
             .collect_vec();
         let assoc_item_list = make::assoc_item_list(Some(assoc_items)).clone_for_update();
         let impl_ = impl_.reset_indent();
-        ted::replace(impl_.get_or_create_assoc_item_list().syntax(), assoc_item_list.syntax());
+        ted::replace(
+            impl_.get_or_create_assoc_item_list().syntax(),
+            assoc_item_list.syntax(),
+        );
         // Add the import for enum/struct corresponding to given impl block
         let use_impl = make_use_stmt_of_node_with_super(self_ty.syntax());
         once(use_impl)
@@ -203,7 +222,10 @@ fn generate_module_def(
         use_items.iter().chain(body_items).cloned().collect()
     };
 
-    let items = items.into_iter().map(|it| it.reset_indent().indent(IndentLevel(1))).collect_vec();
+    let items = items
+        .into_iter()
+        .map(|it| it.reset_indent().indent(IndentLevel(1)))
+        .collect_vec();
     let module_body = make::item_list(Some(items));
 
     let module_name = make::name(name);
@@ -216,7 +238,12 @@ fn make_use_stmt_of_node_with_super(node_syntax: &SyntaxNode) -> ast::Item {
     let use_ = make::use_(
         None,
         None,
-        make::use_tree(make::join_paths(vec![super_path, node_path]), None, None, false),
+        make::use_tree(
+            make::join_paths(vec![super_path, node_path]),
+            None,
+            None,
+            false,
+        ),
     );
 
     ast::Item::from(use_)
@@ -240,7 +267,11 @@ fn extract_single_target(node: &ast::Item) -> Module {
         (vec![node.clone()], Vec::new())
     };
     let name = "modname";
-    Module { name, body_items, use_items }
+    Module {
+        name,
+        body_items,
+        use_items,
+    }
 }
 
 fn extract_child_target(
@@ -254,9 +285,17 @@ fn extract_child_target(
         .collect_vec();
     let start = selected_nodes.first()?.syntax().clone();
     let end = selected_nodes.last()?.syntax().clone();
-    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) =
-        selected_nodes.into_iter().partition(|item| matches!(item, ast::Item::Use(..)));
-    Some((Module { name: "modname", body_items, use_items }, start..=end))
+    let (use_items, body_items): (Vec<ast::Item>, Vec<ast::Item>) = selected_nodes
+        .into_iter()
+        .partition(|item| matches!(item, ast::Item::Use(..)));
+    Some((
+        Module {
+            name: "modname",
+            body_items,
+            use_items,
+        },
+        start..=end,
+    ))
 }
 
 impl Module {
@@ -264,7 +303,11 @@ impl Module {
         &self,
         ctx: &AssistContext<'_>,
         replace_range: TextRange,
-    ) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>) {
+    ) -> (
+        FxHashMap<FileId, Vec<(TextRange, String)>>,
+        Vec<SyntaxNode>,
+        FxHashMap<TextSize, ast::Use>,
+    ) {
         let mut adt_fields = Vec::new();
         let mut refs: FxHashMap<FileId, Vec<(TextRange, String)>> = FxHashMap::default();
         // use `TextSize` as key to avoid repeated use stmts
@@ -273,6 +316,7 @@ impl Module {
         //Here impl is not included as each item inside impl will be tied to the parent of
         //implementing block(a struct, enum, etc), if the parent is in selected module, it will
         //get updated by ADT section given below or if it is not, then we dont need to do any operation
+
         for item in &self.body_items {
             match_ast! {
                 match (item.syntax()) {
@@ -375,7 +419,10 @@ impl Module {
                 } else if let Some(use_) = name_ref.syntax().ancestors().find_map(ast::Use::cast) {
                     // handle usages in use_stmts which is in_sel
                     // check if `use` is top stmt in selection
-                    if use_.syntax().parent().is_some_and(|parent| parent == covering_node)
+                    if use_
+                        .syntax()
+                        .parent()
+                        .is_some_and(|parent| parent == covering_node)
                         && use_stmts_set.insert(use_.syntax().text_range().start())
                     {
                         let use_ = use_stmts_to_be_inserted
@@ -396,7 +443,10 @@ impl Module {
 
                 None
             });
-            refs_in_files.entry(file_id.file_id(ctx.db())).or_default().extend(usages);
+            refs_in_files
+                .entry(file_id.file_id(ctx.db()))
+                .or_default()
+                .extend(usages);
         }
     }
 
@@ -417,8 +467,10 @@ impl Module {
 
         for (_, field_owner) in record_field_parents {
             for desc in field_owner.descendants().filter_map(ast::RecordField::cast) {
-                let is_record_field_present =
-                    record_fields.clone().into_iter().any(|x| x.to_string() == desc.to_string());
+                let is_record_field_present = record_fields
+                    .clone()
+                    .into_iter()
+                    .any(|x| x.to_string() == desc.to_string());
                 if is_record_field_present {
                     replacements.push((desc.visibility(), desc.syntax().clone()));
                 }
@@ -489,7 +541,10 @@ impl Module {
         //We only need to find in the current file
         let selection_range = ctx.selection_trimmed();
         let file_id = ctx.file_id();
-        let usage_res = def.usages(&ctx.sema).in_scope(&SearchScope::single_file(file_id)).all();
+        let usage_res = def
+            .usages(&ctx.sema)
+            .in_scope(&SearchScope::single_file(file_id))
+            .all();
 
         let file = ctx.sema.parse(file_id);
 
@@ -531,7 +586,6 @@ impl Module {
         });
 
         let mut use_tree_paths: Option<Vec<ast::Path>> = None;
-
         //Exists inside and outside selection
         // - Use stmt for item is present -> get the use_tree_str and reconstruct the path in new
         // module
@@ -540,8 +594,10 @@ impl Module {
         //outside:
         //- Def is inside: Nothing to import
         //- Def is outside: Import it inside with super
+
         //Exists inside selection but not outside -> Check for the import of it in original module,
         //get the use_tree_str, reconstruct the use stmt in new module
+
         let mut import_path_to_be_removed: Option<TextRange> = None;
         if uses_exist_in_sel && uses_exist_out_sel {
             //Changes to be made only inside new module
@@ -635,7 +691,11 @@ impl Module {
         node_syntax: &SyntaxNode,
     ) -> Option<(Vec<ast::Path>, Option<TextRange>)> {
         let use_stmt = use_stmt?;
-        for path_seg in use_stmt.syntax().descendants().filter_map(ast::PathSegment::cast) {
+        for path_seg in use_stmt
+            .syntax()
+            .descendants()
+            .filter_map(ast::PathSegment::cast)
+        {
             if path_seg.syntax().to_string() == node_syntax.to_string() {
                 let mut use_tree_str = vec![path_seg.parent_path()];
                 get_use_tree_paths_from_path(path_seg.parent_path(), &mut use_tree_str);
@@ -690,7 +750,9 @@ fn check_def_in_mod_and_out_sel(
         ($x:ident) => {
             if let Some(source) = $x.source(ctx.db()) {
                 let have_same_parent = if let Some(ast_module) = &curr_parent_module {
-                    ctx.sema.to_module_def(ast_module).is_some_and(|it| it == $x.module(ctx.db()))
+                    ctx.sema
+                        .to_module_def(ast_module)
+                        .is_some_and(|it| it == $x.module(ctx.db()))
                 } else {
                     source.file_id.original_file(ctx.db()).file_id(ctx.db()) == curr_file_id
                 };
@@ -705,9 +767,10 @@ fn check_def_in_mod_and_out_sel(
         Definition::Module(x) => {
             let source = x.definition_source(ctx.db());
             let have_same_parent = match (&curr_parent_module, x.parent(ctx.db())) {
-                (Some(ast_module), Some(hir_module)) => {
-                    ctx.sema.to_module_def(ast_module).is_some_and(|it| it == hir_module)
-                }
+                (Some(ast_module), Some(hir_module)) => ctx
+                    .sema
+                    .to_module_def(ast_module)
+                    .is_some_and(|it| it == hir_module),
                 _ => source.file_id.original_file(ctx.db()).file_id(ctx.db()) == curr_file_id,
             };
 
@@ -821,7 +884,9 @@ fn indent_range_before_given_node(node: &SyntaxNode) -> Option<TextRange> {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_not_applicable_without_selection() {
         check_assist_not_applicable(
@@ -833,6 +898,7 @@ $0pub struct PublicStruct {
             ",
         )
     }
+
     #[test]
     fn test_extract_module() {
         check_assist(
@@ -937,6 +1003,7 @@ mod modname {
             ",
         );
     }
+
     #[test]
     fn test_extract_module_for_function_only() {
         check_assist(
@@ -963,6 +1030,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_extract_module_for_impl_having_corresponding_adt_in_selection() {
         check_assist(
@@ -1001,6 +1069,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_import_resolve_when_its_only_inside_selection() {
         check_assist(
@@ -1047,6 +1116,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_import_resolve_when_its_inside_and_outside_selection_and_source_not_in_same_mod() {
         check_assist(
@@ -1091,6 +1161,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_import_resolve_when_its_inside_and_outside_selection_and_source_is_in_same_mod() {
         check_assist(
@@ -1127,9 +1198,10 @@ mod modname {
             ",
         )
     }
+
     #[test]
-    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection(
-    ) {
+    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection()
+    {
         check_assist(
             extract_module,
             r"
@@ -1168,9 +1240,10 @@ mod modname {
             ",
         )
     }
+
     #[test]
-    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super(
-    ) {
+    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super()
+     {
         check_assist(
             extract_module,
             r"
@@ -1215,6 +1288,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_import_resolve_for_trait_bounds_on_function() {
         check_assist(
@@ -1261,6 +1335,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_extract_module_for_module() {
         check_assist(
@@ -1283,6 +1358,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_extract_module_with_multiple_files() {
         check_assist(
@@ -1326,6 +1402,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_extract_module_macro_rules() {
         check_assist(
@@ -1346,6 +1423,7 @@ modname::m! {}
             ",
         );
     }
+
     #[test]
     fn test_do_not_apply_visibility_modifier_to_trait_impl_items() {
         check_assist(
@@ -1380,6 +1458,7 @@ mod modname {
             ",
         )
     }
+
     #[test]
     fn test_if_inside_impl_block_generate_module_outside() {
         check_assist(
@@ -1435,6 +1514,7 @@ mod modname {
         ",
         )
     }
+
     #[test]
     fn test_if_inside_impl_block_generate_module_outside_but_impl_block_having_one_child() {
         check_assist(
@@ -1461,6 +1541,7 @@ $0fn foo(x: B) {}$0
         ",
         )
     }
+
     #[test]
     fn test_issue_11766() {
         //https://github.com/rust-lang/rust-analyzer/issues/11766
@@ -1494,6 +1575,7 @@ $0fn foo(x: B) {}$0
         ",
         )
     }
+
     #[test]
     fn test_issue_12790() {
         check_assist(
@@ -1670,6 +1752,7 @@ $0fn foo(x: B) {}$0
         ",
         )
     }
+
     #[test]
     fn test_merge_multiple_intersections() {
         check_assist(
@@ -1714,6 +1797,7 @@ mod modname {
 "#,
         );
     }
+
     #[test]
     fn test_remove_import_path_inside_selection() {
         check_assist(
@@ -1761,6 +1845,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn test_miss_select_item() {
         check_assist(

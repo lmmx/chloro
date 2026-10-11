@@ -15,8 +15,18 @@ use syntax::{
 //
 // ![Matching Brace](https://user-images.githubusercontent.com/48062697/113065573-04298180-91b1-11eb-8dec-d4e2a202f304.gif)
 pub(crate) fn matching_brace(file: &SourceFile, offset: TextSize) -> Option<TextSize> {
-    const BRACES: &[SyntaxKind] =
-        &[T!['{'], T!['}'], T!['['], T![']'], T!['('], T![')'], T![<], T![>], T![|], T![|]];
+    const BRACES: &[SyntaxKind] = &[
+        T!['{'],
+        T!['}'],
+        T!['['],
+        T![']'],
+        T!['('],
+        T![')'],
+        T![<],
+        T![>],
+        T![|],
+        T![|],
+    ];
     let (brace_token, brace_idx) = file
         .syntax()
         .token_at_offset(offset)
@@ -41,7 +51,9 @@ pub(crate) fn matching_brace(file: &SourceFile, offset: TextSize) -> Option<Text
 #[cfg(test)]
 mod tests {
     use test_utils::{add_cursor, assert_eq_text, extract_offset};
+
     use super::*;
+
     #[test]
     fn test_matching_brace() {
         fn do_check(before: &str, after: &str) {
@@ -56,8 +68,14 @@ mod tests {
         }
 
         do_check("struct Foo { a: i32, }$0", "struct Foo $0{ a: i32, }");
-        do_check("fn main() { |x: i32|$0 x * 2;}", "fn main() { $0|x: i32| x * 2;}");
-        do_check("fn main() { $0|x: i32| x * 2;}", "fn main() { |x: i32$0| x * 2;}");
+        do_check(
+            "fn main() { |x: i32|$0 x * 2;}",
+            "fn main() { $0|x: i32| x * 2;}",
+        );
+        do_check(
+            "fn main() { $0|x: i32| x * 2;}",
+            "fn main() { |x: i32$0| x * 2;}",
+        );
         do_check(
             "fn func(x) { return (2 * (x + 3)$0) + 5;}",
             "fn func(x) { return $0(2 * (x + 3)) + 5;}",

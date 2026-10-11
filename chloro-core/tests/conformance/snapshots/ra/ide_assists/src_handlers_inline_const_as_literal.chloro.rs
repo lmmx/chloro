@@ -39,10 +39,10 @@ pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>
         // FIXME: Add support to handle type aliases for builtin scalar types.
         validate_type_recursively(ctx, Some(&konst_ty), false, fuel)?;
 
-        let value = konst
-            .eval(ctx.sema.db)
-            .ok()?
-            .render(ctx.sema.db, konst.krate(ctx.sema.db).to_display_target(ctx.sema.db));
+        let value = konst.eval(ctx.sema.db).ok()?.render(
+            ctx.sema.db,
+            konst.krate(ctx.sema.db).to_display_target(ctx.sema.db),
+        );
 
         let id = AssistId::refactor_inline("inline_const_as_literal");
 
@@ -97,10 +97,12 @@ fn validate_type_recursively(
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     const NUMBER: u8 = 1;
     const BOOL: u8 = 2;
     const STR: u8 = 4;
     const CHAR: u8 = 8;
+
     const TEST_PAIRS: &[(&str, &str, u8)] = &[
         ("u8", "0", NUMBER),
         ("u16", "0", NUMBER),
@@ -120,6 +122,7 @@ mod tests {
         ("&str", "\"str\"", STR),
         ("char", "'c'", CHAR),
     ];
+
     // -----------Not supported-----------
     #[test]
     fn inline_const_as_literal_const_fn_call_slice() {
@@ -136,6 +139,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_expr_as_str_lit_not_applicable_const() {
         check_assist_not_applicable(
@@ -149,6 +153,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_struct_() {
         check_assist_not_applicable(
@@ -163,6 +168,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_enum_() {
         check_assist_not_applicable(
@@ -177,6 +183,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_tuple_closure() {
         check_assist_not_applicable(
@@ -189,6 +196,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_closure_() {
         check_assist_not_applicable(
@@ -201,6 +209,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_fn_() {
         check_assist_not_applicable(
@@ -214,7 +223,9 @@ mod tests {
             "#,
         );
     }
+
     // ----------------------------
+
     #[test]
     fn inline_const_as_literal_const_expr() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -235,6 +246,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_block_expr() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -255,6 +267,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_block_eval_expr() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -275,6 +288,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_block_eval_block_expr() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -295,6 +309,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_fn_call_block_nested_builtin() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -317,6 +332,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_fn_call_tuple() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -339,6 +355,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_const_fn_call_builtin() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {
@@ -361,6 +378,7 @@ mod tests {
             );
         });
     }
+
     #[test]
     fn inline_const_as_literal_scalar_operators() {
         check_assist(
@@ -389,6 +407,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_block_scalar_calculate_param_expr() {
         check_assist(
@@ -403,6 +422,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_block_tuple_scalar_calculate_block_expr() {
         check_assist(
@@ -417,6 +437,7 @@ mod tests {
             "#,
         );
     }
+
     // FIXME: Add support for nested ref slices when using `render_eval`
     #[test]
     fn inline_const_as_literal_block_slice() {
@@ -428,6 +449,7 @@ mod tests {
             "#,
         );
     }
+
     // FIXME: Add support for unary tuple expressions when using `render_eval`.
     // `const fn abc() -> (i32) { (1) }` will results in `1` instead of `(1)` because it's evaluated
     // as a paren expr.
@@ -445,6 +467,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_block_slice_single() {
         check_assist(
@@ -459,6 +482,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_block_array() {
         check_assist(
@@ -473,6 +497,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_block_recursive() {
         check_assist(
@@ -487,6 +512,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_expr_as_str_lit() {
         check_assist(
@@ -507,6 +533,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_block_expr_to_str_lit() {
         check_assist(
@@ -541,6 +568,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_block_macro_expr_to_str_lit() {
         check_assist(
@@ -563,6 +591,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_match_expr_to_str_lit() {
         check_assist(
@@ -589,6 +618,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_if_expr_to_str_lit() {
         check_assist(
@@ -617,6 +647,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_macro_expr_to_str_lit() {
         check_assist(
@@ -639,6 +670,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_eval_const_call_expr_to_str_lit() {
         check_assist(
@@ -661,6 +693,7 @@ mod tests {
             "#,
         );
     }
+
     #[test]
     fn inline_const_as_literal_expr_as_str_lit_not_applicable() {
         check_assist_not_applicable(

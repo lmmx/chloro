@@ -136,11 +136,9 @@ impl PerNsGlobImports {
     pub(crate) fn contains_type(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.types.contains(&(module_id, name))
     }
-
     pub(crate) fn contains_value(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.values.contains(&(module_id, name))
     }
-
     pub(crate) fn contains_macro(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.macros.contains(&(module_id, name))
     }
@@ -155,22 +153,24 @@ pub struct ItemScope {
     values: FxIndexMap<Name, ValuesItem>,
     macros: FxIndexMap<Name, MacrosItem>,
     unresolved: FxHashSet<Name>,
+
     /// The defs declared in this scope. Each def has a single scope where it is
     /// declared.
     declarations: ThinVec<ModuleDefId>,
+
     impls: ThinVec<ImplId>,
     extern_blocks: ThinVec<ExternBlockId>,
     unnamed_consts: ThinVec<ConstId>,
     /// Traits imported via `use Trait as _;`.
     unnamed_trait_imports: ThinVec<(TraitId, Item<()>)>,
+
     // the resolutions of the imports of this scope
     use_imports_types: FxHashMap<ImportOrExternCrate, ImportOrDef>,
     use_imports_values: FxHashMap<ImportOrGlob, ImportOrDef>,
     use_imports_macros: FxHashMap<ImportOrExternCrate, ImportOrDef>,
+
     use_decls: ThinVec<UseId>,
     extern_crate_decls: ThinVec<ExternCrateId>,
-    // FIXME: Macro shadowing in one module is not properly handled. Non-item place macros will
-    // be all resolved to the last one defined if shadowing happens.
     /// Macros visible in current module in legacy textual scope
     ///
     /// For macros invoked by an unqualified identifier like `bar!()`, `legacy_macros` will be searched in first.
@@ -181,6 +181,8 @@ pub struct ItemScope {
     /// Note that this automatically inherit macros defined textually before the definition of module itself.
     ///
     /// Module scoped macros will be inserted into `items` instead of here.
+    // FIXME: Macro shadowing in one module is not properly handled. Non-item place macros will
+    // be all resolved to the last one defined if shadowing happens.
     legacy_macros: FxHashMap<Name, SmallVec<[MacroId; 2]>>,
     /// The attribute macro invocations in this scope.
     attr_macros: FxHashMap<AstId<ast::Item>, MacroCallId>,
@@ -202,7 +204,12 @@ struct DeriveMacroInvocation {
 pub(crate) static BUILTIN_SCOPE: LazyLock<FxIndexMap<Name, PerNs>> = LazyLock::new(|| {
     BuiltinType::all_builtin_types()
         .iter()
-        .map(|(name, ty)| (name.clone(), PerNs::types((*ty).into(), Visibility::Public, None)))
+        .map(|(name, ty)| {
+            (
+                name.clone(),
+                PerNs::types((*ty).into(), Visibility::Public, None),
+            )
+        })
         .collect()
 });
 
@@ -240,9 +247,7 @@ impl ItemScope {
         self.types.iter().map(|(n, &i)| (n, i))
     }
 
-    pub fn macros(
-        &self,
-    ) -> impl Iterator<Item = (&Name, Item<MacroId, ImportOrExternCrate>)> + '_ {
+    pub fn macros(&self) -> impl Iterator<Item = (&Name, Item<MacroId, ImportOrExternCrate>)> + '_ {
         self.macros.iter().map(|(n, &i)| (n, i))
     }
 
@@ -263,7 +268,10 @@ impl ItemScope {
 
         let mut def_map;
         let mut scope = self;
-        while let Some(&m) = scope.use_imports_macros.get(&ImportOrExternCrate::Import(import)) {
+        while let Some(&m) = scope
+            .use_imports_macros
+            .get(&ImportOrExternCrate::Import(import))
+        {
             match m {
                 ImportOrDef::Import(i) => {
                     let module_id = i.use_.lookup(db).container;
@@ -272,14 +280,21 @@ impl ItemScope {
                     import = i;
                 }
                 ImportOrDef::Def(ModuleDefId::MacroId(def)) => {
-                    res.macros = Some(Item { def, vis: Visibility::Public, import: None });
+                    res.macros = Some(Item {
+                        def,
+                        vis: Visibility::Public,
+                        import: None,
+                    });
                     break;
                 }
                 _ => break,
             }
         }
         let mut scope = self;
-        while let Some(&m) = scope.use_imports_types.get(&ImportOrExternCrate::Import(import)) {
+        while let Some(&m) = scope
+            .use_imports_types
+            .get(&ImportOrExternCrate::Import(import))
+        {
             match m {
                 ImportOrDef::Import(i) => {
                     let module_id = i.use_.lookup(db).container;
@@ -288,7 +303,11 @@ impl ItemScope {
                     import = i;
                 }
                 ImportOrDef::Def(def) => {
-                    res.types = Some(Item { def, vis: Visibility::Public, import: None });
+                    res.types = Some(Item {
+                        def,
+                        vis: Visibility::Public,
+                        import: None,
+                    });
                     break;
                 }
                 _ => break,
@@ -304,7 +323,11 @@ impl ItemScope {
                     import = i;
                 }
                 ImportOrDef::Def(def) => {
-                    res.values = Some(Item { def, vis: Visibility::Public, import: None });
+                    res.values = Some(Item {
+                        def,
+                        vis: Visibility::Public,
+                        import: None,
+                    });
                     break;
                 }
                 _ => break,
@@ -334,11 +357,14 @@ impl ItemScope {
     }
 
     pub fn all_macro_calls(&self) -> impl Iterator<Item = MacroCallId> + '_ {
-        self.macro_invocations.values().copied().chain(self.attr_macros.values().copied()).chain(
-            self.derive_macros.values().flat_map(|it| {
-                it.iter().flat_map(|it| it.derive_call_ids.iter().copied().flatten())
-            }),
-        )
+        self.macro_invocations
+            .values()
+            .copied()
+            .chain(self.attr_macros.values().copied())
+            .chain(self.derive_macros.values().flat_map(|it| {
+                it.iter()
+                    .flat_map(|it| it.derive_call_ids.iter().copied().flatten())
+            }))
     }
 
     pub(crate) fn modules_in_scope(&self) -> impl Iterator<Item = (ModuleId, Visibility)> + '_ {
@@ -371,10 +397,7 @@ impl ItemScope {
     }
 
     /// XXX: this is O(N) rather than O(1), try to not introduce new usages.
-    pub(crate) fn name_of(
-        &self,
-        item: ItemInNs,
-    ) -> Option<(&Name, Visibility, /*declared*/ bool)> {
+    pub(crate) fn name_of(&self, item: ItemInNs) -> Option<(&Name, Visibility, /*declared*/ bool)> {
         match item {
             ItemInNs::Macros(def) => self.macros.iter().find_map(|(name, other_def)| {
                 (other_def.def == def).then_some((name, other_def.vis, other_def.import.is_none()))
@@ -442,8 +465,9 @@ impl ItemScope {
     }
 
     pub(crate) fn resolutions(&self) -> impl Iterator<Item = (Option<Name>, PerNs)> + '_ {
-        self.entries().map(|(name, res)| (Some(name.clone()), res)).chain(
-            self.unnamed_trait_imports.iter().map(|(tr, trait_)| {
+        self.entries()
+            .map(|(name, res)| (Some(name.clone()), res))
+            .chain(self.unnamed_trait_imports.iter().map(|(tr, trait_)| {
                 (
                     None,
                     PerNs::types(
@@ -452,17 +476,14 @@ impl ItemScope {
                         trait_.import.map(ImportOrExternCrate::Import),
                     ),
                 )
-            }),
-        )
+            }))
     }
 
     pub fn macro_invoc(&self, call: AstId<ast::MacroCall>) -> Option<MacroCallId> {
         self.macro_invocations.get(&call).copied()
     }
 
-    pub fn iter_macro_invoc(
-        &self,
-    ) -> impl Iterator<Item = (&AstId<ast::MacroCall>, &MacroCallId)> {
+    pub fn iter_macro_invoc(&self) -> impl Iterator<Item = (&AstId<ast::MacroCall>, &MacroCallId)> {
         self.macro_invocations.iter()
     }
 }
@@ -516,8 +537,11 @@ impl ItemScope {
         idx: usize,
     ) {
         if let Some(derives) = self.derive_macros.get_mut(&adt)
-            && let Some(DeriveMacroInvocation { derive_call_ids, .. }) =
-                derives.iter_mut().find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
+            && let Some(DeriveMacroInvocation {
+                derive_call_ids, ..
+            }) = derives
+                .iter_mut()
+                .find(|&&mut DeriveMacroInvocation { attr_id, .. }| id == attr_id)
         {
             derive_call_ids[idx] = Some(call);
         }
@@ -533,11 +557,14 @@ impl ItemScope {
         attr_call_id: MacroCallId,
         len: usize,
     ) {
-        self.derive_macros.entry(adt).or_default().push(DeriveMacroInvocation {
-            attr_id,
-            attr_call_id,
-            derive_call_ids: smallvec![None; len],
-        });
+        self.derive_macros
+            .entry(adt)
+            .or_default()
+            .push(DeriveMacroInvocation {
+                attr_id,
+                attr_call_id,
+                derive_call_ids: smallvec![None; len],
+            });
     }
 
     pub fn derive_macro_invocs(
@@ -551,9 +578,13 @@ impl ItemScope {
         self.derive_macros.iter().map(|(k, v)| {
             (
                 *k,
-                v.iter().map(|DeriveMacroInvocation { attr_id, attr_call_id, derive_call_ids }| {
-                    (*attr_id, *attr_call_id, &**derive_call_ids)
-                }),
+                v.iter().map(
+                    |DeriveMacroInvocation {
+                         attr_id,
+                         attr_call_id,
+                         derive_call_ids,
+                     }| { (*attr_id, *attr_call_id, &**derive_call_ids) },
+                ),
             )
         })
     }
@@ -563,12 +594,21 @@ impl ItemScope {
         ast_id: AstId<ast::Adt>,
         attr_id: AttrId,
     ) -> Option<MacroCallId> {
-        Some(self.derive_macros.get(&ast_id)?.iter().find(|it| it.attr_id == attr_id)?.attr_call_id)
+        Some(
+            self.derive_macros
+                .get(&ast_id)?
+                .iter()
+                .find(|it| it.attr_id == attr_id)?
+                .attr_call_id,
+        )
     }
 
     // FIXME: This is only used in collection, we should move the relevant parts of it out of ItemScope
     pub(crate) fn unnamed_trait_vis(&self, tr: TraitId) -> Option<Visibility> {
-        self.unnamed_trait_imports.iter().find(|&&(t, _)| t == tr).map(|(_, trait_)| trait_.vis)
+        self.unnamed_trait_imports
+            .iter()
+            .find(|&&(t, _)| t == tr)
+            .map(|(_, trait_)| trait_.vis)
     }
 
     pub(crate) fn push_unnamed_trait(
@@ -577,7 +617,14 @@ impl ItemScope {
         vis: Visibility,
         import: Option<ImportId>,
     ) {
-        self.unnamed_trait_imports.push((tr, Item { def: (), vis, import }));
+        self.unnamed_trait_imports.push((
+            tr,
+            Item {
+                def: (),
+                vis,
+                import,
+            },
+        ));
     }
 
     pub(crate) fn push_res_with_import(
@@ -590,6 +637,7 @@ impl ItemScope {
         let mut changed = false;
 
         // FIXME: Document and simplify this
+
         if let Some(mut fld) = def.types {
             let existing = self.types.entry(lookup.1.clone());
             match existing {
@@ -728,7 +776,11 @@ impl ItemScope {
             .values_mut()
             .map(|def| &mut def.vis)
             .chain(self.values.values_mut().map(|def| &mut def.vis))
-            .chain(self.unnamed_trait_imports.iter_mut().map(|(_, def)| &mut def.vis))
+            .chain(
+                self.unnamed_trait_imports
+                    .iter_mut()
+                    .map(|(_, def)| &mut def.vis),
+            )
             .for_each(|vis| *vis = Visibility::PubCrate(krate));
 
         for mac in self.macros.values_mut() {
@@ -747,7 +799,9 @@ impl ItemScope {
             format_to!(
                 buf,
                 "{}:",
-                name.map_or("_".to_owned(), |name| name.display(db, Edition::LATEST).to_string())
+                name.map_or("_".to_owned(), |name| name
+                    .display(db, Edition::LATEST)
+                    .to_string())
             );
 
             if let Some(Item { import, .. }) = def.types {
@@ -827,22 +881,29 @@ impl ItemScope {
     }
 }
 
+// These methods are a temporary measure only meant to be used by `DefCollector::push_res_and_update_glob_vis()`.
 impl ItemScope {
     pub(crate) fn update_visibility_types(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.types.get_mut(name).expect("tried to update visibility of non-existent type");
+        let res = self
+            .types
+            .get_mut(name)
+            .expect("tried to update visibility of non-existent type");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_values(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.values.get_mut(name).expect("tried to update visibility of non-existent value");
+        let res = self
+            .values
+            .get_mut(name)
+            .expect("tried to update visibility of non-existent value");
         res.vis = vis;
     }
 
     pub(crate) fn update_visibility_macros(&mut self, name: &Name, vis: Visibility) {
-        let res =
-            self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
+        let res = self
+            .macros
+            .get_mut(name)
+            .expect("tried to update visibility of non-existent macro");
         res.vis = vis;
     }
 }

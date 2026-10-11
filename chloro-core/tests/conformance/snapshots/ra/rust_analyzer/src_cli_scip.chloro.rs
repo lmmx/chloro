@@ -1,16 +1,16 @@
 //! SCIP generator
 
 use std::{path::PathBuf, time::Instant};
-use ide_db::LineIndexDatabase;
 
 use ide::{
     AnalysisHost, LineCol, Moniker, MonikerDescriptorKind, MonikerIdentifier, MonikerResult,
     RootDatabase, StaticIndex, StaticIndexedFile, SymbolInformationKind, TextRange, TokenId,
     TokenStaticData, VendoredLibrariesConfig,
 };
+use ide_db::LineIndexDatabase;
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use rustc_hash::{FxHashMap, FxHashSet};
-use scip::types::{SymbolInformation, self as scip_types};
+use scip::types::{self as scip_types, SymbolInformation};
 use tracing::error;
 use vfs::FileId;
 
@@ -67,7 +67,9 @@ impl flags::Scip {
         let vendored_libs_config = if self.exclude_vendored_libraries {
             VendoredLibrariesConfig::Excluded
         } else {
-            VendoredLibrariesConfig::Included { workspace_root: &root.clone().into() }
+            VendoredLibrariesConfig::Included {
+                workspace_root: &root.clone().into(),
+            }
         };
 
         let si = StaticIndex::compute(&analysis, vendored_libs_config);
@@ -130,10 +132,15 @@ impl flags::Scip {
         // Generates symbols from token monikers.
         let mut symbol_generator = SymbolGenerator::default();
 
-        for StaticIndexedFile { file_id, tokens, .. } in si.files {
+        for StaticIndexedFile {
+            file_id, tokens, ..
+        } in si.files
+        {
             symbol_generator.clear_document_local_state();
 
-            let Some(relative_path) = get_relative_filepath(&vfs, &root, file_id) else { continue };
+            let Some(relative_path) = get_relative_filepath(&vfs, &root, file_id) else {
+                continue;
+            };
             let line_index = get_line_index(db, file_id);
 
             let mut occurrences = Vec::new();
@@ -142,8 +149,11 @@ impl flags::Scip {
             for (text_range, id) in tokens.into_iter() {
                 let token = si.tokens.get(id).unwrap();
 
-                let Some(TokenSymbols { symbol, enclosing_symbol, is_inherent_impl }) =
-                    symbol_generator.token_symbols(id, token)
+                let Some(TokenSymbols {
+                    symbol,
+                    enclosing_symbol,
+                    is_inherent_impl,
+                }) = symbol_generator.token_symbols(id, token)
                 else {
                     // token did not have a moniker, so there is no reasonable occurrence to emit
                     // see ide::moniker::def_to_moniker
@@ -232,7 +242,9 @@ impl flags::Scip {
             };
 
             let file_id = definition.file_id;
-            let Some(relative_path) = get_relative_filepath(&vfs, &root, file_id) else { continue };
+            let Some(relative_path) = get_relative_filepath(&vfs, &root, file_id) else {
+                continue;
+            };
             let line_index = get_line_index(db, file_id);
             let text_range = definition.range;
             if file_ids_emitted.contains(&file_id) {
@@ -243,7 +255,11 @@ impl flags::Scip {
                 continue;
             }
 
-            let TokenSymbols { symbol, enclosing_symbol, .. } = symbol_generator
+            let TokenSymbols {
+                symbol,
+                enclosing_symbol,
+                ..
+            } = symbol_generator
                 .token_symbols(id, token)
                 .expect("To have been referenced, the symbol must be in the cache.");
 
@@ -282,6 +298,7 @@ impl flags::Scip {
     }
 }
 
+// FIXME: Known buggy cases are described here.
 const DUPLICATE_SYMBOLS_MESSAGE: &str = "
 Encountered duplicate scip symbols, indicating an internal rust-analyzer bug. These duplicates are
 included in the output, but this causes information lookup to be ambiguous and so information about
@@ -333,7 +350,13 @@ fn get_relative_filepath(
     rootpath: &vfs::AbsPathBuf,
     file_id: ide::FileId,
 ) -> Option<String> {
-    Some(vfs.file_path(file_id).as_path()?.strip_prefix(rootpath)?.as_str().to_owned())
+    Some(
+        vfs.file_path(file_id)
+            .as_path()?
+            .strip_prefix(rootpath)?
+            .as_str()
+            .to_owned(),
+    )
 }
 
 fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
@@ -349,19 +372,36 @@ fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
 //
 // This transforms a line index into the optimized SCIP Range.
 fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
-    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
-    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
+    let LineCol {
+        line: start_line,
+        col: start_col,
+    } = line_index.index.line_col(range.start());
+    let LineCol {
+        line: end_line,
+        col: end_col,
+    } = line_index.index.line_col(range.end());
 
     if start_line == end_line {
         vec![start_line as i32, start_col as i32, end_col as i32]
     } else {
-        vec![start_line as i32, start_col as i32, end_line as i32, end_col as i32]
+        vec![
+            start_line as i32,
+            start_col as i32,
+            end_line as i32,
+            end_col as i32,
+        ]
     }
 }
 
 fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
-    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
-    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
+    let LineCol {
+        line: start_line,
+        col: start_col,
+    } = line_index.index.line_col(range.start());
+    let LineCol {
+        line: end_line,
+        col: end_col,
+    } = line_index.index.line_col(range.end());
 
     format!("{relative_path}:{start_line}:{start_col}-{end_line}:{end_col}")
 }
@@ -472,7 +512,11 @@ fn moniker_to_symbol(moniker: &Moniker) -> scip_types::Symbol {
         package: Some(scip_types::Package {
             manager: "cargo".to_owned(),
             name: moniker.package_information.name.clone(),
-            version: moniker.package_information.version.clone().unwrap_or_else(|| ".".to_owned()),
+            version: moniker
+                .package_information
+                .version
+                .clone()
+                .unwrap_or_else(|| ".".to_owned()),
             special_fields: Default::default(),
         })
         .into(),
@@ -510,6 +554,7 @@ mod test {
     use ide::{FilePosition, TextSize};
     use test_fixture::ChangeFixture;
     use vfs::VfsPath;
+
     fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (AnalysisHost, FilePosition) {
         let mut host = AnalysisHost::default();
         let change_fixture = ChangeFixture::parse(host.raw_database(), ra_fixture);
@@ -517,9 +562,13 @@ mod test {
         let (file_id, range_or_offset) =
             change_fixture.file_position.expect("expected a marker ()");
         let offset = range_or_offset.expect_offset();
-        let position = FilePosition { file_id: file_id.file_id(host.raw_database()), offset };
+        let position = FilePosition {
+            file_id: file_id.file_id(host.raw_database()),
+            offset,
+        };
         (host, position)
     }
+
     /// If expected == "", then assert that there are no symbols (this is basically local symbol)
     #[track_caller]
     fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
@@ -550,15 +599,15 @@ mod test {
                         Some(MonikerResult::Moniker(moniker)) => {
                             Some(scip::symbol::format_symbol(moniker_to_symbol(moniker)))
                         }
-                        Some(MonikerResult::Local { enclosing_moniker: Some(moniker) }) => {
-                            Some(format!(
-                                "local enclosed by {}",
-                                scip::symbol::format_symbol(moniker_to_symbol(moniker))
-                            ))
-                        }
-                        Some(MonikerResult::Local { enclosing_moniker: None }) => {
-                            Some("unenclosed local".to_owned())
-                        }
+                        Some(MonikerResult::Local {
+                            enclosing_moniker: Some(moniker),
+                        }) => Some(format!(
+                            "local enclosed by {}",
+                            scip::symbol::format_symbol(moniker_to_symbol(moniker))
+                        )),
+                        Some(MonikerResult::Local {
+                            enclosing_moniker: None,
+                        }) => Some("unenclosed local".to_owned()),
                     };
                     break;
                 }
@@ -566,13 +615,20 @@ mod test {
         }
 
         if expected.is_empty() {
-            assert!(found_symbol.is_none(), "must have no symbols {found_symbol:?}");
+            assert!(
+                found_symbol.is_none(),
+                "must have no symbols {found_symbol:?}"
+            );
             return;
         }
 
-        assert!(found_symbol.is_some(), "must have one symbol {found_symbol:?}");
+        assert!(
+            found_symbol.is_some(),
+            "must have one symbol {found_symbol:?}"
+        );
         assert_eq!(found_symbol.unwrap(), expected);
     }
+
     #[test]
     fn basic() {
         check_symbol(
@@ -590,6 +646,7 @@ pub mod example_mod {
             "rust-analyzer cargo foo 0.1.0 example_mod/func().",
         );
     }
+
     #[test]
     fn symbol_for_trait() {
         check_symbol(
@@ -604,6 +661,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 module/MyTrait#func().",
         );
     }
+
     #[test]
     fn symbol_for_trait_alias() {
         check_symbol(
@@ -618,6 +676,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 module/MyTraitAlias#",
         );
     }
+
     #[test]
     fn symbol_for_trait_constant() {
         check_symbol(
@@ -632,6 +691,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 module/MyTrait#MY_CONST.",
         );
     }
+
     #[test]
     fn symbol_for_trait_type() {
         check_symbol(
@@ -646,6 +706,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 module/MyTrait#MyType#",
         );
     }
+
     #[test]
     fn symbol_for_trait_impl_function() {
         check_symbol(
@@ -666,6 +727,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 module/impl#[MyStruct][MyTrait]func().",
         );
     }
+
     #[test]
     fn symbol_for_field() {
         check_symbol(
@@ -683,6 +745,7 @@ pub mod module {
             "rust-analyzer cargo foo 0.1.0 St#a.",
         );
     }
+
     #[test]
     fn symbol_for_param() {
         check_symbol(
@@ -700,6 +763,7 @@ pub mod example_mod {
             "local enclosed by rust-analyzer cargo foo 0.1.0 example_mod/func().",
         );
     }
+
     #[test]
     fn symbol_for_closure_param() {
         check_symbol(
@@ -719,6 +783,7 @@ pub mod example_mod {
             "local enclosed by rust-analyzer cargo foo 0.1.0 example_mod/func().",
         );
     }
+
     #[test]
     fn local_symbol_for_local() {
         check_symbol(
@@ -738,6 +803,7 @@ pub mod example_mod {
             "local enclosed by rust-analyzer cargo foo 0.1.0 module/func().",
         );
     }
+
     #[test]
     fn global_symbol_for_pub_struct() {
         check_symbol(
@@ -756,6 +822,7 @@ pub mod example_mod {
             "rust-analyzer cargo main . foo/Bar#",
         );
     }
+
     #[test]
     fn global_symbol_for_pub_struct_reference() {
         check_symbol(
@@ -774,6 +841,7 @@ pub mod example_mod {
             "rust-analyzer cargo main . foo/Bar#",
         );
     }
+
     #[test]
     fn symbol_for_type_alias() {
         check_symbol(
@@ -784,6 +852,7 @@ pub mod example_mod {
             "rust-analyzer cargo main . MyTypeAlias#",
         );
     }
+
     // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_nested_function() {
@@ -799,6 +868,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+
     // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_struct_in_function() {
@@ -814,6 +884,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+
     // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_const_in_function() {
@@ -829,6 +900,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+
     // FIXME: This test represents current misbehavior.
     #[test]
     fn symbol_for_static_in_function() {
@@ -844,6 +916,7 @@ pub mod example_mod {
             // "local enclosed by rust-analyzer cargo main . func().",
         );
     }
+
     #[test]
     fn documentation_matches_doc_comment() {
         let s = "/// foo\nfn bar() {}";
@@ -864,6 +937,9 @@ pub mod example_mod {
         let (_, token_id) = file.tokens.get(1).unwrap(); // first token is file module, second is `bar`
         let token = si.tokens.get(*token_id).unwrap();
 
-        assert_eq!(token.documentation.as_ref().map(|d| d.as_str()), Some("foo"));
+        assert_eq!(
+            token.documentation.as_ref().map(|d| d.as_str()),
+            Some("foo")
+        );
     }
 }

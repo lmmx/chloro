@@ -13,7 +13,10 @@ pub(crate) fn unresolved_macro_call(
     let bang = if d.is_bang { "!" } else { "" };
     Diagnostic::new(
         DiagnosticCode::RustcHardError("unresolved-macro-call"),
-        format!("unresolved macro `{}{bang}`", d.path.display(ctx.sema.db, ctx.edition)),
+        format!(
+            "unresolved macro `{}{bang}`",
+            d.path.display(ctx.sema.db, ctx.edition)
+        ),
         display_range,
     )
 }
@@ -21,6 +24,7 @@ pub(crate) fn unresolved_macro_call(
 #[cfg(test)]
 mod tests {
     use crate::tests::check_diagnostics;
+
     #[test]
     fn unresolved_macro_diag() {
         check_diagnostics(
@@ -32,6 +36,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn test_unresolved_macro_range() {
         check_diagnostics(
@@ -41,6 +46,7 @@ foo::bar!(92);
 "#,
         );
     }
+
     #[test]
     fn unresolved_legacy_scope_macro() {
         check_diagnostics(
@@ -52,6 +58,7 @@ m!(); m2!();
 "#,
         );
     }
+
     #[test]
     fn unresolved_module_scope_macro() {
         check_diagnostics(
@@ -65,6 +72,7 @@ self::m!(); self::m2!();
 "#,
         );
     }
+
     #[test]
     fn regression_panic_with_inner_attribute_in_presence_of_unresolved_crate() {
         check_diagnostics(
@@ -76,6 +84,7 @@ self::m!(); self::m2!();
 "#,
         );
     }
+
     #[test]
     fn no_unresolved_panic_inside_mod_inside_fn() {
         check_diagnostics(

@@ -11,13 +11,11 @@ use crate::{
 };
 
 pub trait HasSource {
-    type Value;
-
+    type Value: AstNode;
     fn source(&self, db: &dyn DefDatabase) -> InFile<Self::Value> {
         let InFile { file_id, value } = self.ast_ptr(db);
         InFile::new(file_id, value.to_node(&db.parse_or_expand(file_id)))
     }
-
     fn ast_ptr(&self, db: &dyn DefDatabase) -> InFile<AstPtr<Self::Value>>;
 }
 
@@ -26,7 +24,6 @@ where
     T: AstIdLoc,
 {
     type Value = T::Ast;
-
     fn ast_ptr(&self, db: &dyn DefDatabase) -> InFile<AstPtr<Self::Value>> {
         let id = self.ast_id();
         let ast_id_map = db.ast_id_map(id.file_id);
@@ -36,7 +33,6 @@ where
 
 pub trait HasChildSource<ChildId> {
     type Value;
-
     fn child_source(&self, db: &dyn DefDatabase) -> InFile<ArenaMap<ChildId, Self::Value>>;
 }
 
@@ -56,33 +52,32 @@ fn use_tree_source_map(db: &dyn DefDatabase, use_ast_id: AstId<ast::Use>) -> Are
     let ast = use_ast_id.to_node(db);
     let ast_use_tree = ast.use_tree().expect("missing `use_tree`");
     let mut span_map = None;
-    crate::item_tree::lower_use_tree(
-        db,
-        ast_use_tree,
-        &mut |range| {
-        span_map.get_or_insert_with(|| db.span_map(use_ast_id.file_id)).span_for_range(range).ctx
-    },
-    )
-    .expect(
-        "failed to lower use tree",
-    ).1
+    crate::item_tree::lower_use_tree(db, ast_use_tree, &mut |range| {
+        span_map
+            .get_or_insert_with(|| db.span_map(use_ast_id.file_id))
+            .span_for_range(range)
+            .ctx
+    })
+    .expect("failed to lower use tree")
+    .1
 }
 
 impl HasChildSource<la_arena::Idx<ast::UseTree>> for UseId {
     type Value = ast::UseTree;
-
     fn child_source(
         &self,
         db: &dyn DefDatabase,
     ) -> InFile<ArenaMap<la_arena::Idx<ast::UseTree>, Self::Value>> {
         let loc = self.lookup(db);
-        InFile::new(loc.id.file_id, use_tree_source_map(db, loc.id).into_iter().collect())
+        InFile::new(
+            loc.id.file_id,
+            use_tree_source_map(db, loc.id).into_iter().collect(),
+        )
     }
 }
 
 impl HasChildSource<LocalTypeOrConstParamId> for GenericDefId {
     type Value = Either<ast::TypeOrConstParam, ast::Trait>;
-
     fn child_source(
         &self,
         db: &dyn DefDatabase,
@@ -117,7 +112,6 @@ impl HasChildSource<LocalTypeOrConstParamId> for GenericDefId {
 
 impl HasChildSource<LocalLifetimeParamId> for GenericDefId {
     type Value = ast::LifetimeParam;
-
     fn child_source(
         &self,
         db: &dyn DefDatabase,
@@ -146,7 +140,10 @@ impl HasChildSource<LocalFieldId> for VariantId {
         let (src, container) = match *self {
             VariantId::EnumVariantId(it) => {
                 let lookup = it.lookup(db);
-                (lookup.source(db).map(|it| it.kind()), lookup.parent.lookup(db).container)
+                (
+                    lookup.source(db).map(|it| it.kind()),
+                    lookup.parent.lookup(db).container,
+                )
             }
             VariantId::StructId(it) => {
                 let lookup = it.lookup(db);

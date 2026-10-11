@@ -39,7 +39,11 @@ pub(crate) fn generate_default_from_enum_variant(
         cov_mark::hit!(test_gen_default_on_non_unit_variant_not_implemented);
         return None;
     }
-    if !variant.syntax().text_range().contains_range(ctx.selection_trimmed()) {
+    if !variant
+        .syntax()
+        .text_range()
+        .contains_range(ctx.selection_trimmed())
+    {
         return None;
     }
 
@@ -90,7 +94,9 @@ fn existing_default_impl(
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_default_from_variant() {
         check_assist(
@@ -118,6 +124,7 @@ impl Default for Variant {
 "#,
         );
     }
+
     #[test]
     fn test_generate_default_selected_variant() {
         check_assist(
@@ -145,6 +152,7 @@ impl Default for Variant {
 "#,
         );
     }
+
     #[test]
     fn test_generate_default_not_applicable_with_multiple_variant_selection() {
         check_assist_not_applicable(
@@ -159,6 +167,7 @@ enum Variant {
 "#,
         );
     }
+
     #[test]
     fn test_generate_default_already_implemented() {
         cov_mark::check!(test_gen_default_impl_already_exists);
@@ -180,6 +189,7 @@ impl Default for Variant {
 "#,
         );
     }
+
     #[test]
     fn test_add_from_impl_no_element() {
         cov_mark::check!(test_gen_default_on_non_unit_variant_not_implemented);
@@ -195,6 +205,7 @@ enum Variant {
 "#,
         );
     }
+
     #[test]
     fn test_generate_default_from_variant_with_one_variant() {
         check_assist(

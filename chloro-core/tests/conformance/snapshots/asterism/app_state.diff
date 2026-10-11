@@ -2,18 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   31455 bytes
+Chloro size:   31467 bytes
 Rustfmt size:  31467 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-             if let Some(node_idx) = self
-                 .tree_nodes
-                 .iter()
--                .position(|n| n.section_index == Some(current_section_idx))
--            {
-+                .position(|n| n.section_index == Some(current_section_idx)) {
-                 self.current_node_index = node_idx;
-             }
-         }
+✓ Outputs are IDENTICAL

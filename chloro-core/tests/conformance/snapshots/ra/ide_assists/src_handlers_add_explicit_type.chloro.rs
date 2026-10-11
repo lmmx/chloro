@@ -34,7 +34,13 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 
         (let_stmt.ty(), let_stmt.initializer(), let_stmt.pat()?)
     } else if let Either::Right(param) = syntax_node {
-        if param.syntax().ancestors().nth(2).and_then(ast::ClosureExpr::cast).is_none() {
+        if param
+            .syntax()
+            .ancestors()
+            .nth(2)
+            .and_then(ast::ClosureExpr::cast)
+            .is_none()
+        {
             cov_mark::hit!(add_explicit_type_not_applicable_in_fn_param);
             return None;
         }
@@ -71,7 +77,9 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         return None;
     }
 
-    let inferred_type = ty.display_source_code(ctx.db(), module.into(), false).ok()?;
+    let inferred_type = ty
+        .display_source_code(ctx.db(), module.into(), false)
+        .ok()?;
     acc.add(
         AssistId::refactor_rewrite("add_explicit_type"),
         format!("Insert explicit type `{inferred_type}`"),
@@ -90,11 +98,14 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+
     #[test]
     fn add_explicit_type_target() {
         check_assist_target(add_explicit_type, r#"fn f() { let a$0 = 1; }"#, "a");
     }
+
     #[test]
     fn add_explicit_type_simple() {
         check_assist(
@@ -103,6 +114,7 @@ mod tests {
             r#"fn f() { let a: i32 = 1; }"#,
         );
     }
+
     #[test]
     fn add_explicit_type_simple_on_infer_ty() {
         check_assist(
@@ -111,6 +123,7 @@ mod tests {
             r#"fn f() { let a: i32 = 1; }"#,
         );
     }
+
     #[test]
     fn add_explicit_type_simple_nested_infer_ty() {
         check_assist(
@@ -128,6 +141,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn add_explicit_type_macro_call_expr() {
         check_assist(
@@ -136,11 +150,13 @@ fn f() {
             r"macro_rules! v { () => {0u64} } fn f() { let a: u64 = v!(); }",
         );
     }
+
     #[test]
     fn add_explicit_type_not_applicable_for_fully_unresolved() {
         cov_mark::check!(add_explicit_type_not_applicable_if_ty_not_inferred);
         check_assist_not_applicable(add_explicit_type, r#"fn f() { let a$0 = None; }"#);
     }
+
     #[test]
     fn add_explicit_type_applicable_for_partially_unresolved() {
         check_assist(
@@ -163,15 +179,18 @@ fn f() {
         fn f() { let a: Vec<_, Vec<_, i32>> = Vec::new(); }"#,
         );
     }
+
     #[test]
     fn add_explicit_type_not_applicable_closure_expr() {
         check_assist_not_applicable(add_explicit_type, r#"fn f() { let a$0 = || {}; }"#);
     }
+
     #[test]
     fn add_explicit_type_not_applicable_ty_already_specified() {
         cov_mark::check!(add_explicit_type_not_applicable_if_ty_already_specified);
         check_assist_not_applicable(add_explicit_type, r#"fn f() { let a$0: i32 = 1; }"#);
     }
+
     #[test]
     fn add_explicit_type_not_applicable_cursor_after_equals_of_let() {
         cov_mark::check!(add_explicit_type_not_applicable_if_cursor_after_equals);
@@ -180,6 +199,7 @@ fn f() {
             r#"fn f() {let a =$0 match 1 {2 => 3, 3 => 5};}"#,
         )
     }
+
     /// https://github.com/rust-lang/rust-analyzer/issues/2922
     #[test]
     fn regression_issue_2922() {
@@ -207,6 +227,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn default_generics_should_not_be_added() {
         check_assist(
@@ -227,6 +248,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn type_should_be_added_after_pattern() {
         // LetStmt = Attr* 'let' Pat (':' Type)? '=' initializer:Expr ';'
@@ -244,6 +266,7 @@ fn main() {
 "#,
         );
     }
+
     #[test]
     fn add_explicit_type_inserts_coercions() {
         check_assist(
@@ -261,11 +284,13 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn add_explicit_type_not_applicable_fn_param() {
         cov_mark::check!(add_explicit_type_not_applicable_in_fn_param);
         check_assist_not_applicable(add_explicit_type, r#"fn f(x$0: ()) {}"#);
     }
+
     #[test]
     fn add_explicit_type_ascribes_closure_param() {
         check_assist(
@@ -300,6 +325,7 @@ fn f() {
 "#,
         );
     }
+
     #[test]
     fn add_explicit_type_ascribes_closure_param_already_ascribed() {
         check_assist(

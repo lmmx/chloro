@@ -195,6 +195,7 @@ fn strip_body(editor: &mut SyntaxEditor, item: &ast::AssocItem) {
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};
+
     #[test]
     fn test_trigger_when_cursor_on_header() {
         check_assist_not_applicable(
@@ -209,6 +210,7 @@ impl Foo { $0
 }"#,
         );
     }
+
     #[test]
     fn test_assoc_item_fn() {
         check_assist_no_snippet_cap(
@@ -235,6 +237,7 @@ impl NewTrait for Foo {
 }"#,
         )
     }
+
     #[test]
     fn test_assoc_item_macro() {
         check_assist_no_snippet_cap(
@@ -269,6 +272,7 @@ impl NewTrait for Foo {
 }"#,
         )
     }
+
     #[test]
     fn test_assoc_item_const() {
         check_assist_no_snippet_cap(
@@ -291,6 +295,7 @@ impl NewTrait for Foo {
 }"#,
         )
     }
+
     #[test]
     fn test_impl_with_generics() {
         check_assist_no_snippet_cap(
@@ -318,6 +323,7 @@ impl<const N: usize> NewTrait<N> for Foo<N> {
             "#,
         )
     }
+
     #[test]
     fn test_trait_items_should_not_have_vis() {
         check_assist_no_snippet_cap(
@@ -344,12 +350,17 @@ impl NewTrait for Foo {
 }"#,
         )
     }
+
     #[test]
     fn test_empty_inherent_impl() {
-        check_assist_not_applicable(generate_trait_from_impl, r#"
+        check_assist_not_applicable(
+            generate_trait_from_impl,
+            r#"
 impl Emp$0tyImpl{}
-"#)
+"#,
+        )
     }
+
     #[test]
     fn test_not_top_level_impl() {
         check_assist_no_snippet_cap(
@@ -372,6 +383,7 @@ mod a {
 }"#,
         )
     }
+
     #[test]
     fn test_snippet_cap_is_some() {
         check_assist(

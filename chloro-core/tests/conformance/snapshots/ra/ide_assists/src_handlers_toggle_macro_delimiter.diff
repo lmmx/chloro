@@ -2,60 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5732 bytes
-Chloro size:   5724 bytes
+Chloro size:   5732 bytes
 Rustfmt size:  5732 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- #[cfg(test)]
- mod tests {
-     use crate::tests::{check_assist, check_assist_not_applicable};
--
-     use super::*;
--
-     #[test]
-     fn test_par() {
-         check_assist(
-             "#,
-         );
-     }
--
-     #[test]
-     fn test_braces() {
-         check_assist(
-             "#,
-         )
-     }
--
-     #[test]
-     fn test_brackets() {
-         check_assist(
-             "#,
-         )
-     }
--
-     #[test]
-     fn test_indent() {
-         check_assist(
-             "#,
-         )
-     }
--
-     #[test]
-     fn test_unrelated_par() {
-         check_assist_not_applicable(
-             "#,
-         )
-     }
--
-     #[test]
-     fn test_longer_macros() {
-         check_assist(
- "#,
-         )
-     }
--
-     // FIXME @alibektas : Inner macro_call is not seen as such. So this doesn't work.
-     #[test]
-     fn test_nested_macros() {
+✓ Outputs are IDENTICAL

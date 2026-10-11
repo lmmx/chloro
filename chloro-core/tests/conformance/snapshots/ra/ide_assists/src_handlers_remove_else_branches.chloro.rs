@@ -75,6 +75,7 @@ pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -
 mod tests {
     use super::*;
     use crate::tests::check_assist_not_applicable;
+
     #[test]
     fn test_remove_else_branches_not_on_else_token() {
         check_assist_not_applicable(

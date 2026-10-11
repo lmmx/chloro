@@ -11,11 +11,11 @@
 use std::{io::Write as _, marker::PhantomData, time::Instant};
 
 use ide_db::FxHashSet;
-use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};
 use tracing::{
     Event, Subscriber,
     span::{Attributes, Id},
 };
+use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};
 
 struct JsonData {
     name: &'static str,
@@ -24,7 +24,10 @@ struct JsonData {
 
 impl JsonData {
     fn new(name: &'static str) -> Self {
-        Self { name, start: Instant::now() }
+        Self {
+            name,
+            start: Instant::now(),
+        }
     }
 }
 
@@ -36,7 +39,10 @@ pub(crate) struct TimingLayer<S, W> {
 
 impl<S, W> TimingLayer<S, W> {
     pub(crate) fn new(writer: W) -> Self {
-        Self { writer, _inner: PhantomData }
+        Self {
+            writer,
+            _inner: PhantomData,
+        }
     }
 }
 
@@ -66,10 +72,16 @@ where
             return;
         };
 
-        let data = JsonDataInner { name: data.name, elapsed_ms: data.start.elapsed().as_millis() };
+        let data = JsonDataInner {
+            name: data.name,
+            elapsed_ms: data.start.elapsed().as_millis(),
+        };
         let mut out = serde_json::to_string(&data).expect("Unable to serialize data");
         out.push('\n');
-        self.writer.make_writer().write_all(out.as_bytes()).expect("Unable to write data");
+        self.writer
+            .make_writer()
+            .write_all(out.as_bytes())
+            .expect("Unable to write data");
     }
 }
 

@@ -69,9 +69,7 @@ pub fn from_json<T: DeserializeOwned>(
     json: &serde_json::Value,
 ) -> anyhow::Result<T> {
     serde_json::from_value(json.clone())
-    .map_err(
-        |e| anyhow::format_err!("Failed to deserialize {what}: {e}; {json}"),
-    )
+        .map_err(|e| anyhow::format_err!("Failed to deserialize {what}: {e}; {json}"))
 }
 
 #[doc(hidden)]

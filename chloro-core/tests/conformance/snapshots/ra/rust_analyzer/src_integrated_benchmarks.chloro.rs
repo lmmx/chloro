@@ -11,13 +11,13 @@
 //! which you can use to paste the command in terminal and add `--release` manually.
 
 use hir::ChangeWithProcMacros;
-use ide_db::{
-    MiniCore, SnippetCap,
-    imports::insert_use::{ImportGranularity, InsertUseConfig},
-};
 use ide::{
     AnalysisHost, CallableSnippets, CompletionConfig, CompletionFieldsToResolve, DiagnosticsConfig,
     FilePosition, TextSize,
+};
+use ide_db::{
+    MiniCore, SnippetCap,
+    imports::insert_use::{ImportGranularity, InsertUseConfig},
 };
 use project_model::CargoConfig;
 use test_utils::project_root;
@@ -142,12 +142,15 @@ fn integrated_completion_benchmark() {
     };
 
     // kick off parsing and index population
+
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
-        let completion_offset =
-            patch(&mut text, "db.struct_signature(self.id)", "sel;\ndb.struct_signature(self.id)")
-                + "sel".len();
+        let completion_offset = patch(
+            &mut text,
+            "db.struct_signature(self.id)",
+            "sel;\ndb.struct_signature(self.id)",
+        ) + "sel".len();
         let mut change = ChangeWithProcMacros::default();
         change.change_file(file_id, Some(text));
         host.apply_change(change);
@@ -187,8 +190,10 @@ fn integrated_completion_benchmark() {
             enable_auto_iter: true,
             minicore: MiniCore::default(),
         };
-        let position =
-            FilePosition { file_id, offset: TextSize::try_from(completion_offset).unwrap() };
+        let position = FilePosition {
+            file_id,
+            offset: TextSize::try_from(completion_offset).unwrap(),
+        };
         analysis.completions(&config, position, None).unwrap();
     }
 
@@ -242,8 +247,10 @@ fn integrated_completion_benchmark() {
             enable_auto_iter: true,
             minicore: MiniCore::default(),
         };
-        let position =
-            FilePosition { file_id, offset: TextSize::try_from(completion_offset).unwrap() };
+        let position = FilePosition {
+            file_id,
+            offset: TextSize::try_from(completion_offset).unwrap(),
+        };
         analysis.completions(&config, position, None).unwrap();
     }
 
@@ -295,8 +302,10 @@ fn integrated_completion_benchmark() {
             enable_auto_iter: true,
             minicore: MiniCore::default(),
         };
-        let position =
-            FilePosition { file_id, offset: TextSize::try_from(completion_offset).unwrap() };
+        let position = FilePosition {
+            file_id,
+            offset: TextSize::try_from(completion_offset).unwrap(),
+        };
         analysis.completions(&config, position, None).unwrap();
     }
 }
@@ -364,7 +373,11 @@ fn integrated_diagnostics_benchmark() {
         term_search_borrowck: true,
     };
     host.analysis()
-        .full_diagnostics(&diagnostics_config, ide::AssistResolveStrategy::None, file_id)
+        .full_diagnostics(
+            &diagnostics_config,
+            ide::AssistResolveStrategy::None,
+            file_id,
+        )
         .unwrap();
 
     let _g = crate::tracing::hprof::init("*");
@@ -372,7 +385,11 @@ fn integrated_diagnostics_benchmark() {
     {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
-        patch(&mut text, "db.struct_signature(self.id)", "();\ndb.struct_signature(self.id)");
+        patch(
+            &mut text,
+            "db.struct_signature(self.id)",
+            "();\ndb.struct_signature(self.id)",
+        );
         let mut change = ChangeWithProcMacros::default();
         change.change_file(file_id, Some(text));
         host.apply_change(change);
@@ -382,7 +399,11 @@ fn integrated_diagnostics_benchmark() {
         let _p = tracing::info_span!("diagnostics").entered();
         let _span = profile::cpu_span();
         host.analysis()
-            .full_diagnostics(&diagnostics_config, ide::AssistResolveStrategy::None, file_id)
+            .full_diagnostics(
+                &diagnostics_config,
+                ide::AssistResolveStrategy::None,
+                file_id,
+            )
             .unwrap();
     }
 }

@@ -41,7 +41,11 @@ pub(super) fn ra_fixture(
     )?;
 
     if let Some(range) = literal.open_quote_text_range() {
-        hl.add(HlRange { range, highlight: HlTag::StringLiteral.into(), binding_hash: None })
+        hl.add(HlRange {
+            range,
+            highlight: HlTag::StringLiteral.into(),
+            binding_hash: None,
+        })
     }
 
     for tmp_file_id in fixture_analysis.files() {
@@ -74,14 +78,17 @@ pub(super) fn ra_fixture(
     }
 
     if let Some(range) = literal.close_quote_text_range() {
-        hl.add(HlRange { range, highlight: HlTag::StringLiteral.into(), binding_hash: None })
+        hl.add(HlRange {
+            range,
+            highlight: HlTag::StringLiteral.into(),
+            binding_hash: None,
+        })
     }
 
     Some(())
 }
 
 const RUSTDOC_FENCE_LENGTH: usize = 3;
-
 const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
 
 /// Injection of syntax highlighting of doctests and intra doc links.
@@ -106,15 +113,23 @@ pub(super) fn doc_comment(
                 doc_mapping
                     .map(range)
                     .filter(|(mapping, _)| mapping.file_id == src_file_id)
-                    .and_then(|(InFile { value: mapped_range, .. }, attr_id)| {
-                        Some(mapped_range).zip(resolve_doc_path_for_def(
-                            sema.db,
-                            def,
-                            &link,
-                            ns,
-                            attr_id.is_inner_attr(),
-                        ))
-                    })
+                    .and_then(
+                        |(
+                            InFile {
+                                value: mapped_range,
+                                ..
+                            },
+                            attr_id,
+                        )| {
+                            Some(mapped_range).zip(resolve_doc_path_for_def(
+                                sema.db,
+                                def,
+                                &link,
+                                ns,
+                                attr_id.is_inner_attr(),
+                            ))
+                        },
+                    )
             })
             .for_each(|(range, def)| {
                 hl.add(HlRange {
@@ -129,6 +144,7 @@ pub(super) fn doc_comment(
     }
 
     // Extract doc-test sources from the docs and calculate highlighting for them.
+
     let mut inj = RangeMapper::default();
     inj.add_unmapped("fn doctest() {\n");
 
@@ -141,7 +157,10 @@ pub(super) fn doc_comment(
     let mut string;
 
     for attr in attributes.by_key(sym::doc).attrs() {
-        let InFile { file_id, value: src } = attrs_source_map.source_of(attr);
+        let InFile {
+            file_id,
+            value: src,
+        } = attrs_source_map.source_of(attr);
         if file_id != src_file_id {
             continue;
         }
@@ -165,7 +184,10 @@ pub(super) fn doc_comment(
                 let range = comment.syntax().text_range();
                 (
                     &comment.text()[value..],
-                    TextRange::new(range.start() + TextSize::try_from(value).unwrap(), range.end()),
+                    TextRange::new(
+                        range.start() + TextSize::try_from(value).unwrap(),
+                        range.end(),
+                    ),
                 )
             }
         };
@@ -179,7 +201,10 @@ pub(super) fn doc_comment(
             };
             let mut pos = TextSize::from(0);
 
-            match RUSTDOC_FENCES.into_iter().find_map(|fence| line.find(fence)) {
+            match RUSTDOC_FENCES
+                .into_iter()
+                .find_map(|fence| line.find(fence))
+            {
                 Some(idx) => {
                     is_codeblock = !is_codeblock;
                     // Check whether code is rust by inspecting fence guards
@@ -193,7 +218,11 @@ pub(super) fn doc_comment(
             }
 
             // whitespace after comment is ignored
-            if let Some(ws) = line[pos.into()..].chars().next().filter(|c| c.is_whitespace()) {
+            if let Some(ws) = line[pos.into()..]
+                .chars()
+                .next()
+                .filter(|c| c.is_whitespace())
+            {
                 pos += TextSize::of(ws);
             }
             // lines marked with `#` should be ignored in output, we skip the `#` char
@@ -202,7 +231,10 @@ pub(super) fn doc_comment(
             }
 
             new_comments.push(TextRange::at(prev_range_start, pos));
-            inj.add(&line[pos.into()..], TextRange::new(pos, line_len) + prev_range_start);
+            inj.add(
+                &line[pos.into()..],
+                TextRange::new(pos, line_len) + prev_range_start,
+            );
             inj.add_unmapped("\n");
         }
     }
@@ -234,9 +266,18 @@ pub(super) fn doc_comment(
             None,
         )
     }) {
-        for HlRange { range, highlight, binding_hash } in ranges {
+        for HlRange {
+            range,
+            highlight,
+            binding_hash,
+        } in ranges
+        {
             for range in inj.map_range_up(range) {
-                hl.add(HlRange { range, highlight: highlight | HlMod::Injected, binding_hash });
+                hl.add(HlRange {
+                    range,
+                    highlight: highlight | HlMod::Injected,
+                    binding_hash,
+                });
             }
         }
     }

@@ -61,9 +61,8 @@ pub fn autoderef<'db>(
     v.into_iter()
 }
 
-pub(crate) trait TrackAutoderefSteps<'db> {
+pub(crate) trait TrackAutoderefSteps<'db>: Default + fmt::Debug {
     fn len(&self) -> usize;
-
     fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
 }
 
@@ -71,17 +70,14 @@ impl<'db> TrackAutoderefSteps<'db> for usize {
     fn len(&self) -> usize {
         *self
     }
-
     fn push(&mut self, _: Ty<'db>, _: AutoderefKind) {
         *self += 1;
     }
 }
-
 impl<'db> TrackAutoderefSteps<'db> for Vec<(Ty<'db>, AutoderefKind)> {
     fn len(&self) -> usize {
         self.len()
     }
-
     fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
         self.push((ty, kind));
     }
@@ -117,8 +113,10 @@ pub(crate) struct Autoderef<'a, 'db, Steps = Vec<(Ty<'db>, AutoderefKind)>> {
     // Meta infos:
     pub(crate) table: &'a mut InferenceTable<'db>,
     traits: Option<AutoderefTraits>,
+
     // Current state:
     state: AutoderefSnapshot<'db, Steps>,
+
     // Configurations:
     include_raw_pointers: bool,
     use_receiver_trait: bool,
@@ -128,7 +126,10 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
     type Item = (Ty<'db>, usize);
 
     fn next(&mut self) -> Option<Self::Item> {
-        debug!("autoderef: steps={:?}, cur_ty={:?}", self.state.steps, self.state.cur_ty);
+        debug!(
+            "autoderef: steps={:?}, cur_ty={:?}",
+            self.state.steps, self.state.cur_ty
+        );
         if self.state.at_start {
             self.state.at_start = false;
             debug!("autoderef stage #0 is {:?}", self.state.cur_ty);
@@ -150,8 +151,10 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
         // be better to skip this clause and use the Overloaded case only, since &T
         // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
         // and Deref, and this has benefits for const and the emitted MIR.
-        let (kind, new_ty) = if let Some(ty) =
-            self.state.cur_ty.builtin_deref(self.table.db, self.include_raw_pointers)
+        let (kind, new_ty) = if let Some(ty) = self
+            .state
+            .cur_ty
+            .builtin_deref(self.table.db, self.include_raw_pointers)
         {
             debug_assert_eq!(ty, self.table.infer_ctxt.resolve_vars_if_possible(ty));
             // NOTE: we may still need to normalize the built-in deref in case
@@ -252,16 +255,27 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
         let interner = self.table.interner();
 
         // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.
-        let AutoderefTraits { trait_, trait_target } = self.autoderef_traits()?;
+        let AutoderefTraits {
+            trait_,
+            trait_target,
+        } = self.autoderef_traits()?;
 
         let trait_ref = TraitRef::new(interner, trait_.into(), [ty]);
-        let obligation =
-            Obligation::new(interner, ObligationCause::new(), self.table.trait_env.env, trait_ref);
+        let obligation = Obligation::new(
+            interner,
+            ObligationCause::new(),
+            self.table.trait_env.env,
+            trait_ref,
+        );
         // We detect whether the self type implements `Deref` before trying to
         // structurally normalize. We use `predicate_may_hold_opaque_types_jank`
         // to support not-yet-defined opaque types. It will succeed for `impl Deref`
         // but fail for `impl OtherTrait`.
-        if !self.table.infer_ctxt.predicate_may_hold_opaque_types_jank(&obligation) {
+        if !self
+            .table
+            .infer_ctxt
+            .predicate_may_hold_opaque_types_jank(&obligation)
+        {
             debug!("overloaded_deref_ty: cannot match obligation");
             return None;
         }
@@ -270,10 +284,17 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
             self.table,
             Ty::new_projection(interner, trait_target.into(), [ty]),
         )?;
-        debug!("overloaded_deref_ty({:?}) = ({:?}, {:?})", ty, normalized_ty, obligations);
+        debug!(
+            "overloaded_deref_ty({:?}) = ({:?}, {:?})",
+            ty, normalized_ty, obligations
+        );
         self.state.obligations.extend(obligations);
 
-        Some(self.table.infer_ctxt.resolve_vars_if_possible(normalized_ty))
+        Some(
+            self.table
+                .infer_ctxt
+                .resolve_vars_if_possible(normalized_ty),
+        )
     }
 
     /// Returns the final type we ended up with, which may be an unresolved
@@ -345,8 +366,13 @@ pub(crate) fn overloaded_deref_ty<'db>(
 
     let trait_target = LangItem::DerefTarget.resolve_type_alias(table.db, table.trait_env.krate)?;
 
-    let (normalized_ty, obligations) =
-        structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
+    let (normalized_ty, obligations) = structurally_normalize_ty(
+        table,
+        Ty::new_projection(interner, trait_target.into(), [ty]),
+    )?;
 
-    Some(InferOk { value: normalized_ty, obligations })
+    Some(InferOk {
+        value: normalized_ty,
+        obligations,
+    })
 }

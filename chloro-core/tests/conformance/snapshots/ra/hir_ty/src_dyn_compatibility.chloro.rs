@@ -21,8 +21,7 @@ use crate::{
     lower::associated_ty_item_bounds,
     next_solver::{
         Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
-        SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt,
-        mk_param,
+        SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt, mk_param,
     },
     traits::next_trait_solve_in_ctxt,
 };
@@ -60,7 +59,9 @@ pub fn dyn_compatibility(
             return if super_trait.0 == trait_ {
                 Some(v)
             } else {
-                Some(DynCompatibilityViolation::HasNonCompatibleSuperTrait(super_trait.0))
+                Some(DynCompatibilityViolation::HasNonCompatibleSuperTrait(
+                    super_trait.0,
+                ))
             };
         }
     }
@@ -79,7 +80,9 @@ where
     let interner = DbInterner::new_with(db, Some(trait_.krate(db)), None);
     for super_trait in elaborate::supertrait_def_ids(interner, trait_.into()).skip(1) {
         if db.dyn_compatibility_of_trait(super_trait.0).is_some() {
-            cb(DynCompatibilityViolation::HasNonCompatibleSuperTrait(trait_))?;
+            cb(DynCompatibilityViolation::HasNonCompatibleSuperTrait(
+                trait_,
+            ))?;
         }
     }
 
@@ -108,6 +111,7 @@ where
     }
 
     // rustc checks for non-lifetime binders here, but we don't support HRTB yet
+
     let trait_data = trait_.trait_items(db);
     for (_, assoc_item) in &trait_data.items {
         dyn_compatibility_violation_for_assoc_item(db, trait_, *assoc_item, cb)?;
@@ -178,15 +182,30 @@ fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
             _ => None,
         })
         .any(|bounds| {
-            bounds.skip_binder().iter().any(|pred| match pred.skip_binder() {
-                rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
-                    contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
-                }),
-                rustc_type_ir::ExistentialPredicate::Projection(it) => it.args.iter().any(|arg| {
-                    contains_illegal_self_type_reference(db, trait_, &arg, AllowSelfProjection::Yes)
-                }),
-                rustc_type_ir::ExistentialPredicate::AutoTrait(_) => false,
-            })
+            bounds
+                .skip_binder()
+                .iter()
+                .any(|pred| match pred.skip_binder() {
+                    rustc_type_ir::ExistentialPredicate::Trait(it) => it.args.iter().any(|arg| {
+                        contains_illegal_self_type_reference(
+                            db,
+                            trait_,
+                            &arg,
+                            AllowSelfProjection::Yes,
+                        )
+                    }),
+                    rustc_type_ir::ExistentialPredicate::Projection(it) => {
+                        it.args.iter().any(|arg| {
+                            contains_illegal_self_type_reference(
+                                db,
+                                trait_,
+                                &arg,
+                                AllowSelfProjection::Yes,
+                            )
+                        })
+                    }
+                    rustc_type_ir::ExistentialPredicate::AutoTrait(_) => false,
+                })
         })
 }
 
@@ -254,7 +273,11 @@ fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbI
                                     .collect(),
                             )
                         }
-                        if self.super_traits.as_ref().is_some_and(|s| s.contains(&trait_)) {
+                        if self
+                            .super_traits
+                            .as_ref()
+                            .is_some_and(|s| s.contains(&trait_))
+                        {
                             ControlFlow::Continue(())
                         } else {
                             ty.super_visit_with(self)
@@ -267,8 +290,12 @@ fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbI
         }
     }
 
-    let mut visitor =
-        IllegalSelfTypeVisitor { db, trait_, super_traits: None, allow_self_projection };
+    let mut visitor = IllegalSelfTypeVisitor {
+        db,
+        trait_,
+        super_traits: None,
+        allow_self_projection,
+    };
     t.visit_with(&mut visitor).is_break()
 }
 
@@ -290,14 +317,9 @@ where
     match item {
         AssocItemId::ConstId(it) => cb(DynCompatibilityViolation::AssocConst(it)),
         AssocItemId::FunctionId(it) => {
-            virtual_call_violations_for_method(
-                db,
-                trait_,
-                it,
-                &mut |mvc| {
+            virtual_call_violations_for_method(db, trait_, it, &mut |mvc| {
                 cb(DynCompatibilityViolation::Method(it, mvc))
-            },
-            )
+            })
         }
         AssocItemId::TypeAliasId(it) => {
             let def_map = CrateRootModuleId::from(trait_.krate(db)).def_map(db);
@@ -411,12 +433,22 @@ fn receiver_is_dispatchable<'db>(
         parent: trait_.into(),
         local_id: LocalTypeOrConstParamId::from_raw(la_arena::RawIdx::from_u32(0)),
     });
-    let self_param_ty =
-        Ty::new(interner, rustc_type_ir::TyKind::Param(ParamTy { index: 0, id: self_param_id }));
+    let self_param_ty = Ty::new(
+        interner,
+        rustc_type_ir::TyKind::Param(ParamTy {
+            index: 0,
+            id: self_param_id,
+        }),
+    );
 
     // `self: Self` can't be dispatched on, but this is already considered dyn-compatible
     // See rustc's comment on https://github.com/rust-lang/rust/blob/3f121b9461cce02a703a0e7e450568849dfaa074/compiler/rustc_trait_selection/src/traits/object_safety.rs#L433-L437
-    if sig.inputs().iter().next().is_some_and(|p| p.skip_binder() == self_param_ty) {
+    if sig
+        .inputs()
+        .iter()
+        .next()
+        .is_some_and(|p| p.skip_binder() == self_param_ty)
+    {
         return true;
     }
 
@@ -448,12 +480,19 @@ fn receiver_is_dispatchable<'db>(
         let generic_predicates = &*db.generic_predicates(func.into());
 
         // Self: Unsize<U>
-        let unsize_predicate =
-            TraitRef::new(interner, unsize_did.into(), [self_param_ty, unsized_self_ty]);
+        let unsize_predicate = TraitRef::new(
+            interner,
+            unsize_did.into(),
+            [self_param_ty, unsized_self_ty],
+        );
 
         // U: Trait<Arg1, ..., ArgN>
         let args = GenericArgs::for_item(interner, trait_.into(), |index, kind, _| {
-            if index == 0 { unsized_self_ty.into() } else { mk_param(interner, index, kind) }
+            if index == 0 {
+                unsized_self_ty.into()
+            } else {
+                mk_param(interner, index, kind)
+            }
         });
         let trait_predicate = TraitRef::new_from_args(interner, trait_.into(), args);
 
@@ -473,14 +512,19 @@ fn receiver_is_dispatchable<'db>(
     };
 
     // Receiver: DispatchFromDyn<Receiver[Self => U]>
-    let predicate =
-        TraitRef::new(interner, dispatch_from_dyn_did.into(), [receiver_ty, unsized_receiver_ty]);
+    let predicate = TraitRef::new(
+        interner,
+        dispatch_from_dyn_did.into(),
+        [receiver_ty, unsized_receiver_ty],
+    );
     let goal = Goal::new(interner, param_env, predicate);
 
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
     // the receiver is dispatchable iff the obligation holds
     let res = next_trait_solve_in_ctxt(&infcx, goal);
-    res.map_or(false, |res| matches!(res.1, rustc_type_ir::solve::Certainty::Yes))
+    res.map_or(false, |res| {
+        matches!(res.1, rustc_type_ir::solve::Certainty::Yes)
+    })
 }
 
 fn receiver_for_self_ty<'db>(
@@ -490,7 +534,11 @@ fn receiver_for_self_ty<'db>(
     self_ty: Ty<'db>,
 ) -> Ty<'db> {
     let args = GenericArgs::for_item(interner, SolverDefId::FunctionId(func), |index, kind, _| {
-        if index == 0 { self_ty.into() } else { mk_param(interner, index, kind) }
+        if index == 0 {
+            self_ty.into()
+        } else {
+            mk_param(interner, index, kind)
+        }
     });
 
     EarlyBinder::bind(receiver_ty).instantiate(interner, args)

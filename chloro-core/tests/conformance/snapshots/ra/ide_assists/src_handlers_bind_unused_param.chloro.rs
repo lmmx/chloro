@@ -21,7 +21,9 @@ use syntax::{
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
 
-    let Some(ast::Pat::IdentPat(ident_pat)) = param.pat() else { return None };
+    let Some(ast::Pat::IdentPat(ident_pat)) = param.pat() else {
+        return None;
+    };
     let name = ident_pat.name().filter(|n| !n.text().starts_with('_'))?;
 
     let param_def = {
@@ -65,7 +67,9 @@ pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn bind_unused_empty_block() {
         cov_mark::check!(single_line);
@@ -81,6 +85,7 @@ fn foo(y: i32) {
 "#,
         );
     }
+
     #[test]
     fn bind_unused_ref_ident_pat() {
         cov_mark::check!(single_line);
@@ -96,6 +101,7 @@ fn foo(ref y: i32) {
 "#,
         );
     }
+
     #[test]
     fn bind_unused_empty_block_with_newline() {
         check_assist(
@@ -111,6 +117,7 @@ fn foo(y: i32) {
 "#,
         );
     }
+
     #[test]
     fn bind_unused_generic() {
         check_assist(
@@ -128,6 +135,7 @@ where T : Default {
 "#,
         );
     }
+
     #[test]
     fn trait_impl() {
         check_assist(
@@ -152,6 +160,7 @@ impl Trait for () {
 "#,
         );
     }
+
     #[test]
     fn keep_used() {
         cov_mark::check!(keep_used);
@@ -162,6 +171,7 @@ fn foo(x: i32, $0y: i32) { y; }
 "#,
         );
     }
+
     #[test]
     fn keep_underscore_used() {
         check_assist_not_applicable(

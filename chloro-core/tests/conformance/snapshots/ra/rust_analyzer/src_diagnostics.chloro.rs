@@ -1,12 +1,11 @@
 //! Book keeping for keeping diagnostics easily in sync with the client.
-
 pub(crate) mod flycheck_to_proto;
 
 use std::mem;
 
 use cargo_metadata::PackageId;
-use ide_db::{FxHashMap, base_db::DbPanicContext};
 use ide::FileId;
+use ide_db::{FxHashMap, base_db::DbPanicContext};
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use smallvec::SmallVec;
@@ -15,7 +14,8 @@ use triomphe::Arc;
 
 use crate::{global_state::GlobalStateSnapshot, lsp, lsp_ext, main_loop::DiagnosticsTaskKind};
 
-pub(crate) type CheckFixes = Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
+pub(crate) type CheckFixes =
+    Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
 
 #[derive(Debug, Default, Clone)]
 pub struct DiagnosticsMapConfig {
@@ -41,8 +41,10 @@ pub(crate) struct PackageFlycheckDiagnostic {
 #[derive(Debug, Default, Clone)]
 pub(crate) struct DiagnosticCollection {
     // FIXME: should be FxHashMap<FileId, Vec<ra_id::Diagnostic>>
-    pub(crate) native_syntax: FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
-    pub(crate) native_semantic: FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
+    pub(crate) native_syntax:
+        FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
+    pub(crate) native_semantic:
+        FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
     pub(crate) check: Vec<WorkspaceFlycheckDiagnostic>,
     pub(crate) check_fixes: CheckFixes,
     changes: FxHashSet<FileId>,
@@ -65,7 +67,12 @@ impl DiagnosticCollection {
         let Some(check) = self.check.get_mut(flycheck_id) else {
             return;
         };
-        self.changes.extend(check.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys()));
+        self.changes.extend(
+            check
+                .per_package
+                .drain()
+                .flat_map(|(_, v)| v.per_file.into_keys()),
+        );
         if let Some(fixes) = Arc::make_mut(&mut self.check_fixes).get_mut(flycheck_id) {
             fixes.clear();
         }
@@ -73,11 +80,11 @@ impl DiagnosticCollection {
 
     pub(crate) fn clear_check_all(&mut self) {
         Arc::make_mut(&mut self.check_fixes).clear();
-        self.changes.extend(
-            self.check
-                .iter_mut()
-                .flat_map(|it| it.per_package.drain().flat_map(|(_, v)| v.per_file.into_keys())),
-        )
+        self.changes.extend(self.check.iter_mut().flat_map(|it| {
+            it.per_package
+                .drain()
+                .flat_map(|(_, v)| v.per_file.into_keys())
+        }))
     }
 
     pub(crate) fn clear_check_for_package(
@@ -158,13 +165,18 @@ impl DiagnosticCollection {
         fix: Option<Box<Fix>>,
     ) {
         if self.check.len() <= flycheck_id {
-            self.check.resize_with(flycheck_id + 1, WorkspaceFlycheckDiagnostic::default);
+            self.check
+                .resize_with(flycheck_id + 1, WorkspaceFlycheckDiagnostic::default);
         }
 
         let check = &mut self.check[flycheck_id];
-        let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
-            PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
-        });
+        let package = check
+            .per_package
+            .entry(package_id.clone())
+            .or_insert_with(|| PackageFlycheckDiagnostic {
+                generation,
+                per_file: FxHashMap::default(),
+            });
         // Getting message from old generation. Might happen in restarting checks.
         if package.generation > generation {
             return;
@@ -234,8 +246,16 @@ impl DiagnosticCollection {
         &self,
         file_id: FileId,
     ) -> impl Iterator<Item = &lsp_types::Diagnostic> {
-        let native_syntax = self.native_syntax.get(&file_id).into_iter().flat_map(|(_, d)| d);
-        let native_semantic = self.native_semantic.get(&file_id).into_iter().flat_map(|(_, d)| d);
+        let native_syntax = self
+            .native_syntax
+            .get(&file_id)
+            .into_iter()
+            .flat_map(|(_, d)| d);
+        let native_semantic = self
+            .native_semantic
+            .get(&file_id)
+            .into_iter()
+            .flat_map(|(_, d)| d);
         let check = self
             .check
             .iter()
@@ -259,7 +279,10 @@ impl DiagnosticCollection {
 }
 
 fn are_diagnostics_equal(left: &lsp_types::Diagnostic, right: &lsp_types::Diagnostic) -> bool {
-    left.source == right.source && left.severity == right.severity && left.range == right.range && left.message == right.message
+    left.source == right.source
+        && left.severity == right.severity
+        && left.range == right.range
+        && left.message == right.message
 }
 
 pub(crate) enum NativeDiagnosticsFetchKind {
@@ -344,14 +367,18 @@ pub(crate) fn convert_diagnostic(
     lsp_types::Diagnostic {
         range: lsp::to_proto::range(line_index, d.range.range),
         severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),
-        code: Some(lsp_types::NumberOrString::String(d.code.as_str().to_owned())),
+        code: Some(lsp_types::NumberOrString::String(
+            d.code.as_str().to_owned(),
+        )),
         code_description: Some(lsp_types::CodeDescription {
             href: lsp_types::Url::parse(&d.code.url()).unwrap(),
         }),
         source: Some("rust-analyzer".to_owned()),
         message: d.message,
         related_information: None,
-        tags: d.unused.then(|| vec![lsp_types::DiagnosticTag::UNNECESSARY]),
+        tags: d
+            .unused
+            .then(|| vec![lsp_types::DiagnosticTag::UNNECESSARY]),
         data: None,
     }
 }

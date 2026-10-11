@@ -2,46 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15380 bytes
-Chloro size:   15405 bytes
+Chloro size:   15488 bytes
 Rustfmt size:  15488 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! See [`import_on_the_fly`].
-+
- use hir::{ItemInNs, ModuleDef};
- use ide_db::imports::{
-     import_assets::{ImportAssets, LocatedImport},
-         ctx,
-         path_ctx,
-         import_assets,
--        qualifier
--            .map(|it| it.syntax().clone())
--            .or_else(|| ctx.original_token.parent())?,
-+        qualifier.map(|it| it.syntax().clone()).or_else(|| ctx.original_token.parent())?,
-         potential_import_name,
-     )
- }
-     if !ctx.config.enable_imports_on_the_fly {
-         return None;
-     }
--    if let PatternContext {
--        record_pat: Some(_),
--        ..
--    } = pattern_ctx
--    {
-+    if let PatternContext { record_pat: Some(_), .. } = pattern_ctx {
-         return None;
-     }
- 
-     let method_imported = import.item_to_import != import.original_item;
-     if method_imported
-         && (is_exclude_flyimport.is_some()
--            || ctx
--                .exclude_flyimport
--                .contains_key(&import.original_item.into_module_def()))
-+            || ctx.exclude_flyimport.contains_key(&import.original_item.into_module_def()))
-     {
-         // If this is a method, exclude it either if it was excluded itself (which may not be caught above,
-         // because `item_to_import` is the trait), or if its trait was excluded. We don't need to check
+✓ Outputs are IDENTICAL

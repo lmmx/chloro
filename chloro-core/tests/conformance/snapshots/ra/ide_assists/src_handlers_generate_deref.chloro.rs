@@ -57,7 +57,9 @@ fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     };
 
     let module = ctx.sema.to_def(&strukt)?.module(ctx.db());
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
     let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
 
@@ -87,7 +89,10 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::TupleField>()?;
     let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
-    let field_list_index = field_list.syntax().children().position(|s| &s == field.syntax())?;
+    let field_list_index = field_list
+        .syntax()
+        .children()
+        .position(|s| &s == field.syntax())?;
 
     let deref_type_to_generate = match existing_deref_impl(&ctx.sema, &strukt) {
         None => DerefType::Deref,
@@ -99,7 +104,9 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
     };
 
     let module = ctx.sema.to_def(&strukt)?.module(ctx.db());
-    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+    let cfg = ctx
+        .config
+        .find_path_config(ctx.sema.is_nightly(module.krate()));
     let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
 
@@ -202,7 +209,9 @@ impl DerefType {
 #[cfg(test)]
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
+
     use super::*;
+
     #[test]
     fn test_generate_record_deref() {
         check_assist(
@@ -224,6 +233,7 @@ impl core::ops::Deref for B {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_record_deref_with_generic() {
         check_assist(
@@ -245,6 +255,7 @@ impl<T> core::ops::Deref for A<T> {
 "#,
         );
     }
+
     #[test]
     fn test_generate_record_deref_short_path() {
         check_assist(
@@ -268,6 +279,7 @@ impl Deref for B {
 }"#,
         );
     }
+
     #[test]
     fn test_generate_field_deref_idx_0() {
         check_assist(
@@ -310,6 +322,7 @@ impl core::ops::Deref for B {
 }"#,
         );
     }
+
     #[test]
     fn test_generates_derefmut_when_deref_present() {
         check_assist(
@@ -333,6 +346,7 @@ impl core::ops::Deref for B {}
 "#,
         );
     }
+
     #[test]
     fn test_generate_record_deref_not_applicable_if_already_impl() {
         cov_mark::check!(test_add_record_deref_impl_already_exists);
@@ -348,6 +362,7 @@ impl core::ops::DerefMut for B {}
 "#,
         )
     }
+
     #[test]
     fn test_generate_field_deref_not_applicable_if_already_impl() {
         cov_mark::check!(test_add_field_deref_impl_already_exists);
