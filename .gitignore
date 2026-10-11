@@ -1,5 +1,9 @@
-chloro-core/tests/conformance/snapshots/ra/parser
-chloro-core/tests/conformance/snapshots/ra/syntax
+# The parser and syntax crates have many small cases: only rustfmt's expected outputs are
+# tracked there. The batch conformance tests write the rest (see README.md).
+chloro-core/tests/conformance/snapshots/ra/parser/*
+chloro-core/tests/conformance/snapshots/ra/syntax/*
+!chloro-core/tests/conformance/snapshots/ra/parser/*.rustfmt.rs
+!chloro-core/tests/conformance/snapshots/ra/syntax/*.rustfmt.rs
 
 docs/initial
 /target

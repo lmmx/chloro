@@ -61,6 +61,18 @@ error-recovery test case. Every output is a fixed point of chloro. To reproduce:
 cargo run --release -p chloro-core --example conform -- -i
 ```
 
+The expected outputs are rustfmt 1.9.0's, stored as
+`chloro-core/tests/conformance/snapshots/ra/<crate>/<case>.rustfmt.rs` (the input itself
+where rustfmt rejects it). The batch tests regenerate them with the `rustfmt` on `PATH`,
+together with chloro's output and a diff for each case:
+
+```sh
+cargo test -p chloro-core --test conformance batch
+```
+
+For the `parser` and `syntax` crates (581 small cases) only the `.rustfmt.rs` files are
+tracked; the chloro outputs and diffs are written locally.
+
 Non-default values of the stable options are compared with `rustfmt --config` by
 `cargo run --release -p chloro-core --example config_matrix`. The same example run over a
 local cargo registry (`-- --root ~/.cargo/registry/src -n 6000 default`), a corpus chloro
@@ -72,7 +84,7 @@ was not developed against, gave identical output for 5384 of 5386 files.
 **Summary:** +2 / -2
 
 1219 of 1220 files identical; the one differing file is
-[`parser/test_data_parser_err_0024_many_type_parens`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/parser/test_data_parser_err_0024_many_type_parens.diff).
+[`parser/test_data/parser/err/0024_many_type_parens.rs`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/fixtures/rust-analyzer/parser/test_data/parser/err/0024_many_type_parens.rs).
 <!-- /just: conf-md -->
 
 ## Performance
