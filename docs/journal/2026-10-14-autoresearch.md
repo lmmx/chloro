@@ -526,6 +526,49 @@ final build:
   ceiling is about 2x (`lints.rs`: two arrays hold 49% of the item work).
 - The six open conformance cases.
 
+## Handoff for the next session
+
+State at the end of this session (2026-10-14, about 23:35 UTC):
+
+- Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR
+  [lmmx/chloro#88](https://github.com/lmmx/chloro/pull/88), head carries every merge listed
+  in the ledger; best-known-good `113367a` (312,734,032 `Ir`; conform 1220/1220 at both
+  versions; goldens `fixtures-e8d87c2.tsv`, `registry-e8d87c2.tsv` in this container's
+  scratch directory, re-recordable with `bench --record` at that commit).
+- M3, the quiet-host measurement of the final head, runs in a sibling session and pushes
+  `20261014-measure-m3` with `measurements/m3-quiet-host.md` when done; the first step of
+  the next session is to merge that branch and copy its headline numbers into the README's
+  performance section (which carries M2's numbers for `8d418ee`, before E3 and R2) and
+  into "What the programme established" above.
+- Three bounded investigations were launched in the last minutes of the session and write
+  their records under `2026-10-14-autoresearch/experiments/` if they finish: EXP-009 (glibc
+  malloc tunables through `GLIBC_TUNABLES`, measured on the CLI), EXP-010 (feasibility of
+  fusing rust-analyzer's trivia interspersal with the flat tree build, read-only), and
+  `review-cache-parallel-cst.md` (a hostile review of the cache key, the deferred-gap
+  replay and the arena handles). Whatever landed is committed; what did not is not claimed.
+- Experiment branches, all pushed and all merged: `20261014-cli-cache`,
+  `20261014-parallel-items`, `20261014-cli-build`, `20261014-green-reads`,
+  `20261014-rustfmt-version`, `20261014-flat-cst` (prototype, not merged by design),
+  `20261014-flat-port`, `20261014-hot-paths`, `20261014-conformance-fixes`,
+  `20261014-measure-m1`, `20261014-measure-m2`. Worktrees under `/home/user/wt/` and the
+  scratch data under the session's scratchpad are lost with this container.
+
+Next actions, in the order of value per effort:
+
+1. Merge `20261014-measure-m3`; update the README's performance table from it; move the
+   best-known-good row's in-process figure to M3's.
+2. Add the profile-guided build to `.github/workflows/binaries.yml` as proposed in
+   EXP-002 (−21% instructions on the sample, measured; the script is `benchmarks/pgo.sh`).
+3. Act on the review findings in `review-cache-parallel-cst.md` if any are bugs.
+4. If EXP-010 bounds the fused tree build above 3%, run it as an experiment on a
+   `YYYYMMDD-fused-build` branch under the protocol's gates.
+5. The remaining formatter levers from profile-flat.md: intermediate `String`s per rewrite
+   (about 8% after E3), then the allocator (12%, only if EXP-009 or another allocator
+   shows a gain without the memory cost).
+6. Conformance cases 19 and 20 of the ledger (doc comments as expression attributes;
+   edition-2015 anonymous trait parameters) are the two fixable open cases.
+7. Run `just emblazon` to refresh the README badges (dependencies, binary size).
+
 ## Current State
 
 - The formatter reads syntax from a flat preorder array with a generated typed layer
