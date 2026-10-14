@@ -321,6 +321,28 @@ per `RewriteContext` that E7b introduced. Remaining levers by upper bound: a CLI
 ≤7.4% but only with a parser change, `CharClasses` ≤7.2%, `unicode_str_width` ≤5.3%; E3
 holds the last two and part of the second.
 
+**E3, hot paths (`20261014-hot-paths`, merged `7cf3c9e`).** Nineteen levers, each a
+separate commit kept only when the instruction count on the sample fell by more than 0.1%
+with every output unchanged, replayed in order onto the flat build to attribute the gain:
+390,690,354 → 316,301,692 instructions (−19.0%; the orchestrator's reproduction
+316,076,716). The largest are an eight-byte check in `unicode_str_width` for ASCII strings
+without a newline (−2.75%), first and last line widths without splitting the string
+(−2.55%), an expression without attributes returning its rewrite directly instead of
+passing through `combine_strs_with_missing_comments` (−2.39%), and
+`span_ends_with_comma` reading only the last two code characters, since its answer depends
+on nothing else (−2.22%); the comment scanner's `skip_plain` and a new `skip_comment` move
+past stretches where the state machine cannot change, searching eight bytes at a time
+(−4.4% over five commits); the line-start table is built only up to the position asked
+(−1.10%); 35 hot `format!` calls with string arguments become one exact allocation (−0.98%).
+Every skip has a test that compares it with the full state machine over every string of a
+small alphabet up to length five. `malloc` calls on the sample fell 233,281 → 211,520 and
+`realloc` 45,794 → 27,277; `bench -n 5` on the sibling host 7.67–7.82 → 9.30–9.50 MB/s,
+ranges apart. Rejected with numbers: a vectorised newline count (+4.47 M), per-byte
+lookahead in `skip_plain` (+784 K), the line table via `match_indices` (+519 K). The
+`node_text` lever (−0.78% on the rowan build) was dropped as superseded by E7b. The levers
+removed scans or copies rather than speeding the state machine up: `CharClasses::next`
+itself keeps its structure and now costs 4.47 M.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
@@ -414,9 +436,9 @@ input, the cache disabled through the harness.
   (chloro-core/src/cst/: mod.rs, generated.rs, ast.rs, gen_ast.py, rust.ungram); rowan and
   ra_ap_syntax are dev-dependencies for the equality tests only
   (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 16 crates
-- Instructions on the 49-file sample under `benchmarks/profile.sh`: 390,689,247 at `8d418ee`
-  against 587,989,243 at `884f9c9` (−33.55%); 306,889,893 for the profile-guided build
-  (measurements/m2-quiet-host.md)
+- Instructions on the 49-file sample under `benchmarks/profile.sh`: 316,076,716 at the E3
+  merge against 587,988,576 at `884f9c9` (−46.2%); 306,889,893 for the profile-guided build
+  of `8d418ee` (measurements/m2-quiet-host.md)
 - In process on one core of the 2.80GHz host class: 7.25–7.73 MB/s on the 1238 fixtures
   against 4.94–5.03 for `884f9c9`; against rustfmt 1.9.0 on nine crates, formatted input,
   `--check`: 0.438–0.611 of its wall time on one core and 0.130–0.201 on four, with every
@@ -449,8 +471,6 @@ input, the cache disabled through the harness.
 - `0024_many_type_parens.rs` differs from rustfmt at both supported versions, and the
   conformance ledger with its fixes is not merged yet (R2 running on
   `20261014-conformance-fixes`)
-- The hot-path levers of E3 (`CharClasses`, `unicode_str_width`, the comment slow paths,
-  intermediate strings) are not merged yet (E3 running on `20261014-hot-paths`)
 - No profile-guided build in the release workflow; `.github/workflows/binaries.yml` is
   unchanged and the proposed step is in experiments/EXP-002-cli-build.md
 
