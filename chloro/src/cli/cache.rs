@@ -32,7 +32,9 @@
 //!
 //! The set is read once at start-up and shared read-only across the worker threads. The
 //! digests to record are collected from the workers' results and written once at the end,
-//! to a temporary file in the same directory that is then renamed over the cache file.
+//! to a temporary file in the same directory (`.<cache file name>.<pid>.<nanos>.tmp`,
+//! created with `create_new`, so no two saves share one) that is then renamed over the
+//! cache file.
 //! Entries are bounded to [`MAX_ENTRIES`]; when the bound is exceeded, the entries seen
 //! least recently (lowest generation) are dropped. Cache files in the directory that have not
 //! been written for [`STALE_FILE_AGE`] (files of binaries or configurations no longer in use)
@@ -44,7 +46,7 @@ use chloro_core::formatter::config::{
 };
 use std::collections::HashMap;
 use std::fs;
-use std::io;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -320,18 +322,64 @@ impl Cache {
 
         let dir = self.path.parent().unwrap_or(Path::new("."));
         fs::create_dir_all(dir)?;
-        let nanos = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_or(0, |d| d.subsec_nanos());
-        let tmp = dir.join(format!(".{}.{}.tmp", std::process::id(), nanos));
-        let written = fs::write(&tmp, &bytes).and_then(|()| fs::rename(&tmp, &self.path));
+        let target = self
+            .path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or_default();
+        let (tmp, mut file) = create_temp(dir, target)?;
+        let written = file.write_all(&bytes);
+        drop(file);
+        let written = written.and_then(|()| fs::rename(&tmp, &self.path));
         if written.is_err() {
+            // The temporary file was created by this call (`create_new`), so it is ours.
             let _ = fs::remove_file(&tmp);
         }
         written?;
         remove_stale_files(dir);
         Ok(())
     }
+}
+
+/// Attempts at a fresh temporary file name before a save gives up.
+const TEMP_ATTEMPTS: u128 = 16;
+
+/// Name of a temporary file for the cache file `target`: `.<target>.<pid>.<nanos>.tmp`.
+///
+/// The target's name is part of it, so two saves of different cache files never share a
+/// temporary file, whatever their process ids and clocks.
+fn temp_name(target: &str, pid: u32, nanos: u128) -> String {
+    format!(".{target}.{pid}.{nanos}.tmp")
+}
+
+/// Opens `path` for writing only if no file exists there (`create_new`): a file another
+/// process is writing is never truncated or shared.
+fn open_new(path: &Path) -> io::Result<fs::File> {
+    fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)
+}
+
+/// Creates a new temporary file for `target` in `dir`. A name that already exists (another
+/// process with the same id saving at the same clock reading) is retried with another
+/// suffix; after [`TEMP_ATTEMPTS`] the `AlreadyExists` error is returned and the save is
+/// skipped.
+fn create_temp(dir: &Path, target: &str) -> io::Result<(PathBuf, fs::File)> {
+    let pid = std::process::id();
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos());
+    let mut last = None;
+    for attempt in 0..TEMP_ATTEMPTS {
+        let tmp = dir.join(temp_name(target, pid, nanos.wrapping_add(attempt)));
+        match open_new(&tmp) {
+            Ok(file) => return Ok((tmp, file)),
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => last = Some(e),
+            Err(e) => return Err(e),
+        }
+    }
+    Err(last.unwrap_or_else(|| io::Error::from(io::ErrorKind::AlreadyExists)))
 }
 
 /// Parse a cache file into its generation and entries. `None` for any layout mismatch.
@@ -537,6 +585,57 @@ mod tests {
             }),
             "no temporary file is left behind"
         );
+    }
+
+    #[test]
+    fn temporary_file_names_its_target_and_is_never_shared() {
+        assert_eq!(
+            temp_name("0123abcd.chloro-cache", 42, 1_700_000_000_123_456_789),
+            ".0123abcd.chloro-cache.42.1700000000123456789.tmp"
+        );
+        // Two cache files never share a temporary name, whatever the pid and clock.
+        assert_ne!(
+            temp_name("a.chloro-cache", 1, 2),
+            temp_name("b.chloro-cache", 1, 2)
+        );
+
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(temp_name("a.chloro-cache", 1, 2));
+        fs::write(&path, b"another process's entries").unwrap();
+        let err = open_new(&path).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::AlreadyExists);
+        assert_eq!(
+            fs::read(&path).unwrap(),
+            b"another process's entries",
+            "an existing temporary file is neither truncated nor written"
+        );
+
+        // `create_temp` never returns an existing file.
+        let (tmp, _file) = create_temp(dir.path(), "a.chloro-cache").unwrap();
+        assert_ne!(tmp, path);
+        let name = tmp.file_name().unwrap().to_str().unwrap();
+        assert!(name.starts_with(".a.chloro-cache."), "{name}");
+        assert!(name.ends_with(".tmp"), "{name}");
+    }
+
+    #[test]
+    fn save_leaves_another_saves_temporary_file_alone() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(file_name(&[3u8; 32], &Config::default()));
+        let target = path.file_name().unwrap().to_str().unwrap();
+        let foreign = dir
+            .path()
+            .join(temp_name(target, std::process::id().wrapping_add(1), 5));
+        fs::write(&foreign, b"in progress").unwrap();
+        let cache = Cache {
+            path: path.clone(),
+            generation: 0,
+            entries: HashMap::new(),
+        };
+        let d = content_digest(b"x");
+        cache.save([d]).unwrap();
+        assert!(parse(&fs::read(&path).unwrap()).unwrap().1.contains_key(&d));
+        assert_eq!(fs::read(&foreign).unwrap(), b"in progress");
     }
 
     #[test]
