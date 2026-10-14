@@ -7,11 +7,11 @@
 
 use std::cmp::Ordering;
 
-use ra_ap_syntax::ast::{self, AstNode, HasName};
+use crate::cst::ast::{self, AstNode, HasName};
 
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::imports::UseTree;
+use super::imports::{UseTree, sort_use_trees};
 use super::items::{is_mod_decl, rewrite_extern_crate, rewrite_mod};
 use super::lists::{ListFormatting, ListItem, itemize_list, write_list};
 use super::nodes::node_text;
@@ -31,7 +31,7 @@ fn symbol(text: String) -> String {
 
 fn mod_name(item: &ast::Item) -> String {
     match item {
-        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()).into_owned())),
+        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()).to_owned())),
         _ => None,
     }
     .unwrap_or_default()
@@ -42,12 +42,12 @@ fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
     match item {
         ast::Item::ExternCrate(e) => (
             child::<ast::NameRef>(e.syntax())
-                .map(|n| symbol(node_text(n.syntax()).into_owned()))
+                .map(|n| symbol(node_text(n.syntax()).to_owned()))
                 .unwrap_or_default(),
             e.rename().map(|r| {
                 r.name().map_or_else(
                     || "_".to_owned(),
-                    |n| symbol(node_text(n.syntax()).into_owned()),
+                    |n| symbol(node_text(n.syntax()).to_owned()),
                 )
             }),
         ),
@@ -149,7 +149,7 @@ fn rewrite_reorderable_items(
             }
 
             if context.config.reorder_imports() {
-                normalized_items.sort();
+                sort_use_trees(&mut normalized_items, context.config.rustfmt_version());
             }
 
             // 4 = "use ", 1 = ";"

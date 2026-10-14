@@ -5,21 +5,18 @@ use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 
-use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode};
-
-use super::nodes::Block;
-use rowan::Language;
+use crate::cst::{AstNode, Node, Tree, TreeArena, ast};
 
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
+use super::nodes::{Block, CachedBlock};
 use super::shape::Shape;
 use super::span::{BytePos, SnippetProvider, Span};
 
 /// Parsed macro arguments keyed by token tree range and the `vec!` flag. rustfmt rewrites
 /// a macro call once per candidate shape; the arguments are parsed once.
-pub(crate) type MacroArgsCache =
-    HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs>, FxBuildHasher>;
+pub(crate) type MacroArgsCache<'a> =
+    HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs<'a>>, FxBuildHasher>;
 
 /// FxHash (rustc's hasher): the memo keys are a few machine words, for which SipHash's
 /// setup cost dominates.
@@ -56,10 +53,10 @@ pub(crate) type FxBuildHasher = BuildHasherDefault<FxHasher>;
 /// What a memoized rewrite reads besides its node: the shape and the context flags.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct MemoKey {
-    /// Address of the node's green node and its offset: rowan's identity of a node. The
-    /// entry keeps the node alive, so the address is not reused while the key is stored.
-    green: usize,
-    offset: u32,
+    /// The node's tree (the file or a macro-argument fragment, numbered per run) and its
+    /// index in it: the identity of a node. Trees live for the run, so no key is reused.
+    tree: u32,
+    index: u32,
     /// The rewrite function and its other arguments.
     tag: u8,
     shape: Shape,
@@ -68,7 +65,6 @@ pub(crate) struct MemoKey {
 
 /// A memoized rewrite: its result and the effects it had on the run, replayed on a hit.
 struct MemoEntry {
-    _node: SyntaxNode,
     result: Option<String>,
     macro_failure: bool,
     lost_comment: bool,
@@ -76,50 +72,64 @@ struct MemoEntry {
 }
 
 /// State shared by every context of one formatting run (rustfmt's `FormatReport` and
-/// `skipped_range`).
-#[derive(Default)]
-pub(crate) struct RunState {
+/// `skipped_range`), and the owner of the run's syntax trees.
+///
+/// The file's tree is numbered 0; every macro-argument fragment the run parses is laid
+/// out as a tree of its own ([`Tree::from_steps_at`]), numbered from 1, and appended to the
+/// arena, whose lifetime `'a` every handle in the run borrows. The memo and the
+/// macro-argument cache hold such handles.
+pub(crate) struct RunState<'a> {
     /// Line ranges (1-based, inclusive) left as in the input: `#[rustfmt::skip]` items and
     /// macro calls that could not be parsed.
     pub(crate) skipped_range: RefCell<Vec<(usize, usize)>>,
     /// Set when a rewrite dropped a comment and fell back to the original text. Only
     /// consulted while formatting a macro definition body.
     pub(crate) lost_comment: Cell<bool>,
-    pub(crate) macro_args: RefCell<MacroArgsCache>,
+    /// Set when the rustfmt release reproduced panics on this input (F6 under
+    /// `rustfmt_version = "1.8.0"`): rustfmt then writes nothing, so the file is returned
+    /// as it is.
+    pub(crate) format_failure: Cell<bool>,
+    pub(crate) macro_args: RefCell<MacroArgsCache<'a>>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
-    /// Blocks already built in this run, by rowan's identity of the block expression; see
-    /// [`RunState::block_of`].
-    blocks: RefCell<HashMap<(usize, u32), Block, FxBuildHasher>>,
-    /// `padding[k]` is a whitespace token of 2^k spaces; see [`RunState::padding`].
-    padding: RefCell<Vec<rowan::GreenToken>>,
+    /// Blocks already built in this run, by the identity of the block expression (tree id
+    /// and index); see [`RunState::block_of`].
+    blocks: RefCell<HashMap<(u32, u32), CachedBlock, FxBuildHasher>>,
     /// Start offsets of the source lines that follow a `\n` in the first `.1` bytes of the
     /// source, after the start of the first line; extended on demand by
     /// [`RunState::line_of`].
     line_starts: RefCell<(Vec<BytePos>, usize)>,
+    /// The fragment trees of the run, in the order they were parsed.
+    arena: &'a TreeArena<'a>,
+    /// The id of the next tree to be built ([`RunState::next_tree_id`]).
+    next_tree_id: Cell<u32>,
 }
 
-impl RunState {
-    /// Whitespace tokens of `len` bytes in total, shared between calls: at most one token
-    /// of each power of two.
-    pub(crate) fn padding(
-        &self,
-        len: usize,
-    ) -> Vec<NodeOrToken<rowan::GreenNode, rowan::GreenToken>> {
-        let mut pads = self.padding.borrow_mut();
-        let mut out = Vec::new();
-        let mut k = 0;
-        while len >> k != 0 {
-            if pads.len() == k {
-                let kind = RustLanguage::kind_to_raw(SyntaxKind::WHITESPACE);
-                pads.push(rowan::GreenToken::new(kind, &" ".repeat(1 << k)));
-            }
-            if len & (1 << k) != 0 {
-                out.push(NodeOrToken::Token(pads[k].clone()));
-            }
-            k += 1;
+impl<'a> RunState<'a> {
+    pub(crate) fn new(arena: &'a TreeArena<'a>) -> RunState<'a> {
+        RunState {
+            skipped_range: RefCell::default(),
+            lost_comment: Cell::default(),
+            format_failure: Cell::default(),
+            macro_args: RefCell::default(),
+            memo: RefCell::default(),
+            blocks: RefCell::default(),
+            line_starts: RefCell::default(),
+            arena,
+            next_tree_id: Cell::new(1),
         }
-        out
+    }
+
+    /// The id for the next tree built in this run: 1, 2, ... (the file's tree is 0).
+    pub(crate) fn next_tree_id(&self) -> u32 {
+        let id = self.next_tree_id.get();
+        self.next_tree_id.set(id + 1);
+        id
+    }
+
+    /// Keeps `tree` for the rest of the run and returns it by reference.
+    pub(crate) fn keep_tree(&self, tree: Tree<'a>) -> &'a Tree<'a> {
+        self.arena.alloc(tree)
     }
 
     /// Drops the memoized rewrites (see [`RewriteContext::memoize`]); only their memory is
@@ -131,22 +141,16 @@ impl RunState {
 
     /// [`Block::from_block_expr`], computed once per block expression in a run: a block is
     /// rewritten several times (each attempt at a layout of the expression around it), and
-    /// its statements are the same each time. The key is the memo's: the address of the
-    /// green node and its offset; the stored block keeps the node alive, so the address is
-    /// not reused while the entry exists.
-    pub(crate) fn block_of(&self, block: &ast::BlockExpr) -> Option<Block> {
+    /// its statements are the same each time. The cache holds the block without handles
+    /// ([`CachedBlock`]) and rebuilds it over the caller's tree, so it carries no lifetime.
+    pub(crate) fn block_of<'t>(&self, block: &ast::BlockExpr<'t>) -> Option<Block<'t>> {
         let node = block.syntax();
-        let green = node.green();
-        let key = (
-            &*green as *const _ as *const u8 as usize,
-            u32::from(node.text_range().start()),
-        );
-        drop(green);
+        let key = (node.tree_id(), node.index());
         if let Some(cached) = self.blocks.borrow().get(&key) {
-            return Some(cached.clone());
+            return Some(Block::from_cached(cached, node.tree()));
         }
         let built = Block::from_block_expr(block)?;
-        self.blocks.borrow_mut().insert(key, built.clone());
+        self.blocks.borrow_mut().insert(key, built.to_cached());
         Some(built)
     }
 
@@ -197,9 +201,9 @@ pub(crate) struct RewriteContext<'a> {
     /// When rewriting chain, veto going multi line except the last element
     pub(crate) force_one_line_chain: Cell<bool>,
     /// Used for `format_snippet`
-    pub(crate) macro_rewrite_failure: Cell<bool>,
+    pub(crate) macro_rewrite_failure: Rc<Cell<bool>>,
     pub(crate) is_macro_def: bool,
-    pub(crate) run: Rc<RunState>,
+    pub(crate) run: Rc<RunState<'a>>,
 }
 
 pub(crate) struct InsideMacroGuard {
@@ -223,7 +227,7 @@ impl<'a> RewriteContext<'a> {
     pub(crate) fn new(
         config: &'a Settings,
         snippet_provider: SnippetProvider<'a>,
-        run: Rc<RunState>,
+        run: Rc<RunState<'a>>,
     ) -> Self {
         RewriteContext {
             config,
@@ -232,7 +236,7 @@ impl<'a> RewriteContext<'a> {
             is_if_else_block: Cell::new(false),
             is_loop_block: Cell::new(false),
             force_one_line_chain: Cell::new(false),
-            macro_rewrite_failure: Cell::new(false),
+            macro_rewrite_failure: Rc::new(Cell::new(false)),
             is_macro_def: false,
             run,
         }
@@ -306,20 +310,18 @@ impl<'a> RewriteContext<'a> {
     /// A rewrite that leaves a context flag changed is not stored.
     pub(crate) fn memoize(
         &self,
-        node: &SyntaxNode,
+        node: Node<'_>,
         tag: u8,
         shape: Shape,
         rewrite: impl FnOnce() -> Option<String>,
     ) -> Option<String> {
-        let green = node.green();
         let key = MemoKey {
-            green: &*green as *const _ as *const u8 as usize,
-            offset: node.text_range().start().into(),
+            tree: node.tree_id(),
+            index: node.index(),
             tag,
             shape,
             flags: self.flags(),
         };
-        drop(green);
         if let Some(entry) = self.run.memo.borrow().get(&key) {
             if entry.macro_failure {
                 self.macro_rewrite_failure.set(true);
@@ -348,7 +350,6 @@ impl<'a> RewriteContext<'a> {
             self.run.memo.borrow_mut().insert(
                 key,
                 MemoEntry {
-                    _node: node.clone(),
                     result: result.clone(),
                     macro_failure,
                     lost_comment,
@@ -363,8 +364,9 @@ impl<'a> RewriteContext<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::formatter::nodes::StmtKind;
-    use ra_ap_syntax::{Edition, SourceFile};
+    use crate::cst::Tree;
+    use crate::formatter::nodes::{self, StmtKind};
+    use ra_ap_parser::Edition;
 
     #[test]
     fn line_of_counts_the_lines_up_to_the_position() {
@@ -376,7 +378,8 @@ mod tests {
             .chain(0..=len + 2)
             .chain([7, 3, 20, 0, len, 9])
             .collect();
-        let run = RunState::default();
+        let arena = TreeArena::new();
+        let run = RunState::new(&arena);
         for pos in positions {
             let expected = src.as_bytes()[..(pos as usize).min(src.len())]
                 .iter()
@@ -386,7 +389,8 @@ mod tests {
             assert_eq!(run.line_of(src, pos), expected, "{pos}");
         }
         // A run whose first query is in the middle of the source.
-        let run = RunState::default();
+        let arena = TreeArena::new();
+        let run = RunState::new(&arena);
         for pos in [12, 0, 5, 30, 8] {
             let expected = src.as_bytes()[..(pos as usize).min(src.len())]
                 .iter()
@@ -403,30 +407,47 @@ mod tests {
     #[test]
     fn block_of_matches_from_block_expr_and_is_cached() {
         let src = "fn f() { let a = { 1 }; unsafe { a; } 'l: { break 'l; } if a {} else { b } }\n";
-        let file = SourceFile::parse(src, Edition::Edition2024).tree();
-        let run = RunState::default();
-        let key = |b: &Block| {
+        let tree = Tree::parse(src, Edition::Edition2024).unwrap();
+        let arena = TreeArena::new();
+        let run = RunState::new(&arena);
+        type Key<'t> = (
+            Vec<(Span, Option<Node<'t>>, bool)>,
+            Span,
+            nodes::BlockRules,
+            Option<ast::StmtList<'t>>,
+        );
+        fn key<'t>(b: &Block<'t>) -> Key<'t> {
             let stmts: Vec<_> = b
                 .stmts
                 .iter()
                 .map(|s| {
                     let node = match &s.kind {
-                        StmtKind::Let(l) => Some(l.syntax().clone()),
-                        StmtKind::Item(i) => Some(i.syntax().clone()),
-                        StmtKind::Expr(e) | StmtKind::Semi(e) => Some(e.syntax().clone()),
-                        StmtKind::MacCall(m) => Some(m.syntax().clone()),
+                        StmtKind::Let(l) => Some(l.syntax()),
+                        StmtKind::Item(i) => Some(i.syntax()),
+                        StmtKind::Expr(e) | StmtKind::Semi(e) => Some(e.syntax()),
+                        StmtKind::MacCall(m) => Some(m.syntax()),
                         StmtKind::Empty => None,
                     };
-                    (s.span, node)
+                    (s.span, node, matches!(s.kind, StmtKind::Semi(_)))
                 })
                 .collect();
-            (stmts, b.span, b.rules, b.stmt_list.clone())
-        };
+            (stmts, b.span, b.rules, b.stmt_list)
+        }
         let mut blocks = 0;
-        for b in file.syntax().descendants().filter_map(ast::BlockExpr::cast) {
+        for b in tree.root().descendants().filter_map(ast::BlockExpr::cast) {
             let fresh = Block::from_block_expr(&b).unwrap();
-            assert_eq!(key(&run.block_of(&b).unwrap()), key(&fresh), "{b}");
-            assert_eq!(key(&run.block_of(&b).unwrap()), key(&fresh), "{b}");
+            assert_eq!(
+                key(&run.block_of(&b).unwrap()),
+                key(&fresh),
+                "{}",
+                b.syntax()
+            );
+            assert_eq!(
+                key(&run.block_of(&b).unwrap()),
+                key(&fresh),
+                "{}",
+                b.syntax()
+            );
             blocks += 1;
         }
         assert_eq!(run.blocks.borrow().len(), blocks);
