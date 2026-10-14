@@ -244,18 +244,7 @@ impl FmtVisitor<'_> {
         items: &[ast::Item],
         item_kind: ReorderableItemKind,
     ) -> usize {
-        let mut last = self.line_range(items[0].span());
-        let item_length = items
-            .iter()
-            .take_while(|ppi| {
-                item_kind.is_same_item_kind(ppi) && {
-                    let current = self.line_range(ppi.span());
-                    let in_same_group = current.0 < last.1 + 2;
-                    last = current;
-                    in_same_group
-                }
-            })
-            .count();
+        let item_length = self.reorderable_group_len(items, item_kind);
         let items = &items[..item_length];
 
         let lo = items[0].span().lo();
@@ -265,6 +254,41 @@ impl FmtVisitor<'_> {
         self.push_rewrite(span, rw);
 
         item_length
+    }
+
+    /// The number of leading items of `items` that form one reorderable group: items of
+    /// `item_kind` not separated by a blank line.
+    fn reorderable_group_len(&self, items: &[ast::Item], item_kind: ReorderableItemKind) -> usize {
+        let mut last = self.line_range(items[0].span());
+        items
+            .iter()
+            .take_while(|ppi| {
+                item_kind.is_same_item_kind(ppi) && {
+                    let current = self.line_range(ppi.span());
+                    let in_same_group = current.0 < last.1 + 2;
+                    last = current;
+                    in_same_group
+                }
+            })
+            .count()
+    }
+
+    /// The units `visit_items_with_reordering` would format, as `(first, len)` ranges
+    /// into `items`: a reorderable group is one unit, any other item is a unit of its own.
+    pub(crate) fn unit_ranges(&self, items: &[ast::Item]) -> Vec<(usize, usize)> {
+        let mut units = Vec::new();
+        let mut first = 0;
+        while first < items.len() {
+            let item_kind = ReorderableItemKind::from(&items[first]);
+            let len = if item_kind.is_reorderable(self.config) {
+                self.reorderable_group_len(&items[first..], item_kind)
+            } else {
+                1
+            };
+            units.push((first, len));
+            first += len;
+        }
+        units
     }
 
     /// Visits and format the given items. Items are reordered If they are

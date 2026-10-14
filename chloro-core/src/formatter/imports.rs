@@ -22,6 +22,7 @@ use super::lists::{
 };
 use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
+use super::parallel::GapOp;
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span};
@@ -29,6 +30,24 @@ use super::utils::format_visibility;
 use super::visitor::FmtVisitor;
 
 impl FmtVisitor<'_> {
+    /// The gap before a `use` item at `lo` whose rewrite is empty: the text up to the last
+    /// newline before the item, less the newline the removed import leaves behind.
+    pub(crate) fn format_missing_before_removed_import(&mut self, lo: BytePos) {
+        if self.defer_gap(GapOp::RemovedImport(lo), lo) {
+            return;
+        }
+        // Format up to last newline
+        let prev_span = mk_sp(self.last_pos, lo);
+        let trimmed_snippet = self.snippet(prev_span).trim_end();
+        let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
+        self.format_missing(span_end);
+        // We have an excessive newline from the removed import.
+        if self.buffer.ends_with('\n') {
+            self.buffer.pop();
+            self.line_number -= 1;
+        }
+    }
+
     pub(crate) fn format_import(&mut self, item: &ast::Use) {
         // The span includes the attributes, which `rewrite_top_level` formats.
         let span = item.span();
@@ -38,16 +57,7 @@ impl FmtVisitor<'_> {
             .and_then(|tree| tree.rewrite_top_level(&context, shape));
         match rw {
             Some(ref s) if s.is_empty() => {
-                // Format up to last newline
-                let prev_span = mk_sp(self.last_pos, span.lo());
-                let trimmed_snippet = self.snippet(prev_span).trim_end();
-                let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
-                self.format_missing(span_end);
-                // We have an excessive newline from the removed import.
-                if self.buffer.ends_with('\n') {
-                    self.buffer.pop();
-                    self.line_number -= 1;
-                }
+                self.format_missing_before_removed_import(span.lo());
                 self.last_pos = span.hi();
             }
             Some(ref s) => {
@@ -335,8 +345,9 @@ impl UseTree {
         };
 
         // rustc's prefix path: `::` alone (`use ::*`, `use ::{a}`) is a global empty path.
-        let (names, path_global) = a.path().map(|p| path_segment_names(&p)).unwrap_or_default();
-        let bare_root = a.path().is_none() && has_token(a.syntax(), T![::]);
+        let path = child::<ast::Path>(a.syntax());
+        let (names, path_global) = path.as_ref().map(path_segment_names).unwrap_or_default();
+        let bare_root = path.is_none() && has_token(a.syntax(), T![::]);
         let is_global = path_global || bare_root;
         // Number of rustc prefix segments, counting the `{{root}}` segment of a global path.
         let prefix_len = names.len() + usize::from(is_global);
