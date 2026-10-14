@@ -677,36 +677,18 @@ impl<'a> CharClasses<'a> {
     /// caller looks for.
     fn skip_plain(&mut self, stop: Option<u8>) {
         let bytes = self.src.as_bytes();
+        // No UTF-8 text contains the byte 0xff.
+        let stop = stop.unwrap_or(0xff);
         let mut pos = self.pos;
         match self.status {
-            CharClassesStatus::Normal => {}
-            CharClassesStatus::LitString => {
-                while let Some(&b) = bytes.get(pos) {
-                    if b == b'"' || b == b'\\' || Some(b) == stop {
-                        break;
-                    }
-                    pos += 1;
-                }
-                self.pos = pos;
-                return;
-            }
-            CharClassesStatus::LitRawString(_) => {
-                while let Some(&b) = bytes.get(pos) {
-                    if b == b'"' || Some(b) == stop {
-                        break;
-                    }
-                    pos += 1;
-                }
-                self.pos = pos;
-                return;
-            }
-            _ => return,
-        }
-        while let Some(&b) = bytes.get(pos) {
-            if matches!(b, b'r' | b'"' | b'\'' | b'/') || Some(b) == stop {
+            CharClassesStatus::Normal => loop {
+                pos = find_any_byte(bytes, pos, [b'r', b'"', b'\'', b'/', stop]);
+                let Some(&b) = bytes.get(pos) else {
+                    break;
+                };
                 let next = bytes.get(pos + 1).copied();
                 let leaves_normal = match b {
-                    _ if Some(b) == stop => true,
+                    _ if b == stop => true,
                     b'r' => matches!(next, Some(b'#' | b'"')),
                     b'/' => matches!(next, Some(b'*' | b'/')),
                     b'\'' => match next {
@@ -719,8 +701,11 @@ impl<'a> CharClasses<'a> {
                 if leaves_normal {
                     break;
                 }
-            }
-            pos += 1;
+                pos += 1;
+            },
+            CharClassesStatus::LitString => pos = find_any_byte(bytes, pos, [b'"', b'\\', stop]),
+            CharClassesStatus::LitRawString(_) => pos = find_any_byte(bytes, pos, [b'"', stop]),
+            _ => return,
         }
         // `pos` is at a char boundary: it is at the end or at an ASCII byte.
         self.pos = pos;
@@ -743,25 +728,43 @@ impl<'a> CharClasses<'a> {
                 pos = self.src[pos..].find('\n').map_or(bytes.len(), |n| pos + n);
             }
             CharClassesStatus::BlockComment(_) => {
-                while let Some(&b) = bytes.get(pos) {
-                    if matches!(b, b'*' | b'/' | b'"') {
-                        break;
-                    }
-                    pos += 1;
-                }
+                pos = find_any_byte(bytes, pos, *b"*/\"");
             }
             CharClassesStatus::StringInBlockComment(_) => {
-                while let Some(&b) = bytes.get(pos) {
-                    if matches!(b, b'*' | b'"') {
-                        break;
-                    }
-                    pos += 1;
-                }
+                pos = find_any_byte(bytes, pos, *b"*\"");
             }
             _ => return,
         }
         self.pos = pos;
     }
+}
+
+/// Returns the position of the first byte at or after `pos` that is one of `targets`, or
+/// `bytes.len()`, testing eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
+/// flags every zero byte and possibly bytes above a zero byte, never below the first one,
+/// so the lowest flag of `y = w ^ target` marks the first byte of `w` equal to `target`.
+fn find_any_byte<const N: usize>(bytes: &[u8], mut pos: usize, targets: [u8; N]) -> usize {
+    const LO: u64 = 0x0101_0101_0101_0101;
+    const HI: u64 = 0x8080_8080_8080_8080;
+    while let Some(chunk) = bytes.get(pos..pos + 8) {
+        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+        let mut found = 0;
+        for target in targets {
+            let y = w ^ (LO * u64::from(target));
+            found |= y.wrapping_sub(LO) & !y & HI;
+        }
+        if found != 0 {
+            return pos + (found.trailing_zeros() / 8) as usize;
+        }
+        pos += 8;
+    }
+    while let Some(b) = bytes.get(pos) {
+        if targets.contains(b) {
+            break;
+        }
+        pos += 1;
+    }
+    pos
 }
 
 impl Iterator for CharClasses<'_> {
@@ -1397,6 +1400,40 @@ mod tests {
             step += 1;
         }
         assert_eq!(step, steps.len(), "{s:?} {stop:?}");
+    }
+
+    #[test]
+    fn find_any_byte_finds_the_first_target() {
+        // Bytes next to the targets, and the bytes where a borrow starts or ends.
+        const ALPHABET: [u8; 12] = [
+            0x00, 0x01, 0x21, b'"', 0x23, b'q', b'r', b's', 0x7f, 0x80, 0xfe, 0xff,
+        ];
+        let targets = [b'r', b'"', 0xff];
+        // A fixed linear congruential sequence of strings of 0 to 39 bytes.
+        let mut state: u64 = 1;
+        let mut next = || {
+            state = state
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            (state >> 33) as usize
+        };
+        for _ in 0..20_000 {
+            let len = next() % 40;
+            let bytes: Vec<u8> = (0..len)
+                .map(|_| ALPHABET[next() % ALPHABET.len()])
+                .collect();
+            for pos in 0..=len {
+                let expected = bytes[pos..]
+                    .iter()
+                    .position(|b| targets.contains(b))
+                    .map_or(len, |n| pos + n);
+                assert_eq!(
+                    find_any_byte(&bytes, pos, targets),
+                    expected,
+                    "{bytes:?} {pos}"
+                );
+            }
+        }
     }
 
     #[test]
