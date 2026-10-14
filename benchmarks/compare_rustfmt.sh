@@ -234,6 +234,15 @@ prepare() {
     else
       (cd "$W/tree" && xargs -a "$W/files.txt" "${RF[@]}" 2>/dev/null) || true
     fi
+    if [ "$kind" = files ]; then
+      # rustfmt's output is not always parseable by rustfmt (parser/test_data has two such
+      # files: `|| .. .field` becomes `|| ...field`); drop files it can no longer parse.
+      local f keep=()
+      while read -r f; do
+        if "${RF[@]}" --emit stdout "$W/tree/$f" >/dev/null 2>&1; then keep+=("$f"); else rm "$W/tree/$f"; echo "$f" >> "$W/dropped_after_format.txt"; fi
+      done < "$W/files.txt"
+      printf '%s\n' "${keep[@]}" > "$W/files.txt"
+    fi
   fi
   # Verify: the tree holds exactly the files rustfmt formats from it.
   if [ "$kind" = crate ]; then

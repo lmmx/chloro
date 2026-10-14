@@ -7,7 +7,9 @@ Reads every `<workload>.<variant>.r<k>.json` (hyperfine 2.0 `--export-json`), me
 runs of each command across rounds, and prints one table per workload kind. Ratios are
 chloro / rustfmt (and chloro / chloro-base when a baseline build ran). "ranges" compares
 the min..max wall-time ranges of the two commands: `below` (every chloro run faster than
-every rustfmt run), `above`, or `overlap`. Also reads `<workload>.1c.bench.txt` from
+every rustfmt run), `above`, or `overlap`. "CPU" is user + system time summed over threads;
+on a loaded host it moves less than wall time, and wall well above CPU on a pinned
+single-threaded command means the command waited for its core. Also reads `<workload>.1c.bench.txt` from
 examples/bench. Standard library only.
 """
 
@@ -69,7 +71,7 @@ def stats(measurements):
 
 
 def ms(x):
-    return f"{x * 1e3:.1f}" if x < 10 else f"{x:.2f} s"
+    return f"{x * 1e3:.1f}"
 
 
 def fmt_time(s):
@@ -149,7 +151,8 @@ def main():
         has_base = any("chloro-base" in runs[w] for w, _ in by_kind[kind])
         head = ["workload", "variant", "files", "KB", "n", "rustfmt", "chloro",
                 "chloro/rustfmt mean", "chloro/rustfmt min", "ranges",
-                "RSS rustfmt", "RSS chloro", "CPU rustfmt", "CPU chloro", "identical outputs", "exit codes"]
+                "RSS rustfmt", "RSS chloro", "CPU rustfmt", "CPU chloro", "CPU chloro/rustfmt",
+                "identical outputs", "exit codes"]
         if has_base:
             head[7:7] = ["chloro-base", "chloro/base mean", "ranges vs base"]
         if kind == "inproc":
@@ -174,6 +177,7 @@ def main():
                    f"{c['n']}", fmt_time(r), fmt_time(c),
                    f"{c['mean'] / r['mean']:.3f}", f"{c['min'] / r['min']:.3f}", ranges(c, r),
                    mib(r["rss"]), mib(c["rss"]), ms(r["cpu"]), ms(c["cpu"]),
+                   f"{c['cpu'] / r['cpu']:.3f}" if r["cpu"] else "–",
                    meta.get("identical_outputs", "?"),
                    f"r{r['exits']} c{c['exits']}"]
             if has_base:

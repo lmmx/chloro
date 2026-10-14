@@ -188,14 +188,17 @@ sample is the 1238 `.rs` files under `chloro-core/tests/conformance/fixtures`, p
 bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
 
 - The journals name the sample "every 25th file of the sorted fixture list" without the
-  command. Of four constructions tried on `884f9c9` (component-wise or bytewise order;
-  the 1220 rust-analyzer files or all 1238; first or 25th file), this one gives 589.1M,
-  near the 586.8M recorded for `f6c5be9` in the parse-drop-thread entry; the others give
-  421M, 661M, 796M and 857M. The 0.4% difference is not explained (`f6c5be9` is not in this
-  repository's history, so it was not re-measured).
-- The count depends on the environment size and the sample's path (stack and heap layout):
-  the same binary counted 588.10M with the caller's environment and 587.99M under
-  `env -i`. Hence the fixed path and the empty environment. Under them, repeated runs agree
-  to within about 2K instructions, pinned or not, from any working directory.
+  command. Of five constructions tried on `884f9c9` (component-wise or bytewise order;
+  the 1220 rust-analyzer files or all 1238; first or 25th file), this one lands near the
+  586.8M recorded for `f6c5be9` in the parse-drop-thread entry; the others give 421M, 661M,
+  796M and 857M. `profile-baseline.md` (same day) selects the same 49 files with
+  `find . -name '*.rs' | LC_ALL=C sort | awk 'NR%25==0'`.
+- The absolute count depends on the sample's layout and the process environment (path
+  strings, stack and heap layout), not only on the code. For the same `target/release/
+  examples/bench` (`884f9c9`): 587,988,576–587,990,380 from `profile.sh` (directory tree at
+  `/tmp/chloro-bench/sample49`, `env -i`); 588,096,020 with the caller's environment;
+  587,211,777 in `profile-baseline.md` (files copied flat as `NN_<basename>.rs`). Counts are
+  compared only between runs of `profile.sh` itself; under it, repeated runs agree to within
+  about 2K instructions, pinned or not, from any working directory.
 - `--annotate N` prints the top of `callgrind_annotate` for the first run; the profile
   files stay in `--out`.
