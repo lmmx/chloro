@@ -10,7 +10,7 @@ use ra_ap_syntax::{Edition, RustLanguage, SourceFile, SyntaxKind, SyntaxNode};
 use rowan::{GreenNodeBuilder, Language};
 
 use super::comment::{CharClasses, LineClasses};
-use super::config::{NewlineStyle, Settings};
+use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
@@ -64,7 +64,7 @@ impl TreeBuilder {
 /// Only lexer and parser errors count. `SourceFile::parse(..).errors()` would also run
 /// rust-analyzer's semantic validation (e.g. `crate` in the middle of a path), which
 /// rustc's parser does not do, and would cost a second traversal of the tree.
-fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
+fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<SourceFile> {
     let lexed = LexedStr::new(edition, source);
     if lexed.errors().next().is_some() {
         return None;
@@ -83,7 +83,7 @@ fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
         return None;
     }
     let file = SourceFile::cast(builder.finish())?;
-    (!rejected_by_rustc(&file, edition)).then_some(file)
+    (!rejected_by_rustc(&file, edition, rustfmt_version)).then_some(file)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse.
@@ -92,7 +92,7 @@ pub(crate) fn format_text(
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<Formatted> {
-    let file = parse(source, config.edition().to_ra())?;
+    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
 
     // `#![rustfmt::skip]` on the file: echo the input.
     if contains_skip(&inner_attributes(file.syntax())) {
@@ -141,7 +141,7 @@ pub(crate) fn format_text_parallel(
     config: &Settings,
     threads: usize,
 ) -> Option<Formatted> {
-    let file = parse(source, config.edition().to_ra())?;
+    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
     if contains_skip(&inner_attributes(file.syntax())) {
         return Some(Formatted {
             text: source.to_owned(),
