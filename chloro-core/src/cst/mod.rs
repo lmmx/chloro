@@ -170,6 +170,13 @@ impl<'s> Tree<'s> {
         Node { tree: self, idx: 0 }
     }
 
+    /// The node at index `i` (a handle recovered from [`Node::index`]).
+    #[inline]
+    pub fn node_at(&self, i: u32) -> Node<'_> {
+        debug_assert!(self.elems[i as usize].is_node);
+        Node { tree: self, idx: i }
+    }
+
     /// Every node of the tree in preorder.
     pub fn nodes(&self) -> impl Iterator<Item = Node<'_>> + '_ {
         (0..self.elems.len() as u32)

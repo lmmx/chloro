@@ -5,10 +5,11 @@ use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 
-use crate::cst::{Node, Tree, TreeArena};
+use crate::cst::{AstNode, Node, Tree, TreeArena, ast};
 
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
+use super::nodes::{Block, CachedBlock};
 use super::shape::Shape;
 use super::span::{BytePos, SnippetProvider, Span};
 
@@ -87,6 +88,9 @@ pub(crate) struct RunState<'a> {
     pub(crate) macro_args: RefCell<MacroArgsCache<'a>>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
+    /// Blocks already built in this run, by the identity of the block expression (tree id
+    /// and index); see [`RunState::block_of`].
+    blocks: RefCell<HashMap<(u32, u32), CachedBlock, FxBuildHasher>>,
     /// Start offsets of the source lines, computed on first use.
     line_starts: OnceCell<Vec<BytePos>>,
     /// The fragment trees of the run, in the order they were parsed.
@@ -102,6 +106,7 @@ impl<'a> RunState<'a> {
             lost_comment: Cell::default(),
             macro_args: RefCell::default(),
             memo: RefCell::default(),
+            blocks: RefCell::default(),
             line_starts: OnceCell::new(),
             arena,
             next_tree_id: Cell::new(1),
@@ -124,6 +129,22 @@ impl<'a> RunState<'a> {
     /// lost, as every later rewrite can be computed again.
     pub(crate) fn clear_memo(&self) {
         self.memo.borrow_mut().clear();
+        self.blocks.borrow_mut().clear();
+    }
+
+    /// [`Block::from_block_expr`], computed once per block expression in a run: a block is
+    /// rewritten several times (each attempt at a layout of the expression around it), and
+    /// its statements are the same each time. The cache holds the block without handles
+    /// ([`CachedBlock`]) and rebuilds it over the caller's tree, so it carries no lifetime.
+    pub(crate) fn block_of<'t>(&self, block: &ast::BlockExpr<'t>) -> Option<Block<'t>> {
+        let node = block.syntax();
+        let key = (node.tree_id(), node.index());
+        if let Some(cached) = self.blocks.borrow().get(&key) {
+            return Some(Block::from_cached(cached, node.tree()));
+        }
+        let built = Block::from_block_expr(block)?;
+        self.blocks.borrow_mut().insert(key, built.to_cached());
+        Some(built)
     }
 
     /// 1-based line number of `pos` in `src`, the source this run formats.
@@ -324,5 +345,69 @@ impl<'a> RewriteContext<'a> {
             );
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cst::Tree;
+    use crate::formatter::nodes::{self, StmtKind};
+    use ra_ap_parser::Edition;
+
+    /// `block_of` answers what `Block::from_block_expr` answers on every block of a source
+    /// with nested, empty, `unsafe` and labeled blocks, and a second call returns the same
+    /// block without building it again.
+    #[test]
+    fn block_of_matches_from_block_expr_and_is_cached() {
+        let src = "fn f() { let a = { 1 }; unsafe { a; } 'l: { break 'l; } if a {} else { b } }\n";
+        let tree = Tree::parse(src, Edition::Edition2024).unwrap();
+        let arena = TreeArena::new();
+        let run = RunState::new(&arena);
+        fn key<'t>(
+            b: &Block<'t>,
+        ) -> (
+            Vec<(Span, Option<Node<'t>>, bool)>,
+            Span,
+            nodes::BlockRules,
+            Option<ast::StmtList<'t>>,
+        ) {
+            let stmts: Vec<_> = b
+                .stmts
+                .iter()
+                .map(|s| {
+                    let node = match &s.kind {
+                        StmtKind::Let(l) => Some(l.syntax()),
+                        StmtKind::Item(i) => Some(i.syntax()),
+                        StmtKind::Expr(e) | StmtKind::Semi(e) => Some(e.syntax()),
+                        StmtKind::MacCall(m) => Some(m.syntax()),
+                        StmtKind::Empty => None,
+                    };
+                    (s.span, node, matches!(s.kind, StmtKind::Semi(_)))
+                })
+                .collect();
+            (stmts, b.span, b.rules, b.stmt_list)
+        }
+        let mut blocks = 0;
+        for b in tree.root().descendants().filter_map(ast::BlockExpr::cast) {
+            let fresh = Block::from_block_expr(&b).unwrap();
+            assert_eq!(
+                key(&run.block_of(&b).unwrap()),
+                key(&fresh),
+                "{}",
+                b.syntax()
+            );
+            assert_eq!(
+                key(&run.block_of(&b).unwrap()),
+                key(&fresh),
+                "{}",
+                b.syntax()
+            );
+            blocks += 1;
+        }
+        assert_eq!(run.blocks.borrow().len(), blocks);
+        assert_eq!(blocks, 6);
+        run.clear_memo();
+        assert!(run.blocks.borrow().is_empty());
     }
 }

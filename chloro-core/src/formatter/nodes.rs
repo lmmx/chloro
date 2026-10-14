@@ -8,7 +8,7 @@
 
 use ra_ap_parser::{SyntaxKind, T};
 
-use crate::cst::{AstNode, Node, NodeOrToken, Token, ast, support};
+use crate::cst::{AstNode, Node, NodeOrToken, Token, Tree, ast, support};
 
 use super::span::{
     BytePos, Span, Spanned, is_inner_doc_comment, is_outer_doc_comment, is_outer_doc_text, mk_sp,
@@ -344,6 +344,65 @@ impl<'a> Block<'a> {
         }
     }
 
+    /// The block without handles, for the run's block cache.
+    pub(crate) fn to_cached(&self) -> CachedBlock {
+        CachedBlock {
+            stmts: self
+                .stmts
+                .iter()
+                .map(|s| {
+                    let (tag, index) = match &s.kind {
+                        StmtKind::Let(l) => (StmtTag::Let, l.syntax().index()),
+                        StmtKind::Item(i) => (StmtTag::Item, i.syntax().index()),
+                        StmtKind::Expr(e) => (StmtTag::Expr, e.syntax().index()),
+                        StmtKind::Semi(e) => (StmtTag::Semi, e.syntax().index()),
+                        StmtKind::MacCall(m) => (StmtTag::MacCall, m.syntax().index()),
+                        StmtKind::Empty => (StmtTag::Empty, 0),
+                    };
+                    (tag, index, s.span)
+                })
+                .collect(),
+            span: self.span,
+            rules: self.rules,
+            stmt_list: self.stmt_list.map(|l| l.syntax().index()),
+        }
+    }
+
+    /// The block `cached` describes, over `tree` (the tree it was built from).
+    pub(crate) fn from_cached(cached: &CachedBlock, tree: &'a Tree<'a>) -> Block<'a> {
+        let cast = |i: u32| tree.node_at(i);
+        Block {
+            stmts: cached
+                .stmts
+                .iter()
+                .map(|&(tag, index, span)| {
+                    let kind = match tag {
+                        StmtTag::Let => StmtKind::Let(ast::LetStmt {
+                            syntax: cast(index),
+                        }),
+                        StmtTag::Item => StmtKind::Item(
+                            ast::Item::cast(cast(index)).expect("an item was cached"),
+                        ),
+                        StmtTag::Expr => StmtKind::Expr(
+                            ast::Expr::cast(cast(index)).expect("an expression was cached"),
+                        ),
+                        StmtTag::Semi => StmtKind::Semi(
+                            ast::Expr::cast(cast(index)).expect("an expression was cached"),
+                        ),
+                        StmtTag::MacCall => StmtKind::MacCall(ast::MacroCall {
+                            syntax: cast(index),
+                        }),
+                        StmtTag::Empty => StmtKind::Empty,
+                    };
+                    Stmt { kind, span }
+                })
+                .collect(),
+            span: cached.span,
+            rules: cached.rules,
+            stmt_list: cached.stmt_list.map(|i| ast::StmtList { syntax: cast(i) }),
+        }
+    }
+
     pub(crate) fn inner_attrs(&self) -> Vec<Attribute<'a>> {
         self.stmt_list
             .as_ref()
@@ -354,6 +413,27 @@ impl<'a> Block<'a> {
     pub(crate) fn is_unsafe(&self) -> bool {
         self.rules == BlockRules::Unsafe
     }
+}
+
+/// A [`Block`] without handles, as the run's block cache keeps it: every statement as its
+/// kind, the index of its node in the tree and its span. A cached block is rebuilt for the
+/// caller's tree lifetime by [`Block::from_cached`], so the cache carries no lifetime.
+#[derive(Clone, Debug)]
+pub(crate) struct CachedBlock {
+    stmts: Vec<(StmtTag, u32, Span)>,
+    span: Span,
+    rules: BlockRules,
+    stmt_list: Option<u32>,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum StmtTag {
+    Let,
+    Item,
+    Expr,
+    Semi,
+    MacCall,
+    Empty,
 }
 
 #[derive(Clone, Copy, Debug)]

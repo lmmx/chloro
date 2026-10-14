@@ -15,7 +15,7 @@ use super::comment::{
     recover_comment_removed, rewrite_comment, rewrite_missing_comment,
 };
 use super::config::StyleEdition;
-use super::context::{Rewrite, RewriteContext};
+use super::context::{Rewrite, RewriteContext, RunState};
 use super::lists::{
     SeparatorPlace, SeparatorTactic, itemize_list, shape_for_tactic, struct_lit_formatting,
     struct_lit_shape, struct_lit_tactic, write_list,
@@ -214,7 +214,7 @@ fn format_expr_uncached(
         | ast::Expr::ForExpr(_)
         | ast::Expr::LoopExpr(_)
         | ast::Expr::WhileExpr(_) => {
-            to_control_flow(expr, expr_type).and_then(|cf| cf.rewrite(context, shape))
+            to_control_flow(&context.run, expr, expr_type).and_then(|cf| cf.rewrite(context, shape))
         }
         ast::Expr::BlockExpr(b) => rewrite_block_expr(expr, b, expr_type, context, shape),
         ast::Expr::MatchExpr(m) => rewrite_match(context, m, shape, span, &expr_attrs(expr)),
@@ -416,7 +416,7 @@ fn rewrite_block_expr(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let block = Block::from_block_expr(b)?;
+    let block = context.run.block_of(b)?;
     let attrs = expr_attrs(expr);
     let label = child::<ast::Label>(b.syntax());
     if has_token(b.syntax(), T![const]) {
@@ -635,7 +635,7 @@ impl Rewrite for Block<'_> {
 
 impl Rewrite for ast::BlockExpr<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
-        rewrite_block(&Block::from_block_expr(self)?, None, None, context, shape)
+        rewrite_block(&context.run.block_of(self)?, None, None, context, shape)
     }
 }
 
@@ -698,13 +698,15 @@ pub(crate) fn rewrite_cond(
             let cond_shape = shape.offset_left(8)?;
             m.expr()?.rewrite(context, cond_shape)
         }
-        _ => to_control_flow(expr, ExprType::SubExpression).and_then(|control_flow| {
-            let alt_block_sep =
-                String::from("\n") + &shape.indent.block_only().to_string(context.config);
-            control_flow
-                .rewrite_cond(context, shape, &alt_block_sep)
-                .map(|rw| rw.0)
-        }),
+        _ => {
+            to_control_flow(&context.run, expr, ExprType::SubExpression).and_then(|control_flow| {
+                let alt_block_sep =
+                    String::from("\n") + &shape.indent.block_only().to_string(context.config);
+                control_flow
+                    .rewrite_cond(context, shape, &alt_block_sep)
+                    .map(|rw| rw.0)
+            })
+        }
     }
 }
 
@@ -740,7 +742,11 @@ fn else_branch_expr(branch: ast::ElseBranch) -> ast::Expr {
     }
 }
 
-fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<ControlFlow<'a>> {
+fn to_control_flow<'a>(
+    run: &RunState<'_>,
+    expr: &ast::Expr<'a>,
+    expr_type: ExprType,
+) -> Option<ControlFlow<'a>> {
     let span = expr_span(expr);
     match expr {
         ast::Expr::IfExpr(i) => {
@@ -748,7 +754,7 @@ fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<Cont
             Some(ControlFlow::new_if(
                 cond?,
                 pat,
-                Block::from_block_expr(&i.then_branch()?)?,
+                run.block_of(&i.then_branch()?)?,
                 i.else_branch().map(else_branch_expr),
                 expr_type == ExprType::SubExpression,
                 false,
@@ -757,7 +763,7 @@ fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<Cont
         }
         ast::Expr::ForExpr(f) => Some(ControlFlow {
             cond: Some(f.iterable()?),
-            block: Block::from_block_expr(&f.loop_body()?)?,
+            block: run.block_of(&f.loop_body()?)?,
             else_block: None,
             label: child::<ast::Label>(f.syntax()),
             pat: Some(child::<ast::Pat>(f.syntax())?),
@@ -771,7 +777,7 @@ fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<Cont
         }),
         ast::Expr::LoopExpr(l) => Some(ControlFlow {
             cond: None,
-            block: Block::from_block_expr(&l.loop_body()?)?,
+            block: run.block_of(&l.loop_body()?)?,
             else_block: None,
             label: child::<ast::Label>(l.syntax()),
             pat: None,
@@ -787,7 +793,7 @@ fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<Cont
             let (pat, cond) = extract_pats_and_cond(w.condition()?);
             Some(ControlFlow {
                 cond: Some(cond?),
-                block: Block::from_block_expr(&w.loop_body()?)?,
+                block: run.block_of(&w.loop_body()?)?,
                 else_block: None,
                 label: child::<ast::Label>(w.syntax()),
                 matcher: if pat.is_some() { "let" } else { "" },
@@ -844,7 +850,7 @@ impl ControlFlow<'_> {
         let fixed_cost = self.keyword.len() + "  {  } else {  }".len();
 
         if let ast::Expr::BlockExpr(else_node) = else_block {
-            let else_node = Block::from_block_expr(else_node)?;
+            let else_node = context.run.block_of(else_node)?;
             let (if_expr, else_expr) = match (
                 FmtStmt::from_simple_block(context, &self.block, None),
                 FmtStmt::from_simple_block(context, &else_node, None),
@@ -1144,7 +1150,7 @@ impl Rewrite for ControlFlow<'_> {
                     ControlFlow::new_if(
                         cond?,
                         pats,
-                        Block::from_block_expr(&i.then_branch()?)?,
+                        context.run.block_of(&i.then_branch()?)?,
                         i.else_branch().map(else_branch_expr),
                         false,
                         true,
