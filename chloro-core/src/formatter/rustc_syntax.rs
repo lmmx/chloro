@@ -69,10 +69,20 @@ impl Parsed {
     }
 }
 
+/// `true` if rustc's lexer rejects the text `lexed` holds. rust-analyzer reports an
+/// identifier directly followed by `#`, a string or a character literal (`foo#bar`,
+/// `foo"x"`) as an unknown literal prefix in every edition; rustc reserves these prefixes
+/// from edition 2021, and before reads an identifier and the next token.
+pub(crate) fn lexer_rejects(lexed: &LexedStr<'_>, edition: Edition) -> bool {
+    lexed
+        .errors()
+        .any(|(_, msg)| edition.at_least_2021() || !msg.starts_with("unknown literal prefix"))
+}
+
 /// The parse of a source text. `None` when the lexer reports an error.
 pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<Parsed> {
     let lexed = LexedStr::new(edition, source);
-    if lexed.errors().next().is_some() {
+    if lexer_rejects(&lexed, edition) {
         return None;
     }
     let input = lexed.to_input(edition);

@@ -312,3 +312,22 @@ impl Trait2 for impl A + B {
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// Before edition 2021, rustc's lexer reads `foo#bar` as an identifier followed by `#`;
+/// rust-analyzer's lexer reports an unknown literal prefix in every edition.
+#[test]
+fn unknown_prefix_before_edition_2021() {
+    let input = "m!(foo#bar,   x);\nfn  f() {}\n";
+    let mut config = crate::formatter::config::Config::default();
+    config.set("edition", "2018").unwrap();
+    assert_eq!(
+        crate::formatter::format_source_with_config(input, &config),
+        "m!(foo#bar,   x);\nfn f() {}\n"
+    );
+    // From edition 2021 the prefix is reserved: a lexer error, and the file is left as is.
+    config.set("edition", "2021").unwrap();
+    assert_eq!(
+        crate::formatter::format_source_with_config(input, &config),
+        input
+    );
+}
