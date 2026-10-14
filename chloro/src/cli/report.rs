@@ -1,5 +1,6 @@
 //! Aggregation and reporting for `chloro` CLI.
 use super::args::Args;
+use super::cache::Digest;
 use super::worker::ProcessResult;
 
 /// Aggregated results of a CLI run.
@@ -7,6 +8,10 @@ pub struct AggregatedResults {
     pub files_processed: usize,
     pub files_changed: usize,
     pub files_unchanged: usize,
+    /// Files reported as formatted from the cache without running the formatter.
+    pub cache_hits: usize,
+    /// Content digests confirmed as fixed points in this run, to record in the cache.
+    pub fixed_points: Vec<Digest>,
     pub errors: Vec<String>,
 }
 
@@ -22,6 +27,8 @@ impl AggregatedResults {
             files_processed: 0,
             files_changed: 0,
             files_unchanged: 0,
+            cache_hits: 0,
+            fixed_points: Vec::new(),
             errors: Vec::new(),
         }
     }
@@ -33,13 +40,22 @@ pub fn aggregate_results(results: Vec<ProcessResult>) -> AggregatedResults {
 
     for result in results {
         match result {
-            ProcessResult::Formatted { changed, .. } => {
+            ProcessResult::Formatted {
+                changed,
+                cached,
+                fixed_point,
+                ..
+            } => {
                 agg.files_processed += 1;
                 if changed {
                     agg.files_changed += 1;
                 } else {
                     agg.files_unchanged += 1;
                 }
+                if cached {
+                    agg.cache_hits += 1;
+                }
+                agg.fixed_points.extend(fixed_point);
             }
             ProcessResult::Error(e) => {
                 agg.errors.push(e);
@@ -61,6 +77,9 @@ pub fn print_summary(agg: &AggregatedResults, args: &Args) {
     eprintln!("Files processed: {}", agg.files_processed);
     eprintln!("Files changed: {}", agg.files_changed);
     eprintln!("Files unchanged: {}", agg.files_unchanged);
+    if args.verbose {
+        eprintln!("Cache hits: {}", agg.cache_hits);
+    }
 
     if !agg.errors.is_empty() {
         eprintln!();

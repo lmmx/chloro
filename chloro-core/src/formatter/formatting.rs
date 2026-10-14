@@ -9,7 +9,7 @@ use ra_ap_syntax::{Edition, RustLanguage, SourceFile, SyntaxKind, SyntaxNode};
 use rowan::{GreenNodeBuilder, Language};
 
 use super::comment::{CharClasses, LineClasses};
-use super::config::{NewlineStyle, Settings};
+use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
@@ -64,15 +64,15 @@ impl TreeBuilder {
 /// Only lexer and parser errors count. `SourceFile::parse(..).errors()` would also run
 /// rust-analyzer's semantic validation (e.g. `crate` in the middle of a path), which
 /// rustc's parser does not do, and would cost a second traversal of the tree.
-fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
+fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<SourceFile> {
     let parsed = build_tree(source, edition)?;
     let tree = if parsed.is_ok() {
         parsed.tree
     } else {
-        reparse(source, edition, parsed)?
+        reparse(source, edition, rustfmt_version, parsed)?
     };
     let file = SourceFile::cast(tree)?;
-    (!rejected_by_rustc(&file, edition)).then_some(file)
+    (!rejected_by_rustc(&file, edition, rustfmt_version)).then_some(file)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse.
@@ -81,7 +81,7 @@ pub(crate) fn format_text(
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<Formatted> {
-    let file = parse(source, config.edition().to_ra())?;
+    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
 
     // `#![rustfmt::skip]` on the file: echo the input.
     if contains_skip(&inner_attributes(file.syntax())) {
@@ -106,6 +106,9 @@ pub(crate) fn format_text(
     let mut text = std::mem::take(&mut visitor.buffer);
     let macro_failure = visitor.macro_rewrite_failure;
     drop(visitor);
+    if run.format_failure.get() {
+        return None;
+    }
 
     // The source map of rustc does not include terminating newlines, so rustfmt adds one
     // for each file and then truncates any run of trailing newlines to one.
@@ -122,9 +125,30 @@ pub(crate) fn format_text(
     })
 }
 
+/// `format_text` with the file's top-level items formatted on up to `threads` threads
+/// (`parallel.rs`); the output is the same. Only for a whole file (`is_macro_def` is
+/// false): macro definition bodies are formatted sequentially inside their item.
+pub(crate) fn format_text_parallel(
+    source: &str,
+    config: &Settings,
+    threads: usize,
+) -> Option<Formatted> {
+    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
+    if contains_skip(&inner_attributes(file.syntax())) {
+        return Some(Formatted {
+            text: source.to_owned(),
+            echoed: true,
+            macro_failure: false,
+            lost_comment: false,
+            skipped_range: Vec::new(),
+        });
+    }
+    super::parallel::format_file(source, config, &file, threads)
+}
+
 /// rustfmt's `format_lines` (without its error reporting): a run of trailing newlines
 /// becomes a single newline. `\r` characters do not interrupt the run.
-fn truncate_trailing_newlines(text: &mut String) {
+pub(crate) fn truncate_trailing_newlines(text: &mut String) {
     let mut newline_count = 0;
     for c in text.chars().rev() {
         match c {

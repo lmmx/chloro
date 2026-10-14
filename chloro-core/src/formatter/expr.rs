@@ -5,7 +5,7 @@ use std::cmp::min;
 
 use ra_ap_syntax::SyntaxKind;
 use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
+use ra_ap_syntax::ast::{self, AstNode, AstToken};
 
 use super::attr::rewrite_attrs;
 use super::chains::rewrite_chain;
@@ -14,21 +14,23 @@ use super::comment::{
     CharClasses, FindUncommented, combine_strs_with_missing_comments, contains_comment,
     recover_comment_removed, rewrite_comment, rewrite_missing_comment,
 };
-use super::config::StyleEdition;
-use super::context::{Rewrite, RewriteContext};
+use super::config::{RustfmtVersion, StyleEdition};
+use super::context::{Rewrite, RewriteContext, RunState};
 use super::lists::{
     SeparatorPlace, SeparatorTactic, itemize_list, shape_for_tactic, struct_lit_formatting,
     struct_lit_shape, struct_lit_tactic, write_list,
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::matches::rewrite_match;
-use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, child, contains_skip,
     inner_attributes, is_repeat_array, outer_attributes, span_without_attrs,
 };
+use super::nodes::{
+    bin_op_text, condition_expr, else_branch, has_token, loop_body, nth_child, then_branch,
+};
 use super::overflow::{self, Delimiter, OverflowableItem};
-use super::pairs::{PairParts, bin_op_text, rewrite_all_pairs, rewrite_pair};
+use super::pairs::{PairParts, rewrite_all_pairs, rewrite_pair};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, token_span};
 use super::stmt::Stmt as FmtStmt;
@@ -62,17 +64,24 @@ pub(crate) enum LitKind {
 }
 
 impl LitKind {
+    /// `Literal::kind` for the kinds the formatter tells apart: the literal's first
+    /// non-trivia token, read from the green tree.
     pub(crate) fn of(lit: &ast::Literal) -> LitKind {
-        match lit.kind() {
-            ast::LiteralKind::String(s) => {
-                if s.is_raw() {
-                    LitKind::StrRaw
-                } else {
-                    LitKind::Str
-                }
+        use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind};
+        use rowan::Language;
+        let green = lit.syntax().green();
+        let token = green.children().find_map(|c| match c {
+            NodeOrToken::Token(t) => {
+                let kind = RustLanguage::kind_from_raw(t.kind());
+                (!kind.is_trivia()).then_some((kind, t))
             }
-            ast::LiteralKind::IntNumber(_) => LitKind::Integer,
-            ast::LiteralKind::FloatNumber(_) => LitKind::Float,
+            NodeOrToken::Node(_) => None,
+        });
+        match token {
+            Some((SyntaxKind::STRING, t)) if t.text().starts_with('r') => LitKind::StrRaw,
+            Some((SyntaxKind::STRING, _)) => LitKind::Str,
+            Some((SyntaxKind::INT_NUMBER, _)) => LitKind::Integer,
+            Some((SyntaxKind::FLOAT_NUMBER, _)) => LitKind::Float,
             _ => LitKind::Other,
         }
     }
@@ -175,8 +184,7 @@ fn format_expr_uncached(
             let callee = call.expr()?;
             let inner_span = mk_sp(callee.span().hi(), span.hi());
             let callee_str = callee.rewrite(context, shape)?;
-            let args: Vec<_> = call
-                .arg_list()?
+            let args: Vec<_> = child::<ast::ArgList>(call.syntax())?
                 .args()
                 .map(OverflowableItem::Expr)
                 .collect();
@@ -189,7 +197,7 @@ fn format_expr_uncached(
             rewrite_all_pairs(bin, shape, context).or_else(|| {
                 rewrite_pair(
                     &bin.lhs()?,
-                    &bin.rhs()?,
+                    &nth_child::<ast::Expr>(bin.syntax(), 1)?,
                     PairParts::infix(&format!(" {} ", bin_op_text(bin)?)),
                     context,
                     shape,
@@ -214,21 +222,21 @@ fn format_expr_uncached(
         | ast::Expr::ForExpr(_)
         | ast::Expr::LoopExpr(_)
         | ast::Expr::WhileExpr(_) => {
-            to_control_flow(expr, expr_type).and_then(|cf| cf.rewrite(context, shape))
+            to_control_flow(&context.run, expr, expr_type).and_then(|cf| cf.rewrite(context, shape))
         }
         ast::Expr::BlockExpr(b) => rewrite_block_expr(expr, b, expr_type, context, shape),
         ast::Expr::MatchExpr(m) => rewrite_match(context, m, shape, span, &expr_attrs(expr)),
         ast::Expr::PathExpr(p) => rewrite_path(context, PathContext::Expr, &p.path()?, shape),
         ast::Expr::ContinueExpr(c) => {
             let id_str = match child::<ast::Lifetime>(c.syntax()) {
-                Some(label) => format!(" {}", context.snippet(label.span())),
+                Some(label) => format!(" {}", jump_label_text(context, &label)),
                 None => String::new(),
             };
             Some(format!("continue{id_str}"))
         }
         ast::Expr::BreakExpr(b) => {
             let id_str = match child::<ast::Lifetime>(b.syntax()) {
-                Some(label) => format!(" {}", context.snippet(label.span())),
+                Some(label) => format!(" {}", jump_label_text(context, &label)),
                 None => String::new(),
             };
             if let Some(e) = b.expr() {
@@ -288,7 +296,12 @@ fn format_expr_uncached(
             shape,
             SeparatorPlace::Front,
         ),
-        ast::Expr::IndexExpr(i) => rewrite_index(&i.base()?, &i.index()?, context, shape),
+        ast::Expr::IndexExpr(i) => rewrite_index(
+            &i.base()?,
+            &nth_child::<ast::Expr>(i.syntax(), 1)?,
+            context,
+            shape,
+        ),
         ast::Expr::RangeExpr(r) => rewrite_range(context, r, shape),
         // We do not format these expressions yet, but they should still
         // satisfy our width restrictions.
@@ -323,7 +336,7 @@ fn rewrite_range(context: &RewriteContext<'_>, r: &ast::RangeExpr, shape: Shape)
             ast::Expr::Literal(lit) => lit_ends_in_dot(lit),
             ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| needs_space_before_range(&e)),
             ast::Expr::BinExpr(b) if !is_assignment(b) => {
-                b.rhs().is_some_and(|e| needs_space_before_range(&e))
+                nth_child::<ast::Expr>(b.syntax(), 1).is_some_and(|e| needs_space_before_range(&e))
             }
             _ => false,
         }
@@ -416,7 +429,7 @@ fn rewrite_block_expr(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let block = Block::from_block_expr(b)?;
+    let block = context.run.block_of(b)?;
     let attrs = expr_attrs(expr);
     let label = child::<ast::Label>(b.syntax());
     if has_token(b.syntax(), T![const]) {
@@ -588,6 +601,22 @@ fn rewrite_single_line_block(
     None
 }
 
+/// The label of a `break` or `continue` as written, e.g. `'a` or `'r#if`.
+///
+/// F1: rustfmt 1.8.0 formats `label.ident` (`v1.8.0 src/expr.rs:201-210`), whose rustc
+/// `Ident` carries no `r#` prefix, so a raw label loses it; rustfmt 1.9.0 copies the
+/// label's source text (commit `a43eef16`, PR #6425, CHANGELOG 1.9.0 Fixed #6411).
+fn jump_label_text<'a>(context: &RewriteContext<'a>, label: &ast::Lifetime) -> Cow<'a, str> {
+    let text = context.snippet(label.span());
+    match context.config.rustfmt_version() {
+        RustfmtVersion::V1_8_0 => match text.strip_prefix("'r#") {
+            Some(raw) => Cow::Owned(format!("'{raw}")),
+            None => Cow::Borrowed(text),
+        },
+        RustfmtVersion::V1_9_0 => Cow::Borrowed(text),
+    }
+}
+
 pub(crate) fn rewrite_block_with_visitor(
     context: &RewriteContext<'_>,
     prefix: &str,
@@ -635,7 +664,7 @@ impl Rewrite for Block {
 
 impl Rewrite for ast::BlockExpr {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
-        rewrite_block(&Block::from_block_expr(self)?, None, None, context, shape)
+        rewrite_block(&context.run.block_of(self)?, None, None, context, shape)
     }
 }
 
@@ -698,13 +727,15 @@ pub(crate) fn rewrite_cond(
             let cond_shape = shape.offset_left(8)?;
             m.expr()?.rewrite(context, cond_shape)
         }
-        _ => to_control_flow(expr, ExprType::SubExpression).and_then(|control_flow| {
-            let alt_block_sep =
-                String::from("\n") + &shape.indent.block_only().to_string(context.config);
-            control_flow
-                .rewrite_cond(context, shape, &alt_block_sep)
-                .map(|rw| rw.0)
-        }),
+        _ => {
+            to_control_flow(&context.run, expr, ExprType::SubExpression).and_then(|control_flow| {
+                let alt_block_sep =
+                    String::from("\n") + &shape.indent.block_only().to_string(context.config);
+                control_flow
+                    .rewrite_cond(context, shape, &alt_block_sep)
+                    .map(|rw| rw.0)
+            })
+        }
     }
 }
 
@@ -733,31 +764,28 @@ fn extract_pats_and_cond(expr: ast::Expr) -> (Option<ast::Pat>, Option<ast::Expr
     }
 }
 
-fn else_branch_expr(branch: ast::ElseBranch) -> ast::Expr {
-    match branch {
-        ast::ElseBranch::Block(b) => ast::Expr::BlockExpr(b),
-        ast::ElseBranch::IfExpr(i) => ast::Expr::IfExpr(i),
-    }
-}
-
-fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<'static>> {
+fn to_control_flow(
+    run: &RunState,
+    expr: &ast::Expr,
+    expr_type: ExprType,
+) -> Option<ControlFlow<'static>> {
     let span = expr_span(expr);
     match expr {
         ast::Expr::IfExpr(i) => {
-            let (pat, cond) = extract_pats_and_cond(i.condition()?);
+            let (pat, cond) = extract_pats_and_cond(condition_expr(i.syntax())?);
             Some(ControlFlow::new_if(
                 cond?,
                 pat,
-                Block::from_block_expr(&i.then_branch()?)?,
-                i.else_branch().map(else_branch_expr),
+                run.block_of(&then_branch(i)?)?,
+                else_branch(i),
                 expr_type == ExprType::SubExpression,
                 false,
                 span,
             ))
         }
         ast::Expr::ForExpr(f) => Some(ControlFlow {
-            cond: Some(f.iterable()?),
-            block: Block::from_block_expr(&f.loop_body()?)?,
+            cond: Some(condition_expr(f.syntax())?),
+            block: run.block_of(&loop_body(f.syntax())?)?,
             else_block: None,
             label: child::<ast::Label>(f.syntax()),
             pat: Some(child::<ast::Pat>(f.syntax())?),
@@ -771,7 +799,7 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
         }),
         ast::Expr::LoopExpr(l) => Some(ControlFlow {
             cond: None,
-            block: Block::from_block_expr(&l.loop_body()?)?,
+            block: run.block_of(&child::<ast::BlockExpr>(l.syntax())?)?,
             else_block: None,
             label: child::<ast::Label>(l.syntax()),
             pat: None,
@@ -784,10 +812,10 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
             span,
         }),
         ast::Expr::WhileExpr(w) => {
-            let (pat, cond) = extract_pats_and_cond(w.condition()?);
+            let (pat, cond) = extract_pats_and_cond(condition_expr(w.syntax())?);
             Some(ControlFlow {
                 cond: Some(cond?),
-                block: Block::from_block_expr(&w.loop_body()?)?,
+                block: run.block_of(&loop_body(w.syntax())?)?,
                 else_block: None,
                 label: child::<ast::Label>(w.syntax()),
                 matcher: if pat.is_some() { "let" } else { "" },
@@ -844,7 +872,7 @@ impl ControlFlow<'_> {
         let fixed_cost = self.keyword.len() + "  {  } else {  }".len();
 
         if let ast::Expr::BlockExpr(else_node) = else_block {
-            let else_node = Block::from_block_expr(else_node)?;
+            let else_node = context.run.block_of(else_node)?;
             let (if_expr, else_expr) = match (
                 FmtStmt::from_simple_block(context, &self.block, None),
                 FmtStmt::from_simple_block(context, &else_node, None),
@@ -1140,12 +1168,12 @@ impl Rewrite for ControlFlow<'_> {
                 // Note how we're passing the original shape, as the
                 // cost of "else" should not cascade.
                 ast::Expr::IfExpr(i) => {
-                    let (pats, cond) = extract_pats_and_cond(i.condition()?);
+                    let (pats, cond) = extract_pats_and_cond(condition_expr(i.syntax())?);
                     ControlFlow::new_if(
                         cond?,
                         pats,
-                        Block::from_block_expr(&i.then_branch()?)?,
-                        i.else_branch().map(else_branch_expr),
+                        context.run.block_of(&then_branch(i)?)?,
+                        else_branch(i),
                         false,
                         true,
                         mk_sp(expr_span(else_block).lo(), self.span.hi()),
@@ -1333,7 +1361,7 @@ pub(crate) fn is_simple_expr(expr: &ast::Expr) -> bool {
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| is_simple_expr(&e)),
         ast::Expr::IndexExpr(i) => {
             i.base().is_some_and(|e| is_simple_expr(&e))
-                && i.index().is_some_and(|e| is_simple_expr(&e))
+                && nth_child::<ast::Expr>(i.syntax(), 1).is_some_and(|e| is_simple_expr(&e))
         }
         ast::Expr::ArrayExpr(a) if is_repeat_array(a) => {
             let mut exprs = a.exprs();
@@ -1599,10 +1627,10 @@ fn rewrite_struct_lit(
     let path_shape = shape.sub_width(2)?;
     let path_str = rewrite_path(context, PathContext::Expr, &record.path()?, path_shape)?;
 
-    let field_list = record.record_expr_field_list()?;
+    let field_list = child::<ast::RecordExprFieldList>(record.syntax())?;
     let fields: Vec<ast::RecordExprField> = field_list.fields().collect();
     let dotdot = field_list.dotdot_token();
-    let base = field_list.spread();
+    let base = child::<ast::Expr>(field_list.syntax());
 
     let has_base_or_rest = match (&dotdot, &base) {
         (None, _) if fields.is_empty() => return Some(format!("{path_str} {{}}")),
@@ -1890,7 +1918,7 @@ fn rewrite_assignment(
     shape: Shape,
 ) -> Option<String> {
     let lhs = bin.lhs()?;
-    let rhs = bin.rhs()?;
+    let rhs = nth_child::<ast::Expr>(bin.syntax(), 1)?;
     let operator_str = bin_op_text(bin)?;
 
     // 1 = space between lhs and operator.
@@ -2103,6 +2131,32 @@ pub(crate) fn is_method_call(expr: &ast::Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ra_ap_syntax::ast::IsString;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `LitKind::of` answers what `Literal::kind` answers on every literal kind: strings and
+    /// raw strings, byte and C strings, integers and floats with suffixes, chars, bytes,
+    /// booleans.
+    #[test]
+    fn lit_kind_matches_the_generated_literal_kind() {
+        let src = "fn f() { (1, 2u8, 0x3, 1.5, 2e3f32, 1f64, \"s\", r\"r\", r#\"r\"#, b\"b\", \
+                   br\"b\", c\"c\", cr\"c\", 'c', b'b', true, false, #[attr] 1) }\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = std::collections::BTreeMap::new();
+        for lit in file.syntax().descendants().filter_map(ast::Literal::cast) {
+            let by_token = match lit.kind() {
+                ast::LiteralKind::String(s) if s.is_raw() => LitKind::StrRaw,
+                ast::LiteralKind::String(_) => LitKind::Str,
+                ast::LiteralKind::IntNumber(_) => LitKind::Integer,
+                ast::LiteralKind::FloatNumber(_) => LitKind::Float,
+                _ => LitKind::Other,
+            };
+            assert_eq!(LitKind::of(&lit), by_token, "{lit}");
+            *seen.entry(format!("{by_token:?}")).or_insert(0) += 1;
+        }
+        assert_eq!(seen.len(), 5, "every kind occurs: {seen:?}");
+        assert_eq!(seen["Other"], 8, "{seen:?}");
+    }
 
     #[test]
     fn test_last_line_offsetted() {

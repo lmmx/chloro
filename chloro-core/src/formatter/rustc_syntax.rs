@@ -27,7 +27,8 @@
 //!   rust-analyzer's tree builder reports "illegal float literal" and wraps the literal in
 //!   an `ERROR` node; the edit makes it a `NAME_REF`, as for `s.0`.
 //! - A const block item, `const { .. }` in a file or module (rustc's `ItemKind::ConstBlock`,
-//!   the unstable `const_block_items`). rust-analyzer reports "expected an item" and keeps
+//!   the unstable `const_block_items`; rustc 1.88.0's parser, and so rustfmt 1.8.0, rejects
+//!   it). rust-analyzer reports "expected an item" and keeps
 //!   the `const` keyword and the block (parsed as block contents) in two `ERROR` nodes; the
 //!   edit makes them a `CONST` item without a name whose body is a `BLOCK_EXPR`, which
 //!   `nodes::const_block_item` recognises.
@@ -43,6 +44,7 @@ use ra_ap_syntax::{RustLanguage, SyntaxElement};
 use rowan::Language;
 use rowan::{GreenNode, GreenNodeData};
 
+use super::config::RustfmtVersion;
 use super::formatting::TreeBuilder;
 
 /// The text inserted before a `(` or `?`: `dyn` and the space after it.
@@ -94,13 +96,26 @@ pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<Parsed> {
 
 /// The tree rustc's parser would accept for `source`, which rust-analyzer's parser rejected
 /// (`parsed`), built as the module documentation describes. `None` if there is none.
-pub(crate) fn reparse(source: &str, edition: Edition, parsed: Parsed) -> Option<SyntaxNode> {
+pub(crate) fn reparse(
+    source: &str,
+    edition: Edition,
+    rustfmt_version: RustfmtVersion,
+    parsed: Parsed,
+) -> Option<SyntaxNode> {
     if parsed.errors.is_empty() {
         return float_fields_as_names(&parsed.tree, parsed.float_fields);
     }
     let mut explained = vec![false; parsed.errors.len()];
-    let green = rebuild_const_blocks(&parsed.tree, &parsed.errors, &mut explained);
-    let tree = SyntaxNode::new_root(green);
+    // rustc 1.88.0's parser (rustfmt 1.8.0) has no const block items.
+    let tree = if rustfmt_version >= RustfmtVersion::V1_9_0 {
+        SyntaxNode::new_root(rebuild_const_blocks(
+            &parsed.tree,
+            &parsed.errors,
+            &mut explained,
+        ))
+    } else {
+        parsed.tree.clone()
+    };
     let green = rebuild_impl_self_types(&tree, &parsed.errors, &mut explained);
     if explained.iter().all(|&e| e) {
         return float_fields_as_names(&SyntaxNode::new_root(green), parsed.float_fields);

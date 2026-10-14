@@ -10,7 +10,8 @@
 //! are kept as written (rustfmt's `format_macro_matchers` is off by default).
 
 use ra_ap_syntax::ast::{self, AstNode, AstToken, HasName};
-use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
+use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken, T};
+use rowan::Language;
 
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, contains_comment};
 use super::config::StyleEdition;
@@ -19,8 +20,8 @@ use super::expr::{RhsAssignKind, rewrite_array, rewrite_assign_rhs};
 use super::formatting::{format_code_block, format_snippet};
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::macro_args::{ParsedMacroArgs, parse_expr, parse_lazy_static, parse_macro_args};
-use super::nodes::node_text;
 use super::nodes::{Block, BlockRules, child};
+use super::nodes::{child_range, first_token_kind, green_child, node_text, push_non_trivia_text};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
@@ -94,13 +95,12 @@ impl Rewrite for MacroArg {
 /// rustc's span of a macro call: from the path to the closing delimiter, without
 /// attributes or a trailing `;`.
 pub(crate) fn mac_span(mac: &ast::MacroCall) -> Span {
-    let lo = mac
-        .path()
-        .map(|p| node_range_span(p.syntax()).lo())
+    // `MacroCall::path` and `MacroCall::token_tree`, of which only the ends are used.
+    let lo = child_range::<ast::Path>(mac.syntax())
+        .map(|p| p.start().into())
         .unwrap_or_else(|| mac.span().lo());
-    let hi = mac
-        .token_tree()
-        .map(|tt| node_range_span(tt.syntax()).hi())
+    let hi = child_range::<ast::TokenTree>(mac.syntax())
+        .map(|tt| tt.end().into())
         .unwrap_or_else(|| mac.span().hi());
     mk_sp(lo, hi)
 }
@@ -108,15 +108,9 @@ pub(crate) fn mac_span(mac: &ast::MacroCall) -> Span {
 /// The macro path followed by `!`, without whitespace (rustc's `path_to_string`).
 fn rewrite_macro_name(mac: &ast::MacroCall) -> String {
     let mut name = String::new();
-    if let Some(path) = mac.path() {
-        for token in path
-            .syntax()
-            .descendants_with_tokens()
-            .filter_map(NodeOrToken::into_token)
-            .filter(|t| !t.kind().is_trivia())
-        {
-            name.push_str(token.text());
-        }
+    // `MacroCall::path`, read from the green tree.
+    if let Some(path) = green_child(&mac.syntax().green(), SyntaxKind::PATH) {
+        push_non_trivia_text(path, &mut name);
     }
     name.push('!');
     name
@@ -124,7 +118,7 @@ fn rewrite_macro_name(mac: &ast::MacroCall) -> String {
 
 /// The delimiter of a token tree.
 fn tt_delimiter(tt: &ast::TokenTree) -> Delimiter {
-    match tt.syntax().first_token().map(|t| t.kind()) {
+    match first_token_kind(&tt.syntax().green()) {
         Some(T!['(']) => Delimiter::Parenthesis,
         Some(T!['[']) => Delimiter::Bracket,
         _ => Delimiter::Brace,
@@ -134,8 +128,9 @@ fn tt_delimiter(tt: &ast::TokenTree) -> Delimiter {
 /// `true` if the token tree holds nothing but its delimiters and whitespace or comments.
 fn tt_is_empty(tt: &ast::TokenTree) -> bool {
     tt.syntax()
-        .children_with_tokens()
-        .filter(|el| !el.kind().is_trivia())
+        .green()
+        .children()
+        .filter(|el| !RustLanguage::kind_from_raw(el.kind()).is_trivia())
         .count()
         <= 2
 }
@@ -231,7 +226,7 @@ fn rewrite_macro_inner(
         return super::chains::rewrite_try_shorthand(&inner, context, shape);
     }
 
-    let tt = mac.token_tree()?;
+    let tt = child::<ast::TokenTree>(mac.syntax())?;
     let span = mac_span(mac);
     let original_style = tt_delimiter(&tt);
 
@@ -419,7 +414,7 @@ pub(crate) fn convert_try_mac(
 ) -> Option<ast::Expr> {
     let name = rewrite_macro_name(mac);
     if name == "try!" || name == "r#try!" {
-        parse_expr(context, &mac.token_tree()?)
+        parse_expr(context, &child::<ast::TokenTree>(mac.syntax())?)
     } else {
         None
     }
@@ -427,7 +422,7 @@ pub(crate) fn convert_try_mac(
 
 /// The delimiter style of a macro call.
 pub(crate) fn macro_style(mac: &ast::MacroCall) -> Delimiter {
-    mac.token_tree()
+    child::<ast::TokenTree>(mac.syntax())
         .map(|tt| tt_delimiter(&tt))
         .unwrap_or(Delimiter::Brace)
 }
@@ -759,7 +754,7 @@ impl MacroBranch {
         let whole_body = node_range_span(body);
         MacroBranch {
             span,
-            args_paren_kind: args.first_token().map(|t| t.kind()),
+            args_paren_kind: first_token_kind(&args.green()),
             args: node_range_span(args),
             body: mk_sp(whole_body.lo() + 1, whole_body.hi().saturating_sub(1)),
             whole_body,
@@ -928,6 +923,73 @@ fn replace_names(input: &str) -> Option<(String, Vec<(String, String)>)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `mac_span` answers what `MacroCall::path` and `MacroCall::token_tree` answer on macro
+    /// calls with every delimiter, in item, statement and expression position, with and
+    /// without attributes and a trailing semicolon.
+    #[test]
+    fn mac_span_matches_the_generated_accessors() {
+        let src = "m!();\n#[attr]\nm! {}\nfn f() {\n    a::b!(1);\n    m![2];\n    \
+                   let x = m! { 3 };\n    m!(4)\n}\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut calls = 0;
+        for mac in file.syntax().descendants().filter_map(ast::MacroCall::cast) {
+            let lo = mac
+                .path()
+                .map(|p| node_range_span(p.syntax()).lo())
+                .unwrap_or_else(|| mac.span().lo());
+            let hi = mac
+                .token_tree()
+                .map(|tt| node_range_span(tt.syntax()).hi())
+                .unwrap_or_else(|| mac.span().hi());
+            assert_eq!(mac_span(&mac), mk_sp(lo, hi), "{mac}");
+            calls += 1;
+        }
+        assert_eq!(calls, 6);
+    }
+
+    /// `rewrite_macro_name`, `tt_delimiter` and `tt_is_empty` answer what the cursor walks
+    /// answer on macro calls with every delimiter, empty and comment-only token trees,
+    /// nested token trees, and paths with `::`, raw identifiers and comments.
+    #[test]
+    fn macro_name_and_token_tree_queries_match_the_cursor_walks() {
+        let src = "m!();\nm![];\nm! {}\nm!(/* c */);\nm!( a );\nm![(b), {c}];\na::b!{ 1 }\n\
+                   r#try!(x);\nstd :: m /* c */ ! (1);\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = [0usize; 3];
+        for mac in file.syntax().descendants().filter_map(ast::MacroCall::cast) {
+            let mut name = String::new();
+            if let Some(path) = mac.path() {
+                for token in path
+                    .syntax()
+                    .descendants_with_tokens()
+                    .filter_map(NodeOrToken::into_token)
+                    .filter(|t| !t.kind().is_trivia())
+                {
+                    name.push_str(token.text());
+                }
+            }
+            name.push('!');
+            assert_eq!(rewrite_macro_name(&mac), name, "{mac}");
+            let tt = mac.token_tree().unwrap();
+            let delimiter = match tt.syntax().first_token().map(|t| t.kind()) {
+                Some(T!['(']) => Delimiter::Parenthesis,
+                Some(T!['[']) => Delimiter::Bracket,
+                _ => Delimiter::Brace,
+            };
+            assert_eq!(tt_delimiter(&tt), delimiter, "{mac}");
+            let empty = tt
+                .syntax()
+                .children_with_tokens()
+                .filter(|el| !el.kind().is_trivia())
+                .count()
+                <= 2;
+            assert_eq!(tt_is_empty(&tt), empty, "{mac}");
+            seen[delimiter as usize] += 1;
+        }
+        assert!(seen.iter().all(|&n| n > 0), "every delimiter: {seen:?}");
+    }
 
     #[test]
     fn replace_names_substitutes_metavariables() {

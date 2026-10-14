@@ -15,7 +15,7 @@ use super::lists::{
     ListFormatting, ListTactic, Separator, SeparatorTactic, definitive_tactic, itemize_list,
     write_list,
 };
-use super::nodes::{AttrStyle, Attribute, child, non_trivia_text};
+use super::nodes::{AttrStyle, Attribute, attr_path_text, child};
 use super::overflow;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
@@ -220,11 +220,10 @@ fn parse_meta_list(tt: &SyntaxNode) -> Option<Vec<MetaItemInner>> {
 /// required shape.
 pub(crate) fn attr_meta(attr: &ast::Attr) -> Option<MetaItem> {
     let meta = child::<ast::Meta>(attr.syntax())?;
-    let path_node = meta.path()?;
-    let path = non_trivia_text(path_node.syntax());
-    let kind = if let Some(tt) = meta.token_tree() {
+    let path = attr_path_text(attr)?;
+    let kind = if let Some(tt) = child::<ast::TokenTree>(meta.syntax()) {
         MetaItemKind::List(parse_meta_list(tt.syntax())?)
-    } else if let Some(expr) = meta.expr() {
+    } else if let Some(expr) = child::<ast::Expr>(meta.syntax()) {
         let ast::Expr::Literal(lit) = expr else {
             return None;
         };
