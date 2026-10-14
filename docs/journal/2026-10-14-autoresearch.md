@@ -343,8 +343,7 @@ lookahead in `skip_plain` (+784 K), the line table via `match_indices` (+519 K).
 removed scans or copies rather than speeding the state machine up: `CharClasses::next`
 itself keeps its structure and now costs 4.47 M.
 
-**R2, the conformance ledger and fixes (`20261014-conformance-fixes`, gated, merge
-pending on its instruction cost).** [conformance-ledger.md](2026-10-14-autoresearch/conformance-ledger.md)
+**R2, the conformance ledger and fixes (`20261014-conformance-fixes`, merged `113367a`).** [conformance-ledger.md](2026-10-14-autoresearch/conformance-ledger.md)
 records 24 cases: every mismatch found on the fixtures under all 31 option values, on the
 20,850-file registry, and in the rustc-recovery and `#[rustfmt::skip::*]` gaps the earlier
 entries left open, each with a reproducer, both outputs, the cause in rustfmt's or rustc's
@@ -367,11 +366,17 @@ parameters in edition 2015 (rust-analyzer's parser rejects them), rustfmt's own 
 error on one rustyline file (chloro's output equals what rustfmt still writes), rustfmt's
 run time on one pest_meta file, non-idempotent outputs that are rustfmt's own (chloro on
 rustfmt's first output equals rustfmt's second), and a trailing comma in `builtin #
-offset_of`. The branch costs 401,021,302 instructions on the sample against 390,690,264 for
+offset_of`. The branch first cost 401,021,302 instructions on the sample against 390,690,264 for
 its base (+2.6%), attributed to `rustc_compat::walk` (+5.5 M: new rules run at every node),
 a path building blocks outside E4's cache (+0.6 M), the per-context skip state (+0.4 M) and
-the allocations behind them (+1.6 M); the merge waits for the common-path cost to come
-within +0.5%.
+the allocations behind them (+1.6 M). Four commits removed it: the skip state became an
+`Option<Rc<SkipContext>>` touched only by items whose attribute path starts with `rustfmt`;
+const block items take their block from `RunState::block_of`; `rustc_compat` became one pass
+over the preorder array, with ancestors found on demand after a rule's cheap conditions hold
+(5.89 M against 9.38 M before the branch); `rustc_syntax::reparse` reuses the first lex and
+parse and skips edits whose trigger text is absent. After the E3 merge the branch measures
+312,736,691 against 316,299,929 for its base (−1.13%); reproduced here as 312,734,032
+against 316,076,716.
 
 ## Milestone 1, measured on a quiet host (M1)
 
@@ -466,16 +471,18 @@ input, the cache disabled through the harness.
   (chloro-core/src/cst/: mod.rs, generated.rs, ast.rs, gen_ast.py, rust.ungram); rowan and
   ra_ap_syntax are dev-dependencies for the equality tests only
   (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 16 crates
-- Instructions on the 49-file sample under `benchmarks/profile.sh`: 316,076,716 at the E3
-  merge against 587,988,576 at `884f9c9` (−46.2%); 306,889,893 for the profile-guided build
-  of `8d418ee` (measurements/m2-quiet-host.md)
+- Instructions on the 49-file sample under `benchmarks/profile.sh`: 312,734,032 at
+  `113367a` against 587,988,576 at `884f9c9` (−46.8%); 306,889,893 for the profile-guided
+  build of `8d418ee` (measurements/m2-quiet-host.md)
 - In process on one core of the 2.80GHz host class: 7.25–7.73 MB/s on the 1238 fixtures
   against 4.94–5.03 for `884f9c9`; against rustfmt 1.9.0 on nine crates, formatted input,
   `--check`: 0.438–0.611 of its wall time on one core and 0.130–0.201 on four, with every
   chloro run below every rustfmt run (measurements/m2-quiet-host.md)
-- Conformance is 1219/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
-  1.9.0 and 1.8.0; every merged change left all 1238 fixture and 20,850 registry output
-  hashes equal to the `884f9c9` record (experiments.md, best-known-good)
+- Conformance is 1220/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
+  1.9.0 and 1.8.0, and all 31 option values are fully identical (`conform -i`,
+  `config_matrix -n 1220` at `113367a`); 20540/20540 registry files identical in the live
+  comparison; against the `884f9c9` output record the whole programme changed exactly the
+  13 files the conformance fixes target (experiments.md, best-known-good)
 - The CLI hands files to one worker per core from a largest-first queue and formats the
   top-level items of files of 128 KiB and more on all threads
   (chloro/src/cli/orchestrate.rs, chloro-core/src/formatter/parallel.rs); `--threads N`
@@ -498,9 +505,12 @@ input, the cache disabled through the harness.
 
 ## Missing
 
-- `0024_many_type_parens.rs` differs from rustfmt at both supported versions, and the
-  conformance ledger with its fixes is not merged yet (R2 running on
-  `20261014-conformance-fixes`)
+- Six conformance cases stay open and documented in conformance-ledger.md (cases 19–24):
+  doc comments as attributes of expressions, edition-2015 anonymous trait-method
+  parameters, rustfmt's internal error on one rustyline file, rustfmt's run time on one
+  pest_meta file, non-idempotent outputs that are rustfmt's own, and a trailing comma in
+  `builtin # offset_of`
+- No quiet-host measurement of the final head (milestone 3)
 - No profile-guided build in the release workflow; `.github/workflows/binaries.yml` is
   unchanged and the proposed step is in experiments/EXP-002-cli-build.md
 
