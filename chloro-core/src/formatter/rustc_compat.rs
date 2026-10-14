@@ -300,6 +300,80 @@ fn const_param_default_rejected(param: &GreenNodeData) -> bool {
     }
 }
 
+/// A parameter pattern that rustc's `is_named_param` accepts: an optional `&`, `&&` or
+/// `mut`, then an identifier (or `_`).
+fn is_named_param_pat(pat: &GreenNodeData) -> bool {
+    let simple_ident = |n: &GreenNodeData| match kind(n.kind()) {
+        SyntaxKind::WILDCARD_PAT => true,
+        SyntaxKind::IDENT_PAT => {
+            !has_token(n, T![ref]) && !has_token(n, T![mut]) && !has_token(n, T![@])
+        }
+        _ => false,
+    };
+    match kind(pat.kind()) {
+        SyntaxKind::WILDCARD_PAT => true,
+        SyntaxKind::IDENT_PAT => !has_token(pat, T![ref]) && !has_token(pat, T![@]),
+        SyntaxKind::REF_PAT if !has_token(pat, T![mut]) => {
+            let mut children = pat.children().skip_while(|c| child_kind(c) != T![&]);
+            children.next();
+            match children.next() {
+                Some(NodeOrToken::Node(inner)) if simple_ident(inner) => true,
+                // `&&x`: the two `&` are one token to rustc only when adjacent.
+                Some(NodeOrToken::Node(inner))
+                    if kind(inner.kind()) == SyntaxKind::REF_PAT
+                        && !has_token(inner, T![mut])
+                        && first_token_kind(&NodeOrToken::Node(inner)) == Some(T![&]) =>
+                {
+                    let mut rest = inner.children().skip_while(|c| child_kind(c) != T![&]);
+                    rest.next();
+                    matches!(rest.next(), Some(NodeOrToken::Node(n)) if simple_ident(n))
+                }
+                _ => false,
+            }
+        }
+        _ => false,
+    }
+}
+
+/// Edition 2015 trait methods take anonymous parameters (`fn f(u8);`), so rustc parses a
+/// parameter that does not start like `name:` as a type, and a pattern such as `(a, b): T`
+/// is a parse error (E0642).
+fn trait_param_rejected(
+    param: &GreenNodeData,
+    path: &[(&GreenNodeData, usize)],
+    edition: Edition,
+) -> bool {
+    if edition != Edition::Edition2015 {
+        return false;
+    }
+    let ancestors: Vec<_> = path
+        .iter()
+        .rev()
+        .take(4)
+        .map(|(p, _)| kind(p.kind()))
+        .collect();
+    if ancestors
+        != [
+            SyntaxKind::PARAM_LIST,
+            SyntaxKind::FN,
+            SyntaxKind::ASSOC_ITEM_LIST,
+            SyntaxKind::TRAIT,
+        ]
+    {
+        return false;
+    }
+    // A parameter with a pattern has a `:`.
+    if !has_token(param, T![:]) {
+        return false;
+    }
+    // The pattern: the first node after the parameter's attributes.
+    let pat = param
+        .children()
+        .filter_map(|c| c.into_node())
+        .find(|n| kind(n.kind()) != SyntaxKind::ATTR);
+    pat.is_some_and(|pat| !is_named_param_pat(pat))
+}
+
 fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
     let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
     match kind(node.kind()) {
@@ -347,6 +421,7 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
         SyntaxKind::ASM_EXPR | SyntaxKind::FORMAT_ARGS_EXPR => true,
         SyntaxKind::OFFSET_OF_EXPR => offset_of_rejected(node, edition),
         SyntaxKind::CONST_PARAM => const_param_default_rejected(node),
+        SyntaxKind::PARAM => trait_param_rejected(node, path, edition),
         _ => false,
     }
 }
@@ -467,6 +542,24 @@ mod tests {
         let builtin = "fn f() { builtin#offset_of(Foo, bar); }";
         assert!(!rejected_in(builtin, Edition::Edition2018), "{builtin}");
         assert!(rejected_in(builtin, Edition::Edition2021), "{builtin}");
+        // Edition 2015 trait methods take anonymous parameters: a pattern must look like
+        // `name:`, `&name:`, `&&name:` or `mut name:`.
+        for src in [
+            "trait T { fn f((a, b): (u8, u8)) {} }",
+            "trait T { fn f(&mut a: u8) {} }",
+            "trait T { fn f(ref a: u8) {} }",
+            "trait T { fn f(& &a: u8) {} }",
+        ] {
+            assert!(rejected_in(src, Edition::Edition2015), "{src}");
+            assert!(!rejected_in(src, Edition::Edition2018), "{src}");
+        }
+        for src in [
+            "trait T { fn f(a: u8, mut b: u8, &c: u8, &&d: u8, _: u8, &self) {} }",
+            "impl X { fn f((a, b): (u8, u8)) {} }",
+            "trait T { fn f(#[a] _: u64, #[a] mut x: i32); }",
+        ] {
+            assert!(!rejected_in(src, Edition::Edition2015), "{src}");
+        }
     }
 
     #[test]
