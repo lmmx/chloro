@@ -262,6 +262,52 @@ borrow their tree, and fragment trees are created mid-run and held by the macro-
 cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena design
 (trees owned for the run's lifetime, memo keyed by tree id and index).
 
+## Milestone 1, measured on a quiet host (M1)
+
+[measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
+measures `884f9c9` (base), `dc20cd7` (head: E6, E1, E2 merged) and a profile-guided build
+of the same head against rustfmt 1.9.0 in an otherwise idle container (4 vCPU Xeon @
+2.10GHz, a different host class from the 2.80GHz machine of the earlier entries, so only
+ratios carry). `benchmarks/compare_rustfmt.sh`, 30 runs per cell, rustfmt-formatted input,
+the cache disabled for every sweep but the cache sweep.
+
+| crates (9), `--check`, formatted input | head/base | head-pgo/base | head/rustfmt | head-pgo/rustfmt |
+|---|---|---|---|---|
+| all four cores (chloro 4 threads, rustfmt 1) | 0.52–0.88 | 0.48–0.77 | 0.149–0.283 | 0.162–0.271 |
+| one core (both pinned), wall | 0.76–0.98 | 0.67–0.96 | 0.566–0.890 | 0.498–0.834 |
+| one core, CPU time | 0.76–0.99 | | 0.56–0.90 | |
+
+- On all four cores every head and head-pgo run is below every rustfmt run on all nine
+  crates. Head is below base with non-overlapping ranges on `hir`, `hir-ty`, `ide-db` and
+  `tokio`; the other five overlap. Pinned, head is below rustfmt with non-overlapping ranges
+  on `hir` and `hir-ty` only, and every pinned head-vs-base range overlaps: the per-core
+  gain of this milestone is real in CPU time (0.76–0.99) but inside the host's spread in
+  wall time.
+- The cache: `--check` on the 1238 formatted fixtures takes 24.5 ± 2.9 ms warm against
+  650.8 ± 44.4 ms with `--no-cache` (26.6x) and 773.4 ± 60.0 ms for base (31.6x); on one
+  core 24.9 ms against 2342.3 ms (94x).
+- In process, one core: base 5.44–5.99 MB/s, head 6.53–6.94 MB/s (ranges do not overlap),
+  head-pgo 6.91–8.14 MB/s. Instructions on the sample: base 587,989,174; head 554,185,312
+  (−5.75%); head-pgo 448,212,267 (−23.77%).
+- Parallel items, one file at a time on four cores: head/base 0.57 (`hir/src/lib.rs`), 0.58
+  (`nodes.rs`), 0.63 (`config.rs`), 0.65 (`hover/tests.rs`), 0.69 (`lints.rs`); CPU time
+  1.00–1.23x, peak RSS up to 1.52x.
+- Regressions, all inside the spread: start-up on a 12-byte file 2.2 ms against 2.0 ms on
+  four cores (one core 1.4 against 1.5); `stdin-nodes` with four threads on one core 1.06;
+  CPU time on `regex-syntax` 1.027; peak RSS of the split files up to 1.52x. No cell has
+  any chloro build above rustfmt in mean, minimum, CPU or RSS.
+- Harness defects found by the run and fixed afterwards on the integration branch:
+  `benchmarks/pgo.sh` passed a relative `-Cprofile-use` path that rustc resolves from
+  another directory (the root is now made absolute, and the script also builds a
+  profile-guided `bench`); the harness had no way to disable the cache, so a formatted-input
+  sweep of a cache-carrying build measured the cache after the warmup (M1 worked around it
+  by unsetting `HOME`; the harness now passes `--no-cache` to any chloro that accepts it
+  unless `--with-cache` is given).
+
+Milestone 1 does not include E4 (−6.4% instructions, merged after M1 started) or anything
+from E3, E7b, E8 and the conformance branch; milestone 2 measures the next integrated head
+the same way.
+
 ## Current State
 
 - Formatting runs rustfmt 1.9.0's algorithm single-threaded in process at 4.57 MB/s on
