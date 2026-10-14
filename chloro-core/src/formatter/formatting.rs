@@ -9,7 +9,7 @@ use ra_ap_parser::Edition;
 use crate::cst::{AstNode, Tree, TreeArena, ast};
 
 use super::comment::{CharClasses, LineClasses};
-use super::config::{NewlineStyle, Settings};
+use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
@@ -38,9 +38,9 @@ pub(crate) struct Formatted {
 /// (e.g. `crate` in the middle of a path) is not run: rustc's parser does not do it, and it
 /// would cost a second traversal of the tree. Files rustc's parser rejects for other
 /// reasons are left alone by `rustc_compat`.
-fn parse(source: &str, edition: Edition) -> Option<Tree<'_>> {
+fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
     let tree = Tree::parse(source, edition)?;
-    (!rejected_by_rustc(tree.root(), edition)).then_some(tree)
+    (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse.
@@ -49,7 +49,7 @@ pub(crate) fn format_text(
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<Formatted> {
-    let tree = parse(source, config.edition().to_ra())?;
+    let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
     let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
 
     // `#![rustfmt::skip]` on the file: echo the input.
@@ -76,6 +76,9 @@ pub(crate) fn format_text(
     let mut text = std::mem::take(&mut visitor.buffer);
     let macro_failure = visitor.macro_rewrite_failure;
     drop(visitor);
+    if run.format_failure.get() {
+        return None;
+    }
 
     // The source map of rustc does not include terminating newlines, so rustfmt adds one
     // for each file and then truncates any run of trailing newlines to one.
@@ -100,7 +103,7 @@ pub(crate) fn format_text_parallel(
     config: &Settings,
     threads: usize,
 ) -> Option<Formatted> {
-    let tree = parse(source, config.edition().to_ra())?;
+    let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
     let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
     if contains_skip(&inner_attributes(file.syntax())) {
         return Some(Formatted {
@@ -111,7 +114,7 @@ pub(crate) fn format_text_parallel(
             skipped_range: Vec::new(),
         });
     }
-    Some(super::parallel::format_file(source, config, &file, threads))
+    super::parallel::format_file(source, config, &file, threads)
 }
 
 /// rustfmt's `format_lines` (without its error reporting): a run of trailing newlines

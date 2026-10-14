@@ -18,7 +18,7 @@ use super::comment::{
     FindUncommented, combine_strs_with_missing_comments, contains_comment, is_last_comment_block,
     recover_comment_removed, recover_missing_comment_in_span, rewrite_missing_comment,
 };
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
     RhsAssignKind, RhsTactics, is_empty_block, is_simple_block_stmt, rewrite_assign_rhs,
@@ -134,8 +134,12 @@ impl Rewrite for ast::LetStmt<'_> {
         if contains_skip(&attrs) {
             return None;
         }
-        // rustfmt does not format `super let` yet.
-        if has_token(self.syntax(), T![super]) {
+        // F4: rustfmt 1.9.0 leaves a `super let` statement as written (`v1.9.0
+        // src/items.rs:68-71`, rust-side commit `266da427`); rustfmt 1.8.0 as built with
+        // Rust 1.88.0 formats it as a `let`, without `super` (`v1.8.0 src/items.rs:49`).
+        if has_token(self.syntax(), T![super])
+            && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0
+        {
             return None;
         }
         let span = item_span(self.syntax());
@@ -2122,16 +2126,20 @@ fn format_impl_ref_and_type(
     let generics_str = rewrite_generics(context, "impl", generics, shape)?;
     result.push_str(&generics_str);
 
+    // P8: a negative inherent impl (`impl !Foo {}`) reaches the formatter only under
+    // `rustfmt_version = "1.8.0"` (`rustc_compat`); rustfmt writes the polarity before
+    // the self type as rustfmt 1.8.0 `src/items.rs` `format_impl` does.
+    let polarity_str = if has_token(iimpl.syntax(), T![!]) {
+        "!"
+    } else {
+        ""
+    };
+    let polarity_overhead;
     let trait_ref_overhead;
     if let Some(of_trait) = &of_trait {
         if constness {
             result.push_str(" const");
         }
-        let polarity_str = if has_token(iimpl.syntax(), T![!]) {
-            "!"
-        } else {
-            ""
-        };
         let result_len = last_line_width(&result);
         result.push_str(&rewrite_trait_ref(
             context,
@@ -2140,8 +2148,10 @@ fn format_impl_ref_and_type(
             polarity_str,
             result_len,
         )?);
+        polarity_overhead = 0; // already written
         trait_ref_overhead = " for".len();
     } else {
+        polarity_overhead = polarity_str.len();
         trait_ref_overhead = 0;
     }
 
@@ -2153,7 +2163,8 @@ fn format_impl_ref_and_type(
     } else {
         0
     };
-    let used_space = last_line_width(&result) + trait_ref_overhead + curly_brace_overhead;
+    let used_space =
+        last_line_width(&result) + polarity_overhead + trait_ref_overhead + curly_brace_overhead;
     // 1 = space before the type.
     let budget = context.budget(used_space + 1);
     if let Some(self_ty_str) = self_ty.rewrite(context, Shape::legacy(budget, offset))
@@ -2163,6 +2174,7 @@ fn format_impl_ref_and_type(
             result.push_str(" for ");
         } else {
             result.push(' ');
+            result.push_str(polarity_str);
         }
         result.push_str(&self_ty_str);
         return Some(result);
@@ -2175,8 +2187,10 @@ fn format_impl_ref_and_type(
     result.push_str(&new_line_offset.to_string(context.config));
     if of_trait.is_some() {
         result.push_str("for ");
+    } else {
+        result.push_str(polarity_str);
     }
-    let budget = context.budget(last_line_width(&result));
+    let budget = context.budget(last_line_width(&result) + polarity_overhead);
     let type_offset = new_line_offset;
     result.push_str(&self_ty.rewrite(context, Shape::legacy(budget, type_offset))?);
     Some(result)
