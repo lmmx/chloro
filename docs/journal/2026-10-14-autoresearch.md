@@ -280,6 +280,31 @@ is snapshotted for both releases at both editions, regenerated with
 `CHLORO_RUSTFMT_VERSIONS=1.8.0=1.88.0`. The default path's instruction count moves by
 −0.04%.
 
+**E7b, the flat substrate under the formatter (`20261014-flat-port`).** The port replaces
+rowan's red and green trees with the flat preorder array of E7: `chloro-core/src/cst/`
+holds the `Tree`, `Copy` node and token handles borrowing it, a `TreeBuilder` fed by the
+same parser events, a `typed-arena` of trees owned by the run (the file is tree 0, each
+macro-argument fragment a later tree laid out at its file offset), the checked-in
+`rust.ungram`, the generator `gen_ast.py` and its output `generated.rs` (the same 501
+accessors as `ra_ap_syntax`'s generated layer), and a hand-written `ast.rs` for the
+accessors rust-analyzer writes by hand. The memo is keyed by (tree id, node index, tag,
+shape, flags) and stores no node; `rustc_compat` walks `Node` children; E4's block cache
+stays as a handle-free cache keyed by (tree id, index). `rowan` and `ra_ap_syntax` become
+dev-dependencies, kept for the equality tests that compare the flat tree with rowan's
+element by element. No `unsafe`. Gates on the branch after merging E4 and then E8: 0 of
+1238 fixture and 0 of 20,022 registry outputs changed, `conform -i` 1219/1220 at 1.9.0 and
+at 1.8.0, `config_matrix` identical on all 31 option values, workspace tests, clippy, fmt,
+`syn` absent. Measured on the sibling host against the E4-merged base built with the same
+profile in the same window: instructions on the sample 518,953,599 → 391,198,779 (−24.6%;
+390,689,701 after the E8 merge), `bench -n 5` 2.505–2.607 s → 1.843–1.982 s (5.3–5.6 →
+7.0–7.5 MB/s, ranges apart), allocations on all fixtures 14,612,436 → 8,309,517 (−43%),
+red nodes none by construction, the CLI binary 2,059,824 → 1,923,184 bytes, chloro-core's
+runtime dependency tree 37 → 16 crates. The hardest bug was in the prototype's hand-written
+`MacroDef::args`/`body`, which took the first and second token trees where rust-analyzer
+takes the arguments only when there are two and the body as the last; the equality test
+also showed that `first_token`/`last_token` must follow the first- and last-child chain,
+not scan the preorder.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
