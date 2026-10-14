@@ -8,13 +8,13 @@ Append-only. One row per experiment; the procedure and gates are in
 
 | field | value |
 |---|---|
-| commit | `7960826` (integration branch: E6 cache, E1 parallel items, E2 release profile merged onto `884f9c9`) |
+| commit | `6a12d86` (integration branch: E6 cache, E1 parallel items, E2 release profile, E4 green reads merged onto `884f9c9`) |
 | `conform -i` | 1219/1220 identical, 0 not idempotent |
 | golden hashes | `scratchpad/golden/fixtures-884f9c9.tsv` and `registry-884f9c9.tsv` (outside the repository): every merged change leaves all 1238 fixture and 20,593 registry hashes unchanged, so the `884f9c9` record stays the reference |
-| `Ir` on the 49-file sample (`benchmarks/profile.sh`) | 554,185,388 for the fat-LTO build, against 587,988,576 for `884f9c9` under the same script (−5.75%; the formatter code is unchanged, the difference is codegen) |
+| `Ir` on the 49-file sample (`benchmarks/profile.sh`) | 518,951,890 for the fat-LTO build with E4, against 554,185,388 for the LTO build before E4 and 587,988,576 for `884f9c9` under the same script (−11.74% in all: −5.75% codegen, −6.36% E4) |
 | `bench -n 5`, in process | not yet measured on a quiet host; the `884f9c9` figure is 3.041 s, 4.57 MB/s (load 0.05–0.47) |
 
-Previous best-known-good: `884f9c9`, 587,988,576 `Ir` under `benchmarks/profile.sh` (587,211,777 in profile-baseline.md, whose sample copies the files under other paths).
+Previous best-known-good commits: `7960826` (554,185,388 `Ir`), `884f9c9` (587,988,576 `Ir` under `benchmarks/profile.sh`; 587,211,777 in profile-baseline.md, whose sample copies the files under other paths).
 
 ## Ledger
 
