@@ -14,7 +14,7 @@ use super::comment::{
     CharClasses, FindUncommented, combine_strs_with_missing_comments, contains_comment,
     recover_comment_removed, rewrite_comment, rewrite_missing_comment,
 };
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext, RunState};
 use super::lists::{
     SeparatorPlace, SeparatorTactic, itemize_list, shape_for_tactic, struct_lit_formatting,
@@ -229,14 +229,14 @@ fn format_expr_uncached(
         ast::Expr::PathExpr(p) => rewrite_path(context, PathContext::Expr, &p.path()?, shape),
         ast::Expr::ContinueExpr(c) => {
             let id_str = match child::<ast::Lifetime>(c.syntax()) {
-                Some(label) => format!(" {}", context.snippet(label.span())),
+                Some(label) => format!(" {}", jump_label_text(context, &label)),
                 None => String::new(),
             };
             Some(format!("continue{id_str}"))
         }
         ast::Expr::BreakExpr(b) => {
             let id_str = match child::<ast::Lifetime>(b.syntax()) {
-                Some(label) => format!(" {}", context.snippet(label.span())),
+                Some(label) => format!(" {}", jump_label_text(context, &label)),
                 None => String::new(),
             };
             if let Some(e) = b.expr() {
@@ -599,6 +599,22 @@ fn rewrite_single_line_block(
         }
     }
     None
+}
+
+/// The label of a `break` or `continue` as written, e.g. `'a` or `'r#if`.
+///
+/// F1: rustfmt 1.8.0 formats `label.ident` (`v1.8.0 src/expr.rs:201-210`), whose rustc
+/// `Ident` carries no `r#` prefix, so a raw label loses it; rustfmt 1.9.0 copies the
+/// label's source text (commit `a43eef16`, PR #6425, CHANGELOG 1.9.0 Fixed #6411).
+fn jump_label_text<'a>(context: &RewriteContext<'a>, label: &ast::Lifetime) -> Cow<'a, str> {
+    let text = context.snippet(label.span());
+    match context.config.rustfmt_version() {
+        RustfmtVersion::V1_8_0 => match text.strip_prefix("'r#") {
+            Some(raw) => Cow::Owned(format!("'{raw}")),
+            None => Cow::Borrowed(text),
+        },
+        RustfmtVersion::V1_9_0 => Cow::Borrowed(text),
+    }
 }
 
 pub(crate) fn rewrite_block_with_visitor(

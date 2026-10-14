@@ -10,13 +10,20 @@
 //! cargo run --release -p chloro-core --example conform -- -w 20    # 20 worst files
 //! cargo run --release -p chloro-core --example conform -- -d hir/src_lib   # diff one file
 //! cargo run --release -p chloro-core --example conform -- -i       # idempotence check
+//! cargo run --release -p chloro-core --example conform -- -V 1.8.0 # rustfmt_version=1.8.0
 //! ```
+//!
+//! With `-V <version>`, chloro runs with `rustfmt_version=<version>` and the expected output
+//! is `snapshots/ra-<version>/<case>.rustfmt.rs` where that file exists (the cases whose
+//! output under that release differs from 1.9.0's, including the files it rejects, whose
+//! snapshot is the input) and the 1.9.0 snapshot otherwise.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use chloro_core::format_source;
+use chloro_core::formatter::config::Config;
+use chloro_core::formatter::format_source_with_config;
 use imara_diff::{Algorithm, BasicLineDiffPrinter, Diff, InternedInput, UnifiedDiffConfig};
 
 struct Case {
@@ -36,9 +43,10 @@ fn snapshot_key(crate_name: &str, rel: &Path) -> String {
     )
 }
 
-fn load_cases(root: &Path) -> Vec<Case> {
+fn load_cases(root: &Path, version: Option<&str>) -> Vec<Case> {
     let fixtures = root.join("fixtures").join("rust-analyzer");
     let snapshots = root.join("snapshots").join("ra");
+    let version_snapshots = version.map(|v| root.join("snapshots").join(format!("ra-{v}")));
     let mut cases = Vec::new();
     let mut crates: Vec<_> = fs::read_dir(&fixtures)
         .expect("fixtures directory")
@@ -63,9 +71,14 @@ fn load_cases(root: &Path) -> Vec<Case> {
         for path in files {
             let key = snapshot_key(&crate_name, path.strip_prefix(&crate_dir).unwrap());
             let expected_path = snapshots.join(format!("{key}.rustfmt.rs"));
-            let Ok(expected) = fs::read_to_string(&expected_path) else {
+            let Ok(mut expected) = fs::read_to_string(&expected_path) else {
                 continue;
             };
+            if let Some(dir) = &version_snapshots
+                && let Ok(text) = fs::read_to_string(dir.join(format!("{key}.rustfmt.rs")))
+            {
+                expected = text;
+            }
             let source = fs::read_to_string(&path).expect("fixture readable");
             cases.push(Case {
                 key,
@@ -98,6 +111,7 @@ fn main() {
     let mut show: Vec<String> = Vec::new();
     let mut idempotence = false;
     let mut filter: Option<String> = None;
+    let mut version: Option<String> = None;
     let mut it = args.iter();
     while let Some(a) = it.next() {
         match a.as_str() {
@@ -105,6 +119,7 @@ fn main() {
             "-d" => show.push(it.next().cloned().unwrap_or_default()),
             "-i" => idempotence = true,
             "-f" => filter = it.next().cloned(),
+            "-V" | "--rustfmt-version" => version = it.next().cloned(),
             other => {
                 eprintln!("unknown argument: {other}");
                 std::process::exit(2);
@@ -115,7 +130,15 @@ fn main() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("conformance");
-    let mut cases = load_cases(&root);
+    let mut config = Config::default();
+    if let Some(v) = &version
+        && let Err(e) = config.set("rustfmt_version", v)
+    {
+        eprintln!("{e}");
+        std::process::exit(2);
+    }
+    let format_source = |source: &str| format_source_with_config(source, &config);
+    let mut cases = load_cases(&root, version.as_deref());
     if let Some(f) = &filter {
         cases.retain(|c| c.key.contains(f.as_str()));
     }
@@ -160,7 +183,8 @@ fn main() {
     }
     let secs = elapsed.as_secs_f64();
     println!(
-        "identical: {identical}/{} | diff lines: +{total_add} -{total_rem} | {:.1} MB in {:.3}s ({:.1} MB/s)",
+        "rustfmt_version={} | identical: {identical}/{} | diff lines: +{total_add} -{total_rem} | {:.1} MB in {:.3}s ({:.1} MB/s)",
+        config.rustfmt_version.as_str(),
         cases.len(),
         bytes as f64 / 1e6,
         secs,
