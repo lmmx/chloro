@@ -1199,18 +1199,34 @@ pub(crate) fn filter_normal_code(code: &str) -> Cow<'_, str> {
 /// - comment start/end marks,
 /// - whitespace,
 /// - '*' at the beginning of lines in block comments.
-fn changed_comment_content(orig: &str, new: &str) -> bool {
+fn changed_comment_content<'a>(orig: &'a str, new: &'a str) -> bool {
     // Fast path: every comment starts with `/`, and two texts without comments have the
     // same (empty) comment content.
     if !orig.contains('/') && !new.contains('/') {
         return false;
     }
-    let code_comment_content = |code| {
+    let comments = |code| {
         UngroupedCommentCodeSlices::new(code)
             .filter(|(kind, _, _)| *kind == CodeCharKind::Comment)
-            .flat_map(|(_, _, s)| CommentReducer::new(s))
+            .map(|(_, _, s)| s)
     };
-    code_comment_content(orig).ne(code_comment_content(new))
+    let (mut orig_comments, mut new_comments) = (comments(orig), comments(new));
+    // The payload is the concatenation of the comments' payloads. Comments that are equal
+    // text have equal payloads, so the payloads differ iff they differ from the first pair
+    // of comments that is not equal text on.
+    loop {
+        match (orig_comments.next(), new_comments.next()) {
+            (Some(o), Some(n)) if o == n => {}
+            (None, None) => return false,
+            (o, n) => {
+                let code_comment_content = |first: Option<&'a str>, rest| {
+                    first.into_iter().chain(rest).flat_map(CommentReducer::new)
+                };
+                return code_comment_content(o, orig_comments)
+                    .ne(code_comment_content(n, new_comments));
+            }
+        }
+    }
 }
 
 /// Iterator over the 'payload' characters of a comment.
@@ -1552,6 +1568,44 @@ mod tests {
                 |classes| classes.skip_comment(),
                 FullCodeCharKind::inside_comment,
             );
+        }
+    }
+
+    #[test]
+    fn changed_comment_content_matches_the_whole_payload_comparison() {
+        // The previous form: the payload streams of both texts compared in full.
+        fn by_payload(orig: &str, new: &str) -> bool {
+            let code_comment_content = |code| {
+                UngroupedCommentCodeSlices::new(code)
+                    .filter(|(kind, _, _)| *kind == CodeCharKind::Comment)
+                    .flat_map(|(_, _, s)| CommentReducer::new(s))
+            };
+            code_comment_content(orig).ne(code_comment_content(new))
+        }
+        let alphabet = ['/', '*', ' ', '\n', 'a', 'b', '"'];
+        for s in strings_over(&alphabet, 5) {
+            let variants = [
+                s.clone(),
+                s.replace(' ', ""),
+                s.replace('a', "b"),
+                s.replace('\n', "\n  "),
+                s.replacen("//", "/* a */ //", 1),
+                s.replacen("/*", "// a\n/*", 1),
+                format!("{s} // a"),
+                format!("/* a */{s}"),
+            ];
+            for t in &variants {
+                assert_eq!(
+                    changed_comment_content(&s, t),
+                    by_payload(&s, t),
+                    "{s:?} {t:?}"
+                );
+                assert_eq!(
+                    changed_comment_content(t, &s),
+                    by_payload(t, &s),
+                    "{t:?} {s:?}"
+                );
+            }
         }
     }
 
