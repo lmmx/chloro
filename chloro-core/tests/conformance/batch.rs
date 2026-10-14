@@ -1,8 +1,56 @@
 // tests/conformance/batch.rs
 
 use crate::helpers::compare_with_rustfmt;
+use crate::helpers::rustfmt::{format_with_rustfmt_command, rustfmt_versions};
+use chloro_core::formatter::config::Config;
+use chloro_core::formatter::format_source_with_config;
 use std::fs;
 use std::path::PathBuf;
+
+/// Reference output of another rustfmt release for one fixture: the snapshot under
+/// `snapshots/ra-<version>/` holds it only where it differs from the 1.9.0 snapshot, so
+/// the file is written when the outputs differ and removed when they agree.
+fn update_version_snapshot(
+    version: &str,
+    command: &[String],
+    key: &str,
+    code: &str,
+    rustfmt_1_9_0: &str,
+) -> (String, bool) {
+    let expected = format_with_rustfmt_command(code, command, "2024").unwrap_or_else(|e| {
+        eprintln!("rustfmt {version} rejected the input: {e}");
+        code.to_owned()
+    });
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("conformance")
+        .join("snapshots")
+        .join(format!("ra-{version}"))
+        .join(format!("{key}.rustfmt.rs"));
+    if expected == rustfmt_1_9_0 {
+        if path.exists() {
+            fs::remove_file(&path).unwrap();
+            eprintln!("Removed: {}", path.display());
+        }
+    } else {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(&path, &expected).unwrap();
+        eprintln!("Wrote: {}", path.display());
+    }
+    let mut config = Config::default();
+    config.set("rustfmt_version", version).unwrap();
+    let chloro = format_source_with_config(code, &config);
+    let identical = chloro == expected;
+    eprintln!(
+        "rustfmt_version={version}: {}",
+        if identical {
+            "✓ identical"
+        } else {
+            "✗ different"
+        }
+    );
+    (expected, identical)
+}
 
 /// Helper function to test all files in a rust-analyzer crate
 fn compare_rust_analyzer_crate(crate_name: &str) {
@@ -25,6 +73,9 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
     let mut total_bytes_chloro = 0;
     let mut total_bytes_rustfmt = 0;
     let mut files_by_status: Vec<(String, bool)> = Vec::new();
+    let versions = rustfmt_versions();
+    let mut identical_by_version = vec![0usize; versions.len()];
+    let mut snapshots_by_version = vec![0usize; versions.len()];
 
     for entry in walkdir::WalkDir::new(&fixtures_dir)
         .sort_by_file_name()
@@ -48,14 +99,18 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
         let code = fs::read_to_string(path).unwrap();
         total_bytes_original += code.len();
 
-        let result = compare_with_rustfmt(
-            &code,
-            &format!(
-                "ra/{}/{}",
-                crate_name.replace('-', "_"),
-                name.replace('/', "_")
-            ),
+        let key = format!(
+            "{}/{}",
+            crate_name.replace('-', "_"),
+            name.replace('/', "_")
         );
+        let result = compare_with_rustfmt(&code, &format!("ra/{key}"));
+        for (i, (version, command)) in versions.iter().enumerate() {
+            let (expected, identical) =
+                update_version_snapshot(version, command, &key, &code, &result.rustfmt);
+            identical_by_version[i] += usize::from(identical);
+            snapshots_by_version[i] += usize::from(expected != result.rustfmt);
+        }
 
         total_bytes_chloro += result.chloro.len();
         total_bytes_rustfmt += result.rustfmt.len();
@@ -93,6 +148,14 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
         different,
         100.0 * different as f64 / total as f64
     );
+    for (i, (version, _)) in versions.iter().enumerate() {
+        eprintln!(
+            "rustfmt_version={version}: identical {} ({:.1}%), {} snapshots differ from 1.9.0",
+            identical_by_version[i],
+            100.0 * identical_by_version[i] as f64 / total as f64,
+            snapshots_by_version[i]
+        );
+    }
     eprintln!();
     eprintln!("Total size (original): {} bytes", total_bytes_original);
     eprintln!("Total size (chloro):   {} bytes", total_bytes_chloro);
