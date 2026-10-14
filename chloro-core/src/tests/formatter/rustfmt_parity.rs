@@ -70,3 +70,35 @@ fn repeat_array_is_not_block_like() {
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// rustc's lexer makes a doc comment a token. In a macro call's arguments it can begin only
+/// an item (`Parser::nonterminal_may_begin_with`), and after an argument it is neither a
+/// separator nor the end, so rustfmt leaves such a call as written. Before an item argument,
+/// the doc comment is the item's attribute.
+#[test]
+fn doc_comment_tokens_in_macro_args() {
+    let input = "m!(
+    /// doc
+    A,   B);
+m!(a,   /// doc
+);
+m!(a   /// doc
+, b);
+m!(struct   A; /// doc
+ struct   B;);
+";
+    let rustfmt = "m!(
+    /// doc
+    A,   B);
+m!(a,   /// doc
+);
+m!(a   /// doc
+, b);
+m!(
+    struct A;
+    /// doc
+    struct B;
+);
+";
+    assert_rustfmt(input, rustfmt);
+}
