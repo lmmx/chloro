@@ -8,7 +8,7 @@ use unicode_width::UnicodeWidthStr;
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::nodes::node_text;
+use super::nodes::{bin_op_kind, node_text};
 use super::shape::{Indent, Shape};
 
 /// Computes the length of a string's last line, minus offset.
@@ -257,7 +257,7 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
 /// `true` for `=` and compound assignment operators, which rustc models as
 /// `ExprKind::Assign` / `ExprKind::AssignOp` rather than `ExprKind::Binary`.
 pub(crate) fn is_assignment(b: &ast::BinExpr) -> bool {
-    matches!(b.op_kind(), Some(ast::BinaryOp::Assignment { .. }))
+    matches!(bin_op_kind(b), Some(ast::BinaryOp::Assignment { .. }))
 }
 
 /// Removes trailing spaces from the specified snippet. We do not remove spaces

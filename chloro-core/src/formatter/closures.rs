@@ -246,12 +246,7 @@ fn rewrite_closure_fn_decl(
     };
     let capture_str = if has_token(closure.syntax(), T![move]) {
         "move "
-    } else if closure
-        .syntax()
-        .children_with_tokens()
-        .filter_map(|e| e.into_token())
-        .any(|t| t.kind() == ra_ap_syntax::SyntaxKind::USE_KW)
-    {
+    } else if has_token(closure.syntax(), T![use]) {
         "use "
     } else {
         ""

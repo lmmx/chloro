@@ -19,8 +19,8 @@ use super::expr::{RhsAssignKind, rewrite_array, rewrite_assign_rhs};
 use super::formatting::{format_code_block, format_snippet};
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::macro_args::{ParsedMacroArgs, parse_expr, parse_lazy_static, parse_macro_args};
-use super::nodes::node_text;
 use super::nodes::{Block, BlockRules, child};
+use super::nodes::{child_range, node_text};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
@@ -94,13 +94,12 @@ impl Rewrite for MacroArg {
 /// rustc's span of a macro call: from the path to the closing delimiter, without
 /// attributes or a trailing `;`.
 pub(crate) fn mac_span(mac: &ast::MacroCall) -> Span {
-    let lo = mac
-        .path()
-        .map(|p| node_range_span(p.syntax()).lo())
+    // `MacroCall::path` and `MacroCall::token_tree`, of which only the ends are used.
+    let lo = child_range::<ast::Path>(mac.syntax())
+        .map(|p| p.start().into())
         .unwrap_or_else(|| mac.span().lo());
-    let hi = mac
-        .token_tree()
-        .map(|tt| node_range_span(tt.syntax()).hi())
+    let hi = child_range::<ast::TokenTree>(mac.syntax())
+        .map(|tt| tt.end().into())
         .unwrap_or_else(|| mac.span().hi());
     mk_sp(lo, hi)
 }
@@ -917,6 +916,31 @@ fn replace_names(input: &str) -> Option<(String, Vec<(String, String)>)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `mac_span` answers what `MacroCall::path` and `MacroCall::token_tree` answer on macro
+    /// calls with every delimiter, in item, statement and expression position, with and
+    /// without attributes and a trailing semicolon.
+    #[test]
+    fn mac_span_matches_the_generated_accessors() {
+        let src = "m!();\n#[attr]\nm! {}\nfn f() {\n    a::b!(1);\n    m![2];\n    \
+                   let x = m! { 3 };\n    m!(4)\n}\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut calls = 0;
+        for mac in file.syntax().descendants().filter_map(ast::MacroCall::cast) {
+            let lo = mac
+                .path()
+                .map(|p| node_range_span(p.syntax()).lo())
+                .unwrap_or_else(|| mac.span().lo());
+            let hi = mac
+                .token_tree()
+                .map(|tt| node_range_span(tt.syntax()).hi())
+                .unwrap_or_else(|| mac.span().hi());
+            assert_eq!(mac_span(&mac), mk_sp(lo, hi), "{mac}");
+            calls += 1;
+        }
+        assert_eq!(calls, 6);
+    }
 
     #[test]
     fn replace_names_substitutes_metavariables() {
