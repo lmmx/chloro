@@ -24,6 +24,7 @@ use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, SyntaxKind, T, Top
 
 use crate::cst::{AstNode, Node, Tree, TreeBuilder, ast};
 
+use super::config::RustfmtVersion;
 use super::context::{RewriteContext, RunState};
 use super::macros::MacroArg;
 use super::rustc_compat::subtree_rejected_by_rustc;
@@ -104,6 +105,7 @@ struct MacroTokens<'a, 't> {
     base: BytePos,
     toks: Vec<Tok>,
     edition: Edition,
+    rustfmt_version: RustfmtVersion,
     run: std::rc::Rc<RunState<'a>>,
 }
 
@@ -145,6 +147,7 @@ impl<'a, 't> MacroTokens<'a, 't> {
             base,
             toks,
             edition,
+            rustfmt_version: context.config.rustfmt_version(),
             run: context.run.clone(),
         })
     }
@@ -297,7 +300,9 @@ impl<'a, 't> MacroTokens<'a, 't> {
         } else {
             root
         };
-        if node.kind() == SyntaxKind::ERROR || subtree_rejected_by_rustc(node, self.edition) {
+        if node.kind() == SyntaxKind::ERROR
+            || subtree_rejected_by_rustc(node, self.edition, self.rustfmt_version)
+        {
             return None;
         }
         Some(node)

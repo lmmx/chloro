@@ -23,7 +23,8 @@
 //!   its visitor records the first such call as a [`GapOp`] and skips it. The stitching
 //!   visitor on the main thread replays the recorded call on the real buffer, appends the
 //!   unit's text and moves `last_pos` to where the worker left it.
-//! - **Shared state.** `macro_rewrite_failure` and `lost_comment` are or-ed together.
+//! - **Shared state.** `macro_rewrite_failure`, `lost_comment` and `format_failure` are or-ed
+//!   together.
 //!   The skipped line ranges a worker records for a skipped top-level item are in output
 //!   lines of the worker's buffer and are shifted by the line the unit starts at in the
 //!   file; ranges in source lines are kept as they are.
@@ -77,6 +78,7 @@ struct UnitOutput {
     last_pos: BytePos,
     macro_failure: bool,
     lost_comment: bool,
+    format_failure: bool,
     skipped_range: Vec<(usize, usize)>,
     output_line_ranges: Vec<usize>,
 }
@@ -89,7 +91,7 @@ pub(crate) fn format_file(
     config: &Settings,
     file: &ast::SourceFile<'_>,
     threads: usize,
-) -> Formatted {
+) -> Option<Formatted> {
     let arena = TreeArena::new();
     let run = Rc::new(RunState::new(&arena));
     let snippet_provider = SnippetProvider::new(source);
@@ -129,6 +131,9 @@ pub(crate) fn format_file(
             if out.lost_comment {
                 run.lost_comment.set(true);
             }
+            if out.format_failure {
+                run.format_failure.set(true);
+            }
             let mut skipped = run.skipped_range.borrow_mut();
             for (i, &(lo, hi)) in out.skipped_range.iter().enumerate() {
                 if out.output_line_ranges.contains(&i) {
@@ -144,16 +149,19 @@ pub(crate) fn format_file(
     let mut text = std::mem::take(&mut main.buffer);
     let macro_failure = main.macro_rewrite_failure;
     drop(main);
+    if run.format_failure.get() {
+        return None;
+    }
     text.push('\n');
     super::formatting::truncate_trailing_newlines(&mut text);
     let skipped_range = run.skipped_range.borrow().clone();
-    Formatted {
+    Some(Formatted {
         text,
         echoed: false,
         macro_failure,
         lost_comment: run.lost_comment.get(),
         skipped_range,
-    }
+    })
 }
 
 /// Formats every unit on `threads` threads; the outputs are in unit order.
@@ -229,6 +237,7 @@ fn format_unit<'a>(
     visitor.macro_rewrite_failure = false;
     visitor.unit = Some(UnitRecord::default());
     run.lost_comment.set(false);
+    run.format_failure.set(false);
     run.skipped_range.borrow_mut().clear();
 
     visitor.visit_items_with_reordering(unit);
@@ -240,6 +249,7 @@ fn format_unit<'a>(
         last_pos: visitor.last_pos,
         macro_failure: visitor.macro_rewrite_failure,
         lost_comment: run.lost_comment.get(),
+        format_failure: run.format_failure.get(),
         skipped_range: std::mem::take(&mut *run.skipped_range.borrow_mut()),
         output_line_ranges: record.output_line_ranges,
     }

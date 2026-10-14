@@ -40,7 +40,7 @@
 
 use chloro_core::Config;
 use chloro_core::formatter::config::{
-    Density, Edition, Heuristics, MatchArmLeadingPipe, NewlineStyle, StyleEdition,
+    Density, Edition, Heuristics, MatchArmLeadingPipe, NewlineStyle, RustfmtVersion, StyleEdition,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -105,6 +105,7 @@ pub fn config_key_bytes(config: &Config) -> Vec<u8> {
         use_field_init_shorthand,
         force_explicit_abi,
         disable_all_formatting,
+        rustfmt_version,
     } = config;
 
     let mut out = Vec::with_capacity(128);
@@ -179,6 +180,10 @@ pub fn config_key_bytes(config: &Config) -> Vec<u8> {
     bool_(&mut out, *use_field_init_shorthand);
     bool_(&mut out, *force_explicit_abi);
     bool_(&mut out, *disable_all_formatting);
+    out.push(match rustfmt_version {
+        RustfmtVersion::V1_8_0 => 0u8,
+        RustfmtVersion::V1_9_0 => 1,
+    });
     out
 }
 
@@ -391,10 +396,10 @@ mod tests {
     fn default_config_key_is_pinned() {
         // Pins the serialisation: a change here changes every cache file name.
         let key = config_key_bytes(&Config::default());
-        assert_eq!(key.len(), 48);
+        assert_eq!(key.len(), 49);
         assert_eq!(
             hex(&key),
-            "6400000000000000000400000000000000000000000000000000000101010a0000000000000001010003000100000100"
+            "6400000000000000000400000000000000000000000000000000000101010a000000000000000101000300010000010001"
         );
     }
 
@@ -440,6 +445,7 @@ mod tests {
             ("use_field_init_shorthand", "true"),
             ("force_explicit_abi", "false"),
             ("disable_all_formatting", "true"),
+            ("rustfmt_version", "1.8.0"),
         ] {
             let mut config = Config::default();
             config.set(key, value).unwrap();

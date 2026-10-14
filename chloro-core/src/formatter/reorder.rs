@@ -11,7 +11,7 @@ use crate::cst::ast::{self, AstNode, HasName};
 
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::imports::UseTree;
+use super::imports::{UseTree, sort_use_trees};
 use super::items::{is_mod_decl, rewrite_extern_crate, rewrite_mod};
 use super::lists::{ListFormatting, ListItem, itemize_list, write_list};
 use super::nodes::node_text;
@@ -149,7 +149,7 @@ fn rewrite_reorderable_items(
             }
 
             if context.config.reorder_imports() {
-                normalized_items.sort();
+                sort_use_trees(&mut normalized_items, context.config.rustfmt_version());
             }
 
             // 4 = "use ", 1 = ";"
