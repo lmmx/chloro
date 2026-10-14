@@ -14,6 +14,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 root=${1:-target}
 features=${2:-cli}
+# rustc resolves -Cprofile-use relative to the directory it is invoked from, which cargo
+# sets per crate, so the root has to be absolute.
+case $root in /*) ;; *) root=$PWD/$root ;; esac
 gen="$root/pgo-gen"
 profdir="$gen/profiles"
 host=$(rustc -vV | sed -n 's/^host: //p')
@@ -42,7 +45,10 @@ echo "== merging $(ls "$profdir"/*.profraw | wc -l) profiles"
 "$profdata" merge -o "$profdir/merged.profdata" "$profdir"/*.profraw
 
 echo "== optimised build"
-RUSTFLAGS="-Cprofile-use=$profdir/merged.profdata -Cllvm-args=-pgo-warn-missing-function ${RUSTFLAGS:-}" \
-    cargo build --release -p chloro --features "$features" --target-dir "$root/pgo"
+use_flags="-Cprofile-use=$profdir/merged.profdata -Cllvm-args=-pgo-warn-missing-function ${RUSTFLAGS:-}"
+RUSTFLAGS="$use_flags" cargo build --release -p chloro --features "$features" --target-dir "$root/pgo"
+# The in-process benchmark with the same profile, so `bench -n 5` and `profile.sh` can
+# measure the profile-guided code too.
+RUSTFLAGS="$use_flags" cargo build --release -p chloro-core --example bench --target-dir "$root/pgo"
 
-echo "built $root/pgo/release/chloro"
+echo "built $root/pgo/release/chloro and $root/pgo/release/examples/bench"

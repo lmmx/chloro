@@ -69,6 +69,9 @@ Options (defaults in brackets):
   --out DIR            results directory [benchmarks/results/<UTC timestamp>]
   --work DIR           scratch directory for workload copies [\${TMPDIR:-/tmp}/chloro-bench]
   --chloro BIN         chloro CLI [target/release/chloro]
+  --with-cache         let a chloro build that has a fixed-point cache use it; by default
+                       every chloro command gets --no-cache when the binary accepts it, so the
+                       formatter is measured, not the cache (warmups would otherwise fill it)
   --fmt-stdin BIN      [target/release/examples/fmt_stdin]
   --bench BIN          [target/release/examples/bench]
   --conform BIN        [target/release/examples/conform]
@@ -85,7 +88,7 @@ note() { echo "== $*" >&2; }
 
 # --- options -----------------------------------------------------------------------------
 GROUPS_SEL=a,b,c,d,e RUNS=10 WARMUP=2 ROUNDS=1 CORE=3 CPUS= MODE=check INPUT=formatted
-OUT= WORK=${TMPDIR:-/tmp}/chloro-bench FRESH=0 LIST=0 BASELINE=
+OUT= WORK=${TMPDIR:-/tmp}/chloro-bench FRESH=0 LIST=0 BASELINE= WITH_CACHE=0
 CHLORO=$REPO/target/release/chloro
 FMT_STDIN=$REPO/target/release/examples/fmt_stdin
 BENCH=$REPO/target/release/examples/bench
@@ -107,6 +110,7 @@ while [ $# -gt 0 ]; do
     --out) OUT=$2; shift ;;
     --work) WORK=$2; shift ;;
     --chloro) CHLORO=$2; shift ;;
+    --with-cache) WITH_CACHE=1 ;;
     --fmt-stdin) FMT_STDIN=$2; shift ;;
     --bench) BENCH=$2; shift ;;
     --conform) CONFORM=$2; shift ;;
@@ -271,7 +275,7 @@ prepare() {
     else
       (cd "$W/agree_r" && xargs -a "$W/files.txt" "${RF[@]}" >/dev/null 2>&1) || true
     fi
-    "$CHLORO" --write "$W/agree_c" >/dev/null 2>&1 || true
+    "$CHLORO" $(cache_flag "$CHLORO") --write "$W/agree_c" >/dev/null 2>&1 || true
     local n differ
     n=$(wc -l < "$W/files.txt")
     differ=$(diff -rq "$W/agree_r" "$W/agree_c" | wc -l || true)
@@ -333,6 +337,15 @@ run_hf() {
   done
 }
 
+# cache_flag BIN: "--no-cache" when BIN accepts it and --with-cache was not given. A build
+# with the fixed-point cache would otherwise report every file after the warmup as a cache
+# hit on formatted input, and the chloro column would measure the cache, not the formatter.
+cache_flag() {
+  [ "$WITH_CACHE" = 1 ] && return 0
+  if "$1" --help 2>&1 | grep -q -- '--no-cache'; then echo "--no-cache"; fi
+  return 0
+}
+
 chloro_bins() { # role -> "label path" lines for chloro and the optional baseline
   echo "chloro $1"
   [ -n "$BASELINE" ] && echo "chloro-base $2"
@@ -351,7 +364,7 @@ run_crate_or_files() {
   fi
   if [ "$MODE" = check ]; then ccmd_args="--check $W/tree"; else ccmd_args="$W/tree"; fi
   local -a pairs=(rustfmt "$rcmd")
-  while read -r label bin; do pairs+=("$label" "$bin $ccmd_args"); done \
+  while read -r label bin; do pairs+=("$label" "$bin $(cache_flag "$bin") $ccmd_args"); done \
     < <(chloro_bins "$CHLORO" "$BASELINE/chloro")
   cp "$W/meta" "$OUT/$name.$variant.meta"
   { echo "variant=$variant"; echo "mode=$MODE"; echo "pin=${pin:-none}"; } >> "$OUT/$name.$variant.meta"
@@ -411,6 +424,7 @@ run_inproc() {
   echo "rustc=$(rustc --version 2>/dev/null || echo unknown)"
   echo "hyperfine=$(hyperfine --version)"
   echo "chloro=$CHLORO sha256=$(sha256sum "$CHLORO" | cut -c1-16)"
+  echo "chloro_cache_flag=$(cache_flag "$CHLORO")"
   echo "fmt_stdin=$FMT_STDIN sha256=$(sha256sum "$FMT_STDIN" | cut -c1-16)"
   echo "bench=$BENCH sha256=$(sha256sum "$BENCH" | cut -c1-16)"
   echo "baseline=${BASELINE:-none}"

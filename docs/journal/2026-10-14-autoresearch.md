@@ -262,6 +262,95 @@ borrow their tree, and fragment trees are created mid-run and held by the macro-
 cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena design
 (trees owned for the run's lifetime, memo keyed by tree id and index).
 
+**E8, `rustfmt_version` (`20261014-rustfmt-version`, merged `79d69c9`).** A chloro-only
+`Config` field with two values, `1.9.0` (default, unchanged path) and `1.8.0` (the build
+shipped with Rust 1.88.0); `1.7.0` is refused by `Config::set` with the reason from the
+matrix. Six formatting classes (F1–F6) and three acceptance classes (P1, P2, P8) are
+branched next to the rustfmt code they reproduce, each with a comment naming the class and
+the rustfmt change. Against `rustup run 1.88.0 rustfmt`: 1219/1220 fixtures at edition 2024
+and at 2021 (the differing file is `0024_many_type_parens.rs`, as for 1.9.0); on a
+20,019-file registry, 20,007 identical, where the 12 differences are the same files chloro
+gets wrong under 1.9.0 as well, plus 3 files both releases reject and chloro formats. Two of
+the three cases the matrix called partial turned out exact (F2's labelled closure bodies,
+including a fourth site the matrix missed; F6's panic on Unicode whitespace); F5 stays
+partial above 20 `_`-prefixed names, where the old sort's non-transitive comparator makes
+the order depend on the sort algorithm. Snapshots: `snapshots/ra-1.8.0/` holds the one
+fixture whose 1.8.0 output differs from the 1.9.0 snapshot, and a 32-case reproducer suite
+is snapshotted for both releases at both editions, regenerated with
+`CHLORO_RUSTFMT_VERSIONS=1.8.0=1.88.0`. The default path's instruction count moves by
+−0.04%.
+
+**E7b, the flat substrate under the formatter (`20261014-flat-port`, merged after the orchestrator reproduced every gate on `b4fdd1a`: 390,690,264 instructions on the sample, −24.7%).** The port replaces
+rowan's red and green trees with the flat preorder array of E7: `chloro-core/src/cst/`
+holds the `Tree`, `Copy` node and token handles borrowing it, a `TreeBuilder` fed by the
+same parser events, a `typed-arena` of trees owned by the run (the file is tree 0, each
+macro-argument fragment a later tree laid out at its file offset), the checked-in
+`rust.ungram`, the generator `gen_ast.py` and its output `generated.rs` (the same 501
+accessors as `ra_ap_syntax`'s generated layer), and a hand-written `ast.rs` for the
+accessors rust-analyzer writes by hand. The memo is keyed by (tree id, node index, tag,
+shape, flags) and stores no node; `rustc_compat` walks `Node` children; E4's block cache
+stays as a handle-free cache keyed by (tree id, index). `rowan` and `ra_ap_syntax` become
+dev-dependencies, kept for the equality tests that compare the flat tree with rowan's
+element by element. No `unsafe`. Gates on the branch after merging E4 and then E8: 0 of
+1238 fixture and 0 of 20,022 registry outputs changed, `conform -i` 1219/1220 at 1.9.0 and
+at 1.8.0, `config_matrix` identical on all 31 option values, workspace tests, clippy, fmt,
+`syn` absent. Measured on the sibling host against the E4-merged base built with the same
+profile in the same window: instructions on the sample 518,953,599 → 391,198,779 (−24.6%;
+390,689,701 after the E8 merge), `bench -n 5` 2.505–2.607 s → 1.843–1.982 s (5.3–5.6 →
+7.0–7.5 MB/s, ranges apart), allocations on all fixtures 14,612,436 → 8,309,517 (−43%),
+red nodes none by construction, the CLI binary 2,059,824 → 1,923,184 bytes, chloro-core's
+runtime dependency tree 37 → 16 crates. The hardest bug was in the prototype's hand-written
+`MacroDef::args`/`body`, which took the first and second token trees where rust-analyzer
+takes the arguments only when there are two and the body as the last; the equality test
+also showed that `first_token`/`last_token` must follow the first- and last-child chain,
+not scan the preorder.
+
+## Milestone 1, measured on a quiet host (M1)
+
+[measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
+measures `884f9c9` (base), `dc20cd7` (head: E6, E1, E2 merged) and a profile-guided build
+of the same head against rustfmt 1.9.0 in an otherwise idle container (4 vCPU Xeon @
+2.10GHz, a different host class from the 2.80GHz machine of the earlier entries, so only
+ratios carry). `benchmarks/compare_rustfmt.sh`, 30 runs per cell, rustfmt-formatted input,
+the cache disabled for every sweep but the cache sweep.
+
+| crates (9), `--check`, formatted input | head/base | head-pgo/base | head/rustfmt | head-pgo/rustfmt |
+|---|---|---|---|---|
+| all four cores (chloro 4 threads, rustfmt 1) | 0.52–0.88 | 0.48–0.77 | 0.149–0.283 | 0.162–0.271 |
+| one core (both pinned), wall | 0.76–0.98 | 0.67–0.96 | 0.566–0.890 | 0.498–0.834 |
+| one core, CPU time | 0.76–0.99 | | 0.56–0.90 | |
+
+- On all four cores every head and head-pgo run is below every rustfmt run on all nine
+  crates. Head is below base with non-overlapping ranges on `hir`, `hir-ty`, `ide-db` and
+  `tokio`; the other five overlap. Pinned, head is below rustfmt with non-overlapping ranges
+  on `hir` and `hir-ty` only, and every pinned head-vs-base range overlaps: the per-core
+  gain of this milestone is real in CPU time (0.76–0.99) but inside the host's spread in
+  wall time.
+- The cache: `--check` on the 1238 formatted fixtures takes 24.5 ± 2.9 ms warm against
+  650.8 ± 44.4 ms with `--no-cache` (26.6x) and 773.4 ± 60.0 ms for base (31.6x); on one
+  core 24.9 ms against 2342.3 ms (94x).
+- In process, one core: base 5.44–5.99 MB/s, head 6.53–6.94 MB/s (ranges do not overlap),
+  head-pgo 6.91–8.14 MB/s. Instructions on the sample: base 587,989,174; head 554,185,312
+  (−5.75%); head-pgo 448,212,267 (−23.77%).
+- Parallel items, one file at a time on four cores: head/base 0.57 (`hir/src/lib.rs`), 0.58
+  (`nodes.rs`), 0.63 (`config.rs`), 0.65 (`hover/tests.rs`), 0.69 (`lints.rs`); CPU time
+  1.00–1.23x, peak RSS up to 1.52x.
+- Regressions, all inside the spread: start-up on a 12-byte file 2.2 ms against 2.0 ms on
+  four cores (one core 1.4 against 1.5); `stdin-nodes` with four threads on one core 1.06;
+  CPU time on `regex-syntax` 1.027; peak RSS of the split files up to 1.52x. No cell has
+  any chloro build above rustfmt in mean, minimum, CPU or RSS.
+- Harness defects found by the run and fixed afterwards on the integration branch:
+  `benchmarks/pgo.sh` passed a relative `-Cprofile-use` path that rustc resolves from
+  another directory (the root is now made absolute, and the script also builds a
+  profile-guided `bench`); the harness had no way to disable the cache, so a formatted-input
+  sweep of a cache-carrying build measured the cache after the warmup (M1 worked around it
+  by unsetting `HOME`; the harness now passes `--no-cache` to any chloro that accepts it
+  unless `--with-cache` is given).
+
+Milestone 1 does not include E4 (−6.4% instructions, merged after M1 started) or anything
+from E3, E7b, E8 and the conformance branch; milestone 2 measures the next integrated head
+the same way.
+
 ## Current State
 
 - Formatting runs rustfmt 1.9.0's algorithm single-threaded in process at 4.57 MB/s on
@@ -281,10 +370,13 @@ cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena d
 - The CLI records content digests of files found already formatted and skips formatting
   them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs, merged from
   `20261014-cli-cache`, E6)
+- `Config::rustfmt_version` selects rustfmt 1.9.0 (default) or 1.8.0 output; 1.7.0 is
+  refused with the reason (chloro-core/src/formatter/config.rs; `conform -V 1.8.0`;
+  snapshots under chloro-core/tests/conformance/snapshots/ra-1.8.0/ and
+  chloro-core/tests/conformance/rustfmt-versions/)
 
 ## Missing
 
 - No quiet-host run of `benchmarks/compare_rustfmt.sh`; every wall-clock figure in
   baseline.md was taken at load average 6–10
-- No support for a rustfmt version other than 1.9.0 (E8 running on the design in rustfmt-versions.md)
 - `0024_many_type_parens.rs` differs from rustfmt (R2 running)

@@ -1,6 +1,6 @@
 //! Statement rewriting (rustfmt's `stmt.rs`).
 
-use ra_ap_syntax::ast;
+use crate::cst::ast;
 
 use super::comment::recover_comment_removed;
 use super::config::StyleEdition;
@@ -11,33 +11,33 @@ use super::shape::Shape;
 use super::span::Span;
 
 /// A statement together with whether it is the last one of its block.
-pub(crate) struct Stmt {
-    inner: nodes::Stmt,
+pub(crate) struct Stmt<'a> {
+    inner: nodes::Stmt<'a>,
     is_last: bool,
 }
 
-impl Stmt {
+impl<'a> Stmt<'a> {
     pub(crate) fn span(&self) -> Span {
         self.inner.span
     }
 
-    pub(crate) fn as_ast_node(&self) -> &nodes::Stmt {
+    pub(crate) fn as_ast_node(&self) -> &nodes::Stmt<'_> {
         &self.inner
     }
 
-    pub(crate) fn to_item(&self) -> Option<&ast::Item> {
+    pub(crate) fn to_item(&self) -> Option<&ast::Item<'_>> {
         self.inner.as_item()
     }
 
     pub(crate) fn from_simple_block(
         context: &RewriteContext<'_>,
-        block: &Block,
-        attrs: Option<&[Attribute]>,
+        block: &Block<'a>,
+        attrs: Option<&[Attribute<'_>]>,
     ) -> Option<Self> {
         if is_simple_block(context, block, attrs) {
             // Simple blocks only contain one expr and no stmts
             Some(Stmt {
-                inner: block.stmts[0].clone(),
+                inner: block.stmts[0],
                 is_last: true,
             })
         } else {
@@ -45,14 +45,14 @@ impl Stmt {
         }
     }
 
-    pub(crate) fn from_ast_node(inner: &nodes::Stmt, is_last: bool) -> Self {
+    pub(crate) fn from_ast_node(inner: &nodes::Stmt<'a>, is_last: bool) -> Self {
         Stmt {
-            inner: inner.clone(),
+            inner: *inner,
             is_last,
         }
     }
 
-    pub(crate) fn from_ast_nodes(stmts: &[nodes::Stmt]) -> Vec<Self> {
+    pub(crate) fn from_ast_nodes(stmts: &[nodes::Stmt<'a>]) -> Vec<Self> {
         let len = stmts.len();
         stmts
             .iter()
@@ -80,7 +80,7 @@ impl Stmt {
     }
 }
 
-impl Rewrite for Stmt {
+impl Rewrite for Stmt<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let expr_type =
             if context.config.style_edition() >= StyleEdition::Edition2024 && self.is_last_expr() {

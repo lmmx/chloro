@@ -95,12 +95,12 @@ pub enum StyleEdition {
 
 impl Edition {
     /// The parser edition passed to `ra_ap_syntax`.
-    pub(crate) fn to_ra(self) -> ra_ap_syntax::Edition {
+    pub(crate) fn to_ra(self) -> ra_ap_parser::Edition {
         match self {
-            Edition::Edition2015 => ra_ap_syntax::Edition::Edition2015,
-            Edition::Edition2018 => ra_ap_syntax::Edition::Edition2018,
-            Edition::Edition2021 => ra_ap_syntax::Edition::Edition2021,
-            Edition::Edition2024 => ra_ap_syntax::Edition::Edition2024,
+            Edition::Edition2015 => ra_ap_parser::Edition::Edition2015,
+            Edition::Edition2018 => ra_ap_parser::Edition::Edition2018,
+            Edition::Edition2021 => ra_ap_parser::Edition::Edition2021,
+            Edition::Edition2024 => ra_ap_parser::Edition::Edition2024,
         }
     }
 }
@@ -126,6 +126,34 @@ impl From<Edition> for StyleEdition {
             Edition::Edition2018 => StyleEdition::Edition2018,
             Edition::Edition2021 => StyleEdition::Edition2021,
             Edition::Edition2024 => StyleEdition::Edition2024,
+        }
+    }
+}
+
+/// The rustfmt release whose output is reproduced.
+///
+/// A chloro option: rustfmt has no such setting, so a `rustfmt.toml` never carries it.
+/// Each variant names a stable release and the rustc toolchain whose build it reproduces;
+/// the two builds of 1.8.0 (Rust 1.85.0 and 1.88.0) format every file they both accept
+/// alike and differ only in what the toolchain's parser accepts, which chloro models after
+/// the 1.88.0 build. rustfmt 1.7.0 has no Style Guide 2024 rules and refuses `version =
+/// "Two"` on stable, so it is not supported (see the README's conformance section).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum RustfmtVersion {
+    /// rustfmt 1.8.0 as shipped with Rust 1.88.0 (`rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)`).
+    V1_8_0,
+    /// rustfmt 1.9.0 (`rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`): the release the
+    /// formatter is ported from and the one that produced the reference snapshots.
+    #[default]
+    V1_9_0,
+}
+
+impl RustfmtVersion {
+    /// The release number as written in `Config::set("rustfmt_version", ..)`.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            RustfmtVersion::V1_8_0 => "1.8.0",
+            RustfmtVersion::V1_9_0 => "1.9.0",
         }
     }
 }
@@ -191,6 +219,8 @@ pub struct Config {
     pub force_explicit_abi: bool,
     /// Don't reformat anything.
     pub disable_all_formatting: bool,
+    /// The rustfmt release whose output is reproduced (a chloro option; rustfmt has none).
+    pub rustfmt_version: RustfmtVersion,
 }
 
 impl Default for Config {
@@ -223,6 +253,7 @@ impl Default for Config {
             use_field_init_shorthand: false,
             force_explicit_abi: true,
             disable_all_formatting: false,
+            rustfmt_version: RustfmtVersion::V1_9_0,
         }
     }
 }
@@ -410,6 +441,23 @@ impl Config {
             "use_field_init_shorthand" => self.use_field_init_shorthand = bool_()?,
             "force_explicit_abi" => self.force_explicit_abi = bool_()?,
             "disable_all_formatting" => self.disable_all_formatting = bool_()?,
+            "rustfmt_version" => {
+                self.rustfmt_version = match value {
+                    "1.8.0" => RustfmtVersion::V1_8_0,
+                    "1.9.0" => RustfmtVersion::V1_9_0,
+                    "1.7.0" => {
+                        return Err(
+                            "rustfmt 1.7.0 is not supported: it has no Style Guide 2024 rules \
+                             and refuses `version = \"Two\"` on stable, so its output is not \
+                             reachable from the 2024 rules by a few branch points (540 of the \
+                             981 rust-analyzer fixtures both releases accept differ); \
+                             supported: 1.8.0, 1.9.0"
+                                .to_owned(),
+                        );
+                    }
+                    _ => return Err(bad()),
+                }
+            }
             _ => match UNSTABLE_DEFAULTS.iter().find(|(k, _)| *k == key) {
                 Some((_, default)) if *default == value => {}
                 Some((_, default)) => {
@@ -591,6 +639,13 @@ impl Settings {
     pub(crate) fn disable_all_formatting(&self) -> bool {
         self.config.disable_all_formatting
     }
+    /// The rustfmt release reproduced. Formatting code branches on it next to the
+    /// rustfmt code it reproduces, with a comment naming the difference class (F1–F6,
+    /// P1–P8 in `docs/journal/2026-10-14-autoresearch/rustfmt-versions.md`) and the
+    /// rustfmt change.
+    pub(crate) fn rustfmt_version(&self) -> RustfmtVersion {
+        self.config.rustfmt_version
+    }
 
     // Unstable options, fixed at rustfmt's defaults.
     pub(crate) fn comment_width(&self) -> usize {
@@ -733,6 +788,28 @@ mod tests {
         assert!(config.set("wrap_comments", "true").is_err());
         assert!(config.set("wrap_comments", "false").is_ok());
         assert!(config.set("no_such_option", "1").is_err());
+    }
+
+    #[test]
+    fn rustfmt_version_accepts_supported_releases_only() {
+        let mut config = Config::default();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        config.set("rustfmt_version", "1.8.0").unwrap();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_8_0);
+        assert_eq!(
+            Settings::new(&config).rustfmt_version(),
+            RustfmtVersion::V1_8_0
+        );
+        config.set("rustfmt_version", "\"1.9.0\"").unwrap();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        let err = config.set("rustfmt_version", "1.7.0").unwrap_err();
+        assert!(err.contains("1.7.0 is not supported"), "{err}");
+        assert!(err.contains("Style Guide 2024"), "{err}");
+        assert!(config.set("rustfmt_version", "1.6.0").is_err());
+        assert!(config.set("rustfmt_version", "2.0.0").is_err());
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        assert!(RustfmtVersion::V1_8_0 < RustfmtVersion::V1_9_0);
+        assert_eq!(RustfmtVersion::V1_8_0.as_str(), "1.8.0");
     }
 
     #[test]

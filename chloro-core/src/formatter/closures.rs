@@ -9,14 +9,14 @@
 //!     statement without needing a semi-colon), then adding or removing braces
 //!     can change whether it is treated as an expression or statement.
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::T;
 
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
-    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block_with_visitor,
-    rewrite_cond,
+    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block,
+    rewrite_block_with_visitor, rewrite_cond,
 };
 use super::items::{span_hi_for_param, span_lo_for_param};
 use super::lists::{
@@ -27,16 +27,19 @@ use super::nodes::has_token;
 use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
-use super::span::{Span, Spanned};
+use super::span::{Span, Spanned, node_range_span};
 use super::types::{binder_params, rewrite_bound_params};
 use super::utils::{concat, last_line_width, left_most_sub_expr};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
-fn plain_block(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn plain_block<'a>(
+    context: &RewriteContext<'_>,
+    expr: &ast::Expr<'a>,
+) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match expr {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), context.run.block_of(b)?))
+            Some((*b, context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -48,7 +51,7 @@ pub(crate) fn rewrite_closure(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let body = child::<ast::Expr>(closure.syntax())?;
+    let body = closure.body()?;
     let (prefix, extra_offset) = rewrite_closure_fn_decl(closure, &body, span, context, shape)?;
     // 1 = space between `|...|` and body.
     let body_shape = shape.offset_left(extra_offset)?;
@@ -97,11 +100,19 @@ fn try_rewrite_without_block(
     }
 }
 
-fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr {
+fn get_inner_expr<'a>(
+    expr: &ast::Expr<'a>,
+    prefix: &str,
+    context: &RewriteContext<'_>,
+) -> ast::Expr<'a> {
     if let Some((block_expr, block)) = plain_block(context, expr)
         && !needs_block(
             &block,
-            child::<ast::Label>(block_expr.syntax()).is_some(),
+            // F2: rustfmt 1.9.0 keeps a labelled block as the closure body (commit
+            // `5619b644`, PR #6468, CHANGELOG 1.9.0 Fixed #6465); rustfmt 1.8.0's
+            // `needs_block` (`v1.8.0 src/closures.rs:123`) does not see the label.
+            child::<ast::Label>(block_expr.syntax()).is_some()
+                && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0,
             prefix,
             context,
         )
@@ -113,7 +124,7 @@ fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) 
         }
     }
 
-    expr.clone()
+    *expr
 }
 
 /// Figure out if a block is necessary.
@@ -201,6 +212,22 @@ fn rewrite_closure_block(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
+    // F2: rustfmt 1.8.0 passes the inner `ast::Block` (`v1.8.0 src/closures.rs:77`), so a
+    // label is dropped, and rustc's span for the block of a labelled block expression
+    // starts at the label: the visitor starts one byte into the label and copies the rest
+    // of it, with the `{`, as code it could not format (`rewrite_block_with_visitor`,
+    // `v1.8.0 src/expr.rs:526`). rustfmt 1.9.0 passes the expression (commit `5619b644`).
+    if context.config.rustfmt_version() < RustfmtVersion::V1_9_0
+        && let Some((block_expr, mut inner)) = plain_block(context, block)
+        && let Some(label) = child::<ast::Label>(block_expr.syntax())
+    {
+        inner.span = inner.span.with_lo(node_range_span(label.syntax()).lo());
+        return Some(format!(
+            "{} {}",
+            prefix,
+            rewrite_block(&inner, None, None, context, shape)?
+        ));
+    }
     Some(concat(&[prefix, " ", &block.rewrite(context, shape)?]))
 }
 
@@ -246,7 +273,12 @@ fn rewrite_closure_fn_decl(
     };
     let capture_str = if has_token(closure.syntax(), T![move]) {
         "move "
-    } else if has_token(closure.syntax(), T![use]) {
+    } else if closure
+        .syntax()
+        .children_with_tokens()
+        .filter_map(|e| e.into_token())
+        .any(|t| t.kind() == ra_ap_parser::SyntaxKind::USE_KW)
+    {
         "use "
     } else {
         ""
@@ -269,7 +301,8 @@ fn rewrite_closure_fn_decl(
         None => String::new(),
     };
 
-    let params: Vec<ast::Param> = child::<ast::ParamList>(closure.syntax())
+    let params: Vec<ast::Param> = closure
+        .param_list()
         .map(|l| l.params().collect())
         .unwrap_or_default();
     let param_items = itemize_list(
@@ -338,16 +371,19 @@ pub(crate) fn rewrite_last_closure(
     let ast::Expr::ClosureExpr(closure) = expr else {
         return None;
     };
-    let body = child::<ast::Expr>(closure.syntax())?;
+    let body = closure.body()?;
     let body = match plain_block(context, &body) {
         Some((block_expr, block))
             if !block.is_unsafe()
                 && !context.inside_macro()
                 && is_simple_block(context, &block, Some(&expr_attrs(&body)))
-                && child::<ast::Label>(block_expr.syntax()).is_none() =>
+                // F2: rustfmt 1.9.0 keeps a labelled simple block (`v1.9.0
+                // src/closures.rs:385`, commit `5619b644`); rustfmt 1.8.0 unwraps it.
+                && (child::<ast::Label>(block_expr.syntax()).is_none()
+                    || context.config.rustfmt_version() < RustfmtVersion::V1_9_0) =>
         {
             match &block.stmts[0].kind {
-                StmtKind::Expr(e) => e.clone(),
+                StmtKind::Expr(e) => *e,
                 _ => body,
             }
         }

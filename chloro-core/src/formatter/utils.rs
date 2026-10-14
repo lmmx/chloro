@@ -2,13 +2,13 @@
 
 use std::borrow::Cow;
 
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
 use unicode_width::UnicodeWidthStr;
 
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::nodes::{bin_op_kind, node_text, nth_child};
+use super::nodes::node_text;
 use super::shape::{Indent, Shape};
 
 /// Computes the length of a string's last line, minus offset.
@@ -32,7 +32,7 @@ pub(crate) fn format_visibility(vis: Option<&ast::Visibility>) -> Cow<'static, s
     };
     let path_str = path
         .segments()
-        .map(|seg| node_text(seg.syntax()).into_owned())
+        .map(|seg| node_text(seg.syntax()))
         .collect::<Vec<_>>()
         .join("::");
     let is_keyword = |s: &str| s == "crate" || s == "self" || s == "super";
@@ -309,7 +309,7 @@ pub(crate) fn colon_spaces(config: &Settings) -> &'static str {
 }
 
 /// The left-most sub-expression whose text starts the given expression.
-pub(crate) fn left_most_sub_expr(e: &ast::Expr) -> ast::Expr {
+pub(crate) fn left_most_sub_expr<'a>(e: &ast::Expr<'a>) -> ast::Expr<'a> {
     let next = match e {
         ast::Expr::CallExpr(c) => c.expr(),
         ast::Expr::BinExpr(b) => b.lhs(),
@@ -322,7 +322,7 @@ pub(crate) fn left_most_sub_expr(e: &ast::Expr) -> ast::Expr {
     };
     match next {
         Some(next) => left_most_sub_expr(&next),
-        None => e.clone(),
+        None => *e,
     }
 }
 
@@ -354,11 +354,9 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
         | ast::Expr::MatchExpr(..) => repr.contains('\n'),
         ast::Expr::ParenExpr(p) => p.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::BinExpr(b) if !is_assignment(b) => {
-            nth_child::<ast::Expr>(b.syntax(), 1).is_some_and(|e| is_block_expr(context, &e, repr))
+            b.rhs().is_some_and(|e| is_block_expr(context, &e, repr))
         }
-        ast::Expr::IndexExpr(i) => {
-            nth_child::<ast::Expr>(i.syntax(), 1).is_some_and(|e| is_block_expr(context, &e, repr))
-        }
+        ast::Expr::IndexExpr(i) => i.index().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::YieldExpr(y) => y.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
@@ -374,7 +372,7 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
 /// `true` for `=` and compound assignment operators, which rustc models as
 /// `ExprKind::Assign` / `ExprKind::AssignOp` rather than `ExprKind::Binary`.
 pub(crate) fn is_assignment(b: &ast::BinExpr) -> bool {
-    matches!(bin_op_kind(b), Some(ast::BinaryOp::Assignment { .. }))
+    b.op_kind().is_some_and(ast::is_assign_op)
 }
 
 /// Removes trailing spaces from the specified snippet. We do not remove spaces
@@ -593,22 +591,6 @@ mod tests {
                 format!("{a}{{{owned}{borrowed}{cow}{b}}}")
             );
         }
-    }
-
-    #[test]
-    fn node_text_matches_the_node_text_of_every_node() {
-        use ra_ap_syntax::{Edition, SourceFile};
-        let src = "use a::{b, r#type};\nfn r#match<'a>(x: &'a str) -> Vec<u8> {\n    \
-                   let y = x.len() /* c */ + 1;\n    foo::<T>(y, |z| z)?.await\n}\n\
-                   struct S(pub u8);\n";
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
-        let mut borrowed = 0;
-        for node in file.syntax().descendants() {
-            let text = node_text(&node);
-            borrowed += usize::from(matches!(text, Cow::Borrowed(_)));
-            assert_eq!(text, node.text().to_string(), "{node:?}");
-        }
-        assert!(borrowed > 0);
     }
 
     #[test]

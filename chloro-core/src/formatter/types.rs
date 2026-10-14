@@ -1,11 +1,10 @@
 //! Types, paths, generics and bounds (rustfmt's `types.rs`).
 
-use std::borrow::Cow;
+use crate::cst::ast::{self, AstNode, HasGenericArgs, HasName, HasTypeBounds};
+use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasGenericArgs, HasName, HasTypeBounds};
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxToken};
-use rowan::Language;
+use crate::cst::{Node, NodeOrToken, Token};
 
 use super::attr::rewrite_attrs;
 use super::comment::{combine_strs_with_missing_comments, contains_comment};
@@ -18,7 +17,7 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::nodes::{Attribute, child, outer_attributes};
-use super::nodes::{green_has_token, has_child, has_token, node_text};
+use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
@@ -35,9 +34,9 @@ pub(crate) enum PathContext {
 }
 
 /// The segments of a path, outermost qualifier first.
-pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
+pub(crate) fn path_segments<'a>(path: &ast::Path<'a>) -> Vec<ast::PathSegment<'a>> {
     let mut segments = Vec::new();
-    let mut cur = Some(path.clone());
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
@@ -48,36 +47,28 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
     segments
 }
 
+/// The text of a path segment's name as written (`r#type` keeps its prefix).
+pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
+    child::<ast::NameRef>(segment.syntax()).map(|n| node_text(n.syntax()).to_owned())
+}
+
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
-/// a name and no qualifier, `::` or arguments. Reads the green tree, borrowing the text of
-/// a name that is one token.
-fn single_ident_path(path: &ast::Path) -> Option<Cow<'_, str>> {
-    fn only_node(green: &rowan::GreenNodeData, kind: SyntaxKind) -> Option<&rowan::GreenNodeData> {
-        let mut children = green.children();
+/// a name and no qualifier, `::` or arguments.
+fn single_ident_path(path: &ast::Path) -> Option<String> {
+    fn only_node<'t>(node: Node<'t>, kind: SyntaxKind) -> Option<Node<'t>> {
+        let mut children = node.children_with_tokens();
         match (children.next(), children.next()) {
-            (Some(NodeOrToken::Node(n)), None) if RustLanguage::kind_from_raw(n.kind()) == kind => {
-                Some(n)
-            }
+            (Some(NodeOrToken::Node(n)), None) if n.kind() == kind => Some(n),
             _ => None,
         }
     }
-    fn ident(path: &rowan::GreenNodeData) -> Option<Cow<'_, str>> {
-        let segment = only_node(path, SyntaxKind::PATH_SEGMENT)?;
-        let name_ref = only_node(segment, SyntaxKind::NAME_REF)?;
-        let mut children = name_ref.children();
-        if let (Some(NodeOrToken::Token(token)), None) = (children.next(), children.next()) {
-            return Some(Cow::Borrowed(token.text()));
-        }
-        let mut text = String::new();
-        for child in name_ref.children() {
-            text.push_str(child.as_token()?.text());
-        }
-        Some(Cow::Owned(text))
+    let segment = only_node(path.syntax(), SyntaxKind::PATH_SEGMENT)?;
+    let name_ref = only_node(segment, SyntaxKind::NAME_REF)?;
+    let mut text = String::new();
+    for child in name_ref.children_with_tokens() {
+        text.push_str(child.as_token()?.text());
     }
-    match path.syntax().green() {
-        Cow::Borrowed(green) => ident(green),
-        Cow::Owned(green) => ident(&green).map(|text| Cow::Owned(text.into_owned())),
-    }
+    Some(text)
 }
 
 /// Does not wrap on simple segments.
@@ -89,7 +80,7 @@ pub(crate) fn rewrite_path(
 ) -> Option<String> {
     // The general code below gives such a path its identifier, if the identifier fits.
     if let Some(ident) = single_ident_path(path) {
-        return (ident.len() <= shape.width).then(|| ident.into_owned());
+        return (ident.len() <= shape.width).then_some(ident);
     }
     let segments = path_segments(path);
     let first = segments.first()?;
@@ -197,25 +188,25 @@ fn rewrite_path_segments(
 
 /// A generic argument of a path segment.
 #[derive(Clone, Debug)]
-pub(crate) enum SegmentParam {
-    Const(ast::ConstArg),
-    LifeTime(ast::LifetimeArg),
-    Type(ast::Type),
-    Binding(ast::AssocTypeArg),
+pub(crate) enum SegmentParam<'a> {
+    Const(ast::ConstArg<'a>),
+    LifeTime(ast::LifetimeArg<'a>),
+    Type(ast::Type<'a>),
+    Binding(ast::AssocTypeArg<'a>),
 }
 
-impl SegmentParam {
-    pub(crate) fn from_generic_arg(arg: &ast::GenericArg) -> Option<SegmentParam> {
+impl<'a> SegmentParam<'a> {
+    pub(crate) fn from_generic_arg(arg: &ast::GenericArg<'a>) -> Option<SegmentParam<'a>> {
         Some(match arg {
-            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(lt.clone()),
+            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(*lt),
             ast::GenericArg::TypeArg(ty) => SegmentParam::Type(child::<ast::Type>(ty.syntax())?),
-            ast::GenericArg::ConstArg(c) => SegmentParam::Const(c.clone()),
-            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(a.clone()),
+            ast::GenericArg::ConstArg(c) => SegmentParam::Const(*c),
+            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(*a),
         })
     }
 }
 
-impl Spanned for SegmentParam {
+impl Spanned for SegmentParam<'_> {
     fn span(&self) -> Span {
         match self {
             SegmentParam::Const(c) => c.span(),
@@ -226,7 +217,7 @@ impl Spanned for SegmentParam {
     }
 }
 
-impl Rewrite for SegmentParam {
+impl Rewrite for SegmentParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             SegmentParam::Const(c) => c.expr()?.rewrite(context, shape),
@@ -237,7 +228,7 @@ impl Rewrite for SegmentParam {
     }
 }
 
-impl Rewrite for ast::UseBoundGenericArg {
+impl Rewrite for ast::UseBoundGenericArg<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, _shape: Shape) -> Option<String> {
         Some(context.snippet(self.span()).to_owned())
     }
@@ -249,7 +240,7 @@ fn rewrite_assoc_type_arg(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
+    result.push_str(node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
 
     if let Some(gen_args) = atc.generic_arg_list() {
         let budget = shape.width.checked_sub(result.len())?;
@@ -308,17 +299,14 @@ fn rewrite_segment(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    // The segment's name as written (`r#type` keeps its prefix).
-    result.push_str(&node_text(
-        child::<ast::NameRef>(segment.syntax())?.syntax(),
-    ));
+    result.push_str(&segment_ident(segment)?);
 
     let ident_len = result.len();
     let shape = shape.offset_left(ident_len)?;
 
-    if let Some(args) = child::<ast::GenericArgList>(segment.syntax()) {
+    if let Some(args) = segment.generic_arg_list() {
         let generics_str = rewrite_generic_args(&args, context, shape, mk_sp(*span_lo, span_hi))?;
-        if has_child::<ast::GenericArg>(args.syntax()) {
+        if args.generic_args().next().is_some() {
             // HACK: squeeze out the span between the identifier and the parameters.
             // The hack is required so that we don't remove the separator inside macro calls.
             let force_separator = context.inside_macro() && has_token(args.syntax(), T![::]);
@@ -335,7 +323,7 @@ fn rewrite_segment(
                 .span_after(mk_sp(*span_lo, span_hi), "<");
         }
         result.push_str(&generics_str)
-    } else if let Some(args) = child::<ast::ParenthesizedArgList>(segment.syntax()) {
+    } else if let Some(args) = segment.parenthesized_arg_list() {
         let s = rewrite_parenthesized_args(
             &args,
             child::<ast::RetType>(segment.syntax()),
@@ -485,7 +473,7 @@ fn get_tactics(item_vec: &[ListItem], output: &str, shape: Shape) -> DefinitiveL
     }
 }
 
-impl Rewrite for ast::WherePred {
+impl Rewrite for ast::WherePred<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let attrs = outer_attributes(self.syntax());
         let attrs_str = rewrite_attrs(&attrs, context, shape)?;
@@ -597,9 +585,9 @@ fn rewrite_bounded_lifetime(
 }
 
 /// A list of bounds, rewritten with `join_bounds`.
-pub(crate) struct Bounds(pub(crate) Vec<ast::TypeBound>);
+pub(crate) struct Bounds<'a>(pub(crate) Vec<ast::TypeBound<'a>>);
 
-impl Rewrite for Bounds {
+impl Rewrite for Bounds<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_bounds(&self.0, context, shape)
     }
@@ -633,7 +621,7 @@ fn bound_kind(bound: &ast::TypeBound) -> BoundKind {
     }
 }
 
-impl Rewrite for ast::TypeBound {
+impl Rewrite for ast::TypeBound<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match bound_kind(self) {
             BoundKind::Outlives => Some(context.snippet(self.lifetime()?.span()).to_owned()),
@@ -662,7 +650,7 @@ impl Rewrite for ast::TypeBound {
     }
 }
 
-fn token_text_of(bound: &ast::TypeBound, kind: SyntaxKind) -> Option<SyntaxToken> {
+fn token_text_of<'a>(bound: &ast::TypeBound<'a>, kind: SyntaxKind) -> Option<Token<'a>> {
     super::nodes::child_token(bound.syntax(), kind)
 }
 
@@ -723,7 +711,7 @@ fn rewrite_poly_trait_ref(
     ))
 }
 
-impl Rewrite for ast::GenericParam {
+impl Rewrite for ast::GenericParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         // FIXME: If there are more than one attributes, this will force multiline.
         let attrs = outer_attributes(self.syntax());
@@ -747,7 +735,7 @@ impl Rewrite for ast::GenericParam {
         let param_start = match self {
             ast::GenericParam::ConstParam(cp) => {
                 param.push_str("const ");
-                param.push_str(&node_text(cp.name()?.syntax()));
+                param.push_str(node_text(cp.name()?.syntax()));
                 param.push_str(": ");
                 param.push_str(&child::<ast::Type>(cp.syntax())?.rewrite(context, shape)?);
                 if let Some(default) = cp.default_val() {
@@ -758,7 +746,7 @@ impl Rewrite for ast::GenericParam {
                         .rewrite(context, Shape::legacy(budget, shape.indent))?;
                     param.push_str(&rewrite);
                 }
-                token_span(&cp.const_token()?).lo()
+                token_span(cp.const_token()?).lo()
             }
             ast::GenericParam::LifetimeParam(lp) => {
                 let lt = child::<ast::Lifetime>(lp.syntax())?;
@@ -767,7 +755,7 @@ impl Rewrite for ast::GenericParam {
             }
             ast::GenericParam::TypeParam(tp) => {
                 let name = tp.name()?;
-                param.push_str(&node_text(name.syntax()));
+                param.push_str(node_text(name.syntax()));
                 name.span().lo()
             }
         };
@@ -817,7 +805,7 @@ pub(crate) fn generic_param_span(param: &ast::GenericParam) -> Span {
     rustc_span(param.syntax())
 }
 
-impl Rewrite for ast::Type {
+impl Rewrite for ast::Type<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             ast::Type::DynTraitType(dt) => {
@@ -984,7 +972,7 @@ fn rewrite_ref_type(
     }
 
     if is_mut {
-        let mut_hi = token_span(&rt.mut_token()?).hi();
+        let mut_hi = token_span(rt.mut_token()?).hi();
         let before_mut_span = mk_sp(cmnt_lo, mut_hi - 3);
         if contains_comment(context.snippet(before_mut_span)) {
             result = combine_strs_with_missing_comments(
@@ -1028,7 +1016,7 @@ pub(crate) fn format_abi(abi: Option<&ast::Abi>, context: &RewriteContext<'_>) -
     };
     match abi.abi_string() {
         Some(s) => {
-            let text = s.syntax().text();
+            let text = s.text();
             if !context.config.force_explicit_abi() && (text == "\"C\"") {
                 "extern ".to_owned()
             } else {
@@ -1108,19 +1096,10 @@ fn rewrite_fn_ptr(
 
 /// Whether a parameter list ends with C variadics (`...`).
 pub(crate) fn has_c_variadic(params: &ast::ParamList) -> bool {
-    // `ParamList::params().last()` on the green tree.
     params
-        .syntax()
-        .green()
-        .children()
-        .filter_map(|c| match c {
-            NodeOrToken::Node(n) if ast::Param::can_cast(RustLanguage::kind_from_raw(n.kind())) => {
-                Some(n)
-            }
-            _ => None,
-        })
-        .next_back()
-        .is_some_and(|p| green_has_token(p, T![...]))
+        .params()
+        .last()
+        .is_some_and(|p| has_token(p.syntax(), T![...]))
 }
 
 fn is_generic_bounds_in_order(generic_bounds: &[ast::TypeBound]) -> bool {
@@ -1296,7 +1275,7 @@ fn join_bounds_inner(
 }
 
 /// The bounds of an `impl Trait` type, if `ty` is one.
-pub(crate) fn opaque_ty(ty: Option<&ast::Type>) -> Option<Vec<ast::TypeBound>> {
+pub(crate) fn opaque_ty<'a>(ty: Option<&ast::Type<'a>>) -> Option<Vec<ast::TypeBound<'a>>> {
     match ty? {
         ast::Type::ImplTraitType(it) => {
             Some(child::<ast::TypeBoundList>(it.syntax())?.bounds().collect())
@@ -1337,66 +1316,5 @@ pub(crate) fn rewrite_bound_params(
         None
     } else {
         Some(result)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use ra_ap_syntax::{Edition, SourceFile};
-
-    /// `has_c_variadic` answers what `params().last()` answers on parameter lists with a
-    /// trailing `...`, with `...` elsewhere, without parameters, and with a `self` parameter.
-    #[test]
-    fn has_c_variadic_matches_the_generated_param_accessor() {
-        let src = "extern \"C\" { fn a(x: u8, ...); fn b(...); fn c(); fn d(x: u8); }\n\
-                   impl S { fn e(&self) {} fn f(&self, x: u8, ...) {} }\n\
-                   fn g(x: u8, y: ...) {}\n";
-        let file = SourceFile::parse(src, Edition::Edition2024).tree();
-        let mut seen = [0usize; 2];
-        for params in file.syntax().descendants().filter_map(ast::ParamList::cast) {
-            let by_cursor = params
-                .params()
-                .last()
-                .is_some_and(|p| has_token(p.syntax(), T![...]));
-            assert_eq!(has_c_variadic(&params), by_cursor, "{params}");
-            seen[usize::from(by_cursor)] += 1;
-        }
-        assert_eq!(seen, [3, 4]);
-    }
-
-    #[test]
-    fn single_ident_path_matches_the_concatenated_name() {
-        // The previous form: the name's token texts collected into a `String`.
-        fn by_string(path: &ast::Path) -> Option<String> {
-            let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
-                let mut children = green.children();
-                match (children.next(), children.next()) {
-                    (Some(NodeOrToken::Node(n)), None)
-                        if RustLanguage::kind_from_raw(n.kind()) == kind =>
-                    {
-                        Some(n.to_owned())
-                    }
-                    _ => None,
-                }
-            };
-            let segment = only_node(&path.syntax().green(), SyntaxKind::PATH_SEGMENT)?;
-            let name_ref = only_node(&segment, SyntaxKind::NAME_REF)?;
-            let mut text = String::new();
-            for child in name_ref.children() {
-                text.push_str(child.as_token()?.text());
-            }
-            Some(text)
-        }
-        let src = "use a::b;\nfn f(x: String, y: r#type) -> Self { \
-                   let z = ::std::mem::take(&mut self.0); <T>::f(x); a::<u8>(y); crate::g(super::h) }\n";
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
-        let mut idents = 0;
-        for path in file.syntax().descendants().filter_map(ast::Path::cast) {
-            let ident = single_ident_path(&path);
-            idents += usize::from(ident.is_some());
-            assert_eq!(ident.map(Cow::into_owned), by_string(&path), "{path}");
-        }
-        assert!(idents > 5);
     }
 }
