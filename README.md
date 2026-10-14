@@ -38,6 +38,14 @@ The CLI takes the same options as rustfmt's `--config`:
 chloro --config max_width=80,tab_spaces=2 --write src/
 ```
 
+The CLI keeps a cache of the files it has found already formatted, so that `--check` and
+`--write` on an unchanged tree hash the files and run the formatter on none of them. The
+cache records the BLAKE3 digest of each such file's content, in a file named by the digest
+of the chloro binary and of the `--config` options, under `--cache-dir`, `$CHLORO_CACHE_DIR`,
+or the user cache directory (`~/.cache/chloro`; `$XDG_CACHE_HOME/chloro` when set). The
+output and exit code of a run are the same with and without the cache; `--no-cache` turns
+it off.
+
 ## How it works
 
 The formatter follows rustfmt's source module by module (`visitor`, `items`, `expr`,
