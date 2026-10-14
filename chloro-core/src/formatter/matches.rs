@@ -17,7 +17,7 @@ use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
-    contains_skip, inner_attributes, outer_attributes,
+    contains_skip, inner_attributes, is_repeat_array, outer_attributes,
 };
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
@@ -632,12 +632,12 @@ fn can_flatten_block_around_this(body: &ast::Expr) -> bool {
         ast::Expr::LoopExpr(..)
         | ast::Expr::MatchExpr(..)
         | ast::Expr::ClosureExpr(..)
-        | ast::Expr::ArrayExpr(..)
         | ast::Expr::CallExpr(..)
         | ast::Expr::MethodCallExpr(..)
         | ast::Expr::MacroExpr(..)
         | ast::Expr::RecordExpr(..)
         | ast::Expr::TupleExpr(..) => true,
+        ast::Expr::ArrayExpr(a) => !is_repeat_array(a),
         ast::Expr::BlockExpr(b) => block_expr_kind(b) == BlockExprKind::Block,
         ast::Expr::RefExpr(r) => r.expr().is_some_and(|e| can_flatten_block_around_this(&e)),
         ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| can_flatten_block_around_this(&e)),

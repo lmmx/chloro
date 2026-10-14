@@ -9,6 +9,7 @@ mod impl_blocks;
 mod macros;
 mod method_chains;
 mod parallel;
+mod rustfmt_parity;
 mod self_format;
 mod struct_literals;
 mod structs;

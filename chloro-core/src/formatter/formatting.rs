@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 
-use ra_ap_parser::Edition;
+use ra_ap_parser::{Edition, LexedStr, TopEntryPoint};
 
 use crate::cst::{AstNode, Tree, TreeArena, ast};
 
@@ -13,6 +13,7 @@ use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
+use super::rustc_syntax::reparse;
 use super::shape::Indent;
 use super::span::SnippetProvider;
 use super::utils::indent_next_line;
@@ -38,8 +39,21 @@ pub(crate) struct Formatted {
 /// (e.g. `crate` in the middle of a path) is not run: rustc's parser does not do it, and it
 /// would cost a second traversal of the tree. Files rustc's parser rejects for other
 /// reasons are left alone by `rustc_compat`.
+///
+/// A file that rust-analyzer's lexer or parser rejects is parsed again by `rustc_syntax`
+/// when rustc's parser accepts it.
 fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
-    let tree = Tree::parse(source, edition)?;
+    // `Tree::parse`, keeping the lexer's and the parser's output for `reparse`.
+    let lexed = LexedStr::new(edition, source);
+    let tree = if lexed.errors().next().is_none() {
+        let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
+        match Tree::from_steps_at(source, &lexed, &output, 0, 0) {
+            Some(tree) => tree,
+            None => reparse(source, &lexed, Some(&output), edition, rustfmt_version)?,
+        }
+    } else {
+        reparse(source, &lexed, None, edition, rustfmt_version)?
+    };
     (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
 }
 
