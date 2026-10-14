@@ -10,7 +10,7 @@ and gates in [protocol.md](../protocol.md). Labels as in the journal: **measured
 |---|---|
 | branch | `20261014-parallel-items` |
 | base | `d797292` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code as in the best-known-good `884f9c9`) |
-| commits | `d60c1fa` (library, CLI, tests), COMMIT2 (this file) |
+| commits | `d60c1fa` (library, CLI, tests), `f847a87` (this file) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`; release profile as in `Cargo.toml` (no LTO, default codegen units); the base and the candidate CLI built with `cargo build --release -p chloro --features cli` |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.10GHz" (`nproc` 4), Linux 6.18.44, hyperfine 2.0.0. This is not the 2.80GHz host of the programme entry: no number here is comparable with [experiments.md](../experiments.md) or [baseline.md](../baseline.md) |
 | base binaries | a worktree of `d797292` at `/home/user/wt/base`, built with the same command; golden hashes recorded from it with `bench --record` |
@@ -255,7 +255,7 @@ candidate differing only in `PARALLEL_ITEMS_MIN_BYTES` and the item-thread count
 - `t8k`, `t32k`, `t128k`: files of at least 8, 32, 128 KiB split over 4 threads;
 - `t32k_half`: 32 KiB, split over 2 threads.
 
-`t128k` is the committed configuration (`d60c1fa` shipped `t32k`; COMMIT2 moves it).
+`t128k` is the committed configuration (`d60c1fa` shipped `t32k`; `f847a87` moves it).
 
 First run, all cores and core 0 (wall ms; min, mean ± σ, cpu):
 
