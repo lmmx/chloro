@@ -85,6 +85,10 @@ pub(crate) struct RunState {
     /// Set when a rewrite dropped a comment and fell back to the original text. Only
     /// consulted while formatting a macro definition body.
     pub(crate) lost_comment: Cell<bool>,
+    /// Set when the rustfmt release reproduced panics on this input (F6 under
+    /// `rustfmt_version = "1.8.0"`): rustfmt then writes nothing, so the file is returned
+    /// as it is.
+    pub(crate) format_failure: Cell<bool>,
     pub(crate) macro_args: RefCell<MacroArgsCache>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
