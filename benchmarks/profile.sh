@@ -8,7 +8,7 @@
 # The sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
 # sorted bytewise (`LC_ALL=C sort`), every 25th file (lines 25, 50, ..., 1225): 49 files.
 # The journals record "every 25th file of the sorted fixture list" but not the command;
-# this construction is the one of four tried whose count (589.1M at 884f9c9) lies near the
+# this construction is the one of five tried whose count (588.0M at 884f9c9) lies near the
 # last recorded figure (586.8M at f6c5be9). See benchmarks/README.md.
 set -euo pipefail
 
