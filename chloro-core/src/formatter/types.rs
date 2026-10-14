@@ -639,7 +639,8 @@ impl Rewrite for ast::TypeBound {
                 let has_paren = self
                     .syntax()
                     .children_with_tokens()
-                    .any(|el| el.kind() == SyntaxKind::L_PAREN);
+                    .any(|el| el.kind() == SyntaxKind::L_PAREN)
+                    && !parens_left_by_rustc(self);
                 let shape = if has_paren {
                     shape.offset_left(1)?.sub_width(1)?
                 } else {
@@ -650,6 +651,25 @@ impl Rewrite for ast::TypeBound {
             }
         }
     }
+}
+
+/// The first bound of a bare trait object written in parentheses, `(?Sized) + Send` or
+/// `(for<'a> Tr<'a>) + Send`, when what the parentheses hold is a trait object to rustc (a
+/// `?` bound or a `for<..>` binder; a plain path keeps them). rustc's
+/// `parse_ty_tuple_or_parens` reads the parenthesized trait object and continues its bounds
+/// with `parse_remaining_bounds`, so the bound's span excludes the parentheses and rustfmt,
+/// which looks for them in the span's text, prints none.
+fn parens_left_by_rustc(bound: &ast::TypeBound) -> bool {
+    let Some(list) = bound.syntax().parent() else {
+        return false;
+    };
+    let bare_trait_object = list
+        .parent()
+        .is_some_and(|ty| ty.kind() == SyntaxKind::DYN_TRAIT_TYPE && !has_token(&ty, T![dyn]));
+    let first = list.children().next().as_ref() == Some(bound.syntax());
+    bare_trait_object
+        && first
+        && (token_text_of(bound, SyntaxKind::QUESTION).is_some() || bound.for_binder().is_some())
 }
 
 fn token_text_of(bound: &ast::TypeBound, kind: SyntaxKind) -> Option<SyntaxToken> {

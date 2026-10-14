@@ -102,3 +102,32 @@ m!(
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// rustc's `parse_ty_tuple_or_parens` reads `(Path) + ..` and `(?Bound) + ..` as a bare trait
+/// object; the parentheses of a path stay in its bound's span, those of a one-bound trait
+/// object do not. rust-analyzer's parser rejects both, and `(?Sized)` on its own; chloro
+/// parses them with `dyn` inserted (`rustc_syntax`).
+#[test]
+fn parenthesized_first_bound_of_bare_trait_object() {
+    let input = "fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
+
+fn main() {
+    let _: Box<(Copy) + (?Sized) + (for<'a> Trait<'a>)>;
+    let _: Box<(?Sized) + (for<'a> Trait<'a>) + (Copy)>;
+    let _: Box<(for<'a> Trait<'a>) + (Copy) + (?Sized)>;
+    let _: Box<( ?Sized )>;
+    let _: (Copy)+Send = x;
+}
+";
+    let rustfmt = "fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
+
+fn main() {
+    let _: Box<(Copy) + (?Sized) + (for<'a> Trait<'a>)>;
+    let _: Box<?Sized + (for<'a> Trait<'a>) + (Copy)>;
+    let _: Box<for<'a> Trait<'a> + (Copy) + (?Sized)>;
+    let _: Box<(?Sized)>;
+    let _: (Copy) + Send = x;
+}
+";
+    assert_rustfmt(input, rustfmt);
+}

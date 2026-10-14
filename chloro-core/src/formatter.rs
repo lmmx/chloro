@@ -13,6 +13,7 @@
 //! | `overflow`, `lists` | comma-separated lists and the "overflow the last item" heuristic |
 //! | `attr`, `comment` | attributes, doc comments, comment re-indentation and recovery |
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
+//! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, parsed with inserted keywords |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
 //!
 //! `nodes` and `span` adapt rowan nodes to rustc's AST shape (doc comments as attributes,
@@ -40,6 +41,7 @@ mod patterns;
 pub mod printer;
 mod reorder;
 mod rustc_compat;
+mod rustc_syntax;
 mod shape;
 mod sort;
 mod span;
