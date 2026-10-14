@@ -454,7 +454,7 @@ impl FindUncommented for str {
             {
                 classes.skip_plain(Some(first));
                 // A character in a comment resets the needle.
-                classes.skip_comment();
+                classes.skip_comment(None);
             }
             let Some((kind, i, b)) = classes.next() else {
                 break;
@@ -725,23 +725,41 @@ impl<'a> CharClasses<'a> {
     /// - `StringInBlockComment`: the state changes only at `"` and `*` before `/`; the scan
     ///   stops at every `"` and `*`.
     ///
-    /// All of these are ASCII, so the scan can work on bytes.
-    fn skip_comment(&mut self) {
+    /// All of these are ASCII, so the scan can work on bytes. Also stops at `stop`, a byte
+    /// the caller looks for.
+    fn skip_comment(&mut self, stop: Option<u8>) {
         let bytes = self.src.as_bytes();
+        // No UTF-8 text contains the byte 0xff.
+        let stop = stop.unwrap_or(0xff);
         let mut pos = self.pos;
         match self.status {
             CharClassesStatus::LineComment => {
-                pos = self.src[pos..].find('\n').map_or(bytes.len(), |n| pos + n);
+                pos = find_any_byte(bytes, pos, [b'\n', stop]);
             }
             CharClassesStatus::BlockComment(_) => {
-                pos = find_any_byte(bytes, pos, *b"*/\"");
+                pos = find_any_byte(bytes, pos, [b'*', b'/', b'"', stop]);
             }
             CharClassesStatus::StringInBlockComment(_) => {
-                pos = find_any_byte(bytes, pos, *b"*\"");
+                pos = find_any_byte(bytes, pos, [b'*', b'"', stop]);
             }
             _ => return,
         }
         self.pos = pos;
+    }
+
+    /// The kind `next` yields for the characters `skip_plain` and `skip_comment` move past
+    /// in the current state; neither skip changes the state.
+    fn skipped_kind(&self) -> FullCodeCharKind {
+        match self.status {
+            CharClassesStatus::LitString | CharClassesStatus::LitRawString(_) => {
+                FullCodeCharKind::InString
+            }
+            CharClassesStatus::LineComment | CharClassesStatus::BlockComment(_) => {
+                FullCodeCharKind::InComment
+            }
+            CharClassesStatus::StringInBlockComment(_) => FullCodeCharKind::InStringCommented,
+            _ => FullCodeCharKind::Normal,
+        }
     }
 }
 
@@ -921,7 +939,9 @@ impl Iterator for CharClasses<'_> {
 /// An iterator over the lines of a string, paired with the char kind at the
 /// end of the line.
 pub(crate) struct LineClasses<'a> {
-    base: std::iter::Peekable<CharClasses<'a>>,
+    base: CharClasses<'a>,
+    /// The next item of `base`, once looked at.
+    peeked: Option<Option<(FullCodeCharKind, usize, char)>>,
     src: &'a str,
     kind: FullCodeCharKind,
 }
@@ -929,10 +949,30 @@ pub(crate) struct LineClasses<'a> {
 impl<'a> LineClasses<'a> {
     pub(crate) fn new(s: &'a str) -> Self {
         LineClasses {
-            base: CharClasses::new(s).peekable(),
+            base: CharClasses::new(s),
+            peeked: None,
             src: s,
             kind: FullCodeCharKind::Normal,
         }
+    }
+
+    fn peek(&mut self) -> Option<(FullCodeCharKind, usize, char)> {
+        *self.peeked.get_or_insert_with(|| self.base.next())
+    }
+
+    /// The next character, after moving past the characters up to the next `\n` that keep
+    /// the state; the last of those sets `kind`, as stepping through them would.
+    fn advance(&mut self) -> Option<(FullCodeCharKind, usize, char)> {
+        if let Some(peeked) = self.peeked.take() {
+            return peeked;
+        }
+        let from = self.base.pos;
+        self.base.skip_plain(Some(b'\n'));
+        self.base.skip_comment(Some(b'\n'));
+        if self.base.pos != from {
+            self.kind = self.base.skipped_kind();
+        }
+        self.base.next()
     }
 }
 
@@ -940,10 +980,10 @@ impl<'a> Iterator for LineClasses<'a> {
     type Item = (FullCodeCharKind, &'a str);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let &(start_kind, start, _) = self.base.peek()?;
+        let (start_kind, start, _) = self.peek()?;
         let mut end = self.src.len();
 
-        for (kind, i, c) in self.base.by_ref() {
+        while let Some((kind, i, c)) = self.advance() {
             // needed to set the kind of the ending character on the last line
             self.kind = kind;
             if c == '\n' {
@@ -1031,7 +1071,7 @@ impl<'a> Iterator for UngroupedCommentCodeSlices<'a> {
                 // the comment.
                 loop {
                     if self.peeked.is_none() {
-                        self.iter.skip_comment();
+                        self.iter.skip_comment(None);
                     }
                     match self.advance() {
                         Some((kind, ..)) if kind.inside_comment() => continue,
@@ -1101,7 +1141,7 @@ impl<'a> Iterator for CommentCodeSlices<'a> {
                 iter.skip_plain(None);
             } else {
                 let from = iter.pos;
-                iter.skip_comment();
+                iter.skip_comment(None);
                 if iter.pos == subslice.len() {
                     iter.pos = from;
                 }
@@ -1571,7 +1611,7 @@ mod tests {
             check_skip(
                 &s,
                 None,
-                |classes| classes.skip_comment(),
+                |classes| classes.skip_comment(None),
                 FullCodeCharKind::inside_comment,
             );
         }
@@ -1639,6 +1679,50 @@ mod tests {
             for pat in patterns {
                 assert_eq!(s.find_uncommented(pat), by_char(&s, pat), "{s:?} {pat:?}");
             }
+        }
+    }
+
+    /// `LineClasses` stepping every character through a `Peekable`.
+    fn line_classes_by_char(src: &str) -> Vec<(FullCodeCharKind, &str)> {
+        let mut base = CharClasses::new(src).peekable();
+        let mut kind = FullCodeCharKind::Normal;
+        let mut out = vec![];
+        while let Some(&(start_kind, start, _)) = base.peek() {
+            let mut end = src.len();
+            for (k, i, c) in base.by_ref() {
+                kind = k;
+                if c == '\n' {
+                    end = i;
+                    kind = match (start_kind, k) {
+                        (FullCodeCharKind::Normal, FullCodeCharKind::InString) => {
+                            FullCodeCharKind::StartString
+                        }
+                        (FullCodeCharKind::InString, FullCodeCharKind::Normal) => {
+                            FullCodeCharKind::EndString
+                        }
+                        (FullCodeCharKind::InComment, FullCodeCharKind::InStringCommented) => {
+                            FullCodeCharKind::StartStringCommented
+                        }
+                        (FullCodeCharKind::InStringCommented, FullCodeCharKind::InComment) => {
+                            FullCodeCharKind::EndStringCommented
+                        }
+                        _ => k,
+                    };
+                    break;
+                }
+            }
+            let line = &src[start..end];
+            out.push((kind, line.strip_suffix('\r').unwrap_or(line)));
+        }
+        out
+    }
+
+    #[test]
+    fn line_classes_match_the_per_character_scan() {
+        let alphabet = ['\n', '\r', '/', '*', '"', 'r', '#', 'a', ' '];
+        for s in strings_over(&alphabet, 5) {
+            let lines: Vec<_> = LineClasses::new(&s).collect();
+            assert_eq!(lines, line_classes_by_char(&s), "{s:?}");
         }
     }
 
