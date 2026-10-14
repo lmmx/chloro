@@ -21,7 +21,7 @@ use super::nodes::{AttrStyle, Attribute, child, non_trivia_text};
 use super::overflow;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
-use super::utils::count_newlines;
+use super::utils::{concat, count_newlines};
 
 /// A literal inside a meta item.
 #[derive(Clone, Debug)]
@@ -516,8 +516,8 @@ impl Rewrite for Attribute<'_> {
             .and_then(|m| m.unsafe_token())
             .is_some();
         Some(match meta.rewrite(context, shape) {
-            Some(rw) if is_unsafe => format!("{prefix}[unsafe({rw})]"),
-            Some(rw) => format!("{prefix}[{rw}]"),
+            Some(rw) if is_unsafe => concat(&[prefix, "[unsafe(", &rw, ")]"]),
+            Some(rw) => concat(&[prefix, "[", &rw, "]"]),
             None => snippet.to_owned(),
         })
     }
