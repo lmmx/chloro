@@ -12,37 +12,38 @@
 //!    at the next top-level `,` or `;`. A parse that fails at the end of the window is
 //!    retried with the window extended to the following separator, since a separator can
 //!    belong to the argument (`|a, b| a + b`, `HashMap<K, V>`).
-//! 3. The consumed tokens are parsed again with the matching [`TopEntryPoint`] to build a
-//!    green node, and all argument nodes are spliced into a copy of the token tree.
+//! 3. The consumed tokens are parsed again with the matching [`TopEntryPoint`] into a tree
+//!    of their own ([`Tree::from_steps_at`]), laid out at the argument's offset in the file.
 //!
-//! Splicing keeps every argument node at its original text offset, so spans, snippets
-//! and comment recovery work on macro arguments exactly as on the rest of the file.
+//! Every argument node therefore has its original text offset, so spans, snippets and
+//! comment recovery work on macro arguments exactly as on the rest of the file. The
+//! fragment trees are kept by the run ([`RunState::keep_tree`]) for as long as the
+//! argument nodes are cached.
 
-use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, StrStep, TopEntryPoint};
-use ra_ap_syntax::{AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast};
+use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, SyntaxKind, T, TopEntryPoint};
+
+use crate::cst::{AstNode, Node, Tree, TreeBuilder, ast};
 
 use super::config::RustfmtVersion;
-use super::context::RewriteContext;
-use super::formatting::TreeBuilder;
+use super::context::{RewriteContext, RunState};
 use super::macros::MacroArg;
-use super::nodes::green_children_with_ranges;
 use super::rustc_compat::subtree_rejected_by_rustc;
 use super::span::{BytePos, Span, mk_sp};
 
 /// The arguments of a macro call, as rustfmt's `ParsedMacroArgs`.
 #[derive(Clone)]
-pub(crate) struct ParsedMacroArgs {
+pub(crate) struct ParsedMacroArgs<'a> {
     pub(crate) vec_with_semi: bool,
     pub(crate) trailing_comma: bool,
-    pub(crate) args: Vec<MacroArg>,
+    pub(crate) args: Vec<MacroArg<'a>>,
 }
 
 /// One entry of `lazy_static! { [vis] static ref NAME: TY = EXPR; ... }`.
-pub(crate) struct LazyStatic {
+pub(crate) struct LazyStatic<'a> {
     pub(crate) vis: String,
     pub(crate) name: String,
-    pub(crate) ty: ast::Type,
-    pub(crate) expr: ast::Expr,
+    pub(crate) ty: ast::Type<'a>,
+    pub(crate) expr: ast::Expr<'a>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -83,17 +84,21 @@ struct Tok {
     top_level_sep: bool,
 }
 
-/// A parsed fragment awaiting splicing: its token range and green node.
-struct Fragment {
+/// A parsed fragment: its byte range in the interior and its node, laid out at its file
+/// offset in a tree of its own.
+struct Fragment<'a> {
     kind: FragmentKind,
     lo: usize,
     hi: usize,
-    green: GreenNode,
+    node: Node<'a>,
 }
 
-/// The token stream of one token tree interior.
-struct MacroTokens<'a> {
-    tt: ast::TokenTree,
+/// The token stream of one token tree interior. `'a` is the run (the fragment trees are
+/// kept by it), `'t` the token tree's own tree.
+struct MacroTokens<'a, 't> {
+    tt: ast::TokenTree<'t>,
+    /// The whole file: every fragment tree is laid out over it.
+    file: &'a str,
     /// Text of the interior, between the delimiters.
     text: &'a str,
     /// Absolute offset of `text`.
@@ -101,14 +106,14 @@ struct MacroTokens<'a> {
     toks: Vec<Tok>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
-    run: std::rc::Rc<super::context::RunState>,
+    run: std::rc::Rc<RunState<'a>>,
 }
 
-impl<'a> MacroTokens<'a> {
-    fn new(context: &RewriteContext<'a>, tt: &ast::TokenTree) -> Option<MacroTokens<'a>> {
+impl<'a, 't> MacroTokens<'a, 't> {
+    fn new(context: &RewriteContext<'a>, tt: &ast::TokenTree<'t>) -> Option<MacroTokens<'a, 't>> {
         let (open, close) = delimiters(tt)?;
-        let base = u32::from(open.text_range().end());
-        let end = u32::from(close.text_range().start());
+        let base = open.text_range().end();
+        let end = close.text_range().start();
         let text = context.snippet(mk_sp(base, end));
         let edition = context.config.edition().to_ra();
         let lexed = LexedStr::new(edition, text);
@@ -136,7 +141,8 @@ impl<'a> MacroTokens<'a> {
             });
         }
         Some(MacroTokens {
-            tt: tt.clone(),
+            tt: *tt,
+            file: context.snippet_provider.entire_snippet(),
             text,
             base,
             toks,
@@ -189,7 +195,12 @@ impl<'a> MacroTokens<'a> {
     ///
     /// Emulates rustc's greedy parse over the remaining stream: success means the parser
     /// stopped without an error, wherever that is.
-    fn parse_fragment(&self, kind: FragmentKind, start: usize, limit: usize) -> Option<Fragment> {
+    fn parse_fragment(
+        &self,
+        kind: FragmentKind,
+        start: usize,
+        limit: usize,
+    ) -> Option<Fragment<'a>> {
         if start >= limit {
             return None;
         }
@@ -221,21 +232,16 @@ impl<'a> MacroTokens<'a> {
         };
         let end = start + consumed;
         let (lo, hi) = (self.toks[start].lo, self.toks[end - 1].hi);
-        let green = self.build(kind, &self.text[lo..hi])?;
-        Some(Fragment {
-            kind,
-            lo,
-            hi,
-            green,
-        })
+        let node = self.build(kind, lo, hi)?;
+        Some(Fragment { kind, lo, hi, node })
     }
 
     /// rustc's type grammar accepts `?Trait`, a trait object with a single "maybe" bound;
     /// rust-analyzer's does not. This matters for `tracing`'s `?value` arguments, which
     /// rustfmt formats as types. Builds the node rust-analyzer uses for a bare trait object.
-    fn parse_maybe_bound(&self, start: usize, limit: usize) -> Option<Fragment> {
+    fn parse_maybe_bound(&self, start: usize, limit: usize) -> Option<Fragment<'a>> {
         let path = self.parse_fragment(FragmentKind::Ty, start + 1, limit)?;
-        if SyntaxNode::new_root(path.green.clone()).kind() != SyntaxKind::PATH_TYPE {
+        if path.node.kind() != SyntaxKind::PATH_TYPE {
             return None;
         }
         let gap = &self.text[self.toks[start].hi..path.lo];
@@ -245,52 +251,44 @@ impl<'a> MacroTokens<'a> {
         let lexed = LexedStr::new(self.edition, &self.text[path.lo..path.hi]);
         let input = lexed.to_input(self.edition);
         let output = TopEntryPoint::Type.parse(&input, self.edition);
-        let mut builder = TreeBuilder::default();
+        let lo = self.toks[start].lo;
+        let mut builder = TreeBuilder::new(
+            self.file,
+            self.base + lo as BytePos,
+            self.run.next_tree_id(),
+            lexed.len() * 2 + 8,
+        );
         builder.start_node(SyntaxKind::DYN_TRAIT_TYPE);
         builder.start_node(SyntaxKind::TYPE_BOUND_LIST);
         builder.start_node(SyntaxKind::TYPE_BOUND);
-        builder.token(T![?], "?");
+        builder.token(T![?], 1);
         if !gap.is_empty() {
-            builder.token(SyntaxKind::WHITESPACE, gap);
+            builder.token(SyntaxKind::WHITESPACE, gap.len() as u32);
         }
-        let mut has_error = false;
-        lexed.intersperse_trivia(&output, &mut |step| match step {
-            StrStep::Token { kind, text } => builder.token(kind, text),
-            StrStep::Enter { kind } => builder.start_node(kind),
-            StrStep::Exit => builder.finish_node(),
-            StrStep::Error { .. } => has_error = true,
-        });
+        builder.steps(&lexed, &output)?;
         builder.finish_node();
         builder.finish_node();
         builder.finish_node();
-        if has_error {
-            return None;
-        }
-        let node = builder.finish();
+        let tree = self.run.keep_tree(builder.finish());
         Some(Fragment {
             kind: FragmentKind::Ty,
-            lo: self.toks[start].lo,
+            lo,
             hi: path.hi,
-            green: node.green().into_owned(),
+            node: tree.root(),
         })
     }
 
-    fn build(&self, kind: FragmentKind, text: &str) -> Option<GreenNode> {
-        let lexed = LexedStr::new(self.edition, text);
+    /// Parses `text[lo..hi]` as a `kind` fragment into a tree of its own at its offset in
+    /// the file, kept by the run, and returns its node: the root, or the single item under
+    /// a `MacroItems` root.
+    fn build(&self, kind: FragmentKind, lo: usize, hi: usize) -> Option<Node<'a>> {
+        let lexed = LexedStr::new(self.edition, &self.text[lo..hi]);
         let input = lexed.to_input(self.edition);
         let output = kind.top_entry().parse(&input, self.edition);
-        let mut builder = TreeBuilder::default();
-        let mut has_error = false;
-        lexed.intersperse_trivia(&output, &mut |step| match step {
-            StrStep::Token { kind, text } => builder.token(kind, text),
-            StrStep::Enter { kind } => builder.start_node(kind),
-            StrStep::Exit => builder.finish_node(),
-            StrStep::Error { .. } => has_error = true,
-        });
-        if has_error {
-            return None;
-        }
-        let root = builder.finish();
+        let base = self.base + lo as BytePos;
+        let tree = Tree::from_steps_at(self.file, &lexed, &output, base, self.run.next_tree_id())?;
+        let tree = self.run.keep_tree(tree);
+        let root = tree.root();
         let node = if kind == FragmentKind::Item {
             // `MacroItems` wraps the item; the fragment is the single item inside.
             let mut items = root.children();
@@ -303,39 +301,28 @@ impl<'a> MacroTokens<'a> {
             root
         };
         if node.kind() == SyntaxKind::ERROR
-            || subtree_rejected_by_rustc(&node, self.edition, self.rustfmt_version)
+            || subtree_rejected_by_rustc(node, self.edition, self.rustfmt_version)
         {
             return None;
         }
-        Some(node.green().into_owned())
+        Some(node)
     }
 
-    /// Replaces the parsed ranges of the token tree with the fragment nodes, in a copy of
-    /// the token tree, and returns the fragment nodes of the copy.
-    ///
-    /// The copy is the second child of a new root whose first children are whitespace of
-    /// the length of the text before the token tree, so every node of the copy has the
-    /// offset of the text it covers in the source, which spans and comment recovery rely
-    /// on. Copying the ancestors of the token tree instead costs a copy of every child
-    /// list on the path to the root, once per macro call.
-    fn splice(&self, fragments: &[Fragment]) -> Option<Vec<SyntaxNode>> {
+    /// The fragment nodes, in order, or `None` when an element of the token tree straddles
+    /// a fragment boundary (the fragments would not be a substitution for runs of the token
+    /// tree's children).
+    fn splice(&self, fragments: &[Fragment<'a>]) -> Option<Vec<Node<'a>>> {
         if fragments.is_empty() {
             return Some(Vec::new());
         }
-        let tt = self.tt.syntax();
         let base = self.base as usize;
-        let mut children = Vec::new();
-        let mut positions = Vec::with_capacity(fragments.len());
         let mut frags = fragments.iter().peekable();
-        for (range, child) in green_children_with_ranges(tt) {
-            let (lo, hi) = (usize::from(range.start()), usize::from(range.end()));
+        for child in self.tt.syntax().children_with_tokens() {
+            let range = child.text_range();
+            let (lo, hi) = (range.start() as usize, range.end() as usize);
             if let Some(frag) = frags.peek() {
                 let (flo, fhi) = (base + frag.lo, base + frag.hi);
                 if lo >= flo && hi <= fhi {
-                    if lo == flo {
-                        positions.push(children.len());
-                        children.push(NodeOrToken::Node(frag.green.clone()));
-                    }
                     if hi == fhi {
                         frags.next();
                     }
@@ -346,24 +333,11 @@ impl<'a> MacroTokens<'a> {
                     return None;
                 }
             }
-            children.push(child);
         }
         if frags.next().is_some() {
             return None;
         }
-        let new_tt = GreenNode::new(tt.green().kind(), children);
-        let mut root_children = self
-            .run
-            .padding(u32::from(tt.text_range().start()) as usize);
-        root_children.push(NodeOrToken::Node(new_tt));
-        let root = SyntaxNode::new_root(GreenNode::new(tt.green().kind(), root_children));
-        let new = root.last_child()?;
-        debug_assert_eq!(new.text_range(), tt.text_range());
-        let elements: Vec<_> = new.children_with_tokens().collect();
-        positions
-            .iter()
-            .map(|&i| elements.get(i)?.clone().into_node())
-            .collect()
+        Some(fragments.iter().map(|f| f.node).collect())
     }
 
     /// rustc's `check_keyword`: a reserved word followed by `,` or the end.
@@ -375,9 +349,9 @@ impl<'a> MacroTokens<'a> {
     }
 }
 
-fn delimiters(
-    tt: &ast::TokenTree,
-) -> Option<(ra_ap_syntax::SyntaxToken, ra_ap_syntax::SyntaxToken)> {
+fn delimiters<'t>(
+    tt: &ast::TokenTree<'t>,
+) -> Option<(crate::cst::Token<'t>, crate::cst::Token<'t>)> {
     let open = tt.syntax().first_token()?;
     let close = tt.syntax().last_token()?;
     let ok = matches!(
@@ -387,7 +361,7 @@ fn delimiters(
     (ok && open.text_range().end() <= close.text_range().start()).then_some((open, close))
 }
 
-fn to_macro_arg(kind: FragmentKind, node: SyntaxNode) -> Option<MacroArg> {
+fn to_macro_arg<'a>(kind: FragmentKind, node: Node<'a>) -> Option<MacroArg<'a>> {
     Some(match kind {
         FragmentKind::Expr => MacroArg::Expr(ast::Expr::cast(node)?),
         FragmentKind::Ty => MacroArg::Ty(ast::Type::cast(node)?),
@@ -403,7 +377,7 @@ enum Slot {
 }
 
 /// rustc's `parse_macro_arg`: the first of expression, type, pattern and item that parses.
-fn parse_macro_arg(tokens: &MacroTokens<'_>, pos: usize) -> Option<Fragment> {
+fn parse_macro_arg<'a>(tokens: &MacroTokens<'a, '_>, pos: usize) -> Option<Fragment<'a>> {
     let limit = tokens.toks.len();
     [
         FragmentKind::Expr,
@@ -416,11 +390,11 @@ fn parse_macro_arg(tokens: &MacroTokens<'_>, pos: usize) -> Option<Fragment> {
 }
 
 /// Parses the arguments of a macro call delimited by `(` or `[`.
-pub(crate) fn parse_macro_args(
-    context: &RewriteContext<'_>,
-    tt: &ast::TokenTree,
+pub(crate) fn parse_macro_args<'a>(
+    context: &RewriteContext<'a>,
+    tt: &ast::TokenTree<'_>,
     forced_bracket: bool,
-) -> Option<ParsedMacroArgs> {
+) -> Option<ParsedMacroArgs<'a>> {
     let tokens = MacroTokens::new(context, tt)?;
     let mut slots = Vec::new();
     let mut fragments: Vec<Fragment> = Vec::new();
@@ -502,7 +476,10 @@ pub(crate) fn parse_macro_args(
 
 /// rustc's `parse_expr` over a whole token tree: the leading expression, ignoring any
 /// tokens after it (used for `try!`).
-pub(crate) fn parse_expr(context: &RewriteContext<'_>, tt: &ast::TokenTree) -> Option<ast::Expr> {
+pub(crate) fn parse_expr<'a>(
+    context: &RewriteContext<'a>,
+    tt: &ast::TokenTree<'_>,
+) -> Option<ast::Expr<'a>> {
     let tokens = MacroTokens::new(context, tt)?;
     let n = tokens.toks.len();
     if n == 0 {
@@ -513,21 +490,21 @@ pub(crate) fn parse_expr(context: &RewriteContext<'_>, tt: &ast::TokenTree) -> O
         return None;
     }
     let (lo, hi) = (tokens.toks[0].lo, tokens.toks[consumed - 1].hi);
-    let green = tokens.build(FragmentKind::Expr, &tokens.text[lo..hi])?;
+    let node = tokens.build(FragmentKind::Expr, lo, hi)?;
     let frag = Fragment {
         kind: FragmentKind::Expr,
         lo,
         hi,
-        green,
+        node,
     };
     ast::Expr::cast(tokens.splice(&[frag])?.pop()?)
 }
 
 /// Parses the body of `lazy_static!`.
-pub(crate) fn parse_lazy_static(
-    context: &RewriteContext<'_>,
-    tt: &ast::TokenTree,
-) -> Option<Vec<LazyStatic>> {
+pub(crate) fn parse_lazy_static<'a>(
+    context: &RewriteContext<'a>,
+    tt: &ast::TokenTree<'_>,
+) -> Option<Vec<LazyStatic<'a>>> {
     let tokens = MacroTokens::new(context, tt)?;
     let n = tokens.toks.len();
     let mut entries = Vec::new();
@@ -581,7 +558,7 @@ pub(crate) fn parse_lazy_static(
             kind: FragmentKind::Expr,
             lo,
             hi,
-            green: tokens.build(FragmentKind::Expr, &tokens.text[lo..hi])?,
+            node: tokens.build(FragmentKind::Expr, lo, hi)?,
         };
         pos += consumed;
         eat(&mut pos, T![;]);
@@ -608,7 +585,7 @@ pub(crate) fn parse_lazy_static(
 
 /// The visibility text with rustfmt's normalisation (`pub(in crate)` is `pub(crate)`),
 /// followed by a space.
-fn visibility_text(tokens: &MacroTokens<'_>, start: usize, end: usize) -> String {
+fn visibility_text(tokens: &MacroTokens<'_, '_>, start: usize, end: usize) -> String {
     let words: Vec<&str> = (start..end)
         .map(|i| &tokens.text[tokens.toks[i].lo..tokens.toks[i].hi])
         .collect();
@@ -629,19 +606,24 @@ fn visibility_text(tokens: &MacroTokens<'_>, start: usize, end: usize) -> String
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cst::TreeArena;
     use crate::formatter::config::Settings;
     use crate::formatter::span::SnippetProvider;
-    use ra_ap_syntax::SourceFile;
 
-    fn with_macro<R>(src: &str, f: impl FnOnce(&RewriteContext<'_>, ast::TokenTree) -> R) -> R {
+    fn with_macro<R>(
+        src: &str,
+        f: impl for<'a> FnOnce(&RewriteContext<'a>, ast::TokenTree<'a>) -> R,
+    ) -> R {
         let settings = Settings::default();
-        let file = SourceFile::parse(src, ra_ap_syntax::Edition::Edition2024).tree();
-        let call = file
-            .syntax()
+        let tree = Tree::parse(src, Edition::Edition2024).unwrap();
+        let call = tree
+            .root()
             .descendants()
             .find_map(ast::MacroCall::cast)
             .unwrap();
-        let context = RewriteContext::new(&settings, SnippetProvider::new(src), Default::default());
+        let arena = TreeArena::new();
+        let run = std::rc::Rc::new(RunState::new(&arena));
+        let context = RewriteContext::new(&settings, SnippetProvider::new(src), run);
         f(&context, call.token_tree().unwrap())
     }
 
@@ -667,11 +649,7 @@ mod tests {
             let MacroArg::Expr(e) = &args.args[1] else {
                 unreachable!()
             };
-            let range = e.syntax().text_range();
-            assert_eq!(
-                &src[usize::from(range.start())..usize::from(range.end())],
-                "|x, y| x * y"
-            );
+            assert_eq!(e.syntax().text(), "|x, y| x * y");
             assert!(!args.trailing_comma);
         });
     }

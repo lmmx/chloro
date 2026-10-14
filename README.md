@@ -54,11 +54,14 @@ it off.
 
 The formatter follows rustfmt's source module by module (`visitor`, `items`, `expr`,
 `chains`, `overflow`, `lists`, `comment`, ...), so each formatting decision can be traced to
-the rustfmt code it reproduces. A thin adaptation layer presents rust-analyzer's lossless
-tree in the shape rustfmt expects: rustc's spans, doc comments as attributes, rustc's
-classification of statements, and macro arguments re-parsed as expressions, types,
-patterns or items. The [journal entries](docs/journal/) record the design, the
-measurements and the known gaps.
+the rustfmt code it reproduces. rust-analyzer's parser (`ra_ap_parser`) lexes and parses
+the file; chloro lays the parser's events out as one flat array of nodes and tokens over
+the source text (`chloro_core::cst`), with a typed accessor layer generated from
+rust-analyzer's grammar that keeps `ra_ap_syntax`'s names. A thin adaptation layer
+presents that tree in the shape rustfmt expects: rustc's spans, doc comments as
+attributes, rustc's classification of statements, and macro arguments re-parsed as
+expressions, types, patterns or items, each laid out at its offset in the file. The
+[journal entries](docs/journal/) record the design, the measurements and the known gaps.
 
 `Config` has one field per stable rustfmt option, with rustfmt's names and defaults.
 Unstable rustfmt options keep their default behaviour. `rustfmt_version` is chloro's own
@@ -139,10 +142,14 @@ both accept (528 of them in `use` items alone, from the version sort of style ed
 
 rustfmt chooses a layout by trying several and keeping the first that fits, so chloro does
 the same work rustfmt does; it memoizes rewrites to keep nested code from multiplying it,
-and reads rust-analyzer's green tree where the typed API would allocate. Single-threaded and
-in process it formats about 4.1 MB/s on the rust-analyzer fixtures and 5.7 MB/s on a local
-cargo registry; a `chloro` process on one large file takes 0.28x–0.56x the time of a
-`rustfmt` process. The CLI formats files in parallel.
+and reads syntax from a flat array whose handles are a reference and an index, so a query
+allocates nothing (the flat tree replaced rowan's red nodes and cut the instruction count
+on the profiling sample by 24.6% and heap allocations on the fixtures by 43%, measured in
+[EXP-007b](docs/journal/2026-10-14-autoresearch/experiments/EXP-007b-flat-port.md)).
+Single-threaded and in process it formats about 4.1 MB/s on the rust-analyzer fixtures and
+5.7 MB/s on a local cargo registry (figures from before the flat tree); a `chloro` process
+on one large file takes 0.28x–0.56x the time of a `rustfmt` process. The CLI formats files
+in parallel.
 
 ```sh
 cargo run --release -p chloro-core --example bench -- -w 10   # throughput, 10 slowest files

@@ -1,10 +1,10 @@
 //! Binary-operator-like pairs (rustfmt's `pairs.rs`).
 
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
 
 use super::context::{Rewrite, RewriteContext};
 use super::lists::SeparatorPlace;
-use super::nodes::{bin_op_kind, bin_op_text, child, has_child, nth_child};
+use super::nodes::child;
 use super::shape::Shape;
 use super::utils::{
     first_line_width, is_assignment, is_single_line, last_line_width, trimmed_last_line_width,
@@ -237,8 +237,8 @@ where
     ))
 }
 
-struct PairList {
-    list: Vec<(ast::Expr, Option<String>)>,
+struct PairList<'a> {
+    list: Vec<(ast::Expr<'a>, Option<String>)>,
     separators: Vec<String>,
 }
 
@@ -258,7 +258,7 @@ fn is_ident_or_bool_lit(expr: &ast::Expr) -> bool {
     }
 }
 
-impl PairList {
+impl PairList<'_> {
     fn let_chain_count(&self) -> usize {
         self.list
             .iter()
@@ -278,13 +278,22 @@ impl PairList {
     }
 }
 
+/// The operator of a binary expression as written, e.g. `&&` or `+=`.
+pub(crate) fn bin_op_text(expr: &ast::BinExpr) -> Option<String> {
+    expr.op_token().map(|t| t.text().to_string())
+}
+
 /// Turn a tree of same-operator binary expressions into a list using a depth-first,
 /// in-order traversal.
-fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> Option<PairList> {
+fn flatten<'a>(
+    expr: &ast::BinExpr<'a>,
+    context: &RewriteContext<'_>,
+    shape: Shape,
+) -> Option<PairList<'a>> {
     if is_assignment(expr) {
         return None;
     }
-    let top_op = bin_op_kind(expr)?;
+    let top_op = expr.op_kind()?;
 
     let default_rewrite = |node: &ast::Expr, sep: usize, is_first: bool| -> Option<String> {
         if is_first {
@@ -306,22 +315,20 @@ fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> O
     let mut stack: Vec<ast::BinExpr> = vec![];
     let mut list: Vec<(ast::Expr, Option<String>)> = vec![];
     let mut separators: Vec<String> = vec![];
-    let mut node = ast::Expr::BinExpr(expr.clone());
+    let mut node = ast::Expr::BinExpr(*expr);
     loop {
         match &node {
-            ast::Expr::BinExpr(b)
-                if bin_op_kind(b) == Some(top_op) && has_child::<ast::Expr>(b.syntax()) =>
-            {
-                stack.push(b.clone());
+            ast::Expr::BinExpr(b) if b.op_kind() == Some(top_op) && b.lhs().is_some() => {
+                stack.push(*b);
                 node = b.lhs()?;
             }
             _ => {
                 let op_len = separators.last().map_or(0, |s| s.len());
                 let rw = default_rewrite(&node, op_len, list.is_empty());
-                list.push((node.clone(), rw));
+                list.push((node, rw));
                 if let Some(pop) = stack.pop() {
                     separators.push(bin_op_text(&pop)?);
-                    node = nth_child::<ast::Expr>(pop.syntax(), 1)?;
+                    node = pop.rhs()?;
                 } else {
                     break;
                 }
