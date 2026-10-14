@@ -117,6 +117,9 @@ pub(crate) fn format_text(
     let mut text = std::mem::take(&mut visitor.buffer);
     let macro_failure = visitor.macro_rewrite_failure;
     drop(visitor);
+    if run.format_failure.get() {
+        return None;
+    }
 
     // The source map of rustc does not include terminating newlines, so rustfmt adds one
     // for each file and then truncates any run of trailing newlines to one.
@@ -151,7 +154,7 @@ pub(crate) fn format_text_parallel(
             skipped_range: Vec::new(),
         });
     }
-    Some(super::parallel::format_file(source, config, &file, threads))
+    super::parallel::format_file(source, config, &file, threads)
 }
 
 /// rustfmt's `format_lines` (without its error reporting): a run of trailing newlines
