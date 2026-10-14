@@ -63,13 +63,24 @@ pub(crate) fn is_attributes_extendable(attrs_str: &str) -> bool {
 /// The width of the first line in s.
 #[inline]
 pub(crate) fn first_line_width(s: &str) -> usize {
-    unicode_str_width(s.split('\n').next().unwrap_or(""))
+    // A first line of ASCII characters is as wide as it is long: a `\r` before the `\n`
+    // belongs to the line and counts one column there.
+    match first_newline_or_non_ascii(s.as_bytes()) {
+        None => s.len(),
+        Some(i) if s.as_bytes()[i] == b'\n' => i,
+        Some(_) => unicode_str_width(s.split('\n').next().unwrap_or("")),
+    }
 }
 
 /// The width of the last line in s.
 #[inline]
 pub(crate) fn last_line_width(s: &str) -> usize {
-    unicode_str_width(s.rsplit('\n').next().unwrap_or(""))
+    // A last line of ASCII characters is as wide as it is long.
+    match last_newline_or_non_ascii(s.as_bytes()) {
+        None => s.len(),
+        Some(i) if s.as_bytes()[i] == b'\n' => s.len() - i - 1,
+        Some(_) => unicode_str_width(s.rsplit('\n').next().unwrap_or("")),
+    }
 }
 
 /// The total used width of the last line.
@@ -150,18 +161,58 @@ fn multi_line_or_unicode_str_width(s: &str) -> usize {
     width
 }
 
+/// Bit 7 of a byte of the result is set iff that byte of `w` is non-ASCII or `\n`; the
+/// other bits are clear. `(y & 0x7f) + 0x7f` has bit 7 set iff `y & 0x7f != 0`, and no byte
+/// carries into the next, so `!(... | y)` has bit 7 set iff the byte of `y = w ^ 0x0a..` is
+/// zero. Every byte is flagged exactly, so both the lowest and the highest flag can be read.
+fn newline_or_non_ascii(w: u64) -> u64 {
+    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
+    const NEWLINES: u64 = 0x0a0a_0a0a_0a0a_0a0a;
+    let y = w ^ NEWLINES;
+    (w | !(((y & LOW7) + LOW7) | y)) & !LOW7
+}
+
+/// The position of the first byte that is `\n` or non-ASCII, eight bytes at a time.
+fn first_newline_or_non_ascii(bytes: &[u8]) -> Option<usize> {
+    let mut chunks = bytes.chunks_exact(8);
+    let mut pos = 0;
+    for chunk in &mut chunks {
+        // Read little-endian, the lowest flag is the first byte.
+        let found = newline_or_non_ascii(u64::from_le_bytes(chunk.try_into().unwrap()));
+        if found != 0 {
+            return Some(pos + (found.trailing_zeros() / 8) as usize);
+        }
+        pos += 8;
+    }
+    chunks
+        .remainder()
+        .iter()
+        .position(|&b| b == b'\n' || !b.is_ascii())
+        .map(|i| pos + i)
+}
+
+/// The position of the last byte that is `\n` or non-ASCII, eight bytes at a time from
+/// the end.
+fn last_newline_or_non_ascii(bytes: &[u8]) -> Option<usize> {
+    let mut end = bytes.len();
+    while end >= 8 {
+        // Read little-endian, the highest flag is the last byte.
+        let found =
+            newline_or_non_ascii(u64::from_le_bytes(bytes[end - 8..end].try_into().unwrap()));
+        if found != 0 {
+            return Some(end - 1 - (found.leading_zeros() / 8) as usize);
+        }
+        end -= 8;
+    }
+    bytes[..end]
+        .iter()
+        .rposition(|&b| b == b'\n' || !b.is_ascii())
+}
+
 /// Returns `true` if `bytes` is ASCII and contains no `\n`: the case where
 /// `unicode_str_width` is the byte length. Tests eight bytes at a time.
 fn is_ascii_single_line(bytes: &[u8]) -> bool {
-    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
-    const NEWLINES: u64 = 0x0a0a_0a0a_0a0a_0a0a;
-    // Bit 7 of a byte of the result is set iff that byte of `w` is non-ASCII or `\n`:
-    // `(y & 0x7f) + 0x7f` has bit 7 set iff `y & 0x7f != 0`, and no byte carries into the
-    // next, so `!(... | y)` has bit 7 set iff the byte of `y = w ^ NEWLINES` is zero.
-    let flags = |w: u64| {
-        let y = w ^ NEWLINES;
-        w | !(((y & LOW7) + LOW7) | y)
-    };
+    let flags = newline_or_non_ascii;
     if bytes.len() < 8 {
         return bytes.iter().all(|&b| b < 0x80 && b != b'\n');
     }
@@ -175,7 +226,7 @@ fn is_ascii_single_line(bytes: &[u8]) -> bool {
         let last = &bytes[bytes.len() - 8..];
         acc |= flags(u64::from_ne_bytes(last.try_into().unwrap()));
     }
-    acc & !LOW7 == 0
+    acc == 0
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
@@ -468,6 +519,40 @@ mod tests {
                     assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
                 }
             }
+        }
+    }
+
+    #[test]
+    fn line_widths_match_the_split_lines() {
+        // Lengths around the eight-byte words, with one or two of `\n`, `\r\n`, `\r` and
+        // non-ASCII characters (bytes `0xc2 0x8a`, `0xe2 0x80 0x8b`) at every position.
+        let specials = ["\n", "\r\n", "\r", "\u{8a}", "\u{200b}", "\t"];
+        let mut strings = vec![];
+        for len in 0..40 {
+            let plain: String = (0..len)
+                .map(|i| char::from(b'a' + (i % 26) as u8))
+                .collect();
+            strings.push(plain.clone());
+            for at in 0..=len {
+                for first in specials {
+                    let mut s = plain.clone();
+                    s.insert_str(at, first);
+                    strings.push(s.clone());
+                    for second in specials {
+                        for at2 in (0..=s.len()).filter(|&i| s.is_char_boundary(i)).step_by(3) {
+                            let mut t = s.clone();
+                            t.insert_str(at2, second);
+                            strings.push(t);
+                        }
+                    }
+                }
+            }
+        }
+        for s in &strings {
+            let first = unicode_str_width(s.split('\n').next().unwrap_or(""));
+            let last = unicode_str_width(s.rsplit('\n').next().unwrap_or(""));
+            assert_eq!(first_line_width(s), first, "{s:?}");
+            assert_eq!(last_line_width(s), last, "{s:?}");
         }
     }
 
