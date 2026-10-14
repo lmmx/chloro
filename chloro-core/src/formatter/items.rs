@@ -32,7 +32,7 @@ use super::nodes::{
     Attribute, Block, child, contains_skip, generics_span, inner_attributes, outer_attributes,
     span_without_attrs, where_clause_span,
 };
-use super::nodes::{has_token, node_text};
+use super::nodes::{child_range, has_child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span, rustc_span, token_span};
@@ -682,12 +682,13 @@ pub(crate) fn span_lo_for_param(param: &ast::Param) -> BytePos {
 }
 
 fn param_ty_hi(param: &ast::Param) -> BytePos {
+    // `Param::ty` and `Param::pat`, of which only the end is used.
     match (
-        child::<ast::Type>(param.syntax()),
-        child::<ast::Pat>(param.syntax()),
+        child_range::<ast::Type>(param.syntax()),
+        child_range::<ast::Pat>(param.syntax()),
     ) {
-        (Some(ty), _) => ty.span().hi(),
-        (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.span().hi(),
+        (Some(ty), _) => ty.end().into(),
+        (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.end().into(),
         _ => node_range_span(param.syntax()).hi(),
     }
 }
@@ -3461,7 +3462,7 @@ impl Rewrite for ast::ExternItem {
 
         let item_str = match self {
             ast::ExternItem::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     let mut visitor = FmtVisitor::from_context(context);
                     visitor.block_indent = shape.indent;
                     visitor.last_pos = item_span.lo();

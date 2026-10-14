@@ -5,7 +5,7 @@ use std::cmp::min;
 
 use ra_ap_syntax::SyntaxKind;
 use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
+use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody};
 
 use super::attr::rewrite_attrs;
 use super::chains::rewrite_chain;
@@ -22,13 +22,13 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::matches::rewrite_match;
-use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, child, contains_skip,
     inner_attributes, outer_attributes, span_without_attrs,
 };
+use super::nodes::{bin_op_text, has_token};
 use super::overflow::{self, Delimiter, OverflowableItem};
-use super::pairs::{PairParts, bin_op_text, rewrite_all_pairs, rewrite_pair};
+use super::pairs::{PairParts, rewrite_all_pairs, rewrite_pair};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, token_span};
 use super::stmt::Stmt as FmtStmt;
@@ -62,17 +62,24 @@ pub(crate) enum LitKind {
 }
 
 impl LitKind {
+    /// `Literal::kind` for the kinds the formatter tells apart: the literal's first
+    /// non-trivia token, read from the green tree.
     pub(crate) fn of(lit: &ast::Literal) -> LitKind {
-        match lit.kind() {
-            ast::LiteralKind::String(s) => {
-                if s.is_raw() {
-                    LitKind::StrRaw
-                } else {
-                    LitKind::Str
-                }
+        use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind};
+        use rowan::Language;
+        let green = lit.syntax().green();
+        let token = green.children().find_map(|c| match c {
+            NodeOrToken::Token(t) => {
+                let kind = RustLanguage::kind_from_raw(t.kind());
+                (!kind.is_trivia()).then_some((kind, t))
             }
-            ast::LiteralKind::IntNumber(_) => LitKind::Integer,
-            ast::LiteralKind::FloatNumber(_) => LitKind::Float,
+            NodeOrToken::Node(_) => None,
+        });
+        match token {
+            Some((SyntaxKind::STRING, t)) if t.text().starts_with('r') => LitKind::StrRaw,
+            Some((SyntaxKind::STRING, _)) => LitKind::Str,
+            Some((SyntaxKind::INT_NUMBER, _)) => LitKind::Integer,
+            Some((SyntaxKind::FLOAT_NUMBER, _)) => LitKind::Float,
             _ => LitKind::Other,
         }
     }
@@ -2102,6 +2109,32 @@ pub(crate) fn is_method_call(expr: &ast::Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ra_ap_syntax::ast::IsString;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `LitKind::of` answers what `Literal::kind` answers on every literal kind: strings and
+    /// raw strings, byte and C strings, integers and floats with suffixes, chars, bytes,
+    /// booleans.
+    #[test]
+    fn lit_kind_matches_the_generated_literal_kind() {
+        let src = "fn f() { (1, 2u8, 0x3, 1.5, 2e3f32, 1f64, \"s\", r\"r\", r#\"r\"#, b\"b\", \
+                   br\"b\", c\"c\", cr\"c\", 'c', b'b', true, false, #[attr] 1) }\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = std::collections::BTreeMap::new();
+        for lit in file.syntax().descendants().filter_map(ast::Literal::cast) {
+            let by_token = match lit.kind() {
+                ast::LiteralKind::String(s) if s.is_raw() => LitKind::StrRaw,
+                ast::LiteralKind::String(_) => LitKind::Str,
+                ast::LiteralKind::IntNumber(_) => LitKind::Integer,
+                ast::LiteralKind::FloatNumber(_) => LitKind::Float,
+                _ => LitKind::Other,
+            };
+            assert_eq!(LitKind::of(&lit), by_token, "{lit}");
+            *seen.entry(format!("{by_token:?}")).or_insert(0) += 1;
+        }
+        assert_eq!(seen.len(), 5, "every kind occurs: {seen:?}");
+        assert_eq!(seen["Other"], 8, "{seen:?}");
+    }
 
     #[test]
     fn test_last_line_offsetted() {

@@ -60,10 +60,7 @@ impl Attribute {
     pub(crate) fn path_text(&self) -> Option<String> {
         match self {
             Attribute::Doc(_) => None,
-            Attribute::Normal(a) => {
-                let path = child::<ast::Meta>(a.syntax())?.path()?;
-                Some(non_trivia_text(path.syntax()))
-            }
+            Attribute::Normal(a) => attr_path_text(a),
         }
     }
 
@@ -87,16 +84,16 @@ impl Attribute {
                     return false;
                 };
                 let meta = child::<ast::Meta>(a.syntax());
-                let has_args = meta
-                    .as_ref()
-                    .is_some_and(|m| m.token_tree().is_some() || m.expr().is_some());
+                let has_args = meta.as_ref().is_some_and(|m| {
+                    has_child::<ast::TokenTree>(m.syntax()) || has_child::<ast::Expr>(m.syntax())
+                });
                 if !has_args {
                     return path == "rustfmt::skip" || path == "rustfmt_skip";
                 }
                 if path != "cfg_attr" {
                     return false;
                 }
-                let Some(tt) = meta.and_then(|m| m.token_tree()) else {
+                let Some(tt) = meta.and_then(|m| child::<ast::TokenTree>(m.syntax())) else {
                     return false;
                 };
                 // `cfg_attr(<pred>, rustfmt::skip)`: exactly two top-level elements, the
@@ -143,22 +140,130 @@ pub(crate) fn split_top_level_commas(tt: &SyntaxNode) -> Vec<Vec<SyntaxToken>> {
 
 /// The text of the non-trivia tokens under `node`, in source order, read from the green tree
 /// (no cursor node per descendant).
+#[cfg(test)]
 pub(crate) fn non_trivia_text(node: &SyntaxNode) -> String {
-    fn push(green: &rowan::GreenNodeData, out: &mut String) {
-        for child in green.children() {
-            match child {
-                NodeOrToken::Node(n) => push(n, out),
-                NodeOrToken::Token(t) => {
-                    if !RustLanguage::kind_from_raw(t.kind()).is_trivia() {
-                        out.push_str(t.text());
-                    }
+    let mut out = String::new();
+    push_non_trivia_text(&node.green(), &mut out);
+    out
+}
+
+fn push_non_trivia_text(green: &rowan::GreenNodeData, out: &mut String) {
+    for child in green.children() {
+        match child {
+            NodeOrToken::Node(n) => push_non_trivia_text(n, out),
+            NodeOrToken::Token(t) => {
+                if !RustLanguage::kind_from_raw(t.kind()).is_trivia() {
+                    out.push_str(t.text());
                 }
             }
         }
     }
+}
+
+/// `Attr::meta().path()` as whitespace-free text (`derive`, `rustfmt::skip`): the path node of
+/// the first meta node of `attr`, read from the green tree.
+pub(crate) fn attr_path_text(attr: &ast::Attr) -> Option<String> {
+    let green = attr.syntax().green();
+    let meta = green_child(&green, SyntaxKind::META)?;
+    let path = green_child(meta, SyntaxKind::PATH)?;
     let mut out = String::new();
-    push(&node.green(), &mut out);
-    out
+    push_non_trivia_text(path, &mut out);
+    Some(out)
+}
+
+/// The first child node of `green` of `kind`.
+pub(crate) fn green_child(
+    green: &rowan::GreenNodeData,
+    kind: SyntaxKind,
+) -> Option<&rowan::GreenNodeData> {
+    green.children().find_map(|c| match c {
+        NodeOrToken::Node(n) if RustLanguage::kind_from_raw(n.kind()) == kind => Some(n),
+        _ => None,
+    })
+}
+
+/// Whether `parent` has a child node that casts to `N`: a generated `x().is_some()` whose
+/// `support::child` scan creates a red node per sibling, read from the green tree.
+pub(crate) fn has_child<N: AstNode>(parent: &SyntaxNode) -> bool {
+    parent.green().children().any(
+        |c| matches!(c, NodeOrToken::Node(n) if N::can_cast(RustLanguage::kind_from_raw(n.kind()))),
+    )
+}
+
+/// The range of the first child node of `parent` that casts to `N`: a generated `x()` whose
+/// caller reads only the node's span, read from the green tree.
+pub(crate) fn child_range<N: AstNode>(parent: &SyntaxNode) -> Option<TextRange> {
+    let mut offset = parent.text_range().start();
+    for child in parent.green().children() {
+        let len = child.text_len();
+        if let NodeOrToken::Node(n) = child
+            && N::can_cast(RustLanguage::kind_from_raw(n.kind()))
+        {
+            return Some(TextRange::at(offset, len));
+        }
+        offset += len;
+    }
+    None
+}
+
+/// `BinExpr::op_details` on the green tree: the first child token that is a binary operator,
+/// as rust-analyzer classifies it, with its text.
+fn bin_op_details(expr: &ast::BinExpr) -> Option<(ast::BinaryOp, String)> {
+    use ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering};
+    expr.syntax().green().children().find_map(|c| {
+        let NodeOrToken::Token(t) = c else {
+            return None;
+        };
+        #[rustfmt::skip]
+        let op = match RustLanguage::kind_from_raw(t.kind()) {
+            T![||] => BinaryOp::LogicOp(LogicOp::Or),
+            T![&&] => BinaryOp::LogicOp(LogicOp::And),
+
+            T![==] => BinaryOp::CmpOp(CmpOp::Eq { negated: false }),
+            T![!=] => BinaryOp::CmpOp(CmpOp::Eq { negated: true }),
+            T![<=] => BinaryOp::CmpOp(CmpOp::Ord { ordering: Ordering::Less,    strict: false }),
+            T![>=] => BinaryOp::CmpOp(CmpOp::Ord { ordering: Ordering::Greater, strict: false }),
+            T![<]  => BinaryOp::CmpOp(CmpOp::Ord { ordering: Ordering::Less,    strict: true }),
+            T![>]  => BinaryOp::CmpOp(CmpOp::Ord { ordering: Ordering::Greater, strict: true }),
+
+            T![+]  => BinaryOp::ArithOp(ArithOp::Add),
+            T![*]  => BinaryOp::ArithOp(ArithOp::Mul),
+            T![-]  => BinaryOp::ArithOp(ArithOp::Sub),
+            T![/]  => BinaryOp::ArithOp(ArithOp::Div),
+            T![%]  => BinaryOp::ArithOp(ArithOp::Rem),
+            T![<<] => BinaryOp::ArithOp(ArithOp::Shl),
+            T![>>] => BinaryOp::ArithOp(ArithOp::Shr),
+            T![^]  => BinaryOp::ArithOp(ArithOp::BitXor),
+            T![|]  => BinaryOp::ArithOp(ArithOp::BitOr),
+            T![&]  => BinaryOp::ArithOp(ArithOp::BitAnd),
+
+            T![=]   => BinaryOp::Assignment { op: None },
+            T![+=]  => BinaryOp::Assignment { op: Some(ArithOp::Add) },
+            T![*=]  => BinaryOp::Assignment { op: Some(ArithOp::Mul) },
+            T![-=]  => BinaryOp::Assignment { op: Some(ArithOp::Sub) },
+            T![/=]  => BinaryOp::Assignment { op: Some(ArithOp::Div) },
+            T![%=]  => BinaryOp::Assignment { op: Some(ArithOp::Rem) },
+            T![<<=] => BinaryOp::Assignment { op: Some(ArithOp::Shl) },
+            T![>>=] => BinaryOp::Assignment { op: Some(ArithOp::Shr) },
+            T![^=]  => BinaryOp::Assignment { op: Some(ArithOp::BitXor) },
+            T![|=]  => BinaryOp::Assignment { op: Some(ArithOp::BitOr) },
+            T![&=]  => BinaryOp::Assignment { op: Some(ArithOp::BitAnd) },
+
+            _ => return None,
+        };
+        Some((op, t.text().to_string()))
+    })
+}
+
+/// `BinExpr::op_kind` read from the green tree.
+pub(crate) fn bin_op_kind(expr: &ast::BinExpr) -> Option<ast::BinaryOp> {
+    bin_op_details(expr).map(|(op, _)| op)
+}
+
+/// The operator of a binary expression as written, e.g. `&&` or `+=`
+/// (`BinExpr::op_token().text()`), read from the green tree.
+pub(crate) fn bin_op_text(expr: &ast::BinExpr) -> Option<String> {
+    bin_op_details(expr).map(|(_, text)| text)
 }
 
 /// `true` if `node` starts with an attribute or an outer doc comment. Reads the green tree,
@@ -1044,6 +1149,83 @@ mod tests {
                 assert_eq!(non_trivia_text(&node), by_cursor, "{node:?} in {src:?}");
             }
         }
+    }
+
+    /// `has_child` and `child_range` answer what the generated `support::child` accessors
+    /// answer, for every node type they are used with, on every node of the sources.
+    #[test]
+    fn has_child_and_child_range_match_the_generated_child_accessors() {
+        fn check<N: AstNode>(node: &SyntaxNode, seen: &mut usize) {
+            let by_cursor = node.children().find_map(N::cast);
+            assert_eq!(has_child::<N>(node), by_cursor.is_some(), "{node}");
+            assert_eq!(
+                child_range::<N>(node),
+                by_cursor.as_ref().map(|n| n.syntax().text_range()),
+                "{node}"
+            );
+            *seen += usize::from(by_cursor.is_some());
+        }
+        let mut seen = [0usize; 7];
+        for src in BLOCK_SOURCES.iter().chain(ATTRIBUTE_SOURCES).chain(&[
+            "fn f(a: u8, (b, c): (u8, u8), ...) {}\nfn g<T: X<U>>(x: T) -> T where T: Y { x }\n\
+             macro_rules! m { () => {} }\nfn h() { m!(1); m![2]; m! { 3 } }\n\
+             fn i() { match x { 1 | 2 if y => a, #[attr] _ => b } }\n",
+        ]) {
+            let file = SourceFile::parse(src, Edition::Edition2024).tree();
+            for node in file.syntax().descendants() {
+                check::<ast::Expr>(&node, &mut seen[0]);
+                check::<ast::BlockExpr>(&node, &mut seen[1]);
+                check::<ast::Type>(&node, &mut seen[2]);
+                check::<ast::Pat>(&node, &mut seen[3]);
+                check::<ast::GenericArg>(&node, &mut seen[4]);
+                check::<ast::TokenTree>(&node, &mut seen[5]);
+                check::<ast::Path>(&node, &mut seen[6]);
+            }
+        }
+        assert!(seen.iter().all(|&n| n > 0), "every type found: {seen:?}");
+    }
+
+    /// `bin_op_kind` and `bin_op_text` answer what `BinExpr::op_kind` and `op_token` answer
+    /// on every binary operator, compound assignment included.
+    #[test]
+    fn bin_op_matches_the_generated_operator_accessors() {
+        let ops = [
+            "||", "&&", "==", "!=", "<=", ">=", "<", ">", "+", "*", "-", "/", "%", "<<", ">>", "^",
+            "|", "&", "=", "+=", "*=", "-=", "/=", "%=", "<<=", ">>=", "^=", "|=", "&=",
+        ];
+        let body: String = ops.iter().map(|op| format!("    a {op} b;\n")).collect();
+        let src = format!("fn f() {{\n{body}    a + b * c - d;\n    a = b == c;\n}}\n");
+        let file = SourceFile::parse(&src, Edition::Edition2024).tree();
+        let mut seen = std::collections::BTreeSet::new();
+        for b in file.syntax().descendants().filter_map(ast::BinExpr::cast) {
+            assert_eq!(bin_op_kind(&b), b.op_kind(), "{b}");
+            assert_eq!(
+                bin_op_text(&b),
+                b.op_token().map(|t| t.text().to_string()),
+                "{b}"
+            );
+            seen.insert(bin_op_text(&b).unwrap());
+        }
+        assert_eq!(seen.len(), ops.len(), "every operator parsed: {seen:?}");
+    }
+
+    /// `attr_path_text` answers what `Meta::path` and `non_trivia_text` answer on every
+    /// attribute of the attribute sources.
+    #[test]
+    fn attr_path_text_matches_the_generated_meta_accessors() {
+        let mut attrs = 0;
+        for src in ATTRIBUTE_SOURCES {
+            let file = SourceFile::parse(src, Edition::CURRENT).tree();
+            for attr in file.syntax().descendants().filter_map(ast::Attr::cast) {
+                let by_cursor = attr
+                    .meta()
+                    .and_then(|m| m.path())
+                    .map(|p| non_trivia_text(p.syntax()));
+                assert_eq!(attr_path_text(&attr), by_cursor, "{attr}");
+                attrs += 1;
+            }
+        }
+        assert!(attrs > 10, "{attrs} attributes");
     }
 
     #[test]

@@ -14,11 +14,11 @@ use super::expr::{
     prefer_next_line, rewrite_cond,
 };
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
-use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
     contains_skip, inner_attributes, outer_attributes,
 };
+use super::nodes::{child_range, has_token};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
@@ -40,8 +40,9 @@ struct ArmWrapper {
 /// trailing comma.
 fn arm_span(arm: &ast::MatchArm) -> Span {
     let full = arm.span();
-    match arm.expr() {
-        Some(body) => full.with_hi(body.span().hi()),
+    // `MatchArm::expr`, of which only the end is used.
+    match child_range::<ast::Expr>(arm.syntax()) {
+        Some(body) => full.with_hi(body.end().into()),
         None => full,
     }
 }
