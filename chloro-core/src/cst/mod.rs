@@ -106,6 +106,18 @@ impl<'s> Tree<'s> {
         Self::from_steps_at(src, &lexed, &output, 0, 0)
     }
 
+    /// The tree of `src` whether or not it lexes and parses without error (an error leaves
+    /// `ERROR` nodes in it), as `ra_ap_syntax::SourceFile::parse(..).tree()` answers. The
+    /// formatter never formats such a tree; tests look at one.
+    pub fn parse_with_errors(src: &'s str, edition: Edition) -> Tree<'s> {
+        let lexed = LexedStr::new(edition, src);
+        let input = lexed.to_input(edition);
+        let output = TopEntryPoint::SourceFile.parse(&input, edition);
+        let mut builder = TreeBuilder::new(src, 0, 0, lexed.len() * 2 + 8);
+        let _ = builder.steps(&lexed, &output);
+        builder.finish()
+    }
+
     /// Lays out the tree described by `output` over `lexed` (the step sequence
     /// `intersperse_trivia` produces: tokens with their text, node enters and exits), as a
     /// tree numbered `id`.
@@ -254,7 +266,8 @@ impl<'s> TreeBuilder<'s> {
                 // Tokens arrive in source order and cover the source without gaps, so the
                 // offset is the running total of token lengths.
                 debug_assert_eq!(
-                    self.src.get(self.at as usize..self.at as usize + text.len()),
+                    self.src
+                        .get(self.at as usize..self.at as usize + text.len()),
                     Some(text),
                     "token text is the source slice at its offset"
                 );
@@ -826,7 +839,8 @@ mod tests {
     /// Every third fixture file (a debug build compares about 15 files per second).
     #[test]
     fn flat_tree_equals_the_rowan_tree_on_the_fixtures() {
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures");
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures");
         let mut files = 0;
         let mut paths: Vec<_> = walkdir::WalkDir::new(root)
             .into_iter()
@@ -839,7 +853,10 @@ mod tests {
             let Ok(src) = std::fs::read_to_string(entry) else {
                 continue;
             };
-            let src = src.strip_prefix('\u{feff}').unwrap_or(&src).replace("\r\n", "\n");
+            let src = src
+                .strip_prefix('\u{feff}')
+                .unwrap_or(&src)
+                .replace("\r\n", "\n");
             if Tree::parse(&src, Edition::Edition2024).is_none() {
                 continue;
             }
@@ -870,7 +887,10 @@ mod tests {
         assert_eq!(root.text_range(), TextRange::new(base, base + 5));
         assert_eq!(root.text(), "a + b");
         assert!(root.parent().is_none());
-        for t in root.descendants_with_tokens().filter_map(|e| e.into_token()) {
+        for t in root
+            .descendants_with_tokens()
+            .filter_map(|e| e.into_token())
+        {
             let r = t.text_range();
             assert_eq!(t.text(), &src[r.start() as usize..r.end() as usize]);
         }

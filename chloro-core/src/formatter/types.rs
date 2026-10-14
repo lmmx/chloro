@@ -1,8 +1,8 @@
 //! Types, paths, generics and bounds (rustfmt's `types.rs`).
 
-use ra_ap_parser::T;
 use crate::cst::ast::{self, AstNode, HasGenericArgs, HasName, HasTypeBounds};
 use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
 
 use crate::cst::{Node, NodeOrToken, Token};
 
@@ -36,7 +36,7 @@ pub(crate) enum PathContext {
 /// The segments of a path, outermost qualifier first.
 pub(crate) fn path_segments<'a>(path: &ast::Path<'a>) -> Vec<ast::PathSegment<'a>> {
     let mut segments = Vec::new();
-    let mut cur = Some(path.clone());
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
@@ -198,10 +198,10 @@ pub(crate) enum SegmentParam<'a> {
 impl<'a> SegmentParam<'a> {
     pub(crate) fn from_generic_arg(arg: &ast::GenericArg<'a>) -> Option<SegmentParam<'a>> {
         Some(match arg {
-            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(lt.clone()),
+            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(*lt),
             ast::GenericArg::TypeArg(ty) => SegmentParam::Type(child::<ast::Type>(ty.syntax())?),
-            ast::GenericArg::ConstArg(c) => SegmentParam::Const(c.clone()),
-            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(a.clone()),
+            ast::GenericArg::ConstArg(c) => SegmentParam::Const(*c),
+            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(*a),
         })
     }
 }
@@ -240,7 +240,7 @@ fn rewrite_assoc_type_arg(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
+    result.push_str(node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
 
     if let Some(gen_args) = atc.generic_arg_list() {
         let budget = shape.width.checked_sub(result.len())?;
@@ -735,7 +735,7 @@ impl Rewrite for ast::GenericParam<'_> {
         let param_start = match self {
             ast::GenericParam::ConstParam(cp) => {
                 param.push_str("const ");
-                param.push_str(&node_text(cp.name()?.syntax()));
+                param.push_str(node_text(cp.name()?.syntax()));
                 param.push_str(": ");
                 param.push_str(&child::<ast::Type>(cp.syntax())?.rewrite(context, shape)?);
                 if let Some(default) = cp.default_val() {
@@ -755,7 +755,7 @@ impl Rewrite for ast::GenericParam<'_> {
             }
             ast::GenericParam::TypeParam(tp) => {
                 let name = tp.name()?;
-                param.push_str(&node_text(name.syntax()));
+                param.push_str(node_text(name.syntax()));
                 name.span().lo()
             }
         };

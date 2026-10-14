@@ -192,7 +192,12 @@ impl<'a, 't> MacroTokens<'a, 't> {
     ///
     /// Emulates rustc's greedy parse over the remaining stream: success means the parser
     /// stopped without an error, wherever that is.
-    fn parse_fragment(&self, kind: FragmentKind, start: usize, limit: usize) -> Option<Fragment<'a>> {
+    fn parse_fragment(
+        &self,
+        kind: FragmentKind,
+        start: usize,
+        limit: usize,
+    ) -> Option<Fragment<'a>> {
         if start >= limit {
             return None;
         }
@@ -339,7 +344,9 @@ impl<'a, 't> MacroTokens<'a, 't> {
     }
 }
 
-fn delimiters<'t>(tt: &ast::TokenTree<'t>) -> Option<(crate::cst::Token<'t>, crate::cst::Token<'t>)> {
+fn delimiters<'t>(
+    tt: &ast::TokenTree<'t>,
+) -> Option<(crate::cst::Token<'t>, crate::cst::Token<'t>)> {
     let open = tt.syntax().first_token()?;
     let close = tt.syntax().last_token()?;
     let ok = matches!(
@@ -604,7 +611,11 @@ mod tests {
     ) -> R {
         let settings = Settings::default();
         let tree = Tree::parse(src, Edition::Edition2024).unwrap();
-        let call = tree.root().descendants().find_map(ast::MacroCall::cast).unwrap();
+        let call = tree
+            .root()
+            .descendants()
+            .find_map(ast::MacroCall::cast)
+            .unwrap();
         let arena = TreeArena::new();
         let run = std::rc::Rc::new(RunState::new(&arena));
         let context = RewriteContext::new(&settings, SnippetProvider::new(src), run);

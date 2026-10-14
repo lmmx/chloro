@@ -207,7 +207,7 @@ pub(crate) fn left_most_sub_expr<'a>(e: &ast::Expr<'a>) -> ast::Expr<'a> {
     };
     match next {
         Some(next) => left_most_sub_expr(&next),
-        None => e.clone(),
+        None => *e,
     }
 }
 

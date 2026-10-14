@@ -8,9 +8,9 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
+use crate::cst::ast::{self, AstNode, HasModuleItem, HasName};
 use ra_ap_parser::SyntaxKind;
 use ra_ap_parser::T;
-use crate::cst::ast::{self, AstNode, HasModuleItem, HasName};
 
 use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
 use super::config::{Settings, StyleEdition};
@@ -69,8 +69,8 @@ impl Drop for FmtVisitor<'_> {
 fn item_attrs<'a>(item: &ast::Item<'a>) -> Vec<Attribute<'a>> {
     let mut attrs = outer_attributes(item.syntax());
     let container = match item {
-        ast::Item::Module(m) => m.item_list().map(|l| l.syntax().clone()),
-        ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax().clone()),
+        ast::Item::Module(m) => m.item_list().map(|l| l.syntax()),
+        ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax()),
         ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax()),
         ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax()),
         ast::Item::Fn(f) => f
@@ -501,10 +501,10 @@ impl<'a> FmtVisitor<'a> {
                 self.push_rewrite(span, snippet);
             }
             ast::Item::MacroRules(m) => {
-                self.visit_macro_def(&MacroDef::Rules(m.clone()), span);
+                self.visit_macro_def(&MacroDef::Rules(*m), span);
             }
             ast::Item::MacroDef(m) => {
-                self.visit_macro_def(&MacroDef::Def(m.clone()), span);
+                self.visit_macro_def(&MacroDef::Def(*m), span);
             }
         }
     }
@@ -714,7 +714,7 @@ impl<'a> FmtVisitor<'a> {
         }
         self.push_str("mod ");
         let name = m.name().map(|n| node_text(n.syntax())).unwrap_or_default();
-        self.push_str(&name);
+        self.push_str(name);
 
         if let Some(item_list) = m.item_list() {
             let inner_span = node_range_span(item_list.syntax());

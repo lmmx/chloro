@@ -45,8 +45,10 @@ fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
                 .map(|n| symbol(node_text(n.syntax()).to_owned()))
                 .unwrap_or_default(),
             e.rename().map(|r| {
-                r.name()
-                    .map_or_else(|| "_".to_owned(), |n| symbol(node_text(n.syntax()).to_owned()))
+                r.name().map_or_else(
+                    || "_".to_owned(),
+                    |n| symbol(node_text(n.syntax()).to_owned()),
+                )
             }),
         ),
         _ => (String::new(), None),

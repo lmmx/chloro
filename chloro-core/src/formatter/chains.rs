@@ -80,7 +80,7 @@ pub(crate) fn rewrite_chain(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    rewrite_chain_from(SubExpr::new(expr.clone(), false), context, shape)
+    rewrite_chain_from(SubExpr::new(*expr, false), context, shape)
 }
 
 /// Rewrites `inner?`, where the `?` stands for a `try!(inner)` invocation that
@@ -92,7 +92,7 @@ pub(crate) fn rewrite_try_shorthand(
     shape: Shape,
 ) -> Option<String> {
     let top = SubExpr {
-        expr: inner.clone(),
+        expr: *inner,
         is_method_call_receiver: false,
         synthetic_try: true,
     };
@@ -204,9 +204,9 @@ impl<'a> ChainItemKind<'a> {
                 let nested = field.expr()?;
                 let name = child::<ast::NameRef>(field.syntax())?;
                 let kind = if Self::is_tup_field_access(expr) {
-                    ChainItemKind::TupleField(name.clone(), Self::is_tup_field_access(&nested))
+                    ChainItemKind::TupleField(name, Self::is_tup_field_access(&nested))
                 } else {
-                    ChainItemKind::StructField(name.clone())
+                    ChainItemKind::StructField(name)
                 };
                 let span = mk_sp(expr_span(&nested).hi(), name.span().hi());
                 (kind, span)
@@ -219,7 +219,7 @@ impl<'a> ChainItemKind<'a> {
             _ => {
                 return Some((
                     ChainItemKind::Parent {
-                        expr: expr.clone(),
+                        expr: *expr,
                         parens: is_method_call_receiver && should_add_parens(expr),
                     },
                     full,
@@ -254,7 +254,7 @@ impl Rewrite for ChainItem<'_> {
             }
             ChainItemKind::StructField(ref ident) => {
                 let mut field = String::from(".");
-                field.push_str(&node_text(ident.syntax()));
+                field.push_str(node_text(ident.syntax()));
                 field
             }
             ChainItemKind::TupleField(ref ident, nested) => {
@@ -263,7 +263,7 @@ impl Rewrite for ChainItem<'_> {
                     field.push(' ');
                 }
                 field.push('.');
-                field.push_str(&node_text(ident.syntax()));
+                field.push_str(node_text(ident.syntax()));
                 field
             }
             ChainItemKind::Await => ".await".to_owned(),
@@ -278,7 +278,11 @@ impl Rewrite for ChainItem<'_> {
 }
 
 impl<'a> ChainItem<'a> {
-    fn new(context: &RewriteContext<'_>, expr: &SubExpr<'a>, tries: usize) -> Option<ChainItem<'a>> {
+    fn new(
+        context: &RewriteContext<'_>,
+        expr: &SubExpr<'a>,
+        tries: usize,
+    ) -> Option<ChainItem<'a>> {
         let (kind, span) =
             ChainItemKind::from_ast(context, &expr.expr, expr.is_method_call_receiver)?;
         Some(ChainItem { kind, tries, span })
@@ -315,7 +319,7 @@ impl<'a> ChainItem<'a> {
             format!("::<{}>", type_list.join(", "))
         };
         let mut callee_str = String::from(".");
-        callee_str.push_str(&node_text(method_name.syntax()));
+        callee_str.push_str(node_text(method_name.syntax()));
         callee_str.push_str(&type_str);
         let args = args.iter().cloned().map(OverflowableItem::Expr).collect();
         rewrite_call(context, &callee_str, args, span, shape)
@@ -446,7 +450,10 @@ impl<'a> Chain<'a> {
 
     /// Returns a Vec of the prefixes of the chain.
     /// E.g., for input `a.b.c` we return [`a.b.c`, `a.b`, 'a']
-    fn make_subexpr_list<'c: 'a>(top: SubExpr<'a>, context: &RewriteContext<'c>) -> Vec<SubExpr<'a>> {
+    fn make_subexpr_list<'c: 'a>(
+        top: SubExpr<'a>,
+        context: &RewriteContext<'c>,
+    ) -> Vec<SubExpr<'a>> {
         let mut subexpr_list = vec![top];
 
         while let Some(subexpr) = subexpr_list
@@ -461,9 +468,12 @@ impl<'a> Chain<'a> {
 
     /// Returns the expression's subexpression, if it exists. When the subexpr
     /// is a try! macro, we'll convert it to shorthand when the option is set.
-    fn pop_expr_chain<'c: 'a>(expr: &SubExpr<'a>, context: &RewriteContext<'c>) -> Option<SubExpr<'a>> {
+    fn pop_expr_chain<'c: 'a>(
+        expr: &SubExpr<'a>,
+        context: &RewriteContext<'c>,
+    ) -> Option<SubExpr<'a>> {
         if expr.synthetic_try {
-            return Some(Self::convert_try(expr.expr.clone(), false, context));
+            return Some(Self::convert_try(expr.expr, false, context));
         }
         match &expr.expr {
             ast::Expr::MethodCallExpr(call) => Some(Self::convert_try(

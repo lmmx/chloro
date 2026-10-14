@@ -135,7 +135,7 @@ impl<'a> MetaParser<'a> {
 
     /// `Lit | Path ['=' Lit | '(' list ')']`
     fn parse_inner(&mut self) -> Option<MetaItemInner> {
-        let first = self.peek()?.as_token()?.clone();
+        let first = *self.peek()?.as_token()?;
         if let Some(kind) = lit_kind(first.kind()) {
             self.bump();
             return Some(MetaItemInner::Lit(MetaLit {
@@ -176,7 +176,7 @@ impl<'a> MetaParser<'a> {
                 })
             }
             Some(NodeOrToken::Node(n)) if n.kind() == SyntaxKind::TOKEN_TREE => {
-                let n = n.clone();
+                let n = *n;
                 self.bump();
                 hi = node_range_span(n).hi();
                 MetaItemKind::List(parse_meta_list(n)?)

@@ -614,7 +614,7 @@ pub(crate) fn rewrite_macro_def(
     };
 
     result += " ";
-    result += &node_text(def.name()?.syntax());
+    result += node_text(def.name()?.syntax());
 
     let multi_branch_style = def.is_macro_rules() || parsed_def.len() != 1;
 

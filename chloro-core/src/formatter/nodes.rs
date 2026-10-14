@@ -138,7 +138,10 @@ pub(crate) fn split_top_level_commas<'t>(tt: Node<'t>) -> Vec<Vec<Token<'t>>> {
 /// The text of the non-trivia tokens under `node`, in source order.
 pub(crate) fn non_trivia_text(node: Node<'_>) -> String {
     let mut out = String::new();
-    for t in node.descendants_with_tokens().filter_map(|e| e.into_token()) {
+    for t in node
+        .descendants_with_tokens()
+        .filter_map(|e| e.into_token())
+    {
         if !t.kind().is_trivia() {
             out.push_str(t.text());
         }
@@ -499,7 +502,7 @@ mod tests {
     use ra_ap_parser::Edition;
 
     fn parse(src: &str) -> Tree<'_> {
-        Tree::parse(src, Edition::CURRENT).unwrap()
+        Tree::parse_with_errors(src, Edition::CURRENT)
     }
 
     fn block_of<'t>(tree: &'t Tree<'t>) -> Block<'t> {
@@ -549,8 +552,9 @@ mod tests {
 
     #[test]
     fn skip_attribute_forms() {
-        let tree =
-            parse("#[rustfmt::skip] #[cfg_attr(test, rustfmt::skip)] #[cfg_attr(a, b, c)] fn f() {}");
+        let tree = parse(
+            "#[rustfmt::skip] #[cfg_attr(test, rustfmt::skip)] #[cfg_attr(a, b, c)] fn f() {}",
+        );
         let item = first_item(&tree);
         let skips: Vec<_> = outer_attributes(item.syntax())
             .iter()

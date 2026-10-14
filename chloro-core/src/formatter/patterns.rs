@@ -1,7 +1,7 @@
 //! Patterns (rustfmt's `patterns.rs`).
 
-use ra_ap_parser::T;
 use crate::cst::ast::{self, AstNode, HasName};
+use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::combine_strs_with_missing_comments;
@@ -278,7 +278,7 @@ fn rewrite_ident_pat(
         let hi = context.snippet_provider.span_before(span, "@");
         combine_strs_with_missing_comments(
             context,
-            &id_str,
+            id_str,
             &sub_pat,
             mk_sp(name_span.hi(), hi),
             shape,

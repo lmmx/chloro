@@ -285,7 +285,11 @@ pub(crate) fn bin_op_text(expr: &ast::BinExpr) -> Option<String> {
 
 /// Turn a tree of same-operator binary expressions into a list using a depth-first,
 /// in-order traversal.
-fn flatten<'a>(expr: &ast::BinExpr<'a>, context: &RewriteContext<'_>, shape: Shape) -> Option<PairList<'a>> {
+fn flatten<'a>(
+    expr: &ast::BinExpr<'a>,
+    context: &RewriteContext<'_>,
+    shape: Shape,
+) -> Option<PairList<'a>> {
     if is_assignment(expr) {
         return None;
     }
@@ -311,17 +315,17 @@ fn flatten<'a>(expr: &ast::BinExpr<'a>, context: &RewriteContext<'_>, shape: Sha
     let mut stack: Vec<ast::BinExpr> = vec![];
     let mut list: Vec<(ast::Expr, Option<String>)> = vec![];
     let mut separators: Vec<String> = vec![];
-    let mut node = ast::Expr::BinExpr(expr.clone());
+    let mut node = ast::Expr::BinExpr(*expr);
     loop {
         match &node {
             ast::Expr::BinExpr(b) if b.op_kind() == Some(top_op) && b.lhs().is_some() => {
-                stack.push(b.clone());
+                stack.push(*b);
                 node = b.lhs()?;
             }
             _ => {
                 let op_len = separators.last().map_or(0, |s| s.len());
                 let rw = default_rewrite(&node, op_len, list.is_empty());
-                list.push((node.clone(), rw));
+                list.push((node, rw));
                 if let Some(pop) = stack.pop() {
                     separators.push(bin_op_text(&pop)?);
                     node = pop.rhs()?;

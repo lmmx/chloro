@@ -3,9 +3,9 @@
 use std::borrow::Cow;
 use std::cmp::min;
 
+use crate::cst::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
 use ra_ap_parser::SyntaxKind;
 use ra_ap_parser::T;
-use crate::cst::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
 
 use super::attr::rewrite_attrs;
 use super::chains::rewrite_chain;
