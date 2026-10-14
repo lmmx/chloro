@@ -131,3 +131,21 @@ fn main() {
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// rustc's `break_up_float` reads a float literal without `.` after a `.` as one field name
+/// (`DestructuredFloat::Single`); rust-analyzer's tree builder reports it and wraps it in an
+/// `ERROR` node. The file is formatted, with the field name as written.
+#[test]
+fn float_literal_field_name() {
+    let input = "fn f() {
+let a = s.1e0;
+    let b = s . 1E1_ . 2;
+}
+";
+    let rustfmt = "fn f() {
+    let a = s.1e0;
+    let b = s.1E1_.2;
+}
+";
+    assert_rustfmt(input, rustfmt);
+}
