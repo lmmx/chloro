@@ -19,9 +19,18 @@
 //! - A type that starts with `?`, `(?Sized)`: a trait object with a "maybe" bound to rustc.
 //!   rust-analyzer has no type starting with `?`; with `dyn` inserted before the `?`, it
 //!   builds a `DYN_TRAIT_TYPE`.
+//!
+//! One construct needs no second parse, only an edit of the tree:
+//!
+//! - A float literal without `.` as a field name, `s.1e0`: rustc's `break_up_float` reads
+//!   `1e0` as a single component (`DestructuredFloat::Single`) and the field name is `1e0`.
+//!   rust-analyzer's tree builder reports "illegal float literal" and wraps the literal in
+//!   an `ERROR` node; the edit makes it a `NAME_REF`, as for `s.0`.
 
 use ra_ap_parser::{Edition, LexedStr, StrStep, TopEntryPoint};
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
+use ra_ap_syntax::{RustLanguage, SyntaxElement};
+use rowan::Language;
 use rowan::{GreenNode, GreenNodeData};
 
 use super::formatting::TreeBuilder;
@@ -29,9 +38,27 @@ use super::formatting::TreeBuilder;
 /// The text inserted before a `(` or `?`: `dyn` and the space after it.
 const DYN: &str = "dyn ";
 
-/// The parse of a source text: the root and the offsets of the parser's errors. `None` when
-/// the lexer reports an error.
-pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<(SyntaxNode, Vec<usize>)> {
+/// rust-analyzer's message for a float literal without `.` after a `.` (`s.1e0`); its
+/// position is a token index, not a text offset.
+const FLOAT_FIELD: &str = "illegal float literal";
+
+/// The parse of a source text.
+pub(crate) struct Parsed {
+    pub(crate) tree: SyntaxNode,
+    /// Text offsets of the parser's errors, other than float field names.
+    pub(crate) errors: Vec<usize>,
+    /// The number of float literals without `.` used as field names.
+    pub(crate) float_fields: usize,
+}
+
+impl Parsed {
+    pub(crate) fn is_ok(&self) -> bool {
+        self.errors.is_empty() && self.float_fields == 0
+    }
+}
+
+/// The parse of a source text. `None` when the lexer reports an error.
+pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<Parsed> {
     let lexed = LexedStr::new(edition, source);
     if lexed.errors().next().is_some() {
         return None;
@@ -40,26 +67,30 @@ pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<(SyntaxNode, 
     let output = TopEntryPoint::SourceFile.parse(&input, edition);
     let mut builder = TreeBuilder::default();
     let mut errors = Vec::new();
+    let mut float_fields = 0;
     lexed.intersperse_trivia(&output, &mut |step| match step {
         StrStep::Token { kind, text } => builder.token(kind, text),
         StrStep::Enter { kind } => builder.start_node(kind),
         StrStep::Exit => builder.finish_node(),
+        StrStep::Error { msg, .. } if msg == FLOAT_FIELD => float_fields += 1,
         StrStep::Error { pos, .. } => errors.push(pos),
     });
-    Some((builder.finish(), errors))
+    Some(Parsed {
+        tree: builder.finish(),
+        errors,
+        float_fields,
+    })
 }
 
-/// Parses `source`, which rust-analyzer's parser rejects, with the insertions described in
-/// the module documentation. `None` if the parse still fails.
-pub(crate) fn reparse(
-    source: &str,
-    edition: Edition,
-    tree: &SyntaxNode,
-    errors: &[usize],
-) -> Option<SyntaxNode> {
+/// The tree rustc's parser would accept for `source`, which rust-analyzer's parser rejected
+/// (`parsed`), built as the module documentation describes. `None` if there is none.
+pub(crate) fn reparse(source: &str, edition: Edition, parsed: Parsed) -> Option<SyntaxNode> {
+    if parsed.errors.is_empty() {
+        return float_fields_as_names(&parsed.tree, parsed.float_fields);
+    }
     // Offsets in `source` before which `DYN` is inserted, sorted.
     let mut inserts: Vec<usize> = Vec::new();
-    let mut found = insertion(tree, errors);
+    let mut found = insertion(&parsed.tree, &parsed.errors);
     // Each round adds the insertion for the first error. The tree after an error is the
     // parser's recovery, so only the first error is trusted.
     for _ in 0..64 {
@@ -69,8 +100,8 @@ pub(crate) fn reparse(
             Err(i) => inserts.insert(i, original),
         }
         let text = with_insertions(source, &inserts);
-        let (tree, errors) = build_tree(&text, edition)?;
-        if errors.is_empty() {
+        let parsed = build_tree(&text, edition)?;
+        if parsed.errors.is_empty() {
             let removed: Vec<usize> = inserts
                 .iter()
                 .enumerate()
@@ -80,11 +111,11 @@ pub(crate) fn reparse(
                 })
                 .collect();
             let mut offset = 0;
-            let green = without_tokens(&tree.green(), &mut offset, &removed);
-            let root = SyntaxNode::new_root(green);
+            let green = without_tokens(&parsed.tree.green(), &mut offset, &removed);
+            let root = float_fields_as_names(&SyntaxNode::new_root(green), parsed.float_fields)?;
             return (root.text() == source).then_some(root);
         }
-        found = insertion(&tree, &errors);
+        found = insertion(&parsed.tree, &parsed.errors);
     }
     None
 }
@@ -260,4 +291,69 @@ fn insertions(tree: &SyntaxNode, errors: &[usize]) -> Vec<usize> {
         }
     }
     found
+}
+
+/// `1e0` as rustc's `break_up_float` reads it: a single component (digits, an exponent
+/// without sign, no suffix) is a field name; anything else is an error.
+fn float_field_name(text: &str) -> bool {
+    let Some((mantissa, exponent)) = text.split_once(['e', 'E']) else {
+        return false;
+    };
+    mantissa.starts_with(|c: char| c.is_ascii_digit())
+        && mantissa.chars().all(|c| c.is_ascii_digit() || c == '_')
+        && exponent.chars().any(|c| c.is_ascii_digit())
+        && exponent.chars().all(|c| c.is_ascii_digit() || c == '_')
+}
+
+/// `tree` with each float literal field name in a `NAME_REF` instead of an `ERROR` node,
+/// and without the `FIELD_EXPR` that rust-analyzer opens around it for a second field
+/// (`s.1.2`) and leaves with that single child. `None` unless there are `expected` such
+/// field names, all of rustc's single-component form, and no other `ERROR` node.
+fn float_fields_as_names(tree: &SyntaxNode, expected: usize) -> Option<SyntaxNode> {
+    let mut fixed = 0;
+    let green = rebuild_field_names(tree, &mut fixed)?;
+    (fixed == expected).then(|| SyntaxNode::new_root(green))
+}
+
+fn rebuild_field_names(node: &SyntaxNode, fixed: &mut usize) -> Option<GreenNode> {
+    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
+    let mut children = Vec::new();
+    for child in node.children_with_tokens() {
+        match child {
+            SyntaxElement::Token(t) => children.push(NodeOrToken::Token(t.green().to_owned())),
+            SyntaxElement::Node(n) if n.kind() == SyntaxKind::ERROR => {
+                // `ERROR(FLOAT_NUMBER)` as the field of a `FIELD_EXPR`.
+                let mut tokens = n.children_with_tokens();
+                let literal = match (tokens.next(), tokens.next()) {
+                    (Some(SyntaxElement::Token(t)), None)
+                        if t.kind() == SyntaxKind::FLOAT_NUMBER && float_field_name(t.text()) =>
+                    {
+                        t
+                    }
+                    _ => return None,
+                };
+                if node.kind() != SyntaxKind::FIELD_EXPR {
+                    return None;
+                }
+                *fixed += 1;
+                let name_ref = GreenNode::new(
+                    raw(SyntaxKind::NAME_REF),
+                    [NodeOrToken::Token(literal.green().to_owned())],
+                );
+                children.push(NodeOrToken::Node(name_ref));
+            }
+            SyntaxElement::Node(n) => {
+                let rebuilt = rebuild_field_names(&n, fixed)?;
+                children.push(NodeOrToken::Node(rebuilt));
+            }
+        }
+    }
+    // The `FIELD_EXPR` left around a repaired one, with no other child.
+    if node.kind() == SyntaxKind::FIELD_EXPR
+        && children.len() == 1
+        && matches!(&children[0], NodeOrToken::Node(n) if n.kind() == raw(SyntaxKind::FIELD_EXPR))
+    {
+        return children.pop().and_then(NodeOrToken::into_node);
+    }
+    Some(GreenNode::new(node.green().kind(), children))
 }

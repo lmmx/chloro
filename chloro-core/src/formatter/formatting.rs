@@ -65,11 +65,11 @@ impl TreeBuilder {
 /// rust-analyzer's semantic validation (e.g. `crate` in the middle of a path), which
 /// rustc's parser does not do, and would cost a second traversal of the tree.
 fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
-    let (tree, errors) = build_tree(source, edition)?;
-    let tree = if errors.is_empty() {
-        tree
+    let parsed = build_tree(source, edition)?;
+    let tree = if parsed.is_ok() {
+        parsed.tree
     } else {
-        reparse(source, edition, &tree, &errors)?
+        reparse(source, edition, parsed)?
     };
     let file = SourceFile::cast(tree)?;
     (!rejected_by_rustc(&file, edition)).then_some(file)
