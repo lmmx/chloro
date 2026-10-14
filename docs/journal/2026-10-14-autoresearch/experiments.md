@@ -18,3 +18,4 @@ Append-only. One row per experiment; the procedure and gates are in
 
 | id | branch | hypothesis | metric, expected | result | gates | decision | commit | date |
 |---|---|---|---|---|---|---|---|---|
+| E6 | `20261014-cli-cache` | a persistent cache of content digests known to be fixed points makes `--check`/`--write` on an unchanged tree I/O-bound | CLI only: hash file, look up `(binary, config, content)` key, skip the formatter on a hit | process wall time on a formatted tree, ≥10x | formatted fixtures (1238 files, 14.2 MB): warm 32.7 ± 2.2 ms vs 819.4 ± 65.3 ms no-cache (25.1x, 4 threads), 28.9 ms vs 2904.6 ms on one core (100.7x); raw fixtures unchanged within noise; +188 KB binary; [EXP-006](experiments/EXP-006-cli-cache.md) | 1 ✓ 2 ✓ (library untouched: 1219/1220, 0 not idempotent) 3 ✓ 4 ✓ 5 ✓ (`syn` absent) | kept | `6e893f4` | 2026-10-14 |
