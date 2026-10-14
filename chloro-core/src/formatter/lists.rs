@@ -407,7 +407,8 @@ where
                 if (line_len > 0 && line_len + 1 + total_width > formatting.shape.width)
                     || prev_item_had_post_comment
                     || (formatting.nested
-                        && (prev_item_is_nested_import || (!first && inner_item.contains("::"))))
+                        && (prev_item_is_nested_import
+                            || (!first && inner_item.contains(':') && inner_item.contains("::"))))
                 {
                     result.push('\n');
                     result.push_str(indent_str);
@@ -587,7 +588,9 @@ where
         }
 
         prev_item_had_post_comment = item.post_comment.is_some();
-        prev_item_is_nested_import = inner_item.contains("::");
+        // `contains(':')` is a `memchr`; most items have no `:` and skip the substring
+        // search.
+        prev_item_is_nested_import = inner_item.contains(':') && inner_item.contains("::");
     }
 
     Some(result)
