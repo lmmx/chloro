@@ -1083,7 +1083,26 @@ impl<'a> Iterator for CommentCodeSlices<'a> {
         let subslice = &self.slice[self.last_slice_end..];
         let mut iter = CharClasses::new(subslice);
 
-        for (kind, i, c) in &mut iter {
+        loop {
+            // The skipped characters change nothing below. In a `Normal` slice, `skip_plain`
+            // skips only non-comment characters, which neither end the slice nor are comment
+            // connectors. In a comment slice, `skip_comment` skips only comment characters,
+            // which do not end the slice, and stops at a comment character other than a space
+            // or a tab, which resets `first_whitespace` whatever the skipped ones set it to. At
+            // the end of the text the skipped characters would decide `first_whitespace`, so
+            // they are stepped through instead.
+            if self.last_slice_kind == CodeCharKind::Comment {
+                iter.skip_plain(None);
+            } else {
+                let from = iter.pos;
+                iter.skip_comment();
+                if iter.pos == subslice.len() {
+                    iter.pos = from;
+                }
+            }
+            let Some((kind, i, c)) = iter.next() else {
+                break;
+            };
             let is_comment_connector = self.last_slice_kind == CodeCharKind::Normal
                 && subslice.starts_with("//")
                 && [' ', '\t'].contains(&c);
@@ -1349,19 +1368,93 @@ mod tests {
     /// Every string of up to `max_len` characters over the characters that drive the
     /// `CharClasses` state machine, plus `SCAN_SAMPLES`.
     fn scan_strings(max_len: u32) -> Vec<String> {
-        const ALPHABET: [char; 10] = ['r', '#', '"', '\'', '/', '*', '\\', 'a', '\n', 'é'];
+        strings_over(
+            &['r', '#', '"', '\'', '/', '*', '\\', 'a', '\n', 'é'],
+            max_len,
+        )
+    }
+
+    /// Every string of up to `max_len` characters over `alphabet`, plus `SCAN_SAMPLES`.
+    fn strings_over(alphabet: &[char], max_len: u32) -> Vec<String> {
         let mut out: Vec<String> = SCAN_SAMPLES.iter().map(|s| s.to_string()).collect();
         for len in 0..=max_len {
-            for mut n in 0..ALPHABET.len().pow(len) {
+            for mut n in 0..alphabet.len().pow(len) {
                 let mut s = String::new();
                 for _ in 0..len {
-                    s.push(ALPHABET[n % ALPHABET.len()]);
-                    n /= ALPHABET.len();
+                    s.push(alphabet[n % alphabet.len()]);
+                    n /= alphabet.len();
                 }
                 out.push(s);
             }
         }
         out
+    }
+
+    /// `CommentCodeSlices` stepping every character through `CharClasses::next`.
+    struct CommentCodeSlicesByChar<'a> {
+        slice: &'a str,
+        last_slice_kind: CodeCharKind,
+        last_slice_end: usize,
+    }
+
+    impl<'a> Iterator for CommentCodeSlicesByChar<'a> {
+        type Item = (CodeCharKind, usize, &'a str);
+
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.last_slice_end == self.slice.len() {
+                return None;
+            }
+            let mut sub_slice_end = self.last_slice_end;
+            let mut first_whitespace = None;
+            let subslice = &self.slice[self.last_slice_end..];
+            let mut iter = CharClasses::new(subslice);
+            for (kind, i, c) in &mut iter {
+                let is_comment_connector = self.last_slice_kind == CodeCharKind::Normal
+                    && subslice.starts_with("//")
+                    && [' ', '\t'].contains(&c);
+                if is_comment_connector && first_whitespace.is_none() {
+                    first_whitespace = Some(i);
+                }
+                if kind.to_codecharkind() == self.last_slice_kind && !is_comment_connector {
+                    sub_slice_end = self.last_slice_end + first_whitespace.unwrap_or(i);
+                    break;
+                }
+                if !is_comment_connector {
+                    first_whitespace = None;
+                }
+            }
+            if let (None, true) = (iter.next(), sub_slice_end == self.last_slice_end) {
+                sub_slice_end = match first_whitespace {
+                    Some(i) => self.last_slice_end + i,
+                    None => self.slice.len(),
+                };
+            }
+            let kind = match self.last_slice_kind {
+                CodeCharKind::Comment => CodeCharKind::Normal,
+                CodeCharKind::Normal => CodeCharKind::Comment,
+            };
+            let res = (
+                kind,
+                self.last_slice_end,
+                &self.slice[self.last_slice_end..sub_slice_end],
+            );
+            self.last_slice_end = sub_slice_end;
+            self.last_slice_kind = kind;
+            Some(res)
+        }
+    }
+
+    #[test]
+    fn comment_code_slices_match_the_per_character_scan() {
+        let alphabet = ['/', '*', ' ', '\t', '\n', 'a', '"', 'r', '#'];
+        for s in strings_over(&alphabet, 6) {
+            let by_char = CommentCodeSlicesByChar {
+                slice: &s,
+                last_slice_kind: CodeCharKind::Comment,
+                last_slice_end: 0,
+            };
+            assert!(CommentCodeSlices::new(&s).eq(by_char), "{s:?}");
+        }
     }
 
     /// Checks that `skip`, called before every `next`, moves only past characters that a
