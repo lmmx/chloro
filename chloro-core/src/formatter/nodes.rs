@@ -147,7 +147,8 @@ pub(crate) fn non_trivia_text(node: &SyntaxNode) -> String {
     out
 }
 
-fn push_non_trivia_text(green: &rowan::GreenNodeData, out: &mut String) {
+/// Appends the text of the non-trivia tokens under `green` to `out`.
+pub(crate) fn push_non_trivia_text(green: &rowan::GreenNodeData, out: &mut String) {
     for child in green.children() {
         match child {
             NodeOrToken::Node(n) => push_non_trivia_text(n, out),
@@ -169,6 +170,35 @@ pub(crate) fn attr_path_text(attr: &ast::Attr) -> Option<String> {
     let mut out = String::new();
     push_non_trivia_text(path, &mut out);
     Some(out)
+}
+
+/// The kind of the first token under `green` (`SyntaxNode::first_token().kind()`).
+pub(crate) fn first_token_kind(green: &rowan::GreenNodeData) -> Option<SyntaxKind> {
+    match green.children().next()? {
+        NodeOrToken::Token(t) => Some(RustLanguage::kind_from_raw(t.kind())),
+        NodeOrToken::Node(n) => first_token_kind(n),
+    }
+}
+
+/// The direct children of `node` with their ranges, as owned green elements: what
+/// `children_with_tokens()` yields, read from the green tree.
+pub(crate) fn green_children_with_ranges(
+    node: &SyntaxNode,
+) -> Vec<(TextRange, NodeOrToken<rowan::GreenNode, rowan::GreenToken>)> {
+    let mut offset = node.text_range().start();
+    node.green()
+        .children()
+        .map(|child| {
+            let len = child.text_len();
+            let range = TextRange::at(offset, len);
+            offset += len;
+            let element = match child {
+                NodeOrToken::Node(n) => NodeOrToken::Node(n.to_owned()),
+                NodeOrToken::Token(t) => NodeOrToken::Token(t.to_owned()),
+            };
+            (range, element)
+        })
+        .collect()
 }
 
 /// The first child node of `green` of `kind`.
@@ -1341,6 +1371,37 @@ mod tests {
             }
         }
         assert!(seen.iter().all(|&n| n > 0), "every form occurs: {seen:?}");
+    }
+
+    /// `first_token_kind` and `green_children_with_ranges` answer what `first_token` and
+    /// `children_with_tokens` answer on every node of sources with nested token trees,
+    /// comments, whitespace and empty token trees.
+    #[test]
+    fn green_token_walks_match_the_cursor_walks() {
+        let src = "m!();\nm![a, /* c */ (b), {c}];\nm! { 1 + [2] }\nmacro_rules! r { () => {}; ($a:expr) => { $a } }\n\
+                   fn f() { let x = 1; m!(x); }\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut nodes = 0;
+        for node in file.syntax().descendants() {
+            assert_eq!(
+                first_token_kind(&node.green()),
+                node.first_token().map(|t| t.kind()),
+                "{node}"
+            );
+            let by_cursor: Vec<_> = node
+                .children_with_tokens()
+                .map(|c| {
+                    let element = match &c {
+                        NodeOrToken::Node(n) => NodeOrToken::Node(n.green().into_owned()),
+                        NodeOrToken::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+                    };
+                    (c.text_range(), element)
+                })
+                .collect();
+            assert_eq!(green_children_with_ranges(&node), by_cursor, "{node}");
+            nodes += 1;
+        }
+        assert!(nodes > 40, "{nodes} nodes");
     }
 
     #[test]
