@@ -14,7 +14,7 @@ use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasName};
 
 use super::comment::combine_strs_with_missing_comments;
-use super::config::{Edition, StyleEdition};
+use super::config::{Edition, RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, Separator, definitive_tactic, itemize_list,
@@ -94,6 +94,7 @@ pub(crate) enum UseSegmentKind {
 pub(crate) struct UseSegment {
     pub(crate) kind: UseSegmentKind,
     pub(crate) style_edition: StyleEdition,
+    pub(crate) rustfmt_version: RustfmtVersion,
 }
 
 #[derive(Clone)]
@@ -146,6 +147,7 @@ impl UseSegment {
         UseSegment {
             kind,
             style_edition: self.style_edition,
+            rustfmt_version: self.rustfmt_version,
         }
     }
 
@@ -166,6 +168,7 @@ impl UseSegment {
         Some(UseSegment {
             kind,
             style_edition: context.config.style_edition(),
+            rustfmt_version: context.config.rustfmt_version(),
         })
     }
 }
@@ -363,6 +366,7 @@ impl UseTree {
         }
 
         let style_edition = context.config.style_edition();
+        let rustfmt_version = context.config.rustfmt_version();
 
         if has_token(a.syntax(), T![*]) {
             // in case of a global path and the glob starts at the root, e.g., "::*"
@@ -370,11 +374,13 @@ impl UseTree {
                 result.path.push(UseSegment {
                     kind: UseSegmentKind::Ident(String::new(), None),
                     style_edition,
+                    rustfmt_version,
                 });
             }
             result.path.push(UseSegment {
                 kind: UseSegmentKind::Glob,
                 style_edition,
+                rustfmt_version,
             });
         } else if let Some(list) = a.use_tree_list() {
             let trees: Vec<ast::UseTree> = list.use_trees().collect();
@@ -399,6 +405,7 @@ impl UseTree {
                 result.path.push(UseSegment {
                     kind: UseSegmentKind::Ident(String::new(), None),
                     style_edition,
+                    rustfmt_version,
                 });
             }
             let kind = UseSegmentKind::List(
@@ -413,6 +420,7 @@ impl UseTree {
             result.path.push(UseSegment {
                 kind,
                 style_edition,
+                rustfmt_version,
             });
         } else if let Some(last) = names.last() {
             // If the path has leading double colons and is composed of only 2 segments, then we
@@ -445,6 +453,7 @@ impl UseTree {
             result.path.push(UseSegment {
                 kind,
                 style_edition,
+                rustfmt_version,
             });
         }
         result
@@ -476,7 +485,12 @@ impl UseTree {
         if let UseSegmentKind::Slf(None) = last.kind
             && let Some(second_last) = self.path.pop()
         {
-            if matches!(second_last.kind, UseSegmentKind::Slf(_)) {
+            // F3: rustfmt 1.9.0 keeps a `self` that follows `self` (`use self::self;`,
+            // commit `334670e0`, PR #6573, CHANGELOG 1.9.0 Fixed #6558); rustfmt 1.8.0
+            // drops the trailing `self` after any segment (`v1.8.0 src/imports.rs:572`).
+            if matches!(second_last.kind, UseSegmentKind::Slf(_))
+                && last.rustfmt_version >= RustfmtVersion::V1_9_0
+            {
                 self.path.push(second_last);
             } else {
                 self.path.push(second_last);
@@ -524,11 +538,12 @@ impl UseTree {
         // Recursively normalize elements of a list use (including sorting the list).
         if let UseSegmentKind::List(list) = last.kind {
             let mut list = list.into_iter().map(UseTree::normalize).collect::<Vec<_>>();
-            list.sort();
+            sort_use_trees(&mut list, last.rustfmt_version);
             list.dedup();
             last = UseSegment {
                 kind: UseSegmentKind::List(list),
                 style_edition: last.style_edition,
+                rustfmt_version: last.rustfmt_version,
             };
         }
 
@@ -538,6 +553,30 @@ impl UseTree {
 
     fn has_comment(&self) -> bool {
         self.list_item.as_ref().is_some_and(ListItem::has_comment)
+    }
+}
+
+/// Sorts `use` trees as rustfmt's `list.sort()` does.
+///
+/// Under `rustfmt_version = "1.8.0"` and a style edition before 2024, the comparator (F5)
+/// is not a total order for lists that mix `_`-prefixed names with others, so the result
+/// depends on the sorting algorithm. `slice::sort` in the standard library of Rust 1.88.0
+/// and later runs an insertion sort on at most 20 elements (`core::slice::sort::stable`,
+/// `MAX_LEN_ALWAYS_INSERTION_SORT`), which this reproduces for every length: longer lists
+/// go through driftsort in rustfmt 1.8.0, whose merges may order such a list differently
+/// or detect the violated order and panic (#6668), which this does not model.
+pub(crate) fn sort_use_trees(list: &mut [UseTree], rustfmt_version: RustfmtVersion) {
+    match rustfmt_version {
+        RustfmtVersion::V1_9_0 => list.sort(),
+        RustfmtVersion::V1_8_0 => {
+            for i in 1..list.len() {
+                let mut j = i;
+                while j > 0 && list[j] < list[j - 1] {
+                    list.swap(j, j - 1);
+                    j -= 1;
+                }
+            }
+        }
     }
 }
 
@@ -581,6 +620,25 @@ impl Ord for UseSegment {
 
                 let ident_ord = if self.style_edition >= StyleEdition::Edition2024 {
                     version_sort(ia, ib)
+                } else if self.rustfmt_version < RustfmtVersion::V1_9_0 {
+                    // F5: rustfmt 1.8.0 compares with early returns (`v1.8.0
+                    // src/imports.rs:945-958`), which is not a total order once a name
+                    // starts with `_` (`Ab < _x < ab < Ab`); rustfmt 1.9.0 compares a
+                    // key (commit `a57ce886`, CHANGELOG 1.9.0 Fixed #6668).
+                    // snake_case < CamelCase < UPPER_SNAKE_CASE
+                    if ia.starts_with(char::is_uppercase) && ib.starts_with(char::is_lowercase) {
+                        return Ordering::Greater;
+                    }
+                    if ia.starts_with(char::is_lowercase) && ib.starts_with(char::is_uppercase) {
+                        return Ordering::Less;
+                    }
+                    if is_upper_snake_case(ia) && !is_upper_snake_case(ib) {
+                        return Ordering::Greater;
+                    }
+                    if !is_upper_snake_case(ia) && is_upper_snake_case(ib) {
+                        return Ordering::Less;
+                    }
+                    ia.cmp(ib)
                 } else {
                     fn sorting_key(ident: &str) -> (bool, bool, &str) {
                         // snake_case < CamelCase < UPPER_SNAKE_CASE
