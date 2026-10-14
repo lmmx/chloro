@@ -453,6 +453,8 @@ impl FindUncommented for str {
                 && needle_iter.as_str().len() == pat.len()
             {
                 classes.skip_plain(Some(first));
+                // A character in a comment resets the needle.
+                classes.skip_comment();
             }
             let Some((kind, i, b)) = classes.next() else {
                 break;
@@ -723,6 +725,43 @@ impl<'a> CharClasses<'a> {
         // `pos` is at a char boundary: it is at the end or at an ASCII byte.
         self.pos = pos;
     }
+
+    /// Moves past the characters that `next` would yield as `InComment` or
+    /// `InStringCommented` without changing the state, in three states:
+    /// - `LineComment`: the state changes only at `\n`;
+    /// - `BlockComment`: the state changes only at `*` before `/`, `/` before `*`, and `"`;
+    ///   the scan stops at every `*`, `/` and `"`;
+    /// - `StringInBlockComment`: the state changes only at `"` and `*` before `/`; the scan
+    ///   stops at every `"` and `*`.
+    ///
+    /// All of these are ASCII, so the scan can work on bytes.
+    fn skip_comment(&mut self) {
+        let bytes = self.src.as_bytes();
+        let mut pos = self.pos;
+        match self.status {
+            CharClassesStatus::LineComment => {
+                pos = self.src[pos..].find('\n').map_or(bytes.len(), |n| pos + n);
+            }
+            CharClassesStatus::BlockComment(_) => {
+                while let Some(&b) = bytes.get(pos) {
+                    if matches!(b, b'*' | b'/' | b'"') {
+                        break;
+                    }
+                    pos += 1;
+                }
+            }
+            CharClassesStatus::StringInBlockComment(_) => {
+                while let Some(&b) = bytes.get(pos) {
+                    if matches!(b, b'*' | b'"') {
+                        break;
+                    }
+                    pos += 1;
+                }
+            }
+            _ => return,
+        }
+        self.pos = pos;
+    }
 }
 
 impl Iterator for CharClasses<'_> {
@@ -979,8 +1018,12 @@ impl<'a> Iterator for UngroupedCommentCodeSlices<'a> {
                 }
             }
             FullCodeCharKind::StartComment => {
-                // Consume the whole comment
+                // Consume the whole comment. Characters skipped by `skip_comment` are inside
+                // the comment.
                 loop {
+                    if self.peeked.is_none() {
+                        self.iter.skip_comment();
+                    }
                     match self.advance() {
                         Some((kind, ..)) if kind.inside_comment() => continue,
                         _ => break,
@@ -1318,40 +1361,67 @@ mod tests {
         out
     }
 
+    /// Checks that `skip`, called before every `next`, moves only past characters that a
+    /// full scan yields with a kind `allowed` accepts and without a change of state, other
+    /// than `stop`, and that the scan then yields what the full scan yields.
+    fn check_skip(
+        s: &str,
+        stop: Option<u8>,
+        skip: impl Fn(&mut CharClasses<'_>),
+        allowed: impl Fn(FullCodeCharKind) -> bool,
+    ) {
+        // The full scan: each character's kind and the state after it.
+        let mut full = CharClasses::new(s);
+        let mut steps = vec![];
+        while let Some((kind, i, c)) = full.next() {
+            steps.push((i, kind, c, full.status));
+        }
+        let mut fast = CharClasses::new(s);
+        let mut prev_status = CharClassesStatus::Normal;
+        let mut step = 0;
+        loop {
+            skip(&mut fast);
+            while step < steps.len() && steps[step].0 < fast.pos {
+                let (i, kind, c, status) = steps[step];
+                assert!(
+                    allowed(kind) && status == prev_status && Some(c as u32) != stop.map(u32::from),
+                    "{s:?} {stop:?}: skipped {c:?} at {i}"
+                );
+                step += 1;
+            }
+            let Some(item) = fast.next() else { break };
+            let (i, kind, c, status) = steps[step];
+            assert_eq!(item, (kind, i, c), "{s:?} {stop:?}");
+            assert_eq!(fast.status, status, "{s:?} {stop:?}");
+            prev_status = status;
+            step += 1;
+        }
+        assert_eq!(step, steps.len(), "{s:?} {stop:?}");
+    }
+
     #[test]
     fn skip_plain_skips_only_unchanged_normal_or_string_characters() {
         for s in scan_strings(5) {
-            // The full scan: each character's kind and the state after it.
-            let mut full = CharClasses::new(&s);
-            let mut steps = vec![];
-            while let Some((kind, i, c)) = full.next() {
-                steps.push((i, kind, c, full.status));
-            }
             for stop in [None, Some(b'a'), Some(b'/'), Some(b'"'), Some(b'#')] {
-                let mut fast = CharClasses::new(&s);
-                let mut prev_status = CharClassesStatus::Normal;
-                let mut step = 0;
-                loop {
-                    fast.skip_plain(stop);
-                    while step < steps.len() && steps[step].0 < fast.pos {
-                        let (i, kind, c, status) = steps[step];
-                        assert!(
-                            matches!(kind, FullCodeCharKind::Normal | FullCodeCharKind::InString)
-                                && status == prev_status
-                                && Some(c as u32) != stop.map(u32::from),
-                            "{s:?} {stop:?}: skipped {c:?} at {i}"
-                        );
-                        step += 1;
-                    }
-                    let Some(item) = fast.next() else { break };
-                    let (i, kind, c, status) = steps[step];
-                    assert_eq!(item, (kind, i, c), "{s:?} {stop:?}");
-                    assert_eq!(fast.status, status, "{s:?} {stop:?}");
-                    prev_status = status;
-                    step += 1;
-                }
-                assert_eq!(step, steps.len(), "{s:?} {stop:?}");
+                check_skip(
+                    &s,
+                    stop,
+                    |classes| classes.skip_plain(stop),
+                    |kind| matches!(kind, FullCodeCharKind::Normal | FullCodeCharKind::InString),
+                );
             }
+        }
+    }
+
+    #[test]
+    fn skip_comment_skips_only_unchanged_comment_characters() {
+        for s in scan_strings(5) {
+            check_skip(
+                &s,
+                None,
+                |classes| classes.skip_comment(),
+                FullCodeCharKind::inside_comment,
+            );
         }
     }
 
