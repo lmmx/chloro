@@ -124,6 +124,17 @@ pub(crate) fn semicolon_for_expr(context: &RewriteContext<'_>, expr: &ast::Expr)
 
 /// Computes the length of the given string, as it would appear in the output.
 pub(crate) fn unicode_str_width(s: &str) -> usize {
+    if is_ascii_single_line(s.as_bytes()) {
+        s.len()
+    } else {
+        multi_line_or_unicode_str_width(s)
+    }
+}
+
+/// `unicode_str_width` for a string with a `\n` or a non-ASCII character. Kept out of line
+/// so that the common case does not pay for its registers.
+#[inline(never)]
+fn multi_line_or_unicode_str_width(s: &str) -> usize {
     if !s.is_ascii() {
         return s.width();
     }
@@ -137,6 +148,34 @@ pub(crate) fn unicode_str_width(s: &str) -> usize {
         }
     }
     width
+}
+
+/// Returns `true` if `bytes` is ASCII and contains no `\n`: the case where
+/// `unicode_str_width` is the byte length. Tests eight bytes at a time.
+fn is_ascii_single_line(bytes: &[u8]) -> bool {
+    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
+    const NEWLINES: u64 = 0x0a0a_0a0a_0a0a_0a0a;
+    // Bit 7 of a byte of the result is set iff that byte of `w` is non-ASCII or `\n`:
+    // `(y & 0x7f) + 0x7f` has bit 7 set iff `y & 0x7f != 0`, and no byte carries into the
+    // next, so `!(... | y)` has bit 7 set iff the byte of `y = w ^ NEWLINES` is zero.
+    let flags = |w: u64| {
+        let y = w ^ NEWLINES;
+        w | !(((y & LOW7) + LOW7) | y)
+    };
+    if bytes.len() < 8 {
+        return bytes.iter().all(|&b| b < 0x80 && b != b'\n');
+    }
+    let mut acc = 0;
+    let mut chunks = bytes.chunks_exact(8);
+    for chunk in &mut chunks {
+        acc |= flags(u64::from_ne_bytes(chunk.try_into().unwrap()));
+    }
+    if !chunks.remainder().is_empty() {
+        // The last eight bytes overlap bytes already tested, which leaves `acc` as it is.
+        let last = &bytes[bytes.len() - 8..];
+        acc |= flags(u64::from_ne_bytes(last.try_into().unwrap()));
+    }
+    acc & !LOW7 == 0
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
@@ -407,6 +446,28 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn ascii_width_fast_path_matches_unicode_width() {
+        // Every length around the eight-byte words, with one special character at every
+        // position: `\n`, `\r\n`, a lone `\r`, the last ASCII byte, NUL, a tab, and non-ASCII
+        // characters whose UTF-8 bytes are `0xc2 0x8a`, `0xc4 0x8a` and `0xe2 0x80 0x8b`.
+        for len in 0..40 {
+            let plain: String = (0..len)
+                .map(|i| char::from(b'a' + (i % 26) as u8))
+                .collect();
+            assert_eq!(unicode_str_width(&plain), plain.width(), "{plain:?}");
+            for at in 0..=len {
+                for special in [
+                    "\n", "\r\n", "\r", "\x7f", "\0", "\t", "\u{8a}", "\u{10a}", "\u{200b}",
+                ] {
+                    let mut s = plain.clone();
+                    s.insert_str(at, special);
+                    assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
+                }
+            }
+        }
+    }
 
     #[test]
     fn remove_trailing_white_spaces_keeps_raw_strings() {
