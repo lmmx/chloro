@@ -8,7 +8,9 @@
 
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken};
+use ra_ap_syntax::{
+    NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken, TextRange, TextSize,
+};
 use rowan::Language;
 
 use super::span::{
@@ -271,9 +273,46 @@ pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
 /// Whether `node` has a direct child token of `kind`: a generated `x_token().is_some()`
 /// that reads the green tree instead of creating a red node per child.
 pub(crate) fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
-    node.green().children().any(|child| {
+    green_has_token(&node.green(), kind)
+}
+
+/// [`has_token`] on a green node.
+pub(crate) fn green_has_token(green: &rowan::GreenNodeData, kind: SyntaxKind) -> bool {
+    green.children().any(|child| {
         matches!(child, NodeOrToken::Token(t) if RustLanguage::kind_from_raw(t.kind()) == kind)
     })
+}
+
+/// The start of the first direct child token of `kind`: a generated `x_token()` whose caller
+/// reads only the token's position, from the green tree.
+pub(crate) fn token_start(node: &SyntaxNode, kind: SyntaxKind) -> Option<BytePos> {
+    let mut offset = node.text_range().start();
+    for child in node.green().children() {
+        if let NodeOrToken::Token(t) = child
+            && RustLanguage::kind_from_raw(t.kind()) == kind
+        {
+            return Some(BytePos::from(offset));
+        }
+        offset += child.text_len();
+    }
+    None
+}
+
+/// The red node for the `index`-th green child of `parent`, which starts at `offset` and is
+/// `len` long: a binary search on the range when the child has text, a walk to the position
+/// otherwise (a range search cannot tell empty siblings apart).
+pub(crate) fn child_at(
+    parent: &SyntaxNode,
+    index: usize,
+    offset: TextSize,
+    len: TextSize,
+) -> Option<SyntaxNode> {
+    if len == TextSize::from(0) {
+        return parent.children_with_tokens().nth(index)?.into_node();
+    }
+    parent
+        .child_or_token_at_range(TextRange::at(offset, len))?
+        .into_node()
 }
 
 /// The first child node of `parent` that casts to `N`: the generated `support::child`
@@ -281,23 +320,12 @@ pub(crate) fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
 /// found, located by a binary search on its range, instead of one per child inspected.
 pub(crate) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
     let mut offset = parent.text_range().start();
-    for green_child in parent.green().children() {
-        let (kind, len) = match green_child {
-            NodeOrToken::Node(n) => (Some(n.kind()), n.text_len()),
-            NodeOrToken::Token(t) => (None, t.text_len()),
-        };
-        if let Some(kind) = kind
-            && N::can_cast(RustLanguage::kind_from_raw(kind))
+    for (index, green_child) in parent.green().children().enumerate() {
+        let len = green_child.text_len();
+        if let NodeOrToken::Node(n) = green_child
+            && N::can_cast(RustLanguage::kind_from_raw(n.kind()))
         {
-            if len == 0.into() {
-                // A range search cannot tell empty siblings apart.
-                return parent.children().find_map(N::cast);
-            }
-            let range = ra_ap_syntax::TextRange::at(offset, len);
-            return parent
-                .child_or_token_at_range(range)?
-                .into_node()
-                .and_then(N::cast);
+            return child_at(parent, index, offset, len).and_then(N::cast);
         }
         offset += len;
     }
@@ -375,8 +403,9 @@ impl Block {
     pub(crate) fn from_block_expr(block: &ast::BlockExpr) -> Option<Block> {
         let stmt_list = child::<ast::StmtList>(block.syntax())?;
         let list_span = node_range_span(stmt_list.syntax());
-        let (rules, span) = match block.unsafe_token() {
-            Some(t) => (BlockRules::Unsafe, list_span.with_lo(token_span(&t).lo())),
+        // `BlockExpr::unsafe_token`, of which only the start is used.
+        let (rules, span) = match token_start(block.syntax(), T![unsafe]) {
+            Some(lo) => (BlockRules::Unsafe, list_span.with_lo(lo)),
             None => (BlockRules::Default, list_span),
         };
         Some(Block {
@@ -472,59 +501,93 @@ fn macro_stmt(expr: &ast::Expr, has_semi: bool) -> Option<ast::MacroCall> {
         return None;
     };
     let call = child::<ast::MacroCall>(m.syntax())?;
+    // `MacroCall::token_tree` is the first token tree child; `TokenTree::l_curly_token` is a
+    // direct `{` token of it. Both read from the green tree.
     let braces = call
-        .token_tree()
-        .and_then(|tt| tt.l_curly_token())
-        .is_some();
+        .syntax()
+        .green()
+        .children()
+        .find_map(|c| match c {
+            NodeOrToken::Node(n)
+                if RustLanguage::kind_from_raw(n.kind()) == SyntaxKind::TOKEN_TREE =>
+            {
+                Some(green_has_token(n, T!['{']))
+            }
+            _ => None,
+        })
+        .unwrap_or(false);
     (has_semi || braces).then_some(call)
 }
 
 /// The statements of a statement list in rustc's form, tail expression included.
+///
+/// The list's children are classified on the green tree; a red node is created for each
+/// statement kept, and for none of the whitespace, brace and semicolon tokens between them.
 pub(crate) fn stmts_of(list: &ast::StmtList) -> Vec<Stmt> {
-    let tail = list.tail_expr();
+    let parent = list.syntax();
+    let green = parent.green();
+    // `StmtList::tail_expr`: the first child node that is an expression.
+    let tail_index = green.children().position(|c| {
+        matches!(c, NodeOrToken::Node(n) if ast::Expr::can_cast(RustLanguage::kind_from_raw(n.kind())))
+    });
+    let mut offset = parent.text_range().start();
     let mut stmts = Vec::new();
-    for child in list.syntax().children_with_tokens() {
-        match child {
-            NodeOrToken::Token(t) if t.kind() == SyntaxKind::SEMICOLON => stmts.push(Stmt {
-                kind: StmtKind::Empty,
-                span: token_span(&t),
-            }),
-            NodeOrToken::Token(_) => {}
-            NodeOrToken::Node(n) => {
-                if let Some(l) = ast::LetStmt::cast(n.clone()) {
+    for (index, element) in green.children().enumerate() {
+        let len = element.text_len();
+        match element {
+            NodeOrToken::Token(t) => {
+                if RustLanguage::kind_from_raw(t.kind()) == SyntaxKind::SEMICOLON {
                     stmts.push(Stmt {
-                        span: rustc_span(&n),
-                        kind: StmtKind::Let(l),
-                    });
-                } else if let Some(es) = ast::ExprStmt::cast(n.clone()) {
-                    let Some(expr) = es.expr() else { continue };
-                    let has_semi = has_token(es.syntax(), T![;]);
-                    let kind = match macro_stmt(&expr, has_semi) {
-                        Some(call) => StmtKind::MacCall(call),
-                        None if has_semi => StmtKind::Semi(expr),
-                        None => StmtKind::Expr(expr),
-                    };
-                    stmts.push(Stmt {
-                        span: rustc_span(&n),
-                        kind,
-                    });
-                } else if let Some(item) = ast::Item::cast(n.clone()) {
-                    stmts.push(Stmt {
-                        span: rustc_span(&n),
-                        kind: StmtKind::Item(item),
-                    });
-                } else if let Some(expr) = tail.as_ref().filter(|t| t.syntax() == &n) {
-                    let kind = match macro_stmt(expr, false) {
-                        Some(call) => StmtKind::MacCall(call),
-                        None => StmtKind::Expr(expr.clone()),
-                    };
-                    stmts.push(Stmt {
-                        span: rustc_span(&n),
-                        kind,
+                        kind: StmtKind::Empty,
+                        span: mk_sp(BytePos::from(offset), BytePos::from(offset + len)),
                     });
                 }
             }
+            NodeOrToken::Node(n) => {
+                let kind = RustLanguage::kind_from_raw(n.kind());
+                let is_let = ast::LetStmt::can_cast(kind);
+                let is_expr_stmt = ast::ExprStmt::can_cast(kind);
+                let is_item = ast::Item::can_cast(kind);
+                let is_tail = tail_index == Some(index);
+                if is_let || is_expr_stmt || is_item || is_tail {
+                    let Some(n) = child_at(parent, index, offset, len) else {
+                        continue;
+                    };
+                    let span = rustc_span(&n);
+                    let kind = if is_let {
+                        let Some(l) = ast::LetStmt::cast(n) else {
+                            continue;
+                        };
+                        StmtKind::Let(l)
+                    } else if is_expr_stmt {
+                        let Some(expr) = child::<ast::Expr>(&n) else {
+                            continue;
+                        };
+                        let has_semi = has_token(&n, T![;]);
+                        match macro_stmt(&expr, has_semi) {
+                            Some(call) => StmtKind::MacCall(call),
+                            None if has_semi => StmtKind::Semi(expr),
+                            None => StmtKind::Expr(expr),
+                        }
+                    } else if is_item {
+                        let Some(item) = ast::Item::cast(n) else {
+                            continue;
+                        };
+                        StmtKind::Item(item)
+                    } else {
+                        let Some(expr) = ast::Expr::cast(n) else {
+                            continue;
+                        };
+                        match macro_stmt(&expr, false) {
+                            Some(call) => StmtKind::MacCall(call),
+                            None => StmtKind::Expr(expr),
+                        }
+                    };
+                    stmts.push(Stmt { kind, span });
+                }
+            }
         }
+        offset += len;
     }
     stmts
 }
@@ -582,6 +645,181 @@ mod tests {
         assert_eq!(
             kinds,
             ["let", "semi", "empty", "mac", "mac", "expr", "expr"]
+        );
+    }
+
+    /// Sources covering every statement kind and block kind `stmts_of` and
+    /// `Block::from_block_expr` classify: `let` statements, expression statements with and
+    /// without `;`, block-like expression statements, statement macros with `;`, braces and
+    /// neither, items in blocks, empty statements, tail expressions, blocks without a tail,
+    /// empty blocks, `unsafe`, `const`, `async`, `try`, `gen` and labeled blocks, attributes
+    /// and doc comments on statements, inner attributes and comments in blocks, `let`-`else`.
+    const BLOCK_SOURCES: &[&str] = &[
+        "fn f() {\n    let a = 1;\n    a;\n    ;\n    foo!();\n    bar! {}\n    baz![];\n    \
+         if x {} else {}\n    fn g() {}\n    struct S;\n    use std::io;\n    \
+         macro_rules! m { () => {} }\n    const C: u8 = 1;\n    vec![1]\n}\n",
+        "fn f() { m! {} }\nfn g() { m!() }\nfn h() { m!(); }\nfn i() { m! { a }; }\n\
+         fn j() { m!({}) }\nfn k() { m![{}]; m }\n",
+        "fn f() {\n    #[allow(x)]\n    let a = 1;\n    /// doc\n    #[cfg(test)]\n    fn g() {}\n    \
+         #[attr] foo!();\n    #[attr] bar! {}\n    #[attr] a\n}\n",
+        "fn f() {\n    unsafe { x; }\n    const { 1 }\n    async { 1 }\n    async move { 1 }\n    \
+         'a: { break 'a; }\n    try { 1 }\n    gen { yield 1 }\n    {}\n    { ; }\n    { x }\n    \
+         { x; }\n    let b = { let c = 1; c };\n    let Some(d) = e else { return };\n    \
+         loop { break; }\n    while x {}\n    unsafe {}\n}\n",
+        "fn f() {\n    #![allow(x)]\n    // c\n    let a = 1; // t\n    /* b */ a\n}\n",
+        "fn f() {\n    match x { _ => {} }\n    unsafe {}\n    a.b();\n    (a, b)\n}\n",
+        "fn f() {\n    let x = || { 1 };\n    let y = async move { x };\n    x = 2;\n    x += 1;\n    \
+         return;\n}\n",
+    ];
+
+    /// The red-cursor computation `stmts_of` replaced.
+    fn stmts_by_cursor(list: &ast::StmtList) -> Vec<Stmt> {
+        fn macro_stmt(expr: &ast::Expr, has_semi: bool) -> Option<ast::MacroCall> {
+            let ast::Expr::MacroExpr(m) = expr else {
+                return None;
+            };
+            let call = m.macro_call()?;
+            let braces = call
+                .token_tree()
+                .and_then(|tt| tt.l_curly_token())
+                .is_some();
+            (has_semi || braces).then_some(call)
+        }
+        let tail = list.tail_expr();
+        let mut stmts = Vec::new();
+        for child in list.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Token(t) if t.kind() == SyntaxKind::SEMICOLON => stmts.push(Stmt {
+                    kind: StmtKind::Empty,
+                    span: token_span(&t),
+                }),
+                NodeOrToken::Token(_) => {}
+                NodeOrToken::Node(n) => {
+                    if let Some(l) = ast::LetStmt::cast(n.clone()) {
+                        stmts.push(Stmt {
+                            span: rustc_span(&n),
+                            kind: StmtKind::Let(l),
+                        });
+                    } else if let Some(es) = ast::ExprStmt::cast(n.clone()) {
+                        let Some(expr) = es.expr() else { continue };
+                        let has_semi = es.semicolon_token().is_some();
+                        let kind = match macro_stmt(&expr, has_semi) {
+                            Some(call) => StmtKind::MacCall(call),
+                            None if has_semi => StmtKind::Semi(expr),
+                            None => StmtKind::Expr(expr),
+                        };
+                        stmts.push(Stmt {
+                            span: rustc_span(&n),
+                            kind,
+                        });
+                    } else if let Some(item) = ast::Item::cast(n.clone()) {
+                        stmts.push(Stmt {
+                            span: rustc_span(&n),
+                            kind: StmtKind::Item(item),
+                        });
+                    } else if let Some(expr) = tail.as_ref().filter(|t| t.syntax() == &n) {
+                        let kind = match macro_stmt(expr, false) {
+                            Some(call) => StmtKind::MacCall(call),
+                            None => StmtKind::Expr(expr.clone()),
+                        };
+                        stmts.push(Stmt {
+                            span: rustc_span(&n),
+                            kind,
+                        });
+                    }
+                }
+            }
+        }
+        stmts
+    }
+
+    /// What a statement holds, for comparison: its kind, span and node.
+    fn stmt_key(stmt: &Stmt) -> (&'static str, Span, Option<SyntaxNode>) {
+        let (kind, node) = match &stmt.kind {
+            StmtKind::Let(l) => ("let", Some(l.syntax().clone())),
+            StmtKind::Item(i) => ("item", Some(i.syntax().clone())),
+            StmtKind::Expr(e) => ("expr", Some(e.syntax().clone())),
+            StmtKind::Semi(e) => ("semi", Some(e.syntax().clone())),
+            StmtKind::MacCall(m) => ("mac", Some(m.syntax().clone())),
+            StmtKind::Empty => ("empty", None),
+        };
+        (kind, stmt.span, node)
+    }
+
+    #[test]
+    fn stmts_of_matches_a_cursor_walk_on_every_statement_list() {
+        let mut seen = std::collections::BTreeMap::new();
+        for src in BLOCK_SOURCES {
+            let file = SourceFile::parse(src, Edition::Edition2024).tree();
+            for list in file.syntax().descendants().filter_map(ast::StmtList::cast) {
+                let green: Vec<_> = stmts_of(&list).iter().map(stmt_key).collect();
+                let red: Vec<_> = stmts_by_cursor(&list).iter().map(stmt_key).collect();
+                assert_eq!(green, red, "{list} in {src:?}");
+                for (kind, _, node) in &green {
+                    let is_tail = |n: &SyntaxNode| {
+                        list.tail_expr()
+                            .is_some_and(|t| t.syntax().text_range() == n.text_range())
+                    };
+                    let variant = match (*kind, node) {
+                        ("mac", Some(n)) if is_tail(n) => "mac tail",
+                        ("mac", Some(n)) if n.text().to_string().ends_with('}') => "mac braces",
+                        (k, _) => k,
+                    };
+                    *seen.entry(variant).or_insert(0) += 1;
+                }
+                let tail = green.last().is_some_and(|(k, ..)| *k == "expr");
+                let key = match (green.is_empty(), tail) {
+                    (true, _) => "empty block",
+                    (false, true) => "block with tail",
+                    (false, false) => "block without tail",
+                };
+                *seen.entry(key).or_insert(0) += 1;
+            }
+        }
+        for variant in [
+            "let",
+            "item",
+            "expr",
+            "semi",
+            "mac",
+            "mac braces",
+            "mac tail",
+            "empty",
+            "empty block",
+            "block with tail",
+            "block without tail",
+        ] {
+            assert!(
+                seen.get(variant).is_some_and(|&n| n > 0),
+                "{variant} occurs: {seen:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn block_from_block_expr_matches_the_generated_accessors() {
+        let mut unsafe_blocks = 0;
+        let mut blocks = 0;
+        for src in BLOCK_SOURCES {
+            let file = SourceFile::parse(src, Edition::Edition2024).tree();
+            for b in file.syntax().descendants().filter_map(ast::BlockExpr::cast) {
+                let block = Block::from_block_expr(&b).unwrap();
+                let list = b.stmt_list().unwrap();
+                let list_span = node_range_span(list.syntax());
+                let (rules, span) = match b.unsafe_token() {
+                    Some(t) => (BlockRules::Unsafe, list_span.with_lo(token_span(&t).lo())),
+                    None => (BlockRules::Default, list_span),
+                };
+                assert_eq!(block.rules, rules, "{b}");
+                assert_eq!(block.span, span, "{b}");
+                assert_eq!(block.stmt_list, Some(list), "{b}");
+                blocks += 1;
+                unsafe_blocks += usize::from(rules == BlockRules::Unsafe);
+            }
+        }
+        assert!(
+            blocks > 20 && unsafe_blocks >= 3,
+            "{blocks} blocks, {unsafe_blocks} unsafe"
         );
     }
 
