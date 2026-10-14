@@ -27,6 +27,7 @@ use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
 use super::nodes::green_children_with_ranges;
 use super::rustc_compat::{doc_comment_style, subtree_rejected_by_rustc};
+use super::rustc_syntax::lexer_rejects;
 use super::span::{BytePos, Span, mk_sp};
 
 /// The arguments of a macro call, as rustfmt's `ParsedMacroArgs`.
@@ -117,7 +118,7 @@ impl<'a> MacroTokens<'a> {
         let text = context.snippet(mk_sp(base, end));
         let edition = context.config.edition().to_ra();
         let lexed = LexedStr::new(edition, text);
-        if lexed.errors().next().is_some() {
+        if lexer_rejects(&lexed, edition) {
             return None;
         }
         let mut toks = Vec::with_capacity(lexed.len());
