@@ -175,14 +175,85 @@ the gates in the protocol, the golden hashes are re-recorded, and the ledger's
 best-known-good row moves. The README's figures change only to numbers from
 [baseline.md](2026-10-14-autoresearch/baseline.md) taken on the merged tree.
 
+## Results so far (measured unless labelled)
+
+Each experiment's own record is under `2026-10-14-autoresearch/experiments/`; the ledger
+row names the gate results and the commit. What follows is the orchestrator's reading.
+
+**E6, CLI cache (`20261014-cli-cache`, merged `d9f5a86`).** The cache records the BLAKE3
+digest of each file's content found to be a fixed point, in a file named by the digest of
+the running binary and of the serialised `Config`. On a copy of the 1238 fixtures that is
+entirely fixed points, `--check` takes 32.7 ± 2.2 ms warm against 819.4 ± 65.3 ms with
+`--no-cache` on the sibling host (25.1x; 100.7x on one core); reproduced here under load
+average 8.8 at 46.6 ± 9.3 ms against 1517.8 ± 158.3 ms (32.5x). The library is untouched.
+Costs: +188 KB of binary (`blake3`), one extra format of each file `--write` rewrites (the
+new content is recorded only after a second pass returns it unchanged, so no idempotence is
+assumed), and a cache directory under `~/.cache/chloro` by default. On a tree where most
+files would change, the cache changes nothing measurable: the changed files are formatted
+regardless.
+
+**E1, items in parallel (`20261014-parallel-items`, merged `7faa8c9`).** A file is parsed
+once; worker threads build their own red trees over the shared green tree and format
+top-level units (an item, or a `use`/`mod`/`extern crate` group that `reorder.rs` sorts
+together) from a longest-first queue, each with its own visitor and `RunState`. The gap
+before a unit is not written by the worker: the unit's first `format_missing*` call is
+recorded and replayed by the stitching visitor on the real buffer, which keeps every
+comment, blank line and skipped item on the sequential path. Equality: 0 of 1238 fixture
+outputs and 0 of 20,847 registry outputs differ between 4 threads and `format_source`,
+checked here. Gain on the sibling host (Xeon @ 2.10GHz, 4 cores, hyperfine 15 runs,
+minima): 1.50–1.88x on the five largest fixtures, 1.20–1.82x on the fixture crates; the
+largest-first file queue alone is 1.24–1.49x of the crate gain. The ceiling on this corpus
+is about 2x, not the core count: parsing stays sequential (12–29% of a file) and the
+longest unit bounds the rest (`lints.rs` is two `const` arrays of 288 KB and 223 KB).
+Splitting medium files hurts crates (oversubscription); the CLI splits files of 128 KiB and
+more. CPU time per split file rises 4–21%. `format_source` and `format_source_with_config`
+are unchanged; the parallel path is `format_source_with_config_parallel`.
+
+**E2, build profile, PGO, allocator, scheduler (`20261014-cli-build`).** Fat LTO with one
+codegen unit: −8.09% instructions on the sample (R1), `bench` pairs −18.5%, −8.2%, −9.5%
+on the sibling host, binary −26%, build time 21 s → 47 s; kept as `[profile.release]`.
+PGO on top: `bench` pairs base against combined −29.0%, −17.0%, −19.6% with ranges that do
+not overlap (2.48–2.53 s against 1.76–2.06 s); kept as `benchmarks/pgo.sh` with a proposed
+`binaries.yml` step in the record, not applied to the workflow. `mimalloc` in the CLI:
+rejected — no wall-time gain outside the host's spread and 4–10x peak RSS (`hir` 23.5 →
+142 MiB) from eager arena commits; relaxing the commit policy removed the gain with the
+memory. `panic = "abort"`: rejected, since the CLI joins worker threads with
+`unwrap_or_default()` and goes on to report the other files after a panic, which abort
+would end. `target-cpu=native`: headroom only, not shippable. E2's scheduler is the same
+design as E1's and is not merged twice.
+
+**R4, the harness and the first honest baseline.** The crate-level comparison runs rustfmt
+on the crate root and chloro on exactly the files rustfmt's `-v` output names, on copies
+that rustfmt has formatted first (see "State found" for why). Under load, chloro's CLI on
+four cores takes 0.48–1.14 of rustfmt's wall time per crate and 0.62–1.00 of its CPU time
+on one core; rustfmt's start-up is 9–13 ms against chloro's 2–3 ms; peak RSS is 43–85 MiB
+against 7–37 MiB. These are the numbers the integrated build is measured against on a quiet
+host; nothing in this entry claims a ratio from them yet.
+
+**R3, rustfmt releases.** On the fixtures at edition 2024, rustfmt 1.8.0 (Rust 1.88.0)
+formats 1 of 1001 accepted files differently from 1.9.0 and rejects 3 that 1.9.0 accepts;
+on the 20,593-file registry, 2 differing and 5 rejections. The two 1.8.0 builds (Rust
+1.85.0 and 1.88.0) format every file identically and differ only in parser acceptance. The
+differences fall into 14 formatting classes (F1–F14: `r#` on labels, a closure label, `use
+self::self`, `super let`, pre-2024 ordering of `_` imports, a panic on Unicode whitespace,
+…) and 8 acceptance classes (P1–P8: let chains before 2024, `[const]` bounds, frontmatter,
+…). 1.7.0 has no 2024 style rules: 540 of 981 fixtures differ, 528 of them only in import
+order, and `version=Two` is unavailable to it. chloro already produces 1.9.0's output on
+every class reproducer except F13 (a `macro_rules!` body that is one `const {}` block). The
+design — a chloro-only `rustfmt_version` setting branched like `style_edition`, with
+snapshots for the differing files only — is being implemented as E8 for 1.8.0; 1.7.0 is
+recorded as unsupported with the numbers above.
+
 ## Current State
 
 - Formatting runs rustfmt 1.9.0's algorithm single-threaded in process at 4.57 MB/s on
   the 1238 fixture files, measured with `target/release/examples/bench -n 5` at `884f9c9`
 - Conformance is 1219/1220 identical with 0 non-idempotent outputs
   (`target/release/examples/conform -i` at `884f9c9`)
-- The CLI formats files in parallel in `threads × 4` static chunks of the path-sorted file
-  list (chloro/src/cli/orchestrate.rs:29-61)
+- The CLI hands files to one worker per core from a largest-first queue and formats the
+  top-level items of files of 128 KiB and more on all threads
+  (chloro/src/cli/orchestrate.rs, chloro-core/src/formatter/parallel.rs); `--threads N`
+  sets the count
 - The research protocol, ledger and corpus manifest are in
   docs/journal/2026-10-14-autoresearch/ (protocol.md, experiments.md, corpus/)
 - `benchmarks/compare_rustfmt.sh` times rustfmt and chloro on the same file set per crate
@@ -197,5 +268,5 @@ best-known-good row moves. The README's figures change only to numbers from
 
 - No quiet-host run of `benchmarks/compare_rustfmt.sh`; every wall-clock figure in
   baseline.md was taken at load average 6–10
-- No support for a rustfmt version other than 1.9.0 (R3 running)
+- No support for a rustfmt version other than 1.9.0 (E8 running on the design in rustfmt-versions.md)
 - `0024_many_type_parens.rs` differs from rustfmt (R2 running)
