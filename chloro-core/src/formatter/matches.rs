@@ -2,8 +2,8 @@
 
 use std::iter::repeat_n;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use ra_ap_parser::T;
+use crate::cst::ast::{self, AstNode};
 
 use super::attr::rewrite_attrs;
 use super::comment::{FindUncommented, combine_strs_with_missing_comments, rewrite_comment};
@@ -27,8 +27,8 @@ use super::utils::{
 };
 
 /// A simple wrapper type against `ast::MatchArm`. Used inside `write_list()`.
-struct ArmWrapper {
-    arm: ast::MatchArm,
+struct ArmWrapper<'a> {
+    arm: ast::MatchArm<'a>,
     /// `true` if the arm is the last one in match expression. Used to decide on whether we should
     /// add trailing comma to the match arm when `config.trailing_comma() == Never`.
     is_last: bool,
@@ -46,7 +46,7 @@ fn arm_span(arm: &ast::MatchArm) -> Span {
     }
 }
 
-impl Spanned for ArmWrapper {
+impl Spanned for ArmWrapper<'_> {
     fn span(&self) -> Span {
         let span = arm_span(&self.arm);
         if let Some(lo) = self.beginning_vert {
@@ -57,7 +57,7 @@ impl Spanned for ArmWrapper {
     }
 }
 
-impl Rewrite for ArmWrapper {
+impl Rewrite for ArmWrapper<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_match_arm(
             context,
@@ -172,7 +172,7 @@ fn is_default_block(body: &ast::Expr) -> bool {
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
-fn as_block(body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn as_block<'a>(body: &ast::Expr<'a>) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
             Some((b.clone(), Block::from_block_expr(b)?))
@@ -351,7 +351,7 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
     matches!(kind, StmtKind::Expr(ast::Expr::MacroExpr(_)))
 }
 
-fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
+fn block_can_be_flattened<'a>(context: &RewriteContext<'_>, expr: &ast::Expr<'a>) -> Option<Block<'a>> {
     let (block_expr, block) = as_block(expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
@@ -364,11 +364,11 @@ fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Opt
 /// (extend, body)
 /// @extend: true if the arm body can be put next to `=>`
 /// @body: flattened body, if the body is block with a single expression
-fn flatten_arm_body(
+fn flatten_arm_body<'a>(
     context: &RewriteContext<'_>,
-    body: &ast::Expr,
+    body: &ast::Expr<'a>,
     opt_shape: Option<Shape>,
-) -> (bool, ast::Expr) {
+) -> (bool, ast::Expr<'a>) {
     let can_extend = |expr: &ast::Expr| {
         !context.config.force_multiline_blocks() && can_flatten_block_around_this(expr)
     };

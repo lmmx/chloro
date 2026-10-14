@@ -8,9 +8,9 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use ra_ap_syntax::SyntaxKind;
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName};
+use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
+use crate::cst::ast::{self, AstNode, HasModuleItem, HasName};
 
 use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
 use super::config::{Settings, StyleEdition};
@@ -37,7 +37,7 @@ use super::utils::{count_newlines, format_visibility, last_line_width, starts_wi
 pub(crate) struct FmtVisitor<'a> {
     /// Receives `macro_rewrite_failure` when the visitor is dropped (rustfmt's
     /// `parent_context`).
-    parent_macro_failure: Option<&'a Cell<bool>>,
+    parent_macro_failure: Option<Rc<Cell<bool>>>,
     pub(crate) buffer: String,
     pub(crate) last_pos: BytePos,
     pub(crate) block_indent: Indent,
@@ -48,7 +48,7 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) line_number: usize,
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
-    pub(crate) run: Rc<RunState>,
+    pub(crate) run: Rc<RunState<'a>>,
     /// Set while a worker formats one top-level unit on its own (`parallel.rs`): the
     /// unit's first `format_missing*` call, which writes the gap before the unit, is
     /// recorded here and skipped, for the stitching visitor to replay on the real buffer.
@@ -57,7 +57,7 @@ pub(crate) struct FmtVisitor<'a> {
 
 impl Drop for FmtVisitor<'_> {
     fn drop(&mut self) {
-        if let Some(parent) = self.parent_macro_failure
+        if let Some(parent) = &self.parent_macro_failure
             && self.macro_rewrite_failure
         {
             parent.set(true);
@@ -66,21 +66,21 @@ impl Drop for FmtVisitor<'_> {
 }
 
 /// The outer and inner attributes of an item, as rustc's `item.attrs`.
-fn item_attrs(item: &ast::Item) -> Vec<Attribute> {
+fn item_attrs<'a>(item: &ast::Item<'a>) -> Vec<Attribute<'a>> {
     let mut attrs = outer_attributes(item.syntax());
     let container = match item {
         ast::Item::Module(m) => m.item_list().map(|l| l.syntax().clone()),
         ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax().clone()),
-        ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax().clone()),
-        ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax().clone()),
+        ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax()),
+        ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax()),
         ast::Item::Fn(f) => f
             .body()
             .and_then(|b| child::<ast::StmtList>(b.syntax()))
-            .map(|l| l.syntax().clone()),
+            .map(|l| l.syntax()),
         _ => None,
     };
     if let Some(container) = container {
-        attrs.extend(inner_attributes(&container));
+        attrs.extend(inner_attributes(container));
     }
     attrs
 }
@@ -89,7 +89,7 @@ impl<'a> FmtVisitor<'a> {
     pub(crate) fn new(
         config: &'a Settings,
         snippet_provider: SnippetProvider<'a>,
-        run: Rc<RunState>,
+        run: Rc<RunState<'a>>,
     ) -> FmtVisitor<'a> {
         FmtVisitor {
             parent_macro_failure: None,
@@ -123,11 +123,11 @@ impl<'a> FmtVisitor<'a> {
         }
     }
 
-    pub(crate) fn from_context(ctx: &'a RewriteContext<'_>) -> FmtVisitor<'a> {
+    pub(crate) fn from_context(ctx: &RewriteContext<'a>) -> FmtVisitor<'a> {
         let mut visitor = FmtVisitor::new(ctx.config, ctx.snippet_provider, ctx.run.clone());
         visitor.buffer = String::with_capacity(256);
         visitor.is_macro_def = ctx.is_macro_def;
-        visitor.parent_macro_failure = Some(&ctx.macro_rewrite_failure);
+        visitor.parent_macro_failure = Some(ctx.macro_rewrite_failure.clone());
         visitor
     }
 

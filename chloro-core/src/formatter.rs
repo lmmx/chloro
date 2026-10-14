@@ -15,7 +15,7 @@
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
 //!
-//! `nodes` and `span` adapt rowan nodes to rustc's AST shape (doc comments as attributes,
+//! `nodes` and `span` adapt the syntax tree (`crate::cst`) to rustc's AST shape (doc comments as attributes,
 //! rustc's spans), which lets the ported modules keep rustfmt's control flow.
 
 mod attr;

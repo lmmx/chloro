@@ -1,6 +1,6 @@
 //! Binary-operator-like pairs (rustfmt's `pairs.rs`).
 
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
 
 use super::context::{Rewrite, RewriteContext};
 use super::lists::SeparatorPlace;
@@ -237,8 +237,8 @@ where
     ))
 }
 
-struct PairList {
-    list: Vec<(ast::Expr, Option<String>)>,
+struct PairList<'a> {
+    list: Vec<(ast::Expr<'a>, Option<String>)>,
     separators: Vec<String>,
 }
 
@@ -258,7 +258,7 @@ fn is_ident_or_bool_lit(expr: &ast::Expr) -> bool {
     }
 }
 
-impl PairList {
+impl PairList<'_> {
     fn let_chain_count(&self) -> usize {
         self.list
             .iter()
@@ -285,7 +285,7 @@ pub(crate) fn bin_op_text(expr: &ast::BinExpr) -> Option<String> {
 
 /// Turn a tree of same-operator binary expressions into a list using a depth-first,
 /// in-order traversal.
-fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> Option<PairList> {
+fn flatten<'a>(expr: &ast::BinExpr<'a>, context: &RewriteContext<'_>, shape: Shape) -> Option<PairList<'a>> {
     if is_assignment(expr) {
         return None;
     }

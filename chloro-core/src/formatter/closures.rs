@@ -9,8 +9,8 @@
 //!     statement without needing a semi-colon), then adding or removing braces
 //!     can change whether it is treated as an expression or statement.
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use ra_ap_parser::T;
+use crate::cst::ast::{self, AstNode};
 
 use super::config::StyleEdition;
 use super::context::{Rewrite, RewriteContext};
@@ -33,7 +33,7 @@ use super::utils::{last_line_width, left_most_sub_expr};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
-fn plain_block(expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn plain_block<'a>(expr: &ast::Expr<'a>) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match expr {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
             Some((b.clone(), Block::from_block_expr(b)?))
@@ -97,7 +97,7 @@ fn try_rewrite_without_block(
     }
 }
 
-fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr {
+fn get_inner_expr<'a>(expr: &ast::Expr<'a>, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr<'a> {
     if let Some((block_expr, block)) = plain_block(expr)
         && !needs_block(
             &block,
@@ -250,7 +250,7 @@ fn rewrite_closure_fn_decl(
         .syntax()
         .children_with_tokens()
         .filter_map(|e| e.into_token())
-        .any(|t| t.kind() == ra_ap_syntax::SyntaxKind::USE_KW)
+        .any(|t| t.kind() == ra_ap_parser::SyntaxKind::USE_KW)
     {
         "use "
     } else {

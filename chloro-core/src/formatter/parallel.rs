@@ -10,12 +10,12 @@
 //! - **Units.** A unit is one top-level item, or one group of consecutive reorderable
 //!   items (the group `reorder.rs` sorts together); the units are the sequence
 //!   `visit_items_with_reordering` walks.
-//! - **Workers.** The file is parsed once. Each worker builds its own red tree over the
-//!   shared green tree (`SyntaxNode` is not `Send`; `GreenNode` is), takes units from a
-//!   shared queue (longest first) and formats each one with a visitor of its own, starting
-//!   from the state the sequential visitor would have at that item: `last_pos` at the
-//!   unit's start, an empty block indent and a [`RunState`] of its own (memo, macro
-//!   argument cache, line table).
+//! - **Workers.** The file is parsed once into one immutable tree, which the workers share
+//!   (`Tree` is `Sync`; a handle is a reference and an index). Each worker takes units
+//!   from a shared queue (longest first) and formats each one with a visitor of its own,
+//!   starting from the state the sequential visitor would have at that item: `last_pos` at
+//!   the unit's start, an empty block indent and a [`RunState`] of its own (memo, macro
+//!   argument cache, line table, and an arena for the macro-argument trees it parses).
 //! - **The gap before each unit.** The sequential visitor writes the text between the
 //!   previous item and this one from inside the item's own code (its first
 //!   `format_missing*` call), and that call reads the output written so far (whether it is
@@ -33,8 +33,8 @@
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use ra_ap_syntax::ast::{self, AstNode, HasModuleItem};
-use ra_ap_syntax::{SourceFile, SyntaxNode};
+use crate::cst::TreeArena;
+use crate::cst::ast::{self, AstNode, HasModuleItem};
 
 use super::config::Settings;
 use super::context::RunState;
@@ -87,10 +87,11 @@ struct UnitOutput {
 pub(crate) fn format_file(
     source: &str,
     config: &Settings,
-    file: &SourceFile,
+    file: &ast::SourceFile<'_>,
     threads: usize,
 ) -> Formatted {
-    let run = Rc::new(RunState::default());
+    let arena = TreeArena::new();
+    let run = Rc::new(RunState::new(&arena));
     let snippet_provider = SnippetProvider::new(source);
     let end_pos = snippet_provider.end_pos();
     let mut main = FmtVisitor::new(config, snippet_provider, run.clone());
@@ -100,13 +101,13 @@ pub(crate) fn format_file(
     // `format_separate_mod`, with the walk over the items replaced.
     main.block_indent = Indent::empty();
     main.visit_attrs(&inner_attributes(file.syntax()), AttrStyle::Inner);
-    let items: Vec<ast::Item> = file.items().collect();
+    let items: Vec<ast::Item<'_>> = file.items().collect();
     let units = main.unit_ranges(&items);
 
     if threads <= 1 || units.len() < 2 {
         main.visit_items_with_reordering(&items);
     } else {
-        let outputs = format_units(source, config, file, &items, &units, threads);
+        let outputs = format_units(source, config, &items, &units, threads);
         for (unit, out) in units.iter().zip(&outputs) {
             let Some(gap) = out.gap else {
                 // The unit wrote nothing and consumed nothing (a skipped `mod x;`): its
@@ -159,8 +160,7 @@ pub(crate) fn format_file(
 fn format_units(
     source: &str,
     config: &Settings,
-    file: &SourceFile,
-    items: &[ast::Item],
+    items: &[ast::Item<'_>],
     units: &[(usize, usize)],
     threads: usize,
 ) -> Vec<UnitOutput> {
@@ -172,17 +172,14 @@ fn format_units(
     };
     order.sort_by_key(|&u| std::cmp::Reverse(unit_len(&units[u])));
     let next = AtomicUsize::new(0);
-    let green = file.syntax().green().into_owned();
 
     let threads = threads.min(units.len());
     let mut per_thread: Vec<Vec<(usize, UnitOutput)>> = std::thread::scope(|s| {
         let handles: Vec<_> = (0..threads)
             .map(|_| {
                 s.spawn(|| {
-                    let root = SyntaxNode::new_root(green.clone());
-                    let file = SourceFile::cast(root).expect("the green tree is a source file");
-                    let items: Vec<ast::Item> = file.items().collect();
-                    let run = Rc::new(RunState::default());
+                    let arena = TreeArena::new();
+                    let run = Rc::new(RunState::new(&arena));
                     let mut visitor =
                         FmtVisitor::new(config, SnippetProvider::new(source), run.clone());
                     // The buffer starts with one newline, as the sequential buffer does
@@ -218,7 +215,11 @@ fn format_units(
 
 /// Formats one unit with `visitor`, in the state the sequential visitor has at a
 /// top-level item.
-fn format_unit(visitor: &mut FmtVisitor<'_>, run: &RunState, unit: &[ast::Item]) -> UnitOutput {
+fn format_unit<'a>(
+    visitor: &mut FmtVisitor<'a>,
+    run: &RunState<'a>,
+    unit: &[ast::Item<'a>],
+) -> UnitOutput {
     debug_assert_eq!(visitor.buffer, "\n");
     visitor.last_pos = unit[0].span().lo();
     visitor.block_indent = Indent::empty();

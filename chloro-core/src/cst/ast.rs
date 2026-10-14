@@ -8,7 +8,9 @@
 //! comment iterator.
 
 pub use super::generated::*;
-use super::{AstChildren, AstNode, AstToken, Children, Node, Token, support};
+
+pub use super::{AstChildren, AstNode, AstToken};
+use super::{Children, Node, Token, support};
 use ra_ap_parser::SyntaxKind::{self, *};
 use ra_ap_parser::T;
 
@@ -96,6 +98,25 @@ pub fn is_bin_op(kind: SyntaxKind) -> bool {
             | T![|]
             | T![&]
             | T![=]
+            | T![+=]
+            | T![*=]
+            | T![-=]
+            | T![/=]
+            | T![%=]
+            | T![<<=]
+            | T![>>=]
+            | T![^=]
+            | T![|=]
+            | T![&=]
+    )
+}
+
+/// `=` and the compound assignment operators: rust-analyzer's `BinaryOp::Assignment`,
+/// rustc's `ExprKind::Assign` and `ExprKind::AssignOp`.
+pub fn is_assign_op(kind: SyntaxKind) -> bool {
+    matches!(
+        kind,
+        T![=]
             | T![+=]
             | T![*=]
             | T![-=]

@@ -3,13 +3,12 @@
 //! rustfmt is written against rustc's AST, where doc comments are attributes, a block is a
 //! list of statements (its tail expression included), a missing `where` clause still has a
 //! span, and so on. rust-analyzer's lossless tree encodes the same information differently.
-//! The types and functions here present rowan nodes in the shape the ported rustfmt logic
+//! The types and functions here present syntax nodes in the shape the ported rustfmt logic
 //! expects, so that the formatting modules can follow rustfmt's control flow closely.
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken};
-use rowan::Language;
+use ra_ap_parser::{SyntaxKind, T};
+
+use crate::cst::{AstNode, Node, NodeOrToken, Token, ast, support};
 
 use super::span::{
     BytePos, Span, Spanned, is_inner_doc_comment, is_outer_doc_comment, is_outer_doc_text, mk_sp,
@@ -24,16 +23,16 @@ pub(crate) enum AttrStyle {
 
 /// An attribute as rustc sees it: either a `#[...]`/`#![...]` attribute or a sugared doc
 /// comment (`///`, `//!`, `/** */`, `/*! */`).
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Attribute {
-    Doc(SyntaxToken),
-    Normal(ast::Attr),
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Attribute<'a> {
+    Doc(Token<'a>),
+    Normal(ast::Attr<'a>),
 }
 
-impl Attribute {
+impl<'a> Attribute<'a> {
     pub(crate) fn span(&self) -> Span {
         match self {
-            Attribute::Doc(t) => token_span(t),
+            Attribute::Doc(t) => token_span(*t),
             Attribute::Normal(a) => node_range_span(a.syntax()),
         }
     }
@@ -44,7 +43,7 @@ impl Attribute {
 
     pub(crate) fn style(&self) -> AttrStyle {
         match self {
-            Attribute::Doc(t) if is_inner_doc_comment(t) => AttrStyle::Inner,
+            Attribute::Doc(t) if is_inner_doc_comment(*t) => AttrStyle::Inner,
             Attribute::Doc(_) => AttrStyle::Outer,
             Attribute::Normal(a) if has_token(a.syntax(), T![!]) => AttrStyle::Inner,
             Attribute::Normal(_) => AttrStyle::Outer,
@@ -66,7 +65,7 @@ impl Attribute {
         self.path_text().is_some_and(|p| p == name)
     }
 
-    pub(crate) fn as_attr(&self) -> Option<&ast::Attr> {
+    pub(crate) fn as_attr(&self) -> Option<&ast::Attr<'a>> {
         match self {
             Attribute::Normal(a) => Some(a),
             Attribute::Doc(_) => None,
@@ -111,8 +110,8 @@ impl Attribute {
 }
 
 /// Splits the tokens of a token tree (excluding its delimiters) at top-level commas.
-pub(crate) fn split_top_level_commas(tt: &SyntaxNode) -> Vec<Vec<SyntaxToken>> {
-    let mut parts: Vec<Vec<SyntaxToken>> = vec![vec![]];
+pub(crate) fn split_top_level_commas<'t>(tt: Node<'t>) -> Vec<Vec<Token<'t>>> {
+    let mut parts: Vec<Vec<Token<'t>>> = vec![vec![]];
     let children: Vec<_> = tt.children_with_tokens().collect();
     let inner = children
         .get(1..children.len().saturating_sub(1))
@@ -120,7 +119,7 @@ pub(crate) fn split_top_level_commas(tt: &SyntaxNode) -> Vec<Vec<SyntaxToken>> {
     for child in inner {
         match child {
             NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMA => parts.push(vec![]),
-            NodeOrToken::Token(t) => parts.last_mut().unwrap().push(t.clone()),
+            NodeOrToken::Token(t) => parts.last_mut().unwrap().push(*t),
             NodeOrToken::Node(n) => parts
                 .last_mut()
                 .unwrap()
@@ -136,35 +135,23 @@ pub(crate) fn split_top_level_commas(tt: &SyntaxNode) -> Vec<Vec<SyntaxToken>> {
     parts
 }
 
-/// The text of the non-trivia tokens under `node`, in source order, read from the green tree
-/// (no cursor node per descendant).
-pub(crate) fn non_trivia_text(node: &SyntaxNode) -> String {
-    fn push(green: &rowan::GreenNodeData, out: &mut String) {
-        for child in green.children() {
-            match child {
-                NodeOrToken::Node(n) => push(n, out),
-                NodeOrToken::Token(t) => {
-                    if !RustLanguage::kind_from_raw(t.kind()).is_trivia() {
-                        out.push_str(t.text());
-                    }
-                }
-            }
+/// The text of the non-trivia tokens under `node`, in source order.
+pub(crate) fn non_trivia_text(node: Node<'_>) -> String {
+    let mut out = String::new();
+    for t in node.descendants_with_tokens().filter_map(|e| e.into_token()) {
+        if !t.kind().is_trivia() {
+            out.push_str(t.text());
         }
     }
-    let mut out = String::new();
-    push(&node.green(), &mut out);
     out
 }
 
-/// `true` if `node` starts with an attribute or an outer doc comment. Reads the green tree,
-/// which avoids creating cursor nodes for the common case of a node without attributes.
-fn has_leading_attrs(node: &SyntaxNode) -> bool {
-    for child in node.green().children() {
+/// `true` if `node` starts with an attribute or an outer doc comment.
+fn has_leading_attrs(node: Node<'_>) -> bool {
+    for child in node.children_with_tokens() {
         match child {
-            NodeOrToken::Node(n) => {
-                return RustLanguage::kind_from_raw(n.kind()) == SyntaxKind::ATTR;
-            }
-            NodeOrToken::Token(t) => match RustLanguage::kind_from_raw(t.kind()) {
+            NodeOrToken::Node(n) => return n.kind() == SyntaxKind::ATTR,
+            NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::WHITESPACE => {}
                 SyntaxKind::COMMENT if is_outer_doc_text(t.text()) => return true,
                 SyntaxKind::COMMENT => {}
@@ -176,7 +163,7 @@ fn has_leading_attrs(node: &SyntaxNode) -> bool {
 }
 
 /// Outer attributes (including sugared doc comments) at the start of `node`, in source order.
-pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
+pub(crate) fn outer_attributes<'t>(node: Node<'t>) -> Vec<Attribute<'t>> {
     if !has_leading_attrs(node) {
         return Vec::new();
     }
@@ -186,7 +173,7 @@ pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
             NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::WHITESPACE => {}
                 SyntaxKind::COMMENT => {
-                    if is_outer_doc_comment(&t) {
+                    if is_outer_doc_comment(t) {
                         attrs.push(Attribute::Doc(t));
                     }
                 }
@@ -205,19 +192,13 @@ pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
 }
 
 /// `false` when no direct child of `container` can be an inner attribute: no attribute with
-/// a `!` token and no comment starting `//!` or `/*!`. Reads the green tree, so a container
-/// without inner attributes (nearly every block and module) costs no cursor node per child.
-/// A `true` only means [`inner_attributes`] has to look.
-fn may_have_inner_attrs(container: &SyntaxNode) -> bool {
-    container.green().children().any(|child| match child {
-        NodeOrToken::Node(n) => {
-            RustLanguage::kind_from_raw(n.kind()) == SyntaxKind::ATTR
-                && n.children().any(|c| {
-                    matches!(c, NodeOrToken::Token(t) if RustLanguage::kind_from_raw(t.kind()) == T![!])
-                })
-        }
+/// a `!` token and no comment starting `//!` or `/*!`. A `true` only means
+/// [`inner_attributes`] has to look.
+fn may_have_inner_attrs(container: Node<'_>) -> bool {
+    container.children_with_tokens().any(|child| match child {
+        NodeOrToken::Node(n) => n.kind() == SyntaxKind::ATTR && has_token(n, T![!]),
         NodeOrToken::Token(t) => {
-            RustLanguage::kind_from_raw(t.kind()) == SyntaxKind::COMMENT
+            t.kind() == SyntaxKind::COMMENT
                 && (t.text().starts_with("//!") || t.text().starts_with("/*!"))
         }
     })
@@ -225,14 +206,14 @@ fn may_have_inner_attrs(container: &SyntaxNode) -> bool {
 
 /// Inner attributes (`#![...]`, `//!`) that are direct children of a container node such as
 /// a source file, an item list or a statement list.
-pub(crate) fn inner_attributes(container: &SyntaxNode) -> Vec<Attribute> {
+pub(crate) fn inner_attributes<'t>(container: Node<'t>) -> Vec<Attribute<'t>> {
     if !may_have_inner_attrs(container) {
         return Vec::new();
     }
     container
         .children_with_tokens()
         .filter_map(|child| match child {
-            NodeOrToken::Token(t) if is_inner_doc_comment(&t) => Some(Attribute::Doc(t)),
+            NodeOrToken::Token(t) if is_inner_doc_comment(t) => Some(Attribute::Doc(t)),
             NodeOrToken::Node(n) => ast::Attr::cast(n)
                 .filter(|a| has_token(a.syntax(), T![!]))
                 .map(Attribute::Normal),
@@ -241,83 +222,42 @@ pub(crate) fn inner_attributes(container: &SyntaxNode) -> Vec<Attribute> {
         .collect()
 }
 
-pub(crate) fn contains_skip(attrs: &[Attribute]) -> bool {
+pub(crate) fn contains_skip(attrs: &[Attribute<'_>]) -> bool {
     attrs.iter().any(Attribute::is_skip)
 }
 
 /// The span of `node` without its outer attributes and doc comments.
-pub(crate) fn span_without_attrs(node: &SyntaxNode) -> Span {
+pub(crate) fn span_without_attrs(node: Node<'_>) -> Span {
     let full = node_range_span(node);
-    // The first child that is neither trivia nor an attribute, found on the green tree.
-    let mut lo = full.lo();
-    for child in node.green().children() {
-        let (kind, len) = match child {
-            NodeOrToken::Token(t) => (t.kind(), t.text_len()),
-            NodeOrToken::Node(n) => (n.kind(), n.text_len()),
-        };
-        let kind = RustLanguage::kind_from_raw(kind);
+    // The first child that is neither trivia nor an attribute.
+    for child in node.children_with_tokens() {
         let skipped = match child {
-            NodeOrToken::Token(_) => kind.is_trivia(),
-            NodeOrToken::Node(_) => kind == SyntaxKind::ATTR,
+            NodeOrToken::Token(t) => t.kind().is_trivia(),
+            NodeOrToken::Node(n) => n.kind() == SyntaxKind::ATTR,
         };
         if !skipped {
-            return full.with_lo(lo);
+            return full.with_lo(child.text_range().start());
         }
-        lo += BytePos::from(len);
     }
     full
 }
 
-/// Whether `node` has a direct child token of `kind`: a generated `x_token().is_some()`
-/// that reads the green tree instead of creating a red node per child.
-pub(crate) fn has_token(node: &SyntaxNode, kind: SyntaxKind) -> bool {
-    node.green().children().any(|child| {
-        matches!(child, NodeOrToken::Token(t) if RustLanguage::kind_from_raw(t.kind()) == kind)
-    })
+/// Whether `node` has a direct child token of `kind`: a generated `x_token().is_some()`.
+pub(crate) fn has_token(node: Node<'_>, kind: SyntaxKind) -> bool {
+    node.children_with_tokens()
+        .any(|child| matches!(child, NodeOrToken::Token(t) if t.kind() == kind))
 }
 
 /// The first child node of `parent` that casts to `N`: the generated `support::child`
-/// accessors (`x.expr()`, `x.path()`, ...), but a red node is created only for the child
-/// found, located by a binary search on its range, instead of one per child inspected.
-pub(crate) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
-    let mut offset = parent.text_range().start();
-    for green_child in parent.green().children() {
-        let (kind, len) = match green_child {
-            NodeOrToken::Node(n) => (Some(n.kind()), n.text_len()),
-            NodeOrToken::Token(t) => (None, t.text_len()),
-        };
-        if let Some(kind) = kind
-            && N::can_cast(RustLanguage::kind_from_raw(kind))
-        {
-            if len == 0.into() {
-                // A range search cannot tell empty siblings apart.
-                return parent.children().find_map(N::cast);
-            }
-            let range = ra_ap_syntax::TextRange::at(offset, len);
-            return parent
-                .child_or_token_at_range(range)?
-                .into_node()
-                .and_then(N::cast);
-        }
-        offset += len;
-    }
-    None
+/// accessors (`x.expr()`, `x.path()`, ...) for a child the generated layer has no accessor
+/// for.
+pub(crate) fn child<'t, N: AstNode<'t>>(parent: Node<'t>) -> Option<N> {
+    support::child(parent)
 }
 
-/// The source text of `node`. Reads the green tree, which costs neither a red node per
-/// token nor `fmt` machinery, unlike `node.text().to_string()`.
-pub(crate) fn node_text(node: &SyntaxNode) -> String {
-    fn push(green: &rowan::GreenNodeData, out: &mut String) {
-        for child in green.children() {
-            match child {
-                NodeOrToken::Node(n) => push(n, out),
-                NodeOrToken::Token(t) => out.push_str(t.text()),
-            }
-        }
-    }
-    let mut out = String::with_capacity(usize::from(node.text_range().len()));
-    push(&node.green(), &mut out);
-    out
+/// The source text of `node`: a slice of the source.
+pub(crate) fn node_text<'t>(node: Node<'t>) -> &'t str {
+    node.text()
 }
 
 /// rustc's expression kind for a block expression. rust-analyzer has one `BlockExpr` for all
@@ -363,20 +303,20 @@ pub(crate) enum BlockRules {
 /// A brace-delimited block, possibly synthesised around a single expression (rustfmt wraps a
 /// closure body in a block this way).
 #[derive(Clone, Debug)]
-pub(crate) struct Block {
-    pub(crate) stmts: Vec<Stmt>,
+pub(crate) struct Block<'a> {
+    pub(crate) stmts: Vec<Stmt<'a>>,
     pub(crate) span: Span,
     pub(crate) rules: BlockRules,
-    pub(crate) stmt_list: Option<ast::StmtList>,
+    pub(crate) stmt_list: Option<ast::StmtList<'a>>,
 }
 
-impl Block {
+impl<'a> Block<'a> {
     /// The block of a block expression (`{}`, `unsafe {}`, `'a: {}`, `async {}`, ...).
-    pub(crate) fn from_block_expr(block: &ast::BlockExpr) -> Option<Block> {
-        let stmt_list = child::<ast::StmtList>(block.syntax())?;
+    pub(crate) fn from_block_expr(block: &ast::BlockExpr<'a>) -> Option<Block<'a>> {
+        let stmt_list = block.stmt_list()?;
         let list_span = node_range_span(stmt_list.syntax());
         let (rules, span) = match block.unsafe_token() {
-            Some(t) => (BlockRules::Unsafe, list_span.with_lo(token_span(&t).lo())),
+            Some(t) => (BlockRules::Unsafe, list_span.with_lo(token_span(t).lo())),
             None => (BlockRules::Default, list_span),
         };
         Some(Block {
@@ -388,11 +328,11 @@ impl Block {
     }
 
     /// A block without braces containing a single expression statement.
-    pub(crate) fn synthetic(expr: &ast::Expr) -> Block {
+    pub(crate) fn synthetic(expr: &ast::Expr<'a>) -> Block<'a> {
         let span = expr.span();
         Block {
             stmts: vec![Stmt {
-                kind: StmtKind::Expr(expr.clone()),
+                kind: StmtKind::Expr(*expr),
                 span,
             }],
             span,
@@ -401,7 +341,7 @@ impl Block {
         }
     }
 
-    pub(crate) fn inner_attrs(&self) -> Vec<Attribute> {
+    pub(crate) fn inner_attrs(&self) -> Vec<Attribute<'a>> {
         self.stmt_list
             .as_ref()
             .map(|l| inner_attributes(l.syntax()))
@@ -413,51 +353,52 @@ impl Block {
     }
 }
 
-#[derive(Clone, Debug)]
-pub(crate) enum StmtKind {
-    Let(ast::LetStmt),
-    Item(ast::Item),
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum StmtKind<'a> {
+    Let(ast::LetStmt<'a>),
+    Item(ast::Item<'a>),
     /// An expression without a trailing semicolon (a tail expression or a block-like
     /// expression statement).
-    Expr(ast::Expr),
+    Expr(ast::Expr<'a>),
     /// An expression followed by a semicolon.
-    Semi(ast::Expr),
+    Semi(ast::Expr<'a>),
     /// A macro invocation in statement position (`foo!();`, `foo! { .. }`).
-    MacCall(ast::MacroCall),
+    MacCall(ast::MacroCall<'a>),
     /// A lone `;`.
     Empty,
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct Stmt {
-    pub(crate) kind: StmtKind,
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Stmt<'a> {
+    pub(crate) kind: StmtKind<'a>,
     /// rustc's statement span: attributes included, trailing `;` included.
     pub(crate) span: Span,
 }
 
-impl Stmt {
-    pub(crate) fn attrs(&self) -> Vec<Attribute> {
+impl<'a> Stmt<'a> {
+    pub(crate) fn attrs(&self) -> Vec<Attribute<'a>> {
         match &self.kind {
             StmtKind::Let(l) => outer_attributes(l.syntax()),
             StmtKind::Item(i) => outer_attributes(i.syntax()),
             StmtKind::Expr(e) | StmtKind::Semi(e) => outer_attributes(e.syntax()),
             // `#[attr] foo!();`: the attributes belong to the `MacroExpr` around the call.
+            // The parent search stops at the `MacroExpr`, a few elements back at most.
             StmtKind::MacCall(m) => match m.syntax().parent() {
-                Some(p) if p.kind() == SyntaxKind::MACRO_EXPR => outer_attributes(&p),
+                Some(p) if p.kind() == SyntaxKind::MACRO_EXPR => outer_attributes(p),
                 _ => outer_attributes(m.syntax()),
             },
             StmtKind::Empty => vec![],
         }
     }
 
-    pub(crate) fn expr(&self) -> Option<&ast::Expr> {
+    pub(crate) fn expr(&self) -> Option<&ast::Expr<'a>> {
         match &self.kind {
             StmtKind::Expr(e) => Some(e),
             _ => None,
         }
     }
 
-    pub(crate) fn as_item(&self) -> Option<&ast::Item> {
+    pub(crate) fn as_item(&self) -> Option<&ast::Item<'a>> {
         match &self.kind {
             StmtKind::Item(i) => Some(i),
             _ => None,
@@ -467,11 +408,11 @@ impl Stmt {
 
 /// A macro call in statement position is a statement macro (rather than an expression) if it
 /// is followed by `;` or uses braces, mirroring rustc's `parse_stmt_mac`.
-fn macro_stmt(expr: &ast::Expr, has_semi: bool) -> Option<ast::MacroCall> {
+fn macro_stmt<'a>(expr: &ast::Expr<'a>, has_semi: bool) -> Option<ast::MacroCall<'a>> {
     let ast::Expr::MacroExpr(m) = expr else {
         return None;
     };
-    let call = child::<ast::MacroCall>(m.syntax())?;
+    let call = m.macro_call()?;
     let braces = call
         .token_tree()
         .and_then(|tt| tt.l_curly_token())
@@ -480,23 +421,23 @@ fn macro_stmt(expr: &ast::Expr, has_semi: bool) -> Option<ast::MacroCall> {
 }
 
 /// The statements of a statement list in rustc's form, tail expression included.
-pub(crate) fn stmts_of(list: &ast::StmtList) -> Vec<Stmt> {
+pub(crate) fn stmts_of<'a>(list: &ast::StmtList<'a>) -> Vec<Stmt<'a>> {
     let tail = list.tail_expr();
     let mut stmts = Vec::new();
     for child in list.syntax().children_with_tokens() {
         match child {
             NodeOrToken::Token(t) if t.kind() == SyntaxKind::SEMICOLON => stmts.push(Stmt {
                 kind: StmtKind::Empty,
-                span: token_span(&t),
+                span: token_span(t),
             }),
             NodeOrToken::Token(_) => {}
             NodeOrToken::Node(n) => {
-                if let Some(l) = ast::LetStmt::cast(n.clone()) {
+                if let Some(l) = ast::LetStmt::cast(n) {
                     stmts.push(Stmt {
-                        span: rustc_span(&n),
+                        span: rustc_span(n),
                         kind: StmtKind::Let(l),
                     });
-                } else if let Some(es) = ast::ExprStmt::cast(n.clone()) {
+                } else if let Some(es) = ast::ExprStmt::cast(n) {
                     let Some(expr) = es.expr() else { continue };
                     let has_semi = has_token(es.syntax(), T![;]);
                     let kind = match macro_stmt(&expr, has_semi) {
@@ -505,21 +446,21 @@ pub(crate) fn stmts_of(list: &ast::StmtList) -> Vec<Stmt> {
                         None => StmtKind::Expr(expr),
                     };
                     stmts.push(Stmt {
-                        span: rustc_span(&n),
+                        span: rustc_span(n),
                         kind,
                     });
-                } else if let Some(item) = ast::Item::cast(n.clone()) {
+                } else if let Some(item) = ast::Item::cast(n) {
                     stmts.push(Stmt {
-                        span: rustc_span(&n),
+                        span: rustc_span(n),
                         kind: StmtKind::Item(item),
                     });
-                } else if let Some(expr) = tail.as_ref().filter(|t| t.syntax() == &n) {
-                    let kind = match macro_stmt(expr, false) {
+                } else if let Some(expr) = tail.filter(|t| t.syntax() == n) {
+                    let kind = match macro_stmt(&expr, false) {
                         Some(call) => StmtKind::MacCall(call),
-                        None => StmtKind::Expr(expr.clone()),
+                        None => StmtKind::Expr(expr),
                     };
                     stmts.push(Stmt {
-                        span: rustc_span(&n),
+                        span: rustc_span(n),
                         kind,
                     });
                 }
@@ -546,27 +487,38 @@ pub(crate) fn where_clause_span(wc: Option<&ast::WhereClause>, fallback: BytePos
 }
 
 /// Returns the first token of the given kind among `node`'s direct children.
-pub(crate) fn child_token(node: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
-    node.children_with_tokens()
-        .filter_map(|e| e.into_token())
-        .find(|t| t.kind() == kind)
+pub(crate) fn child_token(node: Node<'_>, kind: SyntaxKind) -> Option<Token<'_>> {
+    support::token(node, kind)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_syntax::ast::HasModuleItem;
-    use ra_ap_syntax::{Edition, SourceFile};
+    use crate::cst::Tree;
+    use crate::cst::ast::HasModuleItem;
+    use ra_ap_parser::Edition;
 
-    fn block_of(src: &str) -> Block {
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
-        let f = file.syntax().descendants().find_map(ast::Fn::cast).unwrap();
+    fn parse(src: &str) -> Tree<'_> {
+        Tree::parse(src, Edition::CURRENT).unwrap()
+    }
+
+    fn block_of<'t>(tree: &'t Tree<'t>) -> Block<'t> {
+        let f = tree.root().descendants().find_map(ast::Fn::cast).unwrap();
         Block::from_block_expr(&f.body().unwrap()).unwrap()
+    }
+
+    fn first_item<'t>(tree: &'t Tree<'t>) -> ast::Item<'t> {
+        ast::SourceFile::cast(tree.root())
+            .unwrap()
+            .items()
+            .next()
+            .unwrap()
     }
 
     #[test]
     fn statements_follow_rustc_classification() {
-        let block = block_of("fn f() { let a = 1; a;; foo!(); bar! {} if x {} vec![1] }");
+        let tree = parse("fn f() { let a = 1; a;; foo!(); bar! {} if x {} vec![1] }");
+        let block = block_of(&tree);
         let kinds: Vec<_> = block
             .stmts
             .iter()
@@ -587,9 +539,8 @@ mod tests {
 
     #[test]
     fn doc_comments_are_attributes() {
-        let src = "/// a\n// plain\n#[x]\nfn f() {}";
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
-        let item = file.items().next().unwrap();
+        let tree = parse("/// a\n// plain\n#[x]\nfn f() {}");
+        let item = first_item(&tree);
         let attrs = outer_attributes(item.syntax());
         assert_eq!(attrs.len(), 2);
         assert!(attrs[0].is_doc_comment());
@@ -598,10 +549,9 @@ mod tests {
 
     #[test]
     fn skip_attribute_forms() {
-        let src =
-            "#[rustfmt::skip] #[cfg_attr(test, rustfmt::skip)] #[cfg_attr(a, b, c)] fn f() {}";
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
-        let item = file.items().next().unwrap();
+        let tree =
+            parse("#[rustfmt::skip] #[cfg_attr(test, rustfmt::skip)] #[cfg_attr(a, b, c)] fn f() {}");
+        let item = first_item(&tree);
         let skips: Vec<_> = outer_attributes(item.syntax())
             .iter()
             .map(Attribute::is_skip)
@@ -624,12 +574,12 @@ mod tests {
         "#[r#raw::path]\n#[a::b::<c>]\nfn f() {}\n",
     ];
 
-    /// The red-cursor computation `inner_attributes` replaced.
-    fn inner_attributes_by_cursor(container: &SyntaxNode) -> Vec<Attribute> {
+    /// `inner_attributes` without its `may_have_inner_attrs` pre-check.
+    fn inner_attributes_by_cursor<'t>(container: Node<'t>) -> Vec<Attribute<'t>> {
         container
             .children_with_tokens()
             .filter_map(|child| match child {
-                NodeOrToken::Token(t) if is_inner_doc_comment(&t) => Some(Attribute::Doc(t)),
+                NodeOrToken::Token(t) if is_inner_doc_comment(t) => Some(Attribute::Doc(t)),
                 NodeOrToken::Node(n) => ast::Attr::cast(n)
                     .filter(|a| has_token(a.syntax(), T![!]))
                     .map(Attribute::Normal),
@@ -641,11 +591,11 @@ mod tests {
     #[test]
     fn inner_attributes_match_a_cursor_walk_on_every_node() {
         for src in ATTRIBUTE_SOURCES {
-            let file = SourceFile::parse(src, Edition::CURRENT).tree();
-            for node in file.syntax().descendants() {
+            let tree = parse(src);
+            for node in tree.root().descendants() {
                 assert_eq!(
-                    inner_attributes(&node),
-                    inner_attributes_by_cursor(&node),
+                    inner_attributes(node),
+                    inner_attributes_by_cursor(node),
                     "{node:?} in {src:?}"
                 );
             }
@@ -654,8 +604,8 @@ mod tests {
 
     #[test]
     fn inner_attributes_are_found() {
-        let file = SourceFile::parse(ATTRIBUTE_SOURCES[0], Edition::CURRENT).tree();
-        let attrs = inner_attributes(file.syntax());
+        let tree = parse(ATTRIBUTE_SOURCES[0]);
+        let attrs = inner_attributes(tree.root());
         assert_eq!(attrs.len(), 3);
         assert!(attrs.iter().all(|a| a.style() == AttrStyle::Inner));
     }
@@ -663,23 +613,23 @@ mod tests {
     #[test]
     fn non_trivia_text_matches_a_cursor_walk_on_every_node() {
         for src in ATTRIBUTE_SOURCES {
-            let file = SourceFile::parse(src, Edition::CURRENT).tree();
-            for node in file.syntax().descendants() {
+            let tree = parse(src);
+            for node in tree.root().descendants() {
                 let by_cursor: String = node
                     .descendants_with_tokens()
                     .filter_map(|e| e.into_token())
                     .filter(|t| !t.kind().is_trivia())
                     .map(|t| t.text().to_string())
                     .collect();
-                assert_eq!(non_trivia_text(&node), by_cursor, "{node:?} in {src:?}");
+                assert_eq!(non_trivia_text(node), by_cursor, "{node:?} in {src:?}");
             }
         }
     }
 
     #[test]
     fn attribute_paths_drop_whitespace_and_comments() {
-        let file = SourceFile::parse(ATTRIBUTE_SOURCES[7], Edition::CURRENT).tree();
-        let item = file.items().next().unwrap();
+        let tree = parse(ATTRIBUTE_SOURCES[7]);
+        let item = first_item(&tree);
         let paths: Vec<_> = outer_attributes(item.syntax())
             .iter()
             .map(Attribute::path_text)
@@ -703,30 +653,30 @@ mod tests {
                    let g = &raw mut b;\n    let h = &mut b;\n    let i = &x;\n    \
                    let j = async || 1;\n    let k = gen || 1;\n    let l = async gen || 1;\n    \
                    let m = move || 1;\n    match x { ref n @ 1 => {}, _ => {} }\n}\n";
-        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let tree = parse(src);
         let mut seen = [0usize; 7];
-        for node in file.syntax().descendants() {
-            if let Some(p) = ast::IdentPat::cast(node.clone()) {
-                assert_eq!(has_token(&node, T![ref]), p.ref_token().is_some(), "{node}");
-                assert_eq!(has_token(&node, T![mut]), p.mut_token().is_some(), "{node}");
+        for node in tree.root().descendants() {
+            if let Some(p) = ast::IdentPat::cast(node) {
+                assert_eq!(has_token(node, T![ref]), p.ref_token().is_some(), "{node}");
+                assert_eq!(has_token(node, T![mut]), p.mut_token().is_some(), "{node}");
                 seen[0] += usize::from(p.ref_token().is_some());
                 seen[1] += usize::from(p.mut_token().is_some());
-            } else if let Some(r) = ast::RefExpr::cast(node.clone()) {
-                assert_eq!(has_token(&node, T![raw]), r.raw_token().is_some(), "{node}");
-                assert_eq!(has_token(&node, T![mut]), r.mut_token().is_some(), "{node}");
+            } else if let Some(r) = ast::RefExpr::cast(node) {
+                assert_eq!(has_token(node, T![raw]), r.raw_token().is_some(), "{node}");
+                assert_eq!(has_token(node, T![mut]), r.mut_token().is_some(), "{node}");
                 seen[2] += usize::from(r.raw_token().is_some());
-            } else if let Some(c) = ast::ClosureExpr::cast(node.clone()) {
+            } else if let Some(c) = ast::ClosureExpr::cast(node) {
                 assert_eq!(
-                    has_token(&node, T![async]),
+                    has_token(node, T![async]),
                     c.async_token().is_some(),
                     "{node}"
                 );
-                assert_eq!(has_token(&node, T![gen]), c.gen_token().is_some(), "{node}");
+                assert_eq!(has_token(node, T![gen]), c.gen_token().is_some(), "{node}");
                 seen[3] += usize::from(c.async_token().is_some());
                 seen[4] += usize::from(c.gen_token().is_some());
-            } else if let Some(l) = ast::LetStmt::cast(node.clone()) {
+            } else if let Some(l) = ast::LetStmt::cast(node) {
                 assert_eq!(
-                    has_token(&node, T![super]),
+                    has_token(node, T![super]),
                     l.super_token().is_some(),
                     "{node}"
                 );
