@@ -16,7 +16,7 @@ use super::comment::{
     FindUncommented, combine_strs_with_missing_comments, contains_comment, is_last_comment_block,
     recover_comment_removed, recover_missing_comment_in_span, rewrite_missing_comment,
 };
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
     RhsAssignKind, RhsTactics, is_empty_block, is_simple_block_stmt, rewrite_assign_rhs,
@@ -132,8 +132,12 @@ impl Rewrite for ast::LetStmt {
         if contains_skip(&attrs) {
             return None;
         }
-        // rustfmt does not format `super let` yet.
-        if has_token(self.syntax(), T![super]) {
+        // F4: rustfmt 1.9.0 leaves a `super let` statement as written (`v1.9.0
+        // src/items.rs:68-71`, rust-side commit `266da427`); rustfmt 1.8.0 as built with
+        // Rust 1.88.0 formats it as a `let`, without `super` (`v1.8.0 src/items.rs:49`).
+        if has_token(self.syntax(), T![super])
+            && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0
+        {
             return None;
         }
         let span = item_span(self.syntax());
