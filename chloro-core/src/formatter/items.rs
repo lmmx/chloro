@@ -202,7 +202,7 @@ impl Rewrite for ast::LetStmt<'_> {
                 rewrite_assign_rhs(context, result, &init, &RhsAssignKind::Expr, nested_shape)?;
 
             if let Some(block_expr) = self.let_else().and_then(|le| le.block_expr()) {
-                let block = Block::from_block_expr(&block_expr)?;
+                let block = context.run.block_of(&block_expr)?;
                 let else_kw_span = init.span().between(block.span);
                 // Strip attributes and comments to check if newline is needed before the else
                 // keyword from the initializer part.
@@ -1682,7 +1682,7 @@ impl FmtVisitor<'_> {
             self.push_rewrite(s, None);
             return;
         };
-        let Some(block) = Block::from_block_expr(&body) else {
+        let Some(block) = self.run.block_of(&body) else {
             self.push_rewrite(s, None);
             return;
         };
