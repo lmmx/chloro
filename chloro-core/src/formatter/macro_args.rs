@@ -24,7 +24,7 @@ use ra_ap_syntax::{AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, T, a
 use super::context::RewriteContext;
 use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
-use super::rustc_compat::subtree_rejected_by_rustc;
+use super::rustc_compat::{doc_comment_style, subtree_rejected_by_rustc};
 use super::span::{BytePos, Span, mk_sp};
 
 /// The arguments of a macro call, as rustfmt's `ParsedMacroArgs`.
@@ -84,15 +84,6 @@ struct Tok {
     doc_lo: Option<usize>,
 }
 
-/// A doc comment by rustc's lexer: `///` (not `////`), `//!`, `/**` (not `/***` or `/**/`)
-/// or `/*!`. Other comments are trivia to both lexers.
-fn is_doc_comment(text: &str) -> bool {
-    (text.starts_with("///") && !text.starts_with("////"))
-        || text.starts_with("//!")
-        || (text.starts_with("/**") && !text.starts_with("/***") && text != "/**/")
-        || text.starts_with("/*!")
-}
-
 /// A parsed fragment awaiting splicing: its token range and green node.
 struct Fragment {
     kind: FragmentKind,
@@ -132,7 +123,9 @@ impl<'a> MacroTokens<'a> {
         for i in 0..lexed.len() {
             let kind = lexed.kind(i);
             if kind.is_trivia() {
-                if kind == SyntaxKind::COMMENT && doc_lo.is_none() && is_doc_comment(lexed.text(i))
+                if kind == SyntaxKind::COMMENT
+                    && doc_lo.is_none()
+                    && doc_comment_style(lexed.text(i)).is_some()
                 {
                     doc_lo = Some(lexed.text_range(i).start);
                 }
