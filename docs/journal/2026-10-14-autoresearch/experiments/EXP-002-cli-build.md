@@ -13,7 +13,7 @@ Labels as in the journal: **measured**, **read**, **hypothesis**.
 |---|---|
 | branch | `20261014-cli-build` |
 | base | `d797292` (head of `claude/chloro-perf-research-swarm-nrscj8`; `884f9c9` plus the programme's journal entry) |
-| commits | `0bb8e06` release profile, `6c55740` scheduler, `8efd333` `benchmarks/pgo.sh`, plus this record |
+| commits | `0bb8e06` release profile, `d10c1e3` `benchmarks/pgo.sh`, plus this record (the scheduler commit `6c55740` was measured, then dropped by rebase; see E2d) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, LLVM 22.1.6, `cargo 1.97.0`, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, `llvm-tools-preview` for `llvm-profdata` |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.10GHz" (1 thread per core, L2 8 MiB, L3 260 MiB), 15.7 GB, Linux 6.18.44; a different host from the 2.80GHz one in the programme entry, so no figure here compares with figures there |
 | hyperfine | 2.0.0 (`cargo install hyperfine`), `-N -i -w 2 -r 5`, three blocks per workload with the commands interleaved block by block, 15 runs per command per workload; peak RSS from hyperfine's `memory_peak_resident` |
@@ -320,6 +320,30 @@ either the CLI or the in-process pairs, 4–10x peak RSS at the defaults, and 2x
 no gain when the commit policy is relaxed. The feature is not added to the `chloro`
 crate; the two snippets above reproduce the measurement.
 
+### Instruction counts (measured, callgrind, deterministic)
+
+`benchmarks/profile.sh` from the integration branch (the 49-file sample: every 25th
+file of the bytewise-sorted fixture list, 650,213 bytes; `bench -n 1 --root <sample>`
+under `valgrind --tool=callgrind`, fixed environment), run against each variant's own
+`bench` build:
+
+| bench build | Ir | against `base` |
+|---|---|---|
+| `base` (default profile) | 587,988,181 | — |
+| `lto` (fat LTO, one codegen unit) | 554,256,067 | −5.7% |
+| `pgo` (default profile plus PGO) | 492,983,621 | −16.2% |
+| `mimalloc` (default profile, scratch bench with `mimalloc` as global allocator) | 515,309,648 | −12.4% |
+| `lto-pgo` (the branch's profile plus PGO) | 448,458,885 | −23.7% |
+
+The baseline profile ([../profile-baseline.md](../profile-baseline.md)) puts glibc's
+`malloc`/`free`/`realloc` at 115.7 M Ir (19.7%) of the `base` count on this sample; the
+`mimalloc` build removes 72.7 M of those, so the allocator's own cost under mimalloc is
+about 43 M Ir (7.3% of `base`) for the same 628,959 blocks. The wall-time tables above
+do not show that 12.4% fewer instructions: the process touches 4–10x the pages (eager
+arena commit), and page faults are not instructions. Peak RSS of `bench -n 1` itself
+(hyperfine, 3 runs): on the 49-file sample 6.7 MiB (`base`) against 37.5 MiB (`mimalloc`,
+5.6x); on all 1238 fixtures 35.2 against 76.8 MiB (2.2x).
+
 ## E2d: scheduler
 
 **Hypothesis.** A shared work queue over the files sorted by size descending, one worker
@@ -351,7 +375,14 @@ On `hir-ty`, 122 files summing 2.82 MB, the unpinned minimum goes from 183.0 ms 
 137.5 ms; the pinned minimum (all work on one core) is 414.6 ms for `base`, so the queue
 reaches 3.0x of single-core on four cores where the static chunks reached 2.3x.
 
-**Decision.** Kept.
+**Decision.** Numbers kept as a cross-check; code dropped from this branch. The
+orchestrator reports the same design (atomic index over files sorted by size descending,
+one worker per core, plus a `--threads` flag) already implemented and measured on
+`20261014-parallel-items` (E1) at 1.24–1.49x on the fixture crates, and the integration
+takes E1's version, so the commit that carried this one (`6c55740`) was removed from the
+branch by rebase to avoid two versions of `orchestrate.rs`. The figures above and the
+`sched`, `lto-sched` and `combined` rows of sweep 2 are from that removed commit; the
+"kept combination" section below measures what the branch carries (profile + PGO).
 
 ## E2e: fixed costs
 
@@ -489,14 +520,97 @@ pairs above each overlap `base`.
 
 ### Decision
 
-Kept and committed: the release profile (`0bb8e06`), the scheduler (`6c55740`), the PGO
-script (`8efd333`). Rejected: `mimalloc` (not committed), `panic = "abort"` and
+Kept at this point: the release profile (`0bb8e06`), the scheduler (`6c55740`, later
+dropped, see E2d), the PGO script (`8efd333`, now `d10c1e3` after the rebase). Rejected: `mimalloc` (not committed), `panic = "abort"` and
 `target-cpu=native` (headroom only). Against rustfmt on identical file sets with all
 four cores, the `combined` build's mean wall time is 1/9.9 of rustfmt's on `hir`, 1/9.1
 on `hir-ty`, 1/11.6 on `ide`, 1/6.0 on `ide-db`, 1/6.2 on `syntax`, and 1/2.5 to 1/14.7
 on the single big files; on one core, 1/1.6 to 1/4.0 on the crates. Release binaries
 from `binaries.yml` get the profile with no workflow change; PGO needs the proposed
 step.
+
+## Kept combination: profile + PGO (measured after the scheduler was dropped)
+
+Built from the rebased branch (profile committed, no scheduler change):
+`benchmarks/pgo.sh /home/user/tgt/lto-pgo cli` gives `lto-pgo`
+(2,806,456 B; PGO on fat LTO in one codegen unit). Gates: `bench --check` 0 of 1238
+changed, `conform -i` 1219/1220, 0 not idempotent, sorted `--check -v` report identical to
+`base`'s; callgrind 448,458,885 Ir on the 49-file sample (−23.7% against `base`, −19.1%
+against `lto`, −9.0% against `pgo` on the default profile).
+
+### Sweep 3, unpinned (min / mean (σ) ms, 15 runs per command)
+
+| variant | hir | hir-ty | ide | ide-db | syntax | big-src-lints | big-ast-nodes | big-hir-lib | big-src-tests | big-rust-analyzer-config | tiny | one |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | 75.0 / 90.9 (9.9) | 153.8 / 202.4 (26.1) | 76.1 / 114.9 (42.6) | 96.4 / 124.1 (19.6) | 32.8 / 41.8 (5.2) | 69.5 / 97.8 (20.1) | 54.6 / 68.3 (8.7) | 48.9 / 69.8 (13.4) | 13.5 / 16.7 (2.2) | 23.8 / 29.2 (4.8) | 4.1 / 5.4 (1.1) | 1.5 / 2.2 (0.4) |
+| lto | 74.8 / 85.7 (9.4) | 142.4 / 190.5 (30.6) | 74.5 / 92.7 (9.3) | 98.9 / 118.8 (16.3) | 31.2 / 37.8 (4.0) | 73.9 / 85.1 (9.0) | 48.5 / 63.1 (6.3) | 44.9 / 61.5 (10.0) | 15.2 / 17.6 (2.3) | 17.5 / 25.7 (3.7) | 4.8 / 5.5 (0.6) | 1.7 / 2.2 (0.3) |
+| lto-pgo | 61.9 / 80.8 (10.8) | 144.0 / 171.3 (20.3) | 71.4 / 85.5 (9.7) | 72.2 / 85.7 (10.9) | 33.3 / 37.4 (2.7) | 48.9 / 64.5 (13.0) | 45.4 / 59.7 (10.8) | 45.6 / 58.2 (7.9) | 11.4 / 16.3 (2.2) | 17.2 / 22.9 (4.5) | 4.4 / 5.3 (0.6) | 1.7 / 2.3 (0.4) |
+| rustfmt | 456.0 / 587.6 (85.5) | 1038.9 / 1214.0 (92.1) | 705.9 / 808.5 (96.3) | 272.8 / 339.8 (32.1) | 133.1 / 165.9 (28.4) | 103.1 / 141.3 (21.6) | 606.2 / 825.4 (239.2) | 250.7 / 308.4 (28.3) | 217.1 / 263.3 (25.7) | 82.8 / 97.3 (11.2) | 9.1 / 10.3 (0.9) | 7.8 / 10.1 (1.7) |
+
+Peak RSS, MiB (max over runs):
+
+| variant | hir | hir-ty | ide | ide-db | syntax | big-src-lints | big-ast-nodes | big-hir-lib | big-src-tests | big-rust-analyzer-config | tiny | one |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | 22.5 | 35.0 | 21.1 | 20.3 | 12.2 | 10.4 | 13.8 | 9.3 | 5.7 | 5.9 | 4.0 | 3.7 |
+| lto | 22.8 | 34.6 | 21.0 | 19.6 | 12.1 | 10.3 | 13.7 | 8.9 | 5.4 | 5.8 | 3.8 | 3.4 |
+| lto-pgo | 23.9 | 36.9 | 21.9 | 20.3 | 13.0 | 11.2 | 14.3 | 9.6 | 6.4 | 6.6 | 4.9 | 4.1 |
+| rustfmt | 217.5 | 116.4 | 249.5 | 65.8 | 56.8 | 43.4 | 544.9 | 208.7 | 218.8 | 82.5 | 39.1 | 34.3 |
+
+### Sweep 3, pinned (`taskset -c 0`)
+
+| variant | hir | hir-ty | ide | ide-db | syntax | big-src-lints | big-ast-nodes | big-hir-lib | big-src-tests | big-rust-analyzer-config | tiny | one |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | 130.9 / 175.5 (28.4) | 438.2 / 547.0 (75.4) | 239.0 / 277.8 (24.1) | 178.2 / 211.4 (24.1) | 77.1 / 104.2 (11.9) | 80.6 / 105.3 (18.9) | 53.0 / 69.9 (13.0) | 48.9 / 73.7 (21.2) | 20.4 / 25.7 (5.6) | 31.6 / 42.5 (8.0) | 5.0 / 6.5 (1.0) | 2.6 / 3.1 (0.3) |
+| lto | 126.2 / 173.3 (36.6) | 428.5 / 508.1 (51.0) | 201.0 / 262.0 (31.6) | 140.7 / 192.6 (28.6) | 79.3 / 108.4 (20.0) | 84.4 / 112.4 (19.0) | 49.1 / 57.3 (8.2) | 42.4 / 60.5 (16.3) | 13.7 / 19.2 (5.2) | 25.8 / 33.1 (5.9) | 5.2 / 6.6 (1.2) | 2.4 / 3.2 (0.6) |
+| lto-pgo | 110.8 / 144.4 (24.1) | 433.0 / 503.9 (40.3) | 184.6 / 236.3 (35.3) | 123.4 / 182.9 (41.4) | 77.7 / 94.6 (13.5) | 58.3 / 74.5 (11.4) | 41.6 / 52.9 (9.2) | 47.1 / 60.0 (16.3) | 13.8 / 15.6 (1.6) | 24.6 / 32.9 (4.4) | 4.8 / 6.7 (0.9) | 2.9 / 3.2 (0.2) |
+| rustfmt | 418.8 / 503.6 (62.0) | 1062.4 / 1215.1 (83.6) | 667.9 / 811.1 (86.7) | 276.3 / 338.7 (36.9) | 141.2 / 167.3 (20.3) | 143.4 / 189.1 (29.2) | 632.6 / 717.1 (71.6) | 265.8 / 365.7 (61.5) | 221.0 / 272.1 (33.6) | 102.0 / 127.5 (15.8) | 8.7 / 11.9 (1.6) | 9.2 / 10.9 (1.8) |
+
+Peak RSS, MiB (max over runs):
+
+| variant | hir | hir-ty | ide | ide-db | syntax | big-src-lints | big-ast-nodes | big-hir-lib | big-src-tests | big-rust-analyzer-config | tiny | one |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | 15.8 | 17.1 | 12.2 | 15.2 | 9.1 | 10.4 | 13.8 | 9.3 | 5.8 | 6.0 | 3.8 | 3.7 |
+| lto | 14.8 | 17.0 | 12.0 | 15.0 | 8.9 | 10.2 | 13.7 | 9.0 | 5.5 | 5.8 | 3.7 | 3.4 |
+| lto-pgo | 16.4 | 17.9 | 12.9 | 15.9 | 9.8 | 11.2 | 14.4 | 9.6 | 6.5 | 6.7 | 4.6 | 3.9 |
+| rustfmt | 217.5 | 116.4 | 249.5 | 65.9 | 56.8 | 43.4 | 544.9 | 208.7 | 218.8 | 82.6 | 39.1 | 34.2 |
+
+### Ratios to `base` and to rustfmt (from the tables above)
+
+Each cell: variant minimum / `base` minimum, variant mean / `base` mean, and in brackets
+rustfmt's mean divided by the variant's mean on the same file set.
+
+| unpinned | hir | hir-ty | ide | ide-db | syntax | lints | nodes | hir-lib | tests | config | tiny | one | min < base |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| lto | 1.00/0.94 [6.9x] | 0.93/0.94 [6.4x] | 0.98/0.81 [8.7x] | 1.03/0.96 [2.9x] | 0.95/0.90 [4.4x] | 1.06/0.87 [1.7x] | 0.89/0.92 [13.1x] | 0.92/0.88 [5.0x] | 1.13/1.06 [14.9x] | 0.74/0.88 [3.8x] | 1.17/1.02 [1.9x] | 1.13/1.01 [4.6x] | 7/12 |
+| lto-pgo | 0.83/0.89 [7.3x] | 0.94/0.85 [7.1x] | 0.94/0.74 [9.5x] | 0.75/0.69 [4.0x] | 1.02/0.89 [4.4x] | 0.70/0.66 [2.2x] | 0.83/0.87 [13.8x] | 0.93/0.83 [5.3x] | 0.85/0.98 [16.2x] | 0.72/0.79 [4.3x] | 1.06/0.98 [2.0x] | 1.12/1.04 [4.4x] | 9/12 |
+
+| pinned | hir | hir-ty | ide | ide-db | syntax | lints | nodes | hir-lib | tests | config | tiny | one | min < base |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| lto | 0.96/0.99 [2.9x] | 0.98/0.93 [2.4x] | 0.84/0.94 [3.1x] | 0.79/0.91 [1.8x] | 1.03/1.04 [1.5x] | 1.05/1.07 [1.7x] | 0.93/0.82 [12.5x] | 0.87/0.82 [6.0x] | 0.67/0.75 [14.2x] | 0.82/0.78 [3.8x] | 1.02/1.01 [1.8x] | 0.94/1.03 [3.5x] | 9/12 |
+| lto-pgo | 0.85/0.82 [3.5x] | 0.99/0.92 [2.4x] | 0.77/0.85 [3.4x] | 0.69/0.87 [1.9x] | 1.01/0.91 [1.8x] | 0.72/0.71 [2.5x] | 0.78/0.76 [13.6x] | 0.96/0.81 [6.1x] | 0.68/0.61 [17.4x] | 0.78/0.77 [3.9x] | 0.96/1.03 [1.8x] | 1.11/1.04 [3.4x] | 10/12 |
+
+### In-process `bench -n 5` pairs, `base` against `lto-pgo` (pinned to core 2)
+
+| pair | base | lto-pgo | change |
+|---|---|---|---|
+| 1 | 2.539 s (5.47 MB/s) | 2.020 s (6.88 MB/s) | −20.4% |
+| 2 | 2.156 s (6.45 MB/s) | 1.549 s (8.98 MB/s) | −28.2% |
+| 3 | 2.291 s (6.07 MB/s) | 1.815 s (7.66 MB/s) | −20.8% |
+
+Ranges do not overlap (`base` 2.156–2.539 s, `lto-pgo` 1.549–2.020 s), so the
+profile-plus-PGO build meets the protocol's single-threaded speedup condition, as the
+three-lever `combined` build did; `lto` alone and `pgo` alone did not. The multi-core
+crate ratios here (0.69–0.94 of `base`'s means on `hir`, `hir-ty`, `ide`, `ide-db`,
+`syntax`) are what the branch carries; the 0.49–0.67 of the `combined` row above
+includes the scheduler that E1 supplies.
+
+### Decision (final)
+
+Kept and committed on the branch: the release profile (`0bb8e06`) and the PGO script
+(`d10c1e3`). Dropped: the scheduler commit (E1 carries the same design). Rejected:
+`mimalloc` (not committed), `panic = "abort"` and `target-cpu=native` (headroom only).
+Release binaries from `binaries.yml` get the profile with no workflow change; PGO needs
+the proposed step below.
 
 ## Proposed `binaries.yml` change for PGO (not applied; proposal only)
 
