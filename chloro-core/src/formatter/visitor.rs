@@ -29,6 +29,7 @@ use super::nodes::{
 use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
 use super::shape::{Indent, Shape};
+use super::skip::SkipContext;
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
 use super::stmt::Stmt;
 use super::utils::{count_newlines, format_visibility, last_line_width, starts_with_newline};
@@ -47,6 +48,8 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) line_number: usize,
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
+    /// Macro and attribute names left as written (rustfmt's `skip_context`).
+    pub(crate) skip_context: Rc<SkipContext>,
     pub(crate) run: Rc<RunState>,
 }
 
@@ -98,6 +101,7 @@ impl<'a> FmtVisitor<'a> {
             line_number: 0,
             macro_rewrite_failure: false,
             is_macro_def: false,
+            skip_context: Rc::default(),
             run,
         }
     }
@@ -109,6 +113,7 @@ impl<'a> FmtVisitor<'a> {
     pub(crate) fn from_context(ctx: &'a RewriteContext<'_>) -> FmtVisitor<'a> {
         let mut visitor = FmtVisitor::new(ctx.config, ctx.snippet_provider, ctx.run.clone());
         visitor.buffer = String::with_capacity(256);
+        visitor.skip_context = ctx.skip_context.clone();
         visitor.parent_macro_failure = Some(&ctx.macro_rewrite_failure);
         visitor
     }
@@ -379,6 +384,22 @@ impl<'a> FmtVisitor<'a> {
             self.run.clear_memo();
         }
         let attrs = item_attrs(item);
+        // The item's `rustfmt::skip::macros`/`attributes` names apply inside it.
+        let skip_context_saved = self.skip_context.clone();
+        self.update_skip_context(&attrs);
+        self.visit_item_with_attrs(item, attrs);
+        self.skip_context = skip_context_saved;
+    }
+
+    fn update_skip_context(&mut self, attrs: &[Attribute]) {
+        let mut skip_context = (*self.skip_context).clone();
+        skip_context.update_with_attrs(attrs);
+        if skip_context != *self.skip_context {
+            self.skip_context = Rc::new(skip_context);
+        }
+    }
+
+    fn visit_item_with_attrs(&mut self, item: &ast::Item, attrs: Vec<Attribute>) {
         let span = item_span(item.syntax());
         let full_span = item.span();
 
@@ -723,7 +744,10 @@ impl<'a> FmtVisitor<'a> {
     /// Formats the items of a source file.
     pub(crate) fn format_separate_mod(&mut self, file: &ast::SourceFile, end_pos: BytePos) {
         self.block_indent = Indent::empty();
-        self.visit_attrs(&inner_attributes(file.syntax()), AttrStyle::Inner);
+        // rustfmt's `format_file` reads the crate's attributes into the skip context.
+        let attrs = inner_attributes(file.syntax());
+        self.update_skip_context(&attrs);
+        self.visit_attrs(&attrs, AttrStyle::Inner);
         let items: Vec<ast::Item> = file.items().collect();
         self.walk_mod_items(&items);
         self.format_missing_with_indent(end_pos);
@@ -755,6 +779,7 @@ impl<'a> FmtVisitor<'a> {
     pub(crate) fn get_context(&self) -> RewriteContext<'a> {
         let mut context = RewriteContext::new(self.config, self.snippet_provider, self.run.clone());
         context.is_macro_def = self.is_macro_def;
+        context.skip_context = self.skip_context.clone();
         context
     }
 
