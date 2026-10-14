@@ -22,6 +22,7 @@ use super::lists::{
 };
 use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
+use super::parallel::GapOp;
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span};
@@ -29,6 +30,24 @@ use super::utils::format_visibility;
 use super::visitor::FmtVisitor;
 
 impl FmtVisitor<'_> {
+    /// The gap before a `use` item at `lo` whose rewrite is empty: the text up to the last
+    /// newline before the item, less the newline the removed import leaves behind.
+    pub(crate) fn format_missing_before_removed_import(&mut self, lo: BytePos) {
+        if self.defer_gap(GapOp::RemovedImport(lo), lo) {
+            return;
+        }
+        // Format up to last newline
+        let prev_span = mk_sp(self.last_pos, lo);
+        let trimmed_snippet = self.snippet(prev_span).trim_end();
+        let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
+        self.format_missing(span_end);
+        // We have an excessive newline from the removed import.
+        if self.buffer.ends_with('\n') {
+            self.buffer.pop();
+            self.line_number -= 1;
+        }
+    }
+
     pub(crate) fn format_import(&mut self, item: &ast::Use) {
         // The span includes the attributes, which `rewrite_top_level` formats.
         let span = item.span();
@@ -38,16 +57,7 @@ impl FmtVisitor<'_> {
             .and_then(|tree| tree.rewrite_top_level(&context, shape));
         match rw {
             Some(ref s) if s.is_empty() => {
-                // Format up to last newline
-                let prev_span = mk_sp(self.last_pos, span.lo());
-                let trimmed_snippet = self.snippet(prev_span).trim_end();
-                let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
-                self.format_missing(span_end);
-                // We have an excessive newline from the removed import.
-                if self.buffer.ends_with('\n') {
-                    self.buffer.pop();
-                    self.line_number -= 1;
-                }
+                self.format_missing_before_removed_import(span.lo());
                 self.last_pos = span.hi();
             }
             Some(ref s) => {

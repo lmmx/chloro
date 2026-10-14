@@ -1,6 +1,6 @@
 use super::args::Args;
 use crate::vlog;
-use chloro_core::format_source_with_config;
+use chloro_core::{format_source_with_config, format_source_with_config_parallel};
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
@@ -19,8 +19,14 @@ pub enum ProcessResult {
     Error(String),
 }
 
-/// Process a single Rust source file
-pub fn format_file(file_path: &Path, args: &Args) -> ProcessResult {
+/// Files of at least this many bytes have their top-level items formatted on `threads`
+/// threads; below it the thread start-up costs more than the split saves (measured in
+/// `docs/journal/2026-10-14-autoresearch/experiments/EXP-001-parallel-items.md`).
+pub const PARALLEL_ITEMS_MIN_BYTES: usize = 32 * 1024;
+
+/// Process a single Rust source file, formatting its items on up to `threads` threads
+/// when it is large enough.
+pub fn format_file(file_path: &Path, args: &Args, threads: usize) -> ProcessResult {
     vlog!(args, {"Processing: {}", file_path.display()});
 
     // Read the file
@@ -36,7 +42,11 @@ pub fn format_file(file_path: &Path, args: &Args) -> ProcessResult {
         Ok(config) => config,
         Err(e) => return ProcessResult::Error(format!("Invalid --config: {e}")),
     };
-    let formatted = format_source_with_config(&original, &config);
+    let formatted = if threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES {
+        format_source_with_config_parallel(&original, &config, threads)
+    } else {
+        format_source_with_config(&original, &config)
+    };
 
     let changed = original != formatted;
     let original_len = original.len();
