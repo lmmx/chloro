@@ -104,11 +104,16 @@ pub mod cli {
             }
 
             if source_path.is_file() {
-                all_files.push(source_path.to_path_buf());
+                all_files.push(source_path.canonicalize()?);
             } else {
                 all_files.extend(discover_rust_files(source_path)?);
             }
         }
+        // A file reachable twice (named twice, through a symlink, or both named and
+        // discovered) is processed once: every entry is canonical, so equal files compare
+        // equal. Two workers writing one path could otherwise read a truncated file.
+        all_files.sort();
+        all_files.dedup();
 
         if all_files.is_empty() {
             if args.verbose {
