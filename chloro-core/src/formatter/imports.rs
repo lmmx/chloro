@@ -10,8 +10,8 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fmt;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasName};
+use crate::cst::ast::{self, AstNode, HasName};
+use ra_ap_parser::T;
 
 use super::comment::combine_strs_with_missing_comments;
 use super::config::{Edition, RustfmtVersion, StyleEdition};
@@ -81,25 +81,25 @@ impl FmtVisitor<'_> {
 // are otherwise identical.
 
 #[derive(Clone, Eq, Hash, PartialEq)]
-pub(crate) enum UseSegmentKind {
+pub(crate) enum UseSegmentKind<'a> {
     Ident(String, Option<String>),
     Slf(Option<String>),
     Super(Option<String>),
     Crate(Option<String>),
     Glob,
-    List(Vec<UseTree>),
+    List(Vec<UseTree<'a>>),
 }
 
 #[derive(Clone, Eq, PartialEq, Hash)]
-pub(crate) struct UseSegment {
-    pub(crate) kind: UseSegmentKind,
+pub(crate) struct UseSegment<'a> {
+    pub(crate) kind: UseSegmentKind<'a>,
     pub(crate) style_edition: StyleEdition,
     pub(crate) rustfmt_version: RustfmtVersion,
 }
 
 #[derive(Clone)]
-pub(crate) struct UseTree {
-    pub(crate) path: Vec<UseSegment>,
+pub(crate) struct UseTree<'a> {
+    pub(crate) path: Vec<UseSegment<'a>>,
     pub(crate) span: Span,
     // Comment information within nested use tree.
     pub(crate) list_item: Option<ListItem>,
@@ -107,24 +107,24 @@ pub(crate) struct UseTree {
     /// rustc's `Option<Visibility>`: `Some` for the tree of a `use` item, holding `None` when
     /// no visibility is written (rustc's `VisibilityKind::Inherited`); `None` for a nested
     /// tree.
-    visibility: Option<Option<ast::Visibility>>,
-    attrs: Option<Vec<Attribute>>,
+    visibility: Option<Option<ast::Visibility<'a>>>,
+    attrs: Option<Vec<Attribute<'a>>>,
 }
 
-impl PartialEq for UseTree {
-    fn eq(&self, other: &UseTree) -> bool {
+impl PartialEq for UseTree<'_> {
+    fn eq(&self, other: &UseTree<'_>) -> bool {
         self.path == other.path
     }
 }
-impl Eq for UseTree {}
+impl Eq for UseTree<'_> {}
 
-impl std::hash::Hash for UseTree {
+impl std::hash::Hash for UseTree<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.path.hash(state);
     }
 }
 
-impl Spanned for UseTree {
+impl Spanned for UseTree<'_> {
     fn span(&self) -> Span {
         let lo = match &self.attrs {
             Some(attrs) => attrs.first().map_or(self.span.lo(), |a| a.span().lo()),
@@ -134,9 +134,9 @@ impl Spanned for UseTree {
     }
 }
 
-impl UseSegment {
+impl<'a> UseSegment<'a> {
     // Clone a version of self with any top-level alias removed.
-    fn remove_alias(&self) -> UseSegment {
+    fn remove_alias(&self) -> UseSegment<'_> {
         let kind = match self.kind {
             UseSegmentKind::Ident(ref s, _) => UseSegmentKind::Ident(s.clone(), None),
             UseSegmentKind::Slf(_) => UseSegmentKind::Slf(None),
@@ -151,7 +151,7 @@ impl UseSegment {
         }
     }
 
-    fn from_name(context: &RewriteContext<'_>, name: &str, modsep: bool) -> Option<UseSegment> {
+    fn from_name(context: &RewriteContext<'_>, name: &str, modsep: bool) -> Option<UseSegment<'a>> {
         if name.is_empty() {
             return None;
         }
@@ -173,31 +173,31 @@ impl UseSegment {
     }
 }
 
-impl fmt::Debug for UseTree {
+impl fmt::Debug for UseTree<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-impl fmt::Debug for UseSegment {
+impl fmt::Debug for UseSegment<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.kind, f)
     }
 }
 
-impl fmt::Display for UseSegment {
+impl fmt::Display for UseSegment<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.kind, f)
     }
 }
 
-impl fmt::Debug for UseSegmentKind {
+impl fmt::Debug for UseSegmentKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-impl fmt::Display for UseSegmentKind {
+impl fmt::Display for UseSegmentKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             UseSegmentKind::Glob => write!(f, "*"),
@@ -220,7 +220,7 @@ impl fmt::Display for UseSegmentKind {
     }
 }
 
-impl fmt::Display for UseTree {
+impl fmt::Display for UseTree<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, segment) in self.path.iter().enumerate() {
             if i != 0 {
@@ -239,7 +239,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
     let mut global = false;
     // Segments are nested: `a::b::c` is Path(Path(Path(a), b), c).
     let mut segments: Vec<ast::PathSegment> = Vec::new();
-    let mut cur = Some(path.clone());
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
@@ -253,13 +253,13 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
         }
         let text = seg
             .name_ref()
-            .map_or_else(String::new, |n| node_text(n.syntax()));
+            .map_or_else(String::new, |n| node_text(n.syntax()).to_owned());
         names.push(text);
     }
     (names, global)
 }
 
-impl UseTree {
+impl<'a> UseTree<'a> {
     // Rewrite use tree with `use ` and a trailing `;`.
     pub(crate) fn rewrite_top_level(
         &self,
@@ -311,9 +311,9 @@ impl UseTree {
     /// The tree of a `use` item, normalised when the item takes part in reordering.
     pub(crate) fn from_use_item(
         context: &RewriteContext<'_>,
-        item: &ast::Use,
+        item: &ast::Use<'a>,
         normalize: bool,
-    ) -> Option<UseTree> {
+    ) -> Option<UseTree<'a>> {
         let attrs = outer_attributes(item.syntax());
         let tree = UseTree::from_ast(
             context,
@@ -330,10 +330,10 @@ impl UseTree {
         context: &RewriteContext<'_>,
         a: &ast::UseTree,
         list_item: Option<ListItem>,
-        visibility: Option<Option<ast::Visibility>>,
+        visibility: Option<Option<ast::Visibility<'a>>>,
         opt_lo: Option<BytePos>,
-        attrs: Option<Vec<Attribute>>,
-    ) -> UseTree {
+        attrs: Option<Vec<Attribute<'a>>>,
+    ) -> UseTree<'a> {
         let a_span = node_range_span(a.syntax());
         let span = match opt_lo {
             Some(lo) => mk_sp(lo, a_span.hi()),
@@ -348,9 +348,8 @@ impl UseTree {
         };
 
         // rustc's prefix path: `::` alone (`use ::*`, `use ::{a}`) is a global empty path.
-        let path = child::<ast::Path>(a.syntax());
-        let (names, path_global) = path.as_ref().map(path_segment_names).unwrap_or_default();
-        let bare_root = path.is_none() && has_token(a.syntax(), T![::]);
+        let (names, path_global) = a.path().map(|p| path_segment_names(&p)).unwrap_or_default();
+        let bare_root = a.path().is_none() && has_token(a.syntax(), T![::]);
         let is_global = path_global || bare_root;
         // Number of rustc prefix segments, counting the `{{root}}` segment of a global path.
         let prefix_len = names.len() + usize::from(is_global);
@@ -436,7 +435,7 @@ impl UseTree {
             };
             let alias = a.rename().and_then(|rename| {
                 let alias = match rename.name() {
-                    Some(n) => node_text(n.syntax()),
+                    Some(n) => node_text(n.syntax()).to_owned(),
                     // for impl-only-use
                     None => "_".to_owned(),
                 };
@@ -461,7 +460,7 @@ impl UseTree {
     }
 
     // Do the adjustments that rustfmt does elsewhere to use paths.
-    pub(crate) fn normalize(mut self) -> UseTree {
+    pub(crate) fn normalize(mut self) -> UseTree<'a> {
         let Some(mut last) = self.path.pop() else {
             return self;
         };
@@ -566,7 +565,7 @@ impl UseTree {
 /// `MAX_LEN_ALWAYS_INSERTION_SORT`), which this reproduces for every length: longer lists
 /// go through driftsort in rustfmt 1.8.0, whose merges may order such a list differently
 /// or detect the violated order and panic (#6668), which this does not model.
-pub(crate) fn sort_use_trees(list: &mut [UseTree], rustfmt_version: RustfmtVersion) {
+pub(crate) fn sort_use_trees(list: &mut [UseTree<'_>], rustfmt_version: RustfmtVersion) {
     match rustfmt_version {
         RustfmtVersion::V1_9_0 => list.sort(),
         RustfmtVersion::V1_8_0 => {
@@ -581,17 +580,17 @@ pub(crate) fn sort_use_trees(list: &mut [UseTree], rustfmt_version: RustfmtVersi
     }
 }
 
-impl PartialOrd for UseSegment {
-    fn partial_cmp(&self, other: &UseSegment) -> Option<Ordering> {
+impl PartialOrd for UseSegment<'_> {
+    fn partial_cmp(&self, other: &UseSegment<'_>) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl PartialOrd for UseTree {
-    fn partial_cmp(&self, other: &UseTree) -> Option<Ordering> {
+impl PartialOrd for UseTree<'_> {
+    fn partial_cmp(&self, other: &UseTree<'_>) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl Ord for UseSegment {
+impl Ord for UseSegment<'_> {
     fn cmp(&self, other: &UseSegment) -> Ordering {
         use self::UseSegmentKind::*;
 
@@ -683,8 +682,8 @@ impl Ord for UseSegment {
         }
     }
 }
-impl Ord for UseTree {
-    fn cmp(&self, other: &UseTree) -> Ordering {
+impl Ord for UseTree<'_> {
+    fn cmp(&self, other: &UseTree<'_>) -> Ordering {
         for (a, b) in self.path.iter().zip(other.path.iter()) {
             let ord = a.cmp(b);
             // The comparison without aliases is a hack to avoid situations like
@@ -771,7 +770,7 @@ fn rewrite_nested_use_tree(
     Some(result)
 }
 
-impl Rewrite for UseSegment {
+impl Rewrite for UseSegment<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         Some(match self.kind {
             UseSegmentKind::Ident(ref ident, Some(ref rename)) => {
@@ -795,7 +794,7 @@ impl Rewrite for UseSegment {
     }
 }
 
-impl Rewrite for UseTree {
+impl Rewrite for UseTree<'_> {
     // This does NOT format attributes and visibility or add a trailing `;`.
     fn rewrite(&self, context: &RewriteContext<'_>, mut shape: Shape) -> Option<String> {
         let mut result = String::with_capacity(256);
