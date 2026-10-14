@@ -182,13 +182,10 @@ pub(crate) fn rewrite_macro(
     position: MacroPosition,
 ) -> Option<String> {
     // `#[rustfmt::skip::macros(name)]`: left as written, which is not a macro failure.
-    if !context.skip_context.macros.is_empty()
-        && mac.path().is_some_and(|path| {
-            context
-                .skip_context
-                .macros
-                .skip(context.snippet(path.span()))
-        })
+    if context.skip_context.is_some()
+        && mac
+            .path()
+            .is_some_and(|path| context.skips_macro(context.snippet(path.span())))
     {
         return None;
     }
