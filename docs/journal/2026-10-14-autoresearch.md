@@ -540,12 +540,11 @@ State at the end of this session (2026-10-14, about 23:35 UTC):
   the next session is to merge that branch and copy its headline numbers into the README's
   performance section (which carries M2's numbers for `8d418ee`, before E3 and R2) and
   into "What the programme established" above.
-- Three bounded investigations were launched in the last minutes of the session and write
-  their records under `2026-10-14-autoresearch/experiments/` if they finish: EXP-009 (glibc
-  malloc tunables through `GLIBC_TUNABLES`, measured on the CLI), EXP-010 (feasibility of
-  fusing rust-analyzer's trivia interspersal with the flat tree build, read-only), and
-  `review-cache-parallel-cst.md` (a hostile review of the cache key, the deferred-gap
-  replay and the arena handles). Whatever landed is committed; what did not is not claimed.
+- Three bounded investigations ran in the last minutes of the session; all three landed
+  and are committed: EXP-009 (glibc malloc tunables: nothing outside the spread, lever
+  closed), EXP-010 (fusing the trivia interspersal with the tree build: about 2% likely,
+  7.16% ceiling, not run), and `review-cache-parallel-cst.md` (ten findings, one confirmed
+  reporting bug, no wrong output or cache hit on current inputs).
 - Experiment branches, all pushed and all merged: `20261014-cli-cache`,
   `20261014-parallel-items`, `20261014-cli-build`, `20261014-green-reads`,
   `20261014-rustfmt-version`, `20261014-flat-cst` (prototype, not merged by design),
@@ -555,6 +554,17 @@ State at the end of this session (2026-10-14, about 23:35 UTC):
 
 Next actions, in the order of value per effort:
 
+0. Fix the review findings in
+   [experiments/review-cache-parallel-cst.md](2026-10-14-autoresearch/experiments/review-cache-parallel-cst.md),
+   each a small change with a test: the CLI's file list is not de-duplicated and
+   command-line paths are not canonicalised, so a path given twice or a symlink to a listed
+   file is formatted twice and can race under `--write` (confirmed by running the binary);
+   the cache's temporary file name does not carry the target file's name and is not created
+   with `create_new`; inputs over 4 GiB wrap `u32` offsets instead of being refused; the
+   deferred-gap replay guards a dropped unit with a `debug_assert!` only; the worker's join
+   loses the panic payload; `line_number -= 1` can underflow on a worker. None changes any
+   output on the corpora; the two confirmed ones are the duplicate-path report and the
+   `--check` count.
 1. Merge `20261014-measure-m3`; update the README's performance table from it; move the
    best-known-good row's in-process figure to M3's.
 2. Add the profile-guided build to `.github/workflows/binaries.yml` as proposed in
