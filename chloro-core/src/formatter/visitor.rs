@@ -102,10 +102,13 @@ impl<'a> FmtVisitor<'a> {
         }
     }
 
+    /// A visitor for a nested block or item list. As in rustfmt, whose `from_context` builds
+    /// the visitor with `from_psess`, `is_macro_def` is not inherited: only the top-level
+    /// visitor of a macro definition body omits the semicolons rustfmt adds after a
+    /// trailing `return`, `break` or `continue`.
     pub(crate) fn from_context(ctx: &'a RewriteContext<'_>) -> FmtVisitor<'a> {
         let mut visitor = FmtVisitor::new(ctx.config, ctx.snippet_provider, ctx.run.clone());
         visitor.buffer = String::with_capacity(256);
-        visitor.is_macro_def = ctx.is_macro_def;
         visitor.parent_macro_failure = Some(&ctx.macro_rewrite_failure);
         visitor
     }
