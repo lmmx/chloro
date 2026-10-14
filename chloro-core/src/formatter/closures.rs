@@ -12,11 +12,11 @@
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode};
 
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
-    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block_with_visitor,
-    rewrite_cond,
+    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block,
+    rewrite_block_with_visitor, rewrite_cond,
 };
 use super::items::{span_hi_for_param, span_lo_for_param};
 use super::lists::{
@@ -27,7 +27,7 @@ use super::nodes::has_token;
 use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
-use super::span::{Span, Spanned};
+use super::span::{Span, Spanned, node_range_span};
 use super::types::{binder_params, rewrite_bound_params};
 use super::utils::{last_line_width, left_most_sub_expr};
 
@@ -101,7 +101,11 @@ fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) 
     if let Some((block_expr, block)) = plain_block(expr)
         && !needs_block(
             &block,
-            child::<ast::Label>(block_expr.syntax()).is_some(),
+            // F2: rustfmt 1.9.0 keeps a labelled block as the closure body (commit
+            // `5619b644`, PR #6468, CHANGELOG 1.9.0 Fixed #6465); rustfmt 1.8.0's
+            // `needs_block` (`v1.8.0 src/closures.rs:123`) does not see the label.
+            child::<ast::Label>(block_expr.syntax()).is_some()
+                && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0,
             prefix,
             context,
         )
@@ -201,6 +205,22 @@ fn rewrite_closure_block(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
+    // F2: rustfmt 1.8.0 passes the inner `ast::Block` (`v1.8.0 src/closures.rs:77`), so a
+    // label is dropped, and rustc's span for the block of a labelled block expression
+    // starts at the label: the visitor starts one byte into the label and copies the rest
+    // of it, with the `{`, as code it could not format (`rewrite_block_with_visitor`,
+    // `v1.8.0 src/expr.rs:526`). rustfmt 1.9.0 passes the expression (commit `5619b644`).
+    if context.config.rustfmt_version() < RustfmtVersion::V1_9_0
+        && let Some((block_expr, mut inner)) = plain_block(block)
+        && let Some(label) = child::<ast::Label>(block_expr.syntax())
+    {
+        inner.span = inner.span.with_lo(node_range_span(label.syntax()).lo());
+        return Some(format!(
+            "{} {}",
+            prefix,
+            rewrite_block(&inner, None, None, context, shape)?
+        ));
+    }
     Some(format!("{} {}", prefix, block.rewrite(context, shape)?))
 }
 
@@ -341,7 +361,10 @@ pub(crate) fn rewrite_last_closure(
             if !block.is_unsafe()
                 && !context.inside_macro()
                 && is_simple_block(context, &block, Some(&expr_attrs(&body)))
-                && child::<ast::Label>(block_expr.syntax()).is_none() =>
+                // F2: rustfmt 1.9.0 keeps a labelled simple block (`v1.9.0
+                // src/closures.rs:385`, commit `5619b644`); rustfmt 1.8.0 unwraps it.
+                && (child::<ast::Label>(block_expr.syntax()).is_none()
+                    || context.config.rustfmt_version() < RustfmtVersion::V1_9_0) =>
         {
             match &block.stmts[0].kind {
                 StmtKind::Expr(e) => e.clone(),
