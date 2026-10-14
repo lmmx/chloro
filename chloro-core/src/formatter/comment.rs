@@ -1063,6 +1063,12 @@ pub(crate) fn filter_normal_code(code: &str) -> Cow<'_, str> {
     if !code.contains('/') {
         return Cow::Borrowed(code);
     }
+    // Without a comment, every line `LineClasses` yields has a kept kind, so the loop below
+    // joins all lines of `code` with `\n` and gives `code` back, unless a line ends with a
+    // `\r`, which `LineClasses` strips.
+    if !code.contains('\r') && !contains_comment(code) {
+        return Cow::Borrowed(code);
+    }
     let mut buffer = String::with_capacity(code.len());
     LineClasses::new(code).for_each(|(kind, line)| match kind {
         FullCodeCharKind::Normal
@@ -1193,6 +1199,63 @@ mod tests {
     fn find_uncommented_skips_comments() {
         assert_eq!("/* , */ a, b".find_uncommented(","), Some(9));
         assert_eq!("a /* = */ = b".find_uncommented("="), Some(10));
+    }
+
+    /// Strings with comments, string literals, raw strings, comment markers inside strings,
+    /// CRLF and non-ASCII text, for comparing fast paths with the full scans they replace.
+    const SCAN_SAMPLES: &[&str] = &[
+        "",
+        "a / b",
+        "a / b\n",
+        "a /* c */ b",
+        "a // c\nb",
+        "a // c",
+        "\"/* not a comment */\" / 2",
+        "r#\"// not a comment\"# / x",
+        "r#\"a\"b\"# // c\n",
+        "'/' / '\\''",
+        "x /* a /* nested */ b */ y\n/",
+        "/* \"*/\" */ a / b",
+        "a / b\r\nc / d\r\n",
+        "a / b\r",
+        "é / ü\n// ß\n",
+        "f(a, /* b */ c)\n    .g() // h\n    / 3",
+        "\"unterminated / string",
+        "/* unterminated comment",
+        "x/\n/y",
+        "r/\"a\"/r",
+    ];
+
+    /// `filter_normal_code` without its fast paths.
+    fn filter_normal_code_by_lines(code: &str) -> String {
+        let mut buffer = String::with_capacity(code.len());
+        LineClasses::new(code).for_each(|(kind, line)| match kind {
+            FullCodeCharKind::Normal
+            | FullCodeCharKind::StartString
+            | FullCodeCharKind::InString
+            | FullCodeCharKind::EndString => {
+                buffer.push_str(line);
+                buffer.push('\n');
+            }
+            _ => (),
+        });
+        if !code.ends_with('\n') && buffer.ends_with('\n') {
+            buffer.pop();
+        }
+        buffer
+    }
+
+    #[test]
+    fn filter_normal_code_fast_paths_match_line_classes() {
+        for &code in SCAN_SAMPLES {
+            if code.contains('/') {
+                assert_eq!(
+                    filter_normal_code(code),
+                    filter_normal_code_by_lines(code),
+                    "{code:?}"
+                );
+            }
+        }
     }
 
     #[test]
