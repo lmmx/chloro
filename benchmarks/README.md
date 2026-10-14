@@ -37,6 +37,10 @@ Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
 agreement), `*.validate.log` (exit codes of the validation run), `*.bench.txt`
 (`examples/bench` lines) and `report.md`.
 
+chloro builds with the fixed-point cache (E6) get `--no-cache` on every command unless
+`--with-cache` is given: on formatted input the warmup runs would otherwise fill the cache
+and the chloro column would measure cache hits, not the formatter.
+
 Workload copies are cached in `--work` (default `${TMPDIR:-/tmp}/chloro-bench/<input>/`);
 `--fresh` rebuilds them.
 
