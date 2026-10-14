@@ -61,8 +61,19 @@ Host: 4 vCPU "Intel Xeon Processor @ 2.80GHz", 15 GB, Linux 6.18; `rustc 1.97.0`
   rustfmt is single-threaded; the chloro CLI runs one thread per core. Per core, from these
   figures, chloro does the work in roughly 0.7x of rustfmt's time on `hir-ty`
   (280.6 × 4 / 1611.8); the fixture files are not already formatted, so both tools lay out
-  every file. These are first-order numbers taken before the harness existed; the harness
-  figures in [baseline.md](2026-10-14-autoresearch/baseline.md) supersede them.
+  every file. These are first-order numbers taken before the harness existed, and they
+  overstate chloro's lead: on input that is not yet formatted, rustfmt's `--check` builds
+  and prints a line diff for every changed file, which on `regex-syntax` took 1706 ms and
+  423 MiB against 592 ms and 66 MiB for `rustfmt --emit stdout` on the same bytes
+  (R4, [baseline.md](2026-10-14-autoresearch/baseline.md) "Cost of `--check`"). chloro's
+  `--check` compares two strings. The harness therefore formats each crate copy with rustfmt
+  first, so that both tools lay out every file and neither reports anything; on that input,
+  under a load average of 6–10 from the other agents, the crate-level wall ratios were
+  0.48–1.14 on all cores (chloro 4 threads, rustfmt 1) and the one-core CPU-time ratios
+  0.62–1.00. `winnow` ran slower under chloro than under rustfmt in that window (1.14 on
+  all cores, 1.00 on one core). Every wall-clock figure in baseline.md is provisional until
+  the quiet rerun; the ratios above are the ones to beat, not the 5.7x of the first-order
+  runs.
 - CLI scheduling (**read**, `chloro/src/cli/orchestrate.rs:29-61`): files are sorted by
   path and cut into `threads × 4` static chunks; a chunk is one thread's whole share, so the
   wall time of a crate is bounded by the chunk that holds its largest files, and a single
@@ -174,11 +185,17 @@ best-known-good row moves. The README's figures change only to numbers from
   list (chloro/src/cli/orchestrate.rs:29-61)
 - The research protocol, ledger and corpus manifest are in
   docs/journal/2026-10-14-autoresearch/ (protocol.md, experiments.md, corpus/)
+- `benchmarks/compare_rustfmt.sh` times rustfmt and chloro on the same file set per crate
+  (read from rustfmt's `-v` output), on rustfmt-formatted copies by default, with hyperfine
+  JSON exports; `benchmarks/profile.sh` counts instructions on the 49-file sample;
+  `benchmarks/report.py` writes the tables (benchmarks/README.md)
+- The CLI records content digests of files found already formatted and skips formatting
+  them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs, merged from
+  `20261014-cli-cache`, E6)
 
 ## Missing
 
-- No profile of `884f9c9` yet (R1 running)
-- No process-level harness yet; the hir/hir-ty figures above come from a hand-run hyperfine
-  command (R4 running)
+- No quiet-host run of `benchmarks/compare_rustfmt.sh`; every wall-clock figure in
+  baseline.md was taken at load average 6–10
 - No support for a rustfmt version other than 1.9.0 (R3 running)
 - `0024_many_type_parens.rs` differs from rustfmt (R2 running)
