@@ -353,6 +353,16 @@ pub(crate) fn is_repeat_array(array: &ast::ArrayExpr) -> bool {
     has_token(array.syntax(), T![;])
 }
 
+/// The block of a const block item, `const { .. }` in a file or module (rustc's
+/// `ItemKind::ConstBlock`), which `rustc_syntax` builds as a `CONST` item without a name
+/// whose body is the block.
+pub(crate) fn const_block_item(c: &ast::Const) -> Option<ast::BlockExpr> {
+    if child::<ast::Name>(c.syntax()).is_some() || has_token(c.syntax(), T![=]) {
+        return None;
+    }
+    child::<ast::BlockExpr>(c.syntax())
+}
+
 /// The rustc kind of `expr` if it is a block expression.
 pub(crate) fn block_kind_of(expr: &ast::Expr) -> Option<BlockExprKind> {
     match expr {

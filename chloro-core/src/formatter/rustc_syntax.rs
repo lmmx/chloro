@@ -20,12 +20,17 @@
 //!   rust-analyzer has no type starting with `?`; with `dyn` inserted before the `?`, it
 //!   builds a `DYN_TRAIT_TYPE`.
 //!
-//! One construct needs no second parse, only an edit of the tree:
+//! Two constructs need no second parse, only an edit of the tree:
 //!
 //! - A float literal without `.` as a field name, `s.1e0`: rustc's `break_up_float` reads
 //!   `1e0` as a single component (`DestructuredFloat::Single`) and the field name is `1e0`.
 //!   rust-analyzer's tree builder reports "illegal float literal" and wraps the literal in
 //!   an `ERROR` node; the edit makes it a `NAME_REF`, as for `s.0`.
+//! - A const block item, `const { .. }` in a file or module (rustc's `ItemKind::ConstBlock`,
+//!   the unstable `const_block_items`). rust-analyzer reports "expected an item" and keeps
+//!   the `const` keyword and the block (parsed as block contents) in two `ERROR` nodes; the
+//!   edit makes them a `CONST` item without a name whose body is a `BLOCK_EXPR`, which
+//!   `nodes::const_block_item` recognises.
 
 use ra_ap_parser::{Edition, LexedStr, StrStep, TopEntryPoint};
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
@@ -87,6 +92,9 @@ pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<Parsed> {
 pub(crate) fn reparse(source: &str, edition: Edition, parsed: Parsed) -> Option<SyntaxNode> {
     if parsed.errors.is_empty() {
         return float_fields_as_names(&parsed.tree, parsed.float_fields);
+    }
+    if let Some(tree) = const_block_items(&parsed.tree, &parsed.errors) {
+        return float_fields_as_names(&tree, parsed.float_fields);
     }
     // Offsets in `source` before which `DYN` is inserted, sorted.
     let mut inserts: Vec<usize> = Vec::new();
@@ -356,4 +364,131 @@ fn rebuild_field_names(node: &SyntaxNode, fixed: &mut usize) -> Option<GreenNode
         return children.pop().and_then(NodeOrToken::into_node);
     }
     Some(GreenNode::new(node.green().kind(), children))
+}
+
+/// `tree` with each const block item of a file or module as a `CONST` node, if the parser's
+/// errors (`errors`) are all theirs.
+fn const_block_items(tree: &SyntaxNode, errors: &[usize]) -> Option<SyntaxNode> {
+    let mut explained = vec![false; errors.len()];
+    let green = rebuild_const_blocks(tree, errors, &mut explained);
+    explained
+        .iter()
+        .all(|&e| e)
+        .then(|| SyntaxNode::new_root(green))
+}
+
+fn is_error_with(element: &SyntaxElement, first: SyntaxKind) -> bool {
+    matches!(element, SyntaxElement::Node(n)
+        if n.kind() == SyntaxKind::ERROR
+            && n.first_token().is_some_and(|t| t.kind() == first))
+}
+
+/// An `ERROR` node holding only outer attributes, a visibility and trivia: what
+/// rust-analyzer keeps of `#[a] pub` when no item follows. rustfmt prints the attributes and
+/// drops the visibility (`ast::ConstBlockItem` has none).
+fn is_item_prefix(element: &SyntaxElement) -> bool {
+    matches!(element, SyntaxElement::Node(n)
+    if n.kind() == SyntaxKind::ERROR
+        && n.children_with_tokens().all(|c| {
+            c.kind().is_trivia()
+                || matches!(c.kind(), SyntaxKind::ATTR | SyntaxKind::VISIBILITY)
+        }))
+}
+
+fn green_element(element: &SyntaxElement) -> NodeOrToken<GreenNode, rowan::GreenToken> {
+    match element {
+        SyntaxElement::Node(n) => NodeOrToken::Node(n.green().into_owned()),
+        SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+    }
+}
+
+fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bool]) -> GreenNode {
+    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
+    let elements: Vec<SyntaxElement> = node.children_with_tokens().collect();
+    let in_module = matches!(node.kind(), SyntaxKind::SOURCE_FILE | SyntaxKind::ITEM_LIST);
+    let mut children = Vec::with_capacity(elements.len());
+    let mut i = 0;
+    while i < elements.len() {
+        if in_module && is_error_with(&elements[i], T![const]) {
+            // `const`, trivia, then the block.
+            let mut j = i + 1;
+            while j < elements.len() && elements[j].kind().is_trivia() {
+                j += 1;
+            }
+            let block = elements
+                .get(j)
+                .filter(|e| is_error_with(e, T!['{']))
+                .and_then(|e| e.as_node().cloned())
+                .filter(|b| b.last_token().is_some_and(|t| t.kind() == T!['}']));
+            if let Some(block) = block {
+                // Attributes and a visibility before `const`, then the trivia in between.
+                let mut start = i;
+                let mut k = i;
+                while k > 0 && elements[k - 1].kind().is_trivia() {
+                    k -= 1;
+                }
+                if k > 0 && is_item_prefix(&elements[k - 1]) {
+                    start = k - 1;
+                }
+                // Comments right before the item belong to it, as rust-analyzer attaches
+                // them to items, up to a blank line.
+                let mut attached = start;
+                while attached > 0 {
+                    let prev = &elements[attached - 1];
+                    let blank_line =
+                        prev.kind() == SyntaxKind::WHITESPACE && prev.to_string().contains("\n\n");
+                    if !prev.kind().is_trivia() || blank_line {
+                        break;
+                    }
+                    attached -= 1;
+                }
+                while attached < start && elements[attached].kind() == SyntaxKind::WHITESPACE {
+                    attached += 1;
+                }
+                children.truncate(children.len() - (i - attached));
+                let lo = usize::from(elements[start].text_range().start());
+                let hi = usize::from(block.text_range().start());
+                for (e, done) in errors.iter().zip(explained.iter_mut()) {
+                    if (lo..=hi).contains(e) {
+                        *done = true;
+                    }
+                }
+                let mut item = Vec::new();
+                for e in &elements[attached..i] {
+                    match e {
+                        SyntaxElement::Node(prefix) if prefix.kind() == SyntaxKind::ERROR => {
+                            item.extend(prefix.children_with_tokens().map(|c| green_element(&c)))
+                        }
+                        e => item.push(green_element(e)),
+                    }
+                }
+                if let SyntaxElement::Node(const_kw) = &elements[i] {
+                    item.extend(const_kw.children_with_tokens().map(|c| green_element(&c)));
+                }
+                item.extend(elements[i + 1..j].iter().map(green_element));
+                let stmt_list = GreenNode::new(
+                    raw(SyntaxKind::STMT_LIST),
+                    block
+                        .children_with_tokens()
+                        .map(|c| green_element(&c))
+                        .collect::<Vec<_>>(),
+                );
+                let block_expr =
+                    GreenNode::new(raw(SyntaxKind::BLOCK_EXPR), [NodeOrToken::Node(stmt_list)]);
+                item.push(NodeOrToken::Node(block_expr));
+                children.push(NodeOrToken::Node(GreenNode::new(
+                    raw(SyntaxKind::CONST),
+                    item,
+                )));
+                i = j + 1;
+                continue;
+            }
+        }
+        children.push(match &elements[i] {
+            SyntaxElement::Node(n) => NodeOrToken::Node(rebuild_const_blocks(n, errors, explained)),
+            SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+        });
+        i += 1;
+    }
+    GreenNode::new(node.green().kind(), children)
 }
