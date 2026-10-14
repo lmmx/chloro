@@ -1,8 +1,9 @@
 use super::args::Args;
 use super::cache::Cache;
-use super::worker::{ProcessResult, format_file};
+use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
 use std::path::PathBuf;
-use std::thread::{available_parallelism, scope};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::thread::scope;
 
 /// Discover all Rust files in a directory recursively
 pub fn discover_rust_files(dir: &std::path::Path) -> std::io::Result<Vec<PathBuf>> {
@@ -26,9 +27,16 @@ fn discover_recursive(dir: &std::path::Path, files: &mut Vec<PathBuf>) -> std::i
     Ok(())
 }
 
-/// Format all files in parallel, consulting `cache` for files already known to be formatted
+/// Formats all files on `args.thread_count()` threads, consulting `cache` for files already
+/// known to be formatted.
+///
+/// The files are sorted largest first and handed out from a shared queue, so the large
+/// files start first and no thread is left with a long tail while the others idle. A
+/// file of at least `PARALLEL_ITEMS_MIN_BYTES` has its top-level items formatted on all
+/// the threads (`format_source_with_config_parallel`); the file-level workers and the
+/// item-level workers share the cores, and the scheduler sorts it out.
 pub fn format_all(files: &[PathBuf], args: &Args, cache: Option<&Cache>) -> Vec<ProcessResult> {
-    let num_threads = available_parallelism().map_or(1, |n| n.get());
+    let num_threads = args.thread_count();
 
     if args.verbose {
         eprintln!("Found {} Rust file(s)", files.len());
@@ -36,27 +44,46 @@ pub fn format_all(files: &[PathBuf], args: &Args, cache: Option<&Cache>) -> Vec<
         eprintln!();
     }
 
-    let oversubscribe = 4;
-    let total_chunks = num_threads * oversubscribe;
-    let chunk_size = files.len().div_ceil(total_chunks);
+    // Largest first. A file whose size is unknown goes last.
+    let mut order: Vec<(u64, usize)> = files
+        .iter()
+        .enumerate()
+        .map(|(i, f)| (std::fs::metadata(f).map_or(0, |m| m.len()), i))
+        .collect();
+    order.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
+    let next = AtomicUsize::new(0);
+    let item_threads = |size: u64| {
+        if size >= PARALLEL_ITEMS_MIN_BYTES as u64 {
+            num_threads
+        } else {
+            1
+        }
+    };
 
-    scope(|s| {
-        let handles: Vec<_> = files
-            .chunks(chunk_size)
-            .map(|chunk| {
+    let mut results: Vec<Option<ProcessResult>> = (0..files.len()).map(|_| None).collect();
+    let done: Vec<Vec<(usize, ProcessResult)>> = scope(|s| {
+        let handles: Vec<_> = (0..num_threads.min(files.len().max(1)))
+            .map(|_| {
                 s.spawn(|| {
-                    chunk
-                        .iter()
-                        .map(|file| format_file(file, args, cache))
-                        .collect::<Vec<_>>()
+                    let mut done = Vec::new();
+                    loop {
+                        let k = next.fetch_add(1, Ordering::Relaxed);
+                        let Some(&(size, i)) = order.get(k) else {
+                            break;
+                        };
+                        done.push((i, format_file(&files[i], args, cache, item_threads(size))));
+                    }
+                    done
                 })
             })
             .collect();
-
-        // Flatten results from all threads
         handles
             .into_iter()
-            .flat_map(|h| h.join().unwrap_or_default())
+            .map(|h| h.join().unwrap_or_default())
             .collect()
-    })
+    });
+    for (i, result) in done.into_iter().flatten() {
+        results[i] = Some(result);
+    }
+    results.into_iter().flatten().collect()
 }

@@ -31,6 +31,10 @@ pub struct Args {
     #[facet(named, long, default)]
     pub cache_dir: String,
 
+    /// Threads to use (default: one per core)
+    #[facet(named, long, default)]
+    pub threads: usize,
+
     /// Show this help message
     #[facet(named, short = 'h', long, default)]
     pub help: bool,
@@ -52,6 +56,7 @@ pub fn print_usage() {
     println!("      --no-cache     Format every file; do not read or write the cache");
     println!("      --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the");
     println!("                     user cache directory, e.g. ~/.cache/chloro)");
+    println!("      --threads N    Threads to use (default: one per core)");
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");
@@ -78,6 +83,15 @@ pub fn print_usage() {
 }
 
 impl Args {
+    /// `--threads`, or one thread per core.
+    pub fn thread_count(&self) -> usize {
+        if self.threads > 0 {
+            self.threads
+        } else {
+            std::thread::available_parallelism().map_or(1, |n| n.get())
+        }
+    }
+
     /// The formatting configuration given by `--config`.
     ///
     /// # Errors
