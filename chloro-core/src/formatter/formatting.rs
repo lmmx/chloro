@@ -4,7 +4,6 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 
-use ra_ap_parser::{LexedStr, StrStep, TopEntryPoint};
 use ra_ap_syntax::ast::AstNode;
 use ra_ap_syntax::{Edition, RustLanguage, SourceFile, SyntaxKind, SyntaxNode};
 use rowan::{GreenNodeBuilder, Language};
@@ -14,6 +13,7 @@ use super::config::{NewlineStyle, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
+use super::rustc_syntax::{build_tree, reparse};
 use super::shape::Indent;
 use super::span::SnippetProvider;
 use super::utils::indent_next_line;
@@ -65,24 +65,13 @@ impl TreeBuilder {
 /// rust-analyzer's semantic validation (e.g. `crate` in the middle of a path), which
 /// rustc's parser does not do, and would cost a second traversal of the tree.
 fn parse(source: &str, edition: Edition) -> Option<SourceFile> {
-    let lexed = LexedStr::new(edition, source);
-    if lexed.errors().next().is_some() {
-        return None;
-    }
-    let input = lexed.to_input(edition);
-    let output = TopEntryPoint::SourceFile.parse(&input, edition);
-    let mut builder = TreeBuilder::default();
-    let mut has_error = false;
-    lexed.intersperse_trivia(&output, &mut |step| match step {
-        StrStep::Token { kind, text } => builder.token(kind, text),
-        StrStep::Enter { kind } => builder.start_node(kind),
-        StrStep::Exit => builder.finish_node(),
-        StrStep::Error { .. } => has_error = true,
-    });
-    if has_error {
-        return None;
-    }
-    let file = SourceFile::cast(builder.finish())?;
+    let (tree, errors) = build_tree(source, edition)?;
+    let tree = if errors.is_empty() {
+        tree
+    } else {
+        reparse(source, edition, &tree, &errors)?
+    };
+    let file = SourceFile::cast(tree)?;
     (!rejected_by_rustc(&file, edition)).then_some(file)
 }
 
@@ -368,6 +357,7 @@ pub(crate) fn format_code_block(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ra_ap_parser::{LexedStr, StrStep, TopEntryPoint};
 
     #[test]
     fn tree_builder_builds_the_tree_syntax_tree_builder_builds() {
