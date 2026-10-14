@@ -40,7 +40,7 @@
 //!   impl, then parses `impl Trait {}` as a second impl; the edit merges the two, with the
 //!   second one's type in an `IMPL_TRAIT_TYPE`.
 
-use ra_ap_parser::{Edition, LexedStr, StrStep, SyntaxKind, T, TopEntryPoint};
+use ra_ap_parser::{Edition, LexedStr, Output, StrStep, SyntaxKind, T, TopEntryPoint};
 
 use crate::cst::{Node, Tree, TreeBuilder};
 
@@ -123,6 +123,15 @@ impl ONode {
     fn len(&self) -> u32 {
         self.children.iter().map(El::len).sum()
     }
+
+    /// Whether a node of `kind` is in the tree under `self`.
+    fn contains(&self, kind: SyntaxKind) -> bool {
+        self.kind == kind
+            || self
+                .children
+                .iter()
+                .any(|c| matches!(c, El::Node(n) if n.contains(kind)))
+    }
 }
 
 /// The parse of a text as an owned tree.
@@ -141,13 +150,17 @@ fn parse_owned(text: &str, edition: Edition) -> Option<Parse> {
     if lexer_rejects(&lexed, edition) {
         return None;
     }
-    let input = lexed.to_input(edition);
-    let output = TopEntryPoint::SourceFile.parse(&input, edition);
+    let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
+    owned_tree(&lexed, &output)
+}
+
+/// The owned tree of the parser's steps `output` over `lexed`, errors included.
+fn owned_tree(lexed: &LexedStr<'_>, output: &Output) -> Option<Parse> {
     let mut stack: Vec<ONode> = Vec::new();
     let mut root = None;
     let mut errors = Vec::new();
     let mut float_fields = 0;
-    lexed.intersperse_trivia(&output, &mut |step| match step {
+    lexed.intersperse_trivia(output, &mut |step| match step {
         StrStep::Token { kind, text } => {
             if let Some(top) = stack.last_mut() {
                 top.children.push(El::Token(kind, text.len() as u32));
@@ -194,26 +207,52 @@ fn to_tree<'s>(src: &'s str, root: ONode) -> Tree<'s> {
 
 /// The tree rustc's parser would accept for `source`, which rust-analyzer's lexer or parser
 /// rejected, built as the module documentation describes. `None` if there is none.
+///
+/// `lexed` is `source` lexed, and `output` the parser's steps over it when the lexer
+/// reported no error (`None`: not parsed yet).
 pub(crate) fn reparse<'s>(
     source: &'s str,
+    lexed: &LexedStr<'_>,
+    output: Option<&Output>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
 ) -> Option<Tree<'s>> {
-    let parse = parse_owned(source, edition)?;
+    if lexer_rejects(lexed, edition) {
+        return None;
+    }
+    let parse = match output {
+        Some(output) => owned_tree(lexed, output)?,
+        None => owned_tree(
+            lexed,
+            &TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition),
+        )?,
+    };
     if parse.errors.is_empty() {
         let root = float_fields_as_names(&parse.root, source, parse.float_fields)?;
         return Some(to_tree(source, root));
     }
-    let mut explained = vec![false; parse.errors.len()];
-    let mut root = parse.root.clone();
+    // The edits explain errors only where there is a `const` token, or two `impl` tokens.
     // rustc 1.88.0's parser (rustfmt 1.8.0) has no const block items.
-    if rustfmt_version >= RustfmtVersion::V1_9_0 {
-        root = rebuild_const_blocks(&root, 0, source, &parse.errors, &mut explained);
+    let const_blocks = rustfmt_version >= RustfmtVersion::V1_9_0 && source.contains("const");
+    let impl_self_types = source.matches("impl").nth(1).is_some();
+    if const_blocks || impl_self_types {
+        let mut explained = vec![false; parse.errors.len()];
+        let const_blocks = const_blocks
+            .then(|| rebuild_const_blocks(&parse.root, 0, source, &parse.errors, &mut explained));
+        let root = rebuild_impl_self_types(
+            const_blocks.as_ref().unwrap_or(&parse.root),
+            0,
+            &parse.errors,
+            &mut explained,
+        );
+        if explained.iter().all(|&e| e) {
+            let root = float_fields_as_names(&root, source, parse.float_fields)?;
+            return Some(to_tree(source, root));
+        }
     }
-    root = rebuild_impl_self_types(&root, 0, &parse.errors, &mut explained);
-    if explained.iter().all(|&e| e) {
-        let root = float_fields_as_names(&root, source, parse.float_fields)?;
-        return Some(to_tree(source, root));
+    // Only a parenthesized type takes an inserted `DYN`.
+    if !parse.root.contains(SyntaxKind::PAREN_TYPE) {
+        return None;
     }
     with_inserted_dyn(source, edition, parse)
 }
