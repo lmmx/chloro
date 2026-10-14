@@ -426,36 +426,140 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
     }
 }
 
-/// Walks the tree under `node` in source order. `prev_colon` tracks whether the previous
-/// token was a `:` — rustc lexes `:::` as `::` followed by `:`, rust-analyzer as `:`
-/// followed by `::`.
+/// Whether a comment is a doc comment to rustc's lexer, and of which style.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum DocStyle {
+    /// `///`, `/** */`: an attribute of what follows.
+    Outer,
+    /// `//!`, `/*! */`: an attribute of the enclosing item.
+    Inner,
+}
+
+/// rustc's lexer: `///` (not `////`) and `/**` (not `/***` or `/**/`) are outer doc
+/// comments, `//!` and `/*!` inner ones; other comments are trivia.
+pub(crate) fn doc_comment_style(text: &str) -> Option<DocStyle> {
+    if text.starts_with("//!") || text.starts_with("/*!") {
+        Some(DocStyle::Inner)
+    } else if (text.starts_with("///") && !text.starts_with("////"))
+        || (text.starts_with("/**") && !text.starts_with("/***") && text != "/**/")
+    {
+        Some(DocStyle::Outer)
+    } else {
+        None
+    }
+}
+
+/// Token-level state of [`walk`].
+struct Scan {
+    edition: Edition,
+    /// The previous token was a `:` — rustc lexes `:::` as `::` followed by `:`,
+    /// rust-analyzer as `:` followed by `::`.
+    prev_colon: bool,
+    /// Inside a token tree (macro input), which rustc does not parse as part of the file.
+    token_tree_depth: usize,
+    /// An inner doc comment is allowed here: at the start of a file or of a module, block,
+    /// `impl`/`trait`, `extern` or `match` body, after inner attributes only.
+    inner_doc_ok: bool,
+    /// An outer doc comment was seen and nothing it documents yet.
+    pending_outer_doc: bool,
+}
+
+impl Scan {
+    /// `true` if rustc rejects token `k` (text `text`) of a node of kind `parent`.
+    fn token(&mut self, k: SyntaxKind, text: &str, parent: SyntaxKind) -> bool {
+        if k == T![::] && self.prev_colon {
+            return true;
+        }
+        self.prev_colon = k == T![:];
+        if self.token_tree_depth > 0 || k == SyntaxKind::WHITESPACE || k == SyntaxKind::SHEBANG {
+            return false;
+        }
+        if k == SyntaxKind::COMMENT {
+            match doc_comment_style(text) {
+                // "expected outer doc comment"
+                Some(DocStyle::Inner) => return !self.inner_doc_ok || self.pending_outer_doc,
+                Some(DocStyle::Outer) => {
+                    self.pending_outer_doc = true;
+                    self.inner_doc_ok = false;
+                }
+                None => {}
+            }
+            return false;
+        }
+        // `c"..."` is a C string literal from edition 2021; before, `c` is an identifier
+        // followed by a string literal.
+        if k == SyntaxKind::C_STRING && !self.edition.at_least_2021() {
+            return true;
+        }
+        // "found a documentation comment that doesn't document anything", "expected item
+        // after doc comment"
+        if self.pending_outer_doc
+            && matches!(
+                k,
+                T!['}'] | T![')'] | T![']'] | T![,] | T![;] | T![=>] | T![=] | T![>]
+            )
+        {
+            return true;
+        }
+        self.pending_outer_doc = false;
+        self.inner_doc_ok = k == T!['{']
+            && matches!(
+                parent,
+                SyntaxKind::ITEM_LIST
+                    | SyntaxKind::STMT_LIST
+                    | SyntaxKind::ASSOC_ITEM_LIST
+                    | SyntaxKind::EXTERN_ITEM_LIST
+                    | SyntaxKind::MATCH_ARM_LIST
+            );
+        false
+    }
+}
+
+/// Walks the tree under `node` in source order.
 fn walk<'a>(
     node: &'a GreenNodeData,
     path: &mut Vec<(&'a GreenNodeData, usize)>,
-    prev_colon: &mut bool,
-    edition: Edition,
+    scan: &mut Scan,
 ) -> bool {
-    if node_rejected(node, path, edition) {
+    let node_kind = kind(node.kind());
+    if node_rejected(node, path, scan.edition) {
         return true;
     }
+    // An inner attribute leaves the inner-doc-comment state as it was; after an outer doc
+    // comment it is an error ("expected outer doc comment" has a counterpart for `#![..]`).
+    let inner_attr = node_kind == SyntaxKind::ATTR && has_token(node, T![!]);
+    if inner_attr && scan.token_tree_depth == 0 && scan.pending_outer_doc {
+        return true;
+    }
+    let inner_doc_ok = scan.inner_doc_ok;
+    let is_token_tree = node_kind == SyntaxKind::TOKEN_TREE;
     for (index, child) in node.children().enumerate() {
         match child {
             NodeOrToken::Token(t) => {
-                let k = kind(t.kind());
-                if k == T![::] && *prev_colon {
+                if scan.token(kind(t.kind()), t.text(), node_kind) {
                     return true;
                 }
-                *prev_colon = k == T![:];
+                // The opening delimiter of a token tree is a token of the file; the rest of
+                // the tree is macro input.
+                if is_token_tree && index == 0 {
+                    scan.token_tree_depth += 1;
+                }
             }
             NodeOrToken::Node(n) => {
                 path.push((node, index));
-                let rejected = walk(n, path, prev_colon, edition);
+                let rejected = walk(n, path, scan);
                 path.pop();
                 if rejected {
                     return true;
                 }
             }
         }
+    }
+    if is_token_tree && node.children().next().is_some() {
+        scan.token_tree_depth -= 1;
+    }
+    if inner_attr && scan.token_tree_depth == 0 {
+        scan.inner_doc_ok = inner_doc_ok;
     }
     false
 }
@@ -470,7 +574,16 @@ pub(crate) fn rejected_by_rustc(file: &ast::SourceFile, edition: Edition) -> boo
 /// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
 /// `root`; for a file, that is all of them.
 pub(crate) fn subtree_rejected_by_rustc(root: &SyntaxNode, edition: Edition) -> bool {
-    walk(&root.green(), &mut Vec::new(), &mut false, edition)
+    let is_file = root.kind() == SyntaxKind::SOURCE_FILE;
+    let mut scan = Scan {
+        edition,
+        prev_colon: false,
+        token_tree_depth: 0,
+        inner_doc_ok: is_file,
+        pending_outer_doc: false,
+    };
+    // A doc comment at the end of a file documents nothing.
+    walk(&root.green(), &mut Vec::new(), &mut scan) || (is_file && scan.pending_outer_doc)
 }
 
 #[cfg(test)]
@@ -531,13 +644,28 @@ mod tests {
             "fn f() { let _ = |x| -> dyn A + B { x }; }",
             "fn f() { builtin # offset_of(Foo, bar.baz.0); }",
             "struct A<const N: i32 = MAX, const M: i32 = -1, const O: i32 = { i32::MAX }>;",
+            "#!/usr/bin/env x\n//! a\n#![b]\n//! c\nfn f() {}",
+            "mod m { //! a\n fn f() {} }",
+            "fn f() { //! a\n match x { //! b\n _ => {} } }",
+            "impl X { //! a\n }",
+            "fn f() { /// a\n let x = 1; /// b\n { } }",
+            "fn f() { foo(/// a\n x); }",
+            "struct S(/// a\n u8);",
+            "/// a\nfn f() {}\n////\n/**/\n/***/",
+            "macro_rules! m { () => { /// a\n } }",
+            "fn f() { m!(/// a\n); }",
+            "fn f() { m!(c\"x\"); }",
         ] {
             assert!(!rejected(src), "{src}");
         }
     }
 
     #[test]
-    fn edition_dependent_rules() {
+    fn edition_dependent_lexing_and_params() {
+        // `c"x"` lexes as an identifier and a string before edition 2021.
+        let c_string = "fn f() { let _ = c\"x\"; }";
+        assert!(rejected_in(c_string, Edition::Edition2018), "{c_string}");
+        assert!(!rejected_in(c_string, Edition::Edition2021), "{c_string}");
         // `builtin#` is a reserved prefix from edition 2021.
         let builtin = "fn f() { builtin#offset_of(Foo, bar); }";
         assert!(!rejected_in(builtin, Edition::Edition2018), "{builtin}");
@@ -607,6 +735,19 @@ mod tests {
             // Const parameter defaults without braces.
             "struct A<const N: i32 = i32::MAX>;",
             "struct A<const N: i32 = MAX::<u8>>;",
+            // Doc comments that document nothing.
+            "struct S { a: u8, /// a\n }",
+            "fn f() { foo(a, /// a\n); }",
+            "fn f() { a(); /** a */ }",
+            "fn f() { let x /// a\n = 1; }",
+            "fn f<T, /// a\n>() {}",
+            "fn f() {}\n/// a",
+            // Inner doc comments after an item or an outer attribute.
+            "fn f() {} //! a",
+            "fn f() { a(); //! a\n }",
+            "struct S { //! a\n a: u8 }",
+            "#[a]\n//! a\nfn f() {}",
+            "/// a\n//! b\nfn f() {}",
         ] {
             assert!(rejected(src), "{src}");
         }
