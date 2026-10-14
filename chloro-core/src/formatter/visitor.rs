@@ -28,6 +28,7 @@ use super::nodes::{
 };
 use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
+use super::parallel::{GapOp, UnitRecord};
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
 use super::stmt::Stmt;
@@ -48,6 +49,10 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
     pub(crate) run: Rc<RunState>,
+    /// Set while a worker formats one top-level unit on its own (`parallel.rs`): the
+    /// unit's first `format_missing*` call, which writes the gap before the unit, is
+    /// recorded here and skipped, for the stitching visitor to replay on the real buffer.
+    pub(crate) unit: Option<UnitRecord>,
 }
 
 impl Drop for FmtVisitor<'_> {
@@ -99,6 +104,22 @@ impl<'a> FmtVisitor<'a> {
             macro_rewrite_failure: false,
             is_macro_def: false,
             run,
+            unit: None,
+        }
+    }
+
+    /// On a worker formatting one unit (`parallel.rs`), records the unit's first gap call
+    /// as `op` instead of writing it, moves `last_pos` past the gap, and returns `true`.
+    /// Returns `false` otherwise: the caller writes the gap as usual.
+    pub(crate) fn defer_gap(&mut self, op: GapOp, end: BytePos) -> bool {
+        match &mut self.unit {
+            Some(unit) if unit.gap.is_none() => {
+                debug_assert_eq!(self.buffer, "\n", "a unit's first gap call comes first");
+                unit.gap = Some(op);
+                self.last_pos = end;
+                true
+            }
+            _ => false,
         }
     }
 
@@ -614,7 +635,11 @@ impl<'a> FmtVisitor<'a> {
         let lo = std::cmp::min(attrs_end + 1, first_line);
         self.push_rewrite_inner(item_span, None);
         let hi = self.line_number + 1;
-        self.run.skipped_range.borrow_mut().push((lo, hi));
+        let mut skipped = self.run.skipped_range.borrow_mut();
+        if let Some(unit) = &mut self.unit {
+            unit.output_line_ranges.push(skipped.len());
+        }
+        skipped.push((lo, hi));
     }
 
     /// Returns `true` if the following item should be skipped (it has a skip attribute);

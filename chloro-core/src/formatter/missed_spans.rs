@@ -7,6 +7,7 @@
 
 use super::comment::{CodeCharKind, CommentCodeSlices, is_last_comment_block, rewrite_comment};
 use super::config::StyleEdition;
+use super::parallel::GapOp;
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, mk_sp};
 use super::utils::{count_newlines, last_line_width};
@@ -25,6 +26,9 @@ impl FmtVisitor<'_> {
     }
 
     pub(crate) fn format_missing(&mut self, end: BytePos) {
+        if self.defer_gap(GapOp::NoIndent(end), end) {
+            return;
+        }
         // rustfmt uses `format_missing()` to extract a missing comment between a macro (or
         // similar) and a trailing semicolon, and avoids the general path in the common case
         // where there is no such comment.
@@ -46,6 +50,14 @@ impl FmtVisitor<'_> {
     }
 
     fn format_missing_indent(&mut self, end: BytePos, should_indent: bool) {
+        let op = if should_indent {
+            GapOp::WithIndent(end)
+        } else {
+            GapOp::WithoutIndent(end)
+        };
+        if self.defer_gap(op, end) {
+            return;
+        }
         self.format_missing_inner(end, |this, last_snippet, snippet| {
             this.push_str(last_snippet.trim_end());
             if last_snippet == snippet && !this.output_at_start() {

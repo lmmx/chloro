@@ -133,9 +133,30 @@ pub(crate) fn format_text(
     })
 }
 
+/// `format_text` with the file's top-level items formatted on up to `threads` threads
+/// (`parallel.rs`); the output is the same. Only for a whole file (`is_macro_def` is
+/// false): macro definition bodies are formatted sequentially inside their item.
+pub(crate) fn format_text_parallel(
+    source: &str,
+    config: &Settings,
+    threads: usize,
+) -> Option<Formatted> {
+    let file = parse(source, config.edition().to_ra())?;
+    if contains_skip(&inner_attributes(file.syntax())) {
+        return Some(Formatted {
+            text: source.to_owned(),
+            echoed: true,
+            macro_failure: false,
+            lost_comment: false,
+            skipped_range: Vec::new(),
+        });
+    }
+    Some(super::parallel::format_file(source, config, &file, threads))
+}
+
 /// rustfmt's `format_lines` (without its error reporting): a run of trailing newlines
 /// becomes a single newline. `\r` characters do not interrupt the run.
-fn truncate_trailing_newlines(text: &mut String) {
+pub(crate) fn truncate_trailing_newlines(text: &mut String) {
     let mut newline_count = 0;
     for c in text.chars().rev() {
         match c {
