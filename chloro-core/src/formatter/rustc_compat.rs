@@ -245,6 +245,25 @@ fn ambiguous_plus(ty: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool 
     }
 }
 
+/// `builtin # offset_of(T, field)`: rustc's `parse_expr_builtin` knows `offset_of` (not
+/// `asm` or `format_args`), wants dot-separated field names (no parentheses), and from
+/// edition 2021 `builtin#` without a space is a reserved prefix.
+fn offset_of_rejected(node: &GreenNodeData, edition: Edition) -> bool {
+    let mut prev = None;
+    let mut parens = 0;
+    for c in node.children() {
+        let k = child_kind(&c);
+        if prev == Some(SyntaxKind::BUILTIN_KW) && k == T![#] && edition.at_least_2021() {
+            return true;
+        }
+        if k == T!['('] {
+            parens += 1;
+        }
+        prev = Some(k);
+    }
+    parens > 1
+}
+
 /// `const N: i32 = i32::MAX`: rustc's `expr_is_valid_const_arg` accepts only a block, a
 /// literal, a negated literal or a single-segment path without generic arguments as a
 /// const argument without braces.
@@ -324,6 +343,9 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
             chained_comparison(node) || larrow(node) || prefix_range_assigned(node, path)
         }
         SyntaxKind::DYN_TRAIT_TYPE | SyntaxKind::IMPL_TRAIT_TYPE => ambiguous_plus(node, path),
+        // `builtin # asm(..)`, `builtin # format_args(..)`, `builtin # global_asm(..)`
+        SyntaxKind::ASM_EXPR | SyntaxKind::FORMAT_ARGS_EXPR => true,
+        SyntaxKind::OFFSET_OF_EXPR => offset_of_rejected(node, edition),
         SyntaxKind::CONST_PARAM => const_param_default_rejected(node),
         _ => false,
     }
@@ -432,10 +454,19 @@ mod tests {
             "type T = Box<dyn Fn() -> Box<dyn A + B>>;",
             "type T = &[dyn A + B];",
             "fn f() { let _ = |x| -> dyn A + B { x }; }",
+            "fn f() { builtin # offset_of(Foo, bar.baz.0); }",
             "struct A<const N: i32 = MAX, const M: i32 = -1, const O: i32 = { i32::MAX }>;",
         ] {
             assert!(!rejected(src), "{src}");
         }
+    }
+
+    #[test]
+    fn edition_dependent_rules() {
+        // `builtin#` is a reserved prefix from edition 2021.
+        let builtin = "fn f() { builtin#offset_of(Foo, bar); }";
+        assert!(!rejected_in(builtin, Edition::Edition2018), "{builtin}");
+        assert!(rejected_in(builtin, Edition::Edition2021), "{builtin}");
     }
 
     #[test]
@@ -476,6 +507,10 @@ mod tests {
             "type T = fn() -> dyn A + B;",
             "fn f(_: impl Fn() -> impl A + B) {}",
             "fn f() { x as dyn A + B; }",
+            // `builtin #` constructs rustc does not have, and a parenthesized field.
+            "fn f() { builtin # asm(\"\"); }",
+            "fn f() { builtin # format_args(\"\", 1); }",
+            "fn f() { builtin # offset_of(Foo, (bar)); }",
             // Const parameter defaults without braces.
             "struct A<const N: i32 = i32::MAX>;",
             "struct A<const N: i32 = MAX::<u8>>;",
