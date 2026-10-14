@@ -1,4 +1,5 @@
 //! chloro-core: the formatter behind chloro, a reproduction of `rustfmt --edition 2024`.
+pub mod cst;
 pub mod debug;
 pub mod formatter;
 
