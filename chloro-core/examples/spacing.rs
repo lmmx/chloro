@@ -28,8 +28,8 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use ra_ap_parser::{Edition, LexedStr};
-use ra_ap_syntax::{AstNode, SourceFile, SyntaxKind, ast};
+use chloro_core::cst::{AstNode, Tree, ast};
+use ra_ap_parser::{Edition, LexedStr, SyntaxKind};
 
 fn rs_files(root: &Path) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = walkdir::WalkDir::new(root)
@@ -76,17 +76,16 @@ fn split(src: &Path, dst: &Path) {
     let (mut files, mut items) = (0, 0);
     for path in rs_files(src) {
         let text = read(&path);
-        let parse = SourceFile::parse(&text, Edition::Edition2024);
-        if !parse.errors().is_empty() {
+        let Some(tree) = Tree::parse(&text, Edition::Edition2024) else {
             continue;
-        }
+        };
         files += 1;
         let name = path
             .strip_prefix(src)
             .unwrap()
             .to_string_lossy()
             .replace('/', "__");
-        let file_items = parse.tree().syntax().children().filter_map(ast::Item::cast);
+        let file_items = tree.root().children().filter_map(ast::Item::cast);
         for (i, item) in file_items.enumerate() {
             write(
                 &dst.join(format!("{name}__{i:04}.rs")),

@@ -376,11 +376,25 @@ impl<'t> Static<'t> {
 }
 
 impl<'t> MacroDef<'t> {
-    pub fn args(&self) -> Option<TokenTree<'t>> {
-        support::children(self.syntax()).next()
+    fn tts(&self) -> (Option<TokenTree<'t>>, Option<TokenTree<'t>>) {
+        let mut types = support::children(self.syntax());
+        let first = types.next();
+        let second = types.next();
+        (first, second)
     }
+    /// The matcher of `macro m(args) { body }`; `None` for `macro m { rules }`.
+    pub fn args(&self) -> Option<TokenTree<'t>> {
+        match self.tts() {
+            (Some(args), Some(_)) => Some(args),
+            _ => None,
+        }
+    }
+    /// The last token tree: the transcriber, or the rules of `macro m { rules }`.
     pub fn body(&self) -> Option<TokenTree<'t>> {
-        support::children(self.syntax()).nth(1)
+        match self.tts() {
+            (Some(body), None) | (_, Some(body)) => Some(body),
+            _ => None,
+        }
     }
 }
 
@@ -526,15 +540,69 @@ pub enum CommentPlacement {
 
 impl CommentKind {
     const BY_PREFIX: [(&'static str, CommentKind); 9] = [
-        ("/**/", CommentKind { shape: CommentShape::Block, doc: None }),
-        ("/***", CommentKind { shape: CommentShape::Block, doc: None }),
-        ("////", CommentKind { shape: CommentShape::Line, doc: None }),
-        ("///", CommentKind { shape: CommentShape::Line, doc: Some(CommentPlacement::Outer) }),
-        ("//!", CommentKind { shape: CommentShape::Line, doc: Some(CommentPlacement::Inner) }),
-        ("/**", CommentKind { shape: CommentShape::Block, doc: Some(CommentPlacement::Outer) }),
-        ("/*!", CommentKind { shape: CommentShape::Block, doc: Some(CommentPlacement::Inner) }),
-        ("//", CommentKind { shape: CommentShape::Line, doc: None }),
-        ("/*", CommentKind { shape: CommentShape::Block, doc: None }),
+        (
+            "/**/",
+            CommentKind {
+                shape: CommentShape::Block,
+                doc: None,
+            },
+        ),
+        (
+            "/***",
+            CommentKind {
+                shape: CommentShape::Block,
+                doc: None,
+            },
+        ),
+        (
+            "////",
+            CommentKind {
+                shape: CommentShape::Line,
+                doc: None,
+            },
+        ),
+        (
+            "///",
+            CommentKind {
+                shape: CommentShape::Line,
+                doc: Some(CommentPlacement::Outer),
+            },
+        ),
+        (
+            "//!",
+            CommentKind {
+                shape: CommentShape::Line,
+                doc: Some(CommentPlacement::Inner),
+            },
+        ),
+        (
+            "/**",
+            CommentKind {
+                shape: CommentShape::Block,
+                doc: Some(CommentPlacement::Outer),
+            },
+        ),
+        (
+            "/*!",
+            CommentKind {
+                shape: CommentShape::Block,
+                doc: Some(CommentPlacement::Inner),
+            },
+        ),
+        (
+            "//",
+            CommentKind {
+                shape: CommentShape::Line,
+                doc: None,
+            },
+        ),
+        (
+            "/*",
+            CommentKind {
+                shape: CommentShape::Block,
+                doc: None,
+            },
+        ),
     ];
 
     pub fn from_text(text: &str) -> CommentKind {
@@ -677,7 +745,8 @@ mod tests {
         let tree = Tree::parse(src, Edition::Edition2024).unwrap();
         let root = tree.root();
         let nodes: Vec<Node<'_>> = root.descendants().collect();
-        let find = |f: &dyn std::ops::Fn(Node<'_>) -> bool| nodes.iter().copied().find(|&n| f(n)).unwrap();
+        let find =
+            |f: &dyn std::ops::Fn(Node<'_>) -> bool| nodes.iter().copied().find(|&n| f(n)).unwrap();
 
         let if_expr = IfExpr::cast(find(&|n| n.kind() == IF_EXPR)).unwrap();
         assert_eq!(if_expr.condition().unwrap().syntax().text(), "a");
@@ -703,7 +772,8 @@ mod tests {
         let idx = IndexExpr::cast(find(&|n| n.kind() == INDEX_EXPR)).unwrap();
         assert_eq!(idx.base().unwrap().syntax().text(), "r");
         assert_eq!(idx.index().unwrap().syntax().text(), "0");
-        let ranges: Vec<RangeExpr<'_>> = nodes.iter().copied().filter_map(RangeExpr::cast).collect();
+        let ranges: Vec<RangeExpr<'_>> =
+            nodes.iter().copied().filter_map(RangeExpr::cast).collect();
         assert_eq!(ranges[0].op_kind(), Some(RangeOp::Exclusive));
         assert_eq!(ranges[1].op_kind(), Some(RangeOp::Inclusive));
         assert_eq!(ranges[1].start().unwrap().syntax().text(), "3");
@@ -730,7 +800,10 @@ mod tests {
         assert_eq!(strings.len(), 2);
         assert!(!strings[0].is_raw());
         assert!(strings[1].is_raw());
-        assert!(lits.iter().any(|l| matches!(l, LiteralKind::FloatNumber(f) if f.text() == "1.5")));
+        assert!(
+            lits.iter()
+                .any(|l| matches!(l, LiteralKind::FloatNumber(f) if f.text() == "1.5"))
+        );
         assert!(lits.iter().any(|l| matches!(l, LiteralKind::Byte(_))));
         assert!(lits.contains(&LiteralKind::Bool(true)));
 
@@ -746,6 +819,17 @@ mod tests {
         let m = MacroDef::cast(find(&|n| n.kind() == MACRO_DEF)).unwrap();
         assert_eq!(m.args().unwrap().syntax().text(), "($x:tt)");
         assert_eq!(m.body().unwrap().syntax().text(), "{ $x }");
+        let rules = Tree::parse("macro m { ($i:ident) => {} }", Edition::Edition2024).unwrap();
+        let m = MacroDef::cast(
+            rules
+                .root()
+                .descendants()
+                .find(|n| n.kind() == MACRO_DEF)
+                .unwrap(),
+        )
+        .unwrap();
+        assert!(m.args().is_none());
+        assert_eq!(m.body().unwrap().syntax().text(), "{ ($i:ident) => {} }");
         let abi = Abi::cast(find(&|n| n.kind() == ABI)).unwrap();
         assert_eq!(abi.abi_string().unwrap().text(), "\"C\"");
         let path = Path::cast(find(&|n| n.kind() == PATH && n.text() == "a::b::<u8>::c")).unwrap();
@@ -784,6 +868,14 @@ mod tests {
         // Inner doc comments keep the comment run on the file rather than the item.
         let file = SourceFile::cast(tree.root()).unwrap();
         let docs: Vec<&str> = file.doc_comments().map(|c| c.text()).collect();
-        assert_eq!(docs, ["/// outer", "//! inner", "/** block */", "/*! inner block */"]);
+        assert_eq!(
+            docs,
+            [
+                "/// outer",
+                "//! inner",
+                "/** block */",
+                "/*! inner block */"
+            ]
+        );
     }
 }

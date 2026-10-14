@@ -1420,7 +1420,7 @@ fn format_header(
         }
     }
 
-    result.push_str(&node_text(name.syntax()));
+    result.push_str(node_text(name.syntax()));
 
     result
 }
@@ -2272,7 +2272,7 @@ pub(crate) fn format_trait(
     let body_lo = context.snippet_provider.span_after(item_span, "{");
 
     let shape = Shape::indented(offset, context.config).offset_left(result.len())?;
-    let generics_str = rewrite_generics(context, &node_text(name.syntax()), &generics, shape)?;
+    let generics_str = rewrite_generics(context, node_text(name.syntax()), &generics, shape)?;
     result.push_str(&generics_str);
 
     // FIXME(#2055): rustfmt fails to format when there are comments between trait bounds.
@@ -2460,7 +2460,7 @@ pub(crate) fn format_trait_alias(
     let alias = node_text(name.syntax());
     // 6 = "trait ", 2 = " ="
     let g_shape = shape.offset_left(6)?.sub_width(2)?;
-    let generics_str = rewrite_generics(context, &alias, &generics, g_shape)?;
+    let generics_str = rewrite_generics(context, alias, &generics, g_shape)?;
     let vis_str = format_visibility(child::<ast::Visibility>(ta.syntax()).as_ref());
     let constness = if has_token(ta.syntax(), T![const]) {
         "const "
@@ -2769,7 +2769,7 @@ fn rewrite_struct_fields(
         ",",
         |field| field.span().lo(),
         |field| field.span().hi(),
-        |field| rewrite_struct_field(context, &FieldDef::Named((*field).clone()), item_shape),
+        |field| rewrite_struct_field(context, &FieldDef::Named(*(*field)), item_shape),
         span.lo(),
         span.hi(),
         false,
@@ -2981,7 +2981,7 @@ fn rewrite_struct_field_prefix(field: &FieldDef) -> Option<String> {
 
 impl Rewrite for ast::TupleField<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
-        rewrite_struct_field(context, &FieldDef::Positional(self.clone()), shape)
+        rewrite_struct_field(context, &FieldDef::Positional(*self), shape)
     }
 }
 
@@ -3593,7 +3593,7 @@ pub(crate) fn rewrite_mod(
         result.push_str("unsafe ");
     }
     result.push_str("mod ");
-    result.push_str(&node_text(module.name()?.syntax()));
+    result.push_str(node_text(module.name()?.syntax()));
     result.push(';');
     rewrite_attrs(context, module.syntax(), &result, attrs_shape)
 }

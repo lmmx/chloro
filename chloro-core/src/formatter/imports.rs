@@ -10,8 +10,8 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fmt;
 
-use ra_ap_parser::T;
 use crate::cst::ast::{self, AstNode, HasName};
+use ra_ap_parser::T;
 
 use super::comment::combine_strs_with_missing_comments;
 use super::config::{Edition, StyleEdition};
@@ -236,7 +236,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
     let mut global = false;
     // Segments are nested: `a::b::c` is Path(Path(Path(a), b), c).
     let mut segments: Vec<ast::PathSegment> = Vec::new();
-    let mut cur = Some(path.clone());
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);

@@ -2,8 +2,8 @@
 
 use std::iter::repeat_n;
 
-use ra_ap_parser::T;
 use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::{FindUncommented, combine_strs_with_missing_comments, rewrite_comment};
@@ -175,7 +175,7 @@ fn is_default_block(body: &ast::Expr) -> bool {
 fn as_block<'a>(body: &ast::Expr<'a>) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((*b, Block::from_block_expr(b)?))
         }
         _ => None,
     }
@@ -231,7 +231,7 @@ fn rewrite_match_arms(
         .zip(is_last_iter)
         .zip(beginning_verts)
         .map(|((arm, is_last), beginning_vert)| ArmWrapper {
-            arm: arm.clone(),
+            arm: *arm,
             is_last,
             beginning_vert,
         })
@@ -303,9 +303,7 @@ fn rewrite_match_arm(
             // Some block with a label ` => 'label: {`
             // 7 = ` => : {`
             let label_len = label.syntax().text().len();
-            shape
-                .sub_width(7 + usize::from(label_len))?
-                .offset_left(pipe_offset)?
+            shape.sub_width(7 + label_len)?.offset_left(pipe_offset)?
         }
         None => {
             // 5 = ` => {`
@@ -351,7 +349,10 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
     matches!(kind, StmtKind::Expr(ast::Expr::MacroExpr(_)))
 }
 
-fn block_can_be_flattened<'a>(context: &RewriteContext<'_>, expr: &ast::Expr<'a>) -> Option<Block<'a>> {
+fn block_can_be_flattened<'a>(
+    context: &RewriteContext<'_>,
+    expr: &ast::Expr<'a>,
+) -> Option<Block<'a>> {
     let (block_expr, block) = as_block(expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
@@ -379,23 +380,23 @@ fn flatten_arm_body<'a>(
                 if outer_attributes(expr.syntax()).is_empty() {
                     flatten_arm_body(context, expr, None)
                 } else {
-                    (true, body.clone())
+                    (true, *body)
                 }
             } else {
                 let cond_becomes_multi_line = opt_shape
                     .and_then(|shape| rewrite_cond(context, expr, shape))
                     .is_some_and(|cond| cond.contains('\n'));
                 if cond_becomes_multi_line {
-                    (false, body.clone())
+                    (false, *body)
                 } else {
-                    (can_extend(expr), expr.clone())
+                    (can_extend(expr), *expr)
                 }
             }
         } else {
-            (false, body.clone())
+            (false, *body)
         }
     } else {
-        (can_extend(body), body.clone())
+        (can_extend(body), *body)
     }
 }
 

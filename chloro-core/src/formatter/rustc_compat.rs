@@ -94,12 +94,9 @@ fn chained_range(range: Node<'_>) -> bool {
 /// A binary expression whose operator is a comparison.
 fn is_comparison(node: Node<'_>) -> bool {
     node.kind() == SyntaxKind::BIN_EXPR
-        && node.children_with_tokens().any(|c| {
-            matches!(
-                c.kind(),
-                T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]
-            )
-        })
+        && node
+            .children_with_tokens()
+            .any(|c| matches!(c.kind(), T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]))
 }
 
 /// `a < b > c`, `a == b == c`: comparison operators do not chain (they share one precedence
