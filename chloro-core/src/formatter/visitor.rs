@@ -33,7 +33,7 @@ use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
 use super::parallel::{GapOp, UnitRecord};
 use super::shape::{Indent, Shape};
-use super::skip::SkipContext;
+use super::skip::{SkipContext, may_list_skip_names};
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span, token_span};
 use super::stmt::Stmt;
 use super::utils::{count_newlines, format_visibility, last_line_width, starts_with_newline};
@@ -53,7 +53,7 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
     /// Macro and attribute names left as written (rustfmt's `skip_context`).
-    pub(crate) skip_context: Rc<SkipContext>,
+    pub(crate) skip_context: Option<Rc<SkipContext>>,
     pub(crate) run: Rc<RunState<'a>>,
     /// Set while a worker formats one top-level unit on its own (`parallel.rs`): the
     /// unit's first `format_missing*` call, which writes the gap before the unit, is
@@ -109,7 +109,7 @@ impl<'a> FmtVisitor<'a> {
             line_number: 0,
             macro_rewrite_failure: false,
             is_macro_def: false,
-            skip_context: Rc::default(),
+            skip_context: None,
             run,
             unit: None,
         }
@@ -416,10 +416,13 @@ impl<'a> FmtVisitor<'a> {
     }
 
     pub(crate) fn update_skip_context(&mut self, attrs: &[Attribute<'_>]) {
-        let mut skip_context = (*self.skip_context).clone();
+        if !attrs.iter().any(may_list_skip_names) {
+            return;
+        }
+        let mut skip_context = self.skip_context.as_deref().cloned().unwrap_or_default();
         skip_context.update_with_attrs(attrs);
-        if skip_context != *self.skip_context {
-            self.skip_context = Rc::new(skip_context);
+        if !skip_context.is_empty() && self.skip_context.as_deref() != Some(&skip_context) {
+            self.skip_context = Some(Rc::new(skip_context));
         }
     }
 

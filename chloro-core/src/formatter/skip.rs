@@ -4,11 +4,14 @@
 
 use std::collections::HashSet;
 
+use crate::cst::ast::{self, AstNode};
+
 use super::attr::{MetaItemInner, meta_item_list};
-use super::nodes::Attribute;
+use super::nodes::{Attribute, child};
 
 /// Which macro calls and attributes to leave as written. Only item attributes update it
-/// (`FmtVisitor::visit_item`), and nested visitors inherit it.
+/// (`FmtVisitor::visit_item`), and nested visitors inherit it. Contexts hold it as an
+/// `Option<Rc<SkipContext>>`, `None` when no names are listed.
 #[derive(Default, Clone, PartialEq, Eq)]
 pub(crate) struct SkipContext {
     pub(crate) macros: SkipNameContext,
@@ -20,6 +23,22 @@ impl SkipContext {
         self.macros.extend(get_skip_names("macros", attrs));
         self.attributes.extend(get_skip_names("attributes", attrs));
     }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.macros.is_empty() && self.attributes.is_empty()
+    }
+}
+
+/// Whether `attr` may be a `#[rustfmt::skip::<kind>(..)]` attribute: its path starts with
+/// `rustfmt`. A filter without allocation in front of [`SkipContext::update_with_attrs`],
+/// which compares the whole path.
+pub(crate) fn may_list_skip_names(attr: &Attribute<'_>) -> bool {
+    let Attribute::Normal(normal) = attr else {
+        return false;
+    };
+    child::<ast::Meta>(normal.syntax())
+        .and_then(|meta| meta.path())
+        .is_some_and(|path| path.syntax().text().starts_with("rustfmt"))
 }
 
 /// rustfmt's `SkipNameContext`. The `All` variant comes only from the unstable

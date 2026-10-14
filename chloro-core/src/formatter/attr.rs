@@ -502,10 +502,11 @@ impl Rewrite for Attribute<'_> {
         let prefix = attr_prefix(self);
 
         // `#[rustfmt::skip::attributes(name)]` leaves attributes named `name` as written.
-        let should_skip = self
-            .path_text()
-            .filter(|path| !path.contains("::"))
-            .is_some_and(|name| context.skip_context.attributes.skip(&name));
+        let should_skip = context.skip_context.is_some()
+            && self
+                .path_text()
+                .filter(|path| !path.contains("::"))
+                .is_some_and(|name| context.skips_attribute(&name));
         if should_skip || contains_comment(snippet) {
             return Some(snippet.to_owned());
         }
@@ -544,7 +545,7 @@ pub(crate) fn rewrite_attrs(
 
     // Determine if the source text is annotated with `#[rustfmt::skip::attributes(derive)]`
     // or `#![rustfmt::skip::attributes(derive)]`
-    let skip_derives = context.skip_context.attributes.skip("derive");
+    let skip_derives = context.skips_attribute("derive");
 
     // This is not just a simple map because we need to handle doc comments
     // (where we take as many doc comment attributes as possible) and possibly
