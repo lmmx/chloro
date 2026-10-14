@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 
-use ra_ap_parser::Edition;
+use ra_ap_parser::{Edition, LexedStr, TopEntryPoint};
 
 use crate::cst::{AstNode, Tree, TreeArena, ast};
 
@@ -43,9 +43,16 @@ pub(crate) struct Formatted {
 /// A file that rust-analyzer's lexer or parser rejects is parsed again by `rustc_syntax`
 /// when rustc's parser accepts it.
 fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
-    let tree = match Tree::parse(source, edition) {
-        Some(tree) => tree,
-        None => reparse(source, edition, rustfmt_version)?,
+    // `Tree::parse`, keeping the lexer's and the parser's output for `reparse`.
+    let lexed = LexedStr::new(edition, source);
+    let tree = if lexed.errors().next().is_none() {
+        let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
+        match Tree::from_steps_at(source, &lexed, &output, 0, 0) {
+            Some(tree) => tree,
+            None => reparse(source, &lexed, Some(&output), edition, rustfmt_version)?,
+        }
+    } else {
+        reparse(source, &lexed, None, edition, rustfmt_version)?
     };
     (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
 }
