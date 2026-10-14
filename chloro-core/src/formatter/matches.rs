@@ -14,11 +14,11 @@ use super::expr::{
     prefer_next_line, rewrite_cond,
 };
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
-use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
     contains_skip, inner_attributes, outer_attributes,
 };
+use super::nodes::{child_range, has_token};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
@@ -40,8 +40,9 @@ struct ArmWrapper {
 /// trailing comma.
 fn arm_span(arm: &ast::MatchArm) -> Span {
     let full = arm.span();
-    match arm.expr() {
-        Some(body) => full.with_hi(body.span().hi()),
+    // `MatchArm::expr`, of which only the end is used.
+    match child_range::<ast::Expr>(arm.syntax()) {
+        Some(body) => full.with_hi(body.end().into()),
         None => full,
     }
 }
@@ -172,10 +173,10 @@ fn is_default_block(body: &ast::Expr) -> bool {
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
-fn as_block(body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn as_block(context: &RewriteContext<'_>, body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((b.clone(), context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -266,7 +267,7 @@ fn rewrite_match_arm(
 ) -> Option<String> {
     let attrs = outer_attributes(arm.syntax());
     let pat = child::<ast::Pat>(arm.syntax())?;
-    let body = arm.expr()?;
+    let body = child::<ast::Expr>(arm.syntax())?;
     let (missing_span, attrs_str) = if !attrs.is_empty() {
         if contains_skip(&attrs) {
             let (_, body) = flatten_arm_body(context, &body, None);
@@ -317,7 +318,7 @@ fn rewrite_match_arm(
     // Guard
     let block_like_pat = trimmed_last_line_width(&pats_str) <= context.config.tab_spaces();
     let new_line_guard = pats_str.contains('\n') && !block_like_pat;
-    let guard = arm.guard().and_then(|g| g.condition());
+    let guard = child::<ast::MatchGuard>(arm.syntax()).and_then(|g| child::<ast::Expr>(g.syntax()));
     let guard_str = rewrite_guard(
         context,
         guard.as_ref(),
@@ -352,7 +353,7 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
 }
 
 fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
-    let (block_expr, block) = as_block(expr)?;
+    let (block_expr, block) = as_block(context, expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
         && !context.inside_macro()
@@ -413,7 +414,7 @@ fn rewrite_match_body(
         body,
         shape.offset_left(extra_offset(pats_str, shape) + 4),
     );
-    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(&body) {
+    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(context, &body) {
         (
             true,
             is_empty_block(context, &block, Some(&expr_attrs(&body))),

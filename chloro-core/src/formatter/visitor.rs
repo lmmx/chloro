@@ -26,8 +26,9 @@ use super::nodes::{
     AttrStyle, Attribute, Block, StmtKind, child, contains_skip, inner_attributes,
     outer_attributes, span_without_attrs,
 };
-use super::nodes::{has_token, node_text};
+use super::nodes::{has_child, has_token, node_text};
 use super::overflow::Delimiter;
+use super::parallel::{GapOp, UnitRecord};
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
 use super::stmt::Stmt;
@@ -48,6 +49,10 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
     pub(crate) run: Rc<RunState>,
+    /// Set while a worker formats one top-level unit on its own (`parallel.rs`): the
+    /// unit's first `format_missing*` call, which writes the gap before the unit, is
+    /// recorded here and skipped, for the stitching visitor to replay on the real buffer.
+    pub(crate) unit: Option<UnitRecord>,
 }
 
 impl Drop for FmtVisitor<'_> {
@@ -68,8 +73,7 @@ fn item_attrs(item: &ast::Item) -> Vec<Attribute> {
         ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax().clone()),
         ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax().clone()),
         ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax().clone()),
-        ast::Item::Fn(f) => f
-            .body()
+        ast::Item::Fn(f) => child::<ast::BlockExpr>(f.syntax())
             .and_then(|b| child::<ast::StmtList>(b.syntax()))
             .map(|l| l.syntax().clone()),
         _ => None,
@@ -99,6 +103,22 @@ impl<'a> FmtVisitor<'a> {
             macro_rewrite_failure: false,
             is_macro_def: false,
             run,
+            unit: None,
+        }
+    }
+
+    /// On a worker formatting one unit (`parallel.rs`), records the unit's first gap call
+    /// as `op` instead of writing it, moves `last_pos` past the gap, and returns `true`.
+    /// Returns `false` otherwise: the caller writes the gap as usual.
+    pub(crate) fn defer_gap(&mut self, op: GapOp, end: BytePos) -> bool {
+        match &mut self.unit {
+            Some(unit) if unit.gap.is_none() => {
+                debug_assert_eq!(self.buffer, "\n", "a unit's first gap call comes first");
+                unit.gap = Some(op);
+                self.last_pos = end;
+                true
+            }
+            _ => false,
         }
     }
 
@@ -460,7 +480,7 @@ impl<'a> FmtVisitor<'a> {
                 None => self.push_rewrite(span, None),
             },
             ast::Item::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     self.visit_fn(f, span);
                 } else {
                     let indent = self.block_indent;
@@ -509,7 +529,8 @@ impl<'a> FmtVisitor<'a> {
         let skip_span = item_span(ai.syntax());
         let mut attrs = outer_attributes(ai.syntax());
         if let ast::AssocItem::Fn(f) = ai
-            && let Some(list) = f.body().and_then(|b| child::<ast::StmtList>(b.syntax()))
+            && let Some(list) =
+                child::<ast::BlockExpr>(f.syntax()).and_then(|b| child::<ast::StmtList>(b.syntax()))
         {
             attrs.extend(inner_attributes(list.syntax()));
         }
@@ -525,7 +546,7 @@ impl<'a> FmtVisitor<'a> {
                 None => self.push_rewrite(skip_span, None),
             },
             ast::AssocItem::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     self.visit_fn(f, skip_span);
                 } else {
                     let indent = self.block_indent;
@@ -614,7 +635,11 @@ impl<'a> FmtVisitor<'a> {
         let lo = std::cmp::min(attrs_end + 1, first_line);
         self.push_rewrite_inner(item_span, None);
         let hi = self.line_number + 1;
-        self.run.skipped_range.borrow_mut().push((lo, hi));
+        let mut skipped = self.run.skipped_range.borrow_mut();
+        if let Some(unit) = &mut self.unit {
+            unit.output_line_ranges.push(skipped.len());
+        }
+        skipped.push((lo, hi));
     }
 
     /// Returns `true` if the following item should be skipped (it has a skip attribute);

@@ -32,7 +32,7 @@ use super::nodes::{
     Attribute, Block, child, contains_skip, generics_span, inner_attributes, outer_attributes,
     span_without_attrs, where_clause_span,
 };
-use super::nodes::{has_token, node_text};
+use super::nodes::{child_range, has_child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span, rustc_span, token_span};
@@ -157,7 +157,7 @@ impl Rewrite for ast::LetStmt {
         let pat_shape = shape.offset_left(4)?;
         // 1 = ;
         let pat_shape = pat_shape.sub_width(1)?;
-        let pat = self.pat()?;
+        let pat = child::<ast::Pat>(self.syntax())?;
         let pat_str = pat.rewrite(context, pat_shape)?;
 
         result.push_str(&pat_str);
@@ -166,7 +166,7 @@ impl Rewrite for ast::LetStmt {
         let infix = {
             let mut infix = String::with_capacity(32);
 
-            if let Some(ty) = self.ty() {
+            if let Some(ty) = child::<ast::Type>(self.syntax()) {
                 let separator = type_annotation_separator(context);
                 let ty_shape = if pat_str.contains('\n') {
                     shape.with_max_width(context.config)
@@ -183,7 +183,7 @@ impl Rewrite for ast::LetStmt {
                 infix.push_str(&rewrite);
             }
 
-            if self.initializer().is_some() {
+            if has_child::<ast::Expr>(self.syntax()) {
                 infix.push_str(" =");
             }
 
@@ -192,15 +192,17 @@ impl Rewrite for ast::LetStmt {
 
         result.push_str(&infix);
 
-        if let Some(init) = self.initializer() {
+        if let Some(init) = child::<ast::Expr>(self.syntax()) {
             // 1 = trailing semicolon;
             let nested_shape = shape.sub_width(1)?;
 
             result =
                 rewrite_assign_rhs(context, result, &init, &RhsAssignKind::Expr, nested_shape)?;
 
-            if let Some(block_expr) = self.let_else().and_then(|le| le.block_expr()) {
-                let block = Block::from_block_expr(&block_expr)?;
+            if let Some(block_expr) = child::<ast::LetElse>(self.syntax())
+                .and_then(|le| child::<ast::BlockExpr>(le.syntax()))
+            {
+                let block = context.run.block_of(&block_expr)?;
                 let else_kw_span = init.span().between(block.span);
                 // Strip attributes and comments to check if newline is needed before the else
                 // keyword from the initializer part.
@@ -376,7 +378,7 @@ pub(crate) struct FnSig {
 
 impl FnSig {
     pub(crate) fn from_fn(f: &ast::Fn) -> Option<FnSig> {
-        let name_hi = name_span(&f.name()?).hi();
+        let name_hi = name_span(&child::<ast::Name>(f.syntax())?).hi();
         let param_list = child::<ast::ParamList>(f.syntax())?;
         let params_hi = node_range_span(param_list.syntax()).hi();
         let ret = child::<ast::RetType>(f.syntax());
@@ -423,7 +425,7 @@ impl FnSig {
             has_abi: child::<ast::Abi>(f.syntax()).is_some(),
             abi: child::<ast::Abi>(f.syntax()),
             generics: Generics::new(
-                f.generic_param_list(),
+                child::<ast::GenericParamList>(f.syntax()),
                 name_hi,
                 child::<ast::WhereClause>(f.syntax()),
                 where_fallback,
@@ -550,13 +552,13 @@ impl Rewrite for ast::Param {
         let (param_attrs_result, span, has_multiple_attr_lines, has_doc_comments) =
             param_attrs(self.syntax(), context, shape)?;
 
-        let Some(pat) = self.pat() else {
+        let Some(pat) = child::<ast::Pat>(self.syntax()) else {
             // An unnamed parameter (fn pointer types, C variadics). rustfmt rewrites only the
             // type, which drops any attributes of the parameter.
             if has_token(self.syntax(), T![...]) {
                 return Some("...".to_owned());
             }
-            return self.ty()?.rewrite(context, shape);
+            return child::<ast::Type>(self.syntax())?.rewrite(context, shape);
         };
         if has_token(self.syntax(), T![...]) {
             // `name: ...`
@@ -682,12 +684,13 @@ pub(crate) fn span_lo_for_param(param: &ast::Param) -> BytePos {
 }
 
 fn param_ty_hi(param: &ast::Param) -> BytePos {
+    // `Param::ty` and `Param::pat`, of which only the end is used.
     match (
-        child::<ast::Type>(param.syntax()),
-        child::<ast::Pat>(param.syntax()),
+        child_range::<ast::Type>(param.syntax()),
+        child_range::<ast::Pat>(param.syntax()),
     ) {
-        (Some(ty), _) => ty.span().hi(),
-        (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.span().hi(),
+        (Some(ty), _) => ty.end().into(),
+        (None, Some(pat)) if !has_token(param.syntax(), T![...]) => pat.end().into(),
         _ => node_range_span(param.syntax()).hi(),
     }
 }
@@ -1674,13 +1677,15 @@ impl FmtVisitor<'_> {
 
     /// A fn with a body (rustfmt's `visit_fn`).
     pub(crate) fn visit_fn(&mut self, f: &ast::Fn, s: Span) {
-        let (Some(body), Some(sig), Some(name)) =
-            (f.body(), FnSig::from_fn(f), name_text(f.name()))
-        else {
+        let (Some(body), Some(sig), Some(name)) = (
+            child::<ast::BlockExpr>(f.syntax()),
+            FnSig::from_fn(f),
+            name_text(child::<ast::Name>(f.syntax())),
+        ) else {
             self.push_rewrite(s, None);
             return;
         };
-        let Some(block) = Block::from_block_expr(&body) else {
+        let Some(block) = self.run.block_of(&body) else {
             self.push_rewrite(s, None);
             return;
         };
@@ -3461,7 +3466,7 @@ impl Rewrite for ast::ExternItem {
 
         let item_str = match self {
             ast::ExternItem::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     let mut visitor = FmtVisitor::from_context(context);
                     visitor.block_indent = shape.indent;
                     visitor.last_pos = item_span.lo();
