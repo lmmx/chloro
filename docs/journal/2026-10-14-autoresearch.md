@@ -367,32 +367,95 @@ Milestone 1 does not include E4 (−6.4% instructions, merged after M1 started) 
 from E3, E7b, E8 and the conformance branch; milestone 2 measures the next integrated head
 the same way.
 
+## Milestone 2, measured on a quiet host (M2)
+
+[measurements/m2-quiet-host.md](2026-10-14-autoresearch/measurements/m2-quiet-host.md):
+`884f9c9` (base), `8d418ee` (head: E6, E1, E2, E4, E8, E7b) and a profile-guided build of
+the head against rustfmt 1.9.0, in an idle container of the 2.80GHz host class of the
+first profile (not M1's 2.10GHz class). Same method as M1, 30 runs per cell, formatted
+input, the cache disabled through the harness.
+
+| crates (9), `--check`, formatted input | head/base | head-pgo/base | head/rustfmt | head-pgo/rustfmt |
+|---|---|---|---|---|
+| all four cores (chloro 4 threads, rustfmt 1) | 0.475–0.620 | 0.364–0.536 | 0.130–0.201 | 0.104–0.188 |
+| one core (both pinned), wall; CPU equal within 0.01 | 0.532–0.668 | 0.476–0.575 | 0.438–0.611 | 0.367–0.513 |
+
+- Ranges: on four cores every head run is below every base run on 8 of 9 crates (`parser`
+  overlaps) and every head and head-pgo run is below every rustfmt run on all 9; pinned,
+  head is below rustfmt on all 9 (M1: 2 of 9) and below base on 7 of 9, head-pgo below both
+  on all 9. Peak RSS: head below base on every crate; rustfmt 43–85 MiB against head
+  5–31 MiB.
+- In process, one core: base 4.94–5.03 MB/s, head 7.25–7.73, head-pgo 8.91–9.27, three
+  disjoint ranges. `conform -i` 3785 ± 136 ms against 5839 ± 160 for base. Instructions on
+  the sample: base 587,989,243; head 390,689,247 (−33.55%); head-pgo 306,889,893 (−47.81%).
+- The cache: warm 30.4 ms against 523.4 ms with `--no-cache` (17.2x) and 917.2 ms for base
+  (30.2x) on four cores; on one core 38.5 against 1952.4 and 3171.2 ms.
+- Parallel items, one file at a time on four cores: head/base 0.386 (`hir/src/lib.rs`),
+  0.403 (`nodes.rs`), 0.447 (`hover/tests.rs`), 0.496 (`config.rs`), 0.562 (`lints.rs`);
+  CPU time now 0.68–0.92 of base (M1: 1.00–1.23; the substrate pays for the split).
+- Regressions: start-up on a 12-byte file within 0.03–0.09 of base with overlapping ranges;
+  peak RSS of split files up to 1.44x (`lints.rs` 15.1 against 10.5 MiB). No cell has any
+  chloro build above rustfmt in mean, minimum, CPU or RSS, and no crate, stdin, cache or
+  in-process cell has head or head-pgo above base.
+- M2 reported the CLI's `--check` exiting 1 on the formatted copies of `hir/src/lib.rs` and
+  `config.rs` while `fmt_stdin` agreed with rustfmt on them. The cause is in the harness, not
+  the formatter: for stdin workloads the formatted copy was made by running rustfmt in file
+  mode on the copy, which follows the crate root's `mod` declarations, finds no module files
+  and formats nothing, so both copies stayed as found; `fmt_stdin` and `rustfmt < input.rs`
+  then agreed with each other on the unformatted text, and the CLI's exit 1 was right. On a
+  copy formatted through stdin the CLI's print mode, `--check`, `--threads 1` and
+  `fmt_stdin` all return the text unchanged (checked here). The harness now formats stdin
+  copies through stdin. M2's stdin rows for those two files timed a full format in every
+  build, so the ratios stand.
+
 ## Current State
 
-- Formatting runs rustfmt 1.9.0's algorithm single-threaded in process at 4.57 MB/s on
-  the 1238 fixture files, measured with `target/release/examples/bench -n 5` at `884f9c9`
-- Conformance is 1219/1220 identical with 0 non-idempotent outputs
-  (`target/release/examples/conform -i` at `884f9c9`)
+- The formatter reads syntax from a flat preorder array with a generated typed layer
+  (chloro-core/src/cst/: mod.rs, generated.rs, ast.rs, gen_ast.py, rust.ungram); rowan and
+  ra_ap_syntax are dev-dependencies for the equality tests only
+  (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 16 crates
+- Instructions on the 49-file sample under `benchmarks/profile.sh`: 390,689,247 at `8d418ee`
+  against 587,989,243 at `884f9c9` (−33.55%); 306,889,893 for the profile-guided build
+  (measurements/m2-quiet-host.md)
+- In process on one core of the 2.80GHz host class: 7.25–7.73 MB/s on the 1238 fixtures
+  against 4.94–5.03 for `884f9c9`; against rustfmt 1.9.0 on nine crates, formatted input,
+  `--check`: 0.438–0.611 of its wall time on one core and 0.130–0.201 on four, with every
+  chloro run below every rustfmt run (measurements/m2-quiet-host.md)
+- Conformance is 1219/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
+  1.9.0 and 1.8.0; every merged change left all 1238 fixture and 20,850 registry output
+  hashes equal to the `884f9c9` record (experiments.md, best-known-good)
 - The CLI hands files to one worker per core from a largest-first queue and formats the
   top-level items of files of 128 KiB and more on all threads
   (chloro/src/cli/orchestrate.rs, chloro-core/src/formatter/parallel.rs); `--threads N`
-  sets the count
-- The research protocol, ledger and corpus manifest are in
-  docs/journal/2026-10-14-autoresearch/ (protocol.md, experiments.md, corpus/)
-- `benchmarks/compare_rustfmt.sh` times rustfmt and chloro on the same file set per crate
-  (read from rustfmt's `-v` output), on rustfmt-formatted copies by default, with hyperfine
-  JSON exports; `benchmarks/profile.sh` counts instructions on the 49-file sample;
-  `benchmarks/report.py` writes the tables (benchmarks/README.md)
+  sets the count; `format_source_with_config_parallel` is the library entry
 - The CLI records content digests of files found already formatted and skips formatting
-  them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs, merged from
-  `20261014-cli-cache`, E6)
+  them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs); a check of 1238
+  formatted files takes about 30 ms warm
 - `Config::rustfmt_version` selects rustfmt 1.9.0 (default) or 1.8.0 output; 1.7.0 is
   refused with the reason (chloro-core/src/formatter/config.rs; `conform -V 1.8.0`;
   snapshots under chloro-core/tests/conformance/snapshots/ra-1.8.0/ and
   chloro-core/tests/conformance/rustfmt-versions/)
+- The release profile is fat LTO with one codegen unit (Cargo.toml); `benchmarks/pgo.sh`
+  builds a profile-guided CLI and `bench`
+- `benchmarks/compare_rustfmt.sh` times rustfmt and chloro on the same file set per crate
+  (read from rustfmt's `-v` output), on rustfmt-formatted copies by default, with the cache
+  disabled unless `--with-cache`, with hyperfine JSON exports; `benchmarks/profile.sh`
+  counts instructions on the 49-file sample; `benchmarks/report.py` writes the tables
+- The research protocol, ledger, corpus manifest, profiles and measurement records are in
+  docs/journal/2026-10-14-autoresearch/
 
 ## Missing
 
-- No quiet-host run of `benchmarks/compare_rustfmt.sh`; every wall-clock figure in
-  baseline.md was taken at load average 6–10
-- `0024_many_type_parens.rs` differs from rustfmt (R2 running)
+- `0024_many_type_parens.rs` differs from rustfmt at both supported versions, and the
+  conformance ledger with its fixes is not merged yet (R2 running on
+  `20261014-conformance-fixes`)
+- The hot-path levers of E3 (`CharClasses`, `unicode_str_width`, the comment slow paths,
+  intermediate strings) are not merged yet (E3 running on `20261014-hot-paths`)
+- No profile-guided build in the release workflow; `.github/workflows/binaries.yml` is
+  unchanged and the proposed step is in experiments/EXP-002-cli-build.md
+
+## Divergence
+
+- README badges state 33 dependencies and a 2.5 MB binary; the release CLI is 1,928,728
+  bytes and chloro-core's runtime tree is 16 crates (the badges are regenerated by `just
+  emblazon`, which was not run)
