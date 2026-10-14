@@ -346,6 +346,13 @@ pub(crate) fn block_expr_kind(b: &ast::BlockExpr) -> BlockExprKind {
     }
 }
 
+/// `[value; count]`: rustc's `ExprKind::Repeat`. rust-analyzer has one `ArrayExpr` for it
+/// and for `[a, b]` (`ExprKind::Array`); rustfmt treats only the latter as block-like (chain
+/// roots, match arm bodies, overflowed last arguments).
+pub(crate) fn is_repeat_array(array: &ast::ArrayExpr) -> bool {
+    has_token(array.syntax(), T![;])
+}
+
 /// The rustc kind of `expr` if it is a block expression.
 pub(crate) fn block_kind_of(expr: &ast::Expr) -> Option<BlockExprKind> {
     match expr {

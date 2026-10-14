@@ -8,7 +8,7 @@ use unicode_width::UnicodeWidthStr;
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::nodes::node_text;
+use super::nodes::{is_repeat_array, node_text};
 use super::shape::{Indent, Shape};
 
 /// Computes the length of a string's last line, minus offset.
@@ -229,7 +229,6 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
         | ast::Expr::FormatArgsExpr(..)
         | ast::Expr::CallExpr(..)
         | ast::Expr::MethodCallExpr(..)
-        | ast::Expr::ArrayExpr(..)
         | ast::Expr::RecordExpr(..)
         | ast::Expr::WhileExpr(..)
         | ast::Expr::IfExpr(..)
@@ -237,6 +236,7 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
         | ast::Expr::LoopExpr(..)
         | ast::Expr::ForExpr(..)
         | ast::Expr::MatchExpr(..) => repr.contains('\n'),
+        ast::Expr::ArrayExpr(a) => !is_repeat_array(a) && repr.contains('\n'),
         ast::Expr::ParenExpr(p) => p.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::BinExpr(b) if !is_assignment(b) => {
             b.rhs().is_some_and(|e| is_block_expr(context, &e, repr))
