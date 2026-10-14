@@ -464,7 +464,13 @@ impl FindUncommented for str {
                     return Some(i - pat.len());
                 }
                 Some(c) => match kind {
-                    FullCodeCharKind::Normal | FullCodeCharKind::InString if b == c => {}
+                    FullCodeCharKind::Normal | FullCodeCharKind::InString if b == c => {
+                        // The whole pattern matched: the next step returns this position
+                        // whatever the next character is, and so does the end of the text.
+                        if needle_iter.as_str().is_empty() {
+                            return Some(i + b.len_utf8() - pat.len());
+                        }
+                    }
                     _ => {
                         needle_iter = pat.chars();
                     }
@@ -1605,6 +1611,33 @@ mod tests {
                     by_payload(t, &s),
                     "{t:?} {s:?}"
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn find_uncommented_matches_the_per_character_search() {
+        // The search stepping every character, as rustfmt's `find_uncommented`.
+        fn by_char(s: &str, pat: &str) -> Option<usize> {
+            let mut needle_iter = pat.chars();
+            for (kind, i, b) in CharClasses::new(s) {
+                match needle_iter.next() {
+                    None => return Some(i - pat.len()),
+                    Some(c) => match kind {
+                        FullCodeCharKind::Normal | FullCodeCharKind::InString if b == c => {}
+                        _ => needle_iter = pat.chars(),
+                    },
+                }
+            }
+            match needle_iter.next() {
+                Some(_) => None,
+                None => Some(s.len() - pat.len()),
+            }
+        }
+        let patterns = ["", "a", "r", "/", "\"", "*/", "aa", "a/", "r#", "é", "aé"];
+        for s in scan_strings(5) {
+            for pat in patterns {
+                assert_eq!(s.find_uncommented(pat), by_char(&s, pat), "{s:?} {pat:?}");
             }
         }
     }
