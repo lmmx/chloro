@@ -26,7 +26,7 @@ use super::nodes::{
     AttrStyle, Attribute, Block, StmtKind, child, contains_skip, inner_attributes,
     outer_attributes, span_without_attrs,
 };
-use super::nodes::{has_token, node_text};
+use super::nodes::{has_child, has_token, node_text};
 use super::overflow::Delimiter;
 use super::parallel::{GapOp, UnitRecord};
 use super::shape::{Indent, Shape};
@@ -73,8 +73,7 @@ fn item_attrs(item: &ast::Item) -> Vec<Attribute> {
         ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax().clone()),
         ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax().clone()),
         ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax().clone()),
-        ast::Item::Fn(f) => f
-            .body()
+        ast::Item::Fn(f) => child::<ast::BlockExpr>(f.syntax())
             .and_then(|b| child::<ast::StmtList>(b.syntax()))
             .map(|l| l.syntax().clone()),
         _ => None,
@@ -481,7 +480,7 @@ impl<'a> FmtVisitor<'a> {
                 None => self.push_rewrite(span, None),
             },
             ast::Item::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     self.visit_fn(f, span);
                 } else {
                     let indent = self.block_indent;
@@ -530,7 +529,8 @@ impl<'a> FmtVisitor<'a> {
         let skip_span = item_span(ai.syntax());
         let mut attrs = outer_attributes(ai.syntax());
         if let ast::AssocItem::Fn(f) = ai
-            && let Some(list) = f.body().and_then(|b| child::<ast::StmtList>(b.syntax()))
+            && let Some(list) =
+                child::<ast::BlockExpr>(f.syntax()).and_then(|b| child::<ast::StmtList>(b.syntax()))
         {
             attrs.extend(inner_attributes(list.syntax()));
         }
@@ -546,7 +546,7 @@ impl<'a> FmtVisitor<'a> {
                 None => self.push_rewrite(skip_span, None),
             },
             ast::AssocItem::Fn(f) => {
-                if f.body().is_some() {
+                if has_child::<ast::BlockExpr>(f.syntax()) {
                     self.visit_fn(f, skip_span);
                 } else {
                     let indent = self.block_indent;
