@@ -628,12 +628,12 @@ in place so the script stays usable on its own.
          uses: dtolnay/rust-toolchain@stable
 +        with:
 +          components: llvm-tools-preview
- 
+
        - uses: taiki-e/setup-cross-toolchain-action@v1
 @@
        - run: echo "RUSTFLAGS=${RUSTFLAGS} -C target-feature=+crt-static" >> "${GITHUB_ENV}"
          if: endsWith(matrix.target, 'windows-msvc')
- 
+
 +      # Profile-guided optimisation: train the instrumented CLI on the conformance
 +      # fixtures and build the release binary with the merged profile. Only where the
 +      # instrumented binary runs on the runner itself.
