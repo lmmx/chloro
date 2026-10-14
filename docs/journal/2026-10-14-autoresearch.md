@@ -305,6 +305,22 @@ takes the arguments only when there are two and the body as the last; the equali
 also showed that `first_token`/`last_token` must follow the first- and last-child chain,
 not scan the preorder.
 
+**Profile of the flat build** ([profile-flat.md](2026-10-14-autoresearch/profile-flat.md),
+same sample and method as the first profile). 390,496,192 instructions: chloro's own code
+44.1%, parser and lexer 22.3%, allocator 14.7% (glibc 12.8%; DHAT blocks 628,959 →
+278,743, of which `String` creation and growth are now 63%), `core`/`std` 11.4%, the `cst`
+tree build 2.8% and its reads and typed layer 4.1% in place of rowan's 87.6 M. The
+tree-building callback costs 40.6 instructions per step against 229 before. Unchanged to
+the instruction: `CharClasses::next` 28.3 M, `unicode_str_width` 20.7 M,
+`find_uncommented` 10.5 M, `span_ends_with_comma` 8.8 M, the line table 4.9 M, the memo's
+3.8% hit rate. Grown: the parser by 6.0 M (a codegen difference, cause not examined),
+`rustc_compat::walk` by 0.9 M, and 4,345 more `Rc` blocks from a second `Rc<Cell<bool>>`
+per `RewriteContext` that E7b introduced. Remaining levers by upper bound: a CLI allocator
+≤12.8% (mimalloc rejected by E2 on memory), fewer intermediate `String`s per rewrite
+≤10.7%, the parser's output decoded twice (`event::process` then `intersperse_trivia`)
+≤7.4% but only with a parser change, `CharClasses` ≤7.2%, `unicode_str_width` ≤5.3%; E3
+holds the last two and part of the second.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
