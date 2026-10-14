@@ -173,6 +173,23 @@ crates, and `--check` reports the added files as "not recorded").
 | `cargo tree -e no-dev -i syn` | empty | empty |
 | `cst` equality test | every third fixture (≥ 300 files): kind, range, node/token class, token text, `parent`, `first_token`, `last_token`, `text` equal to rowan's | |
 
+### After the E8 merge (`bc6c76e`, measured)
+
+The integration branch moved again (E8: `rustfmt_version`, rustfmt 1.8.0 support, head
+`bf3e8fd`) and is merged into the branch at `bc6c76e`; the conflicts are resolved for the
+flat substrate with E8's behaviour kept (its `Toolchain`/`Walker` in `rustc_compat.rs`
+re-expressed over `Node`, the `format_failure` flag in `RunState<'a>`, `format_file`
+returning `Option`, `sort_use_trees` over `UseTree<'_>`). On the merged tree:
+
+| gate | result |
+|---|---|
+| `cargo fmt --all -- --check`, clippy `-D warnings` | exit 0 |
+| `cargo test --workspace --all-features` | all pass (158 lib, 19 conformance batch, 10 + 10 + 4 integration incl. `rustfmt_version`, 7 `chloro`) |
+| `bench --check` fixtures / registry | 0 of 1,238 / 0 of 20,022 changed |
+| `conform -i` / `conform -V 1.8.0` | 1,219/1,220, 0 not idempotent, both |
+| `config_matrix -n 1220` | per-option counts and listed files identical to the base's |
+| `Ir`, sample | 390,689,701 (against 391,198,779 before the merge; the base moved too: E8's BKG) |
+
 ## Measurements
 
 | metric | base `aa1e058` | port | change |
