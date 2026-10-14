@@ -6,14 +6,21 @@
 //! cargo run --release -p chloro-core --example config_matrix -- max_width=80  # one option
 //! cargo run --release -p chloro-core --example config_matrix -- -n 400 tab_spaces=2
 //! cargo run --release -p chloro-core --example config_matrix -- --root ~/.cargo/registry/src default
+//! cargo run --release -p chloro-core --example config_matrix -- rustfmt_version=1.8.0
+//! cargo run --release -p chloro-core --example config_matrix -- --rustfmt "rustup run 1.88.0 rustfmt" rustfmt_version=1.8.0,edition=2021
 //! ```
 //!
 //! The first five differing files of each option are listed; `-v` lists all of them.
 //!
 //! `default` compares rustfmt's default configuration. `--root` selects another directory
 //! of Rust sources, such as the cargo registry, as a corpus chloro was not developed on.
+//! An argument may combine options with commas (`edition=2021,max_width=80`).
 //!
-//! Requires `rustfmt` on `PATH`. Files rustfmt fails on are skipped.
+//! `rustfmt_version=<v>` is chloro's option and is not passed to rustfmt: the comparison
+//! runs against the rustfmt named by `--rustfmt <command>` (program and arguments), which
+//! defaults to `rustup run 1.88.0 rustfmt` for 1.8.0 and to the `rustfmt` on `PATH`
+//! otherwise. A file that rustfmt rejects (or panics on) is compared against its input,
+//! as the snapshots do, so the count covers every file of the corpus.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -68,20 +75,65 @@ fn fixtures(root: &Path) -> Vec<PathBuf> {
     files
 }
 
-fn rustfmt(source: &str, option: &str) -> Option<String> {
-    // rustfmt's `--edition` flag overrides the `edition` option.
-    let args = match option.strip_prefix("edition=") {
-        Some(edition) => vec!["--edition", edition],
-        None if option == "default" => vec!["--edition", "2024"],
-        None => vec!["--edition", "2024", "--config", option],
+/// The settings of one matrix entry: chloro's `Config` and the rustfmt command line.
+struct Entry {
+    config: Config,
+    /// Program and arguments of the rustfmt to compare against.
+    command: Vec<String>,
+    /// Arguments after the program: `--edition <e>` and `--config` pairs.
+    args: Vec<String>,
+    /// `rustfmt_version` is set: a file rustfmt rejects counts as unchanged input.
+    versioned: bool,
+}
+
+fn entry(option: &str, rustfmt_command: Option<&[String]>) -> Entry {
+    let mut config = Config::default();
+    let mut edition = "2024".to_owned();
+    let mut configs = Vec::new();
+    let mut versioned = false;
+    for item in option.split(',').filter(|o| *o != "default") {
+        let (key, value) = item.split_once('=').expect("option is key=value");
+        config.set(key, value).expect("option is supported");
+        match key {
+            // rustfmt's `--edition` flag overrides the `edition` option.
+            "edition" => edition = value.to_owned(),
+            // chloro's option: rustfmt has none, the release is chosen by the command.
+            "rustfmt_version" => versioned = true,
+            _ => configs.push(item.to_owned()),
+        }
+    }
+    let command = match rustfmt_command {
+        Some(c) => c.to_vec(),
+        None if config.rustfmt_version.as_str() == "1.8.0" => {
+            ["rustup", "run", "1.88.0", "rustfmt"]
+                .map(String::from)
+                .to_vec()
+        }
+        None => vec!["rustfmt".to_owned()],
     };
-    let mut child = Command::new("rustfmt")
-        .args(args)
+    let mut args = vec!["--edition".to_owned(), edition];
+    for c in configs {
+        args.push("--config".to_owned());
+        args.push(c);
+    }
+    Entry {
+        config,
+        command,
+        args,
+        versioned,
+    }
+}
+
+fn rustfmt(source: &str, entry: &Entry) -> Option<String> {
+    let (program, prefix) = entry.command.split_first().expect("rustfmt command");
+    let mut child = Command::new(program)
+        .args(prefix)
+        .args(&entry.args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
-        .expect("rustfmt on PATH");
+        .unwrap_or_else(|e| panic!("cannot run {program}: {e}"));
     let written = child
         .stdin
         .take()
@@ -89,17 +141,18 @@ fn rustfmt(source: &str, option: &str) -> Option<String> {
         .write_all(source.as_bytes());
     let output = child.wait_with_output().ok()?;
     if written.is_err() || !output.status.success() {
-        return None;
+        return entry.versioned.then(|| source.to_owned());
     }
     String::from_utf8(output.stdout).ok()
 }
 
-fn run(option: &str, files: &[PathBuf]) -> (usize, usize, Vec<String>) {
-    let mut config = Config::default();
-    if option != "default" {
-        let (key, value) = option.split_once('=').expect("option is key=value");
-        config.set(key, value).expect("option is supported");
-    }
+fn run(
+    option: &str,
+    rustfmt_command: Option<&[String]>,
+    files: &[PathBuf],
+) -> (usize, usize, Vec<String>) {
+    let entry = entry(option, rustfmt_command);
+    let config = &entry.config;
 
     let next = AtomicUsize::new(0);
     let identical = AtomicUsize::new(0);
@@ -115,12 +168,11 @@ fn run(option: &str, files: &[PathBuf]) -> (usize, usize, Vec<String>) {
                     let Ok(source) = std::fs::read_to_string(path) else {
                         continue;
                     };
-                    let Some(expected) = rustfmt(&source, option) else {
+                    let Some(expected) = rustfmt(&source, &entry) else {
                         continue;
                     };
                     compared.fetch_add(1, Ordering::Relaxed);
-                    let actual =
-                        chloro_core::formatter::format_source_with_config(&source, &config);
+                    let actual = chloro_core::formatter::format_source_with_config(&source, config);
                     if actual == expected {
                         identical.fetch_add(1, Ordering::Relaxed);
                     } else {
@@ -149,6 +201,11 @@ fn main() {
         root = PathBuf::from(&args[i + 1]);
         args.drain(i..=i + 1);
     }
+    let mut rustfmt_command: Option<Vec<String>> = None;
+    if let Some(i) = args.iter().position(|a| a == "--rustfmt") {
+        rustfmt_command = Some(args[i + 1].split_whitespace().map(String::from).collect());
+        args.drain(i..=i + 1);
+    }
     let options: Vec<&str> = if args.is_empty() {
         MATRIX.to_vec()
     } else {
@@ -160,7 +217,7 @@ fn main() {
     let files: Vec<PathBuf> = all.into_iter().step_by(step).collect();
 
     for option in options {
-        let (identical, compared, differing) = run(option, &files);
+        let (identical, compared, differing) = run(option, rustfmt_command.as_deref(), &files);
         println!("{option:<40} {identical:>4}/{compared:<4}");
         for path in differing.iter().take(if verbose { usize::MAX } else { 5 }) {
             println!("    {path}");

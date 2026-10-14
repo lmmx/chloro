@@ -8,16 +8,45 @@
 #[cfg(feature = "cli")]
 pub mod cli {
     pub mod args;
+    pub mod cache;
     pub mod logs;
     pub mod orchestrate;
     pub mod report;
     pub mod worker;
 
+    use crate::vlog;
     use args::{Args, print_usage};
+    use cache::Cache;
     use orchestrate::{discover_rust_files, format_all};
     use report::{aggregate_results, print_summary};
     use std::io;
     use std::path::Path;
+
+    /// Open the fixed-point cache named by the arguments, or `None` when it is disabled by
+    /// `--no-cache`, when no cache directory resolves, or when the running executable cannot
+    /// be hashed.
+    fn open_cache(args: &Args, config: &chloro_core::Config) -> Option<Cache> {
+        if args.no_cache {
+            vlog!(args, { "Cache: disabled (--no-cache)" });
+            return None;
+        }
+        let Some(dir) = cache::resolve_dir(&args.cache_dir) else {
+            vlog!(args, {
+                "Cache: disabled (no cache directory; set CHLORO_CACHE_DIR or --cache-dir)"
+            });
+            return None;
+        };
+        let cache = Cache::open(&dir, config);
+        match &cache {
+            Some(cache) => {
+                vlog!(args, {"Cache: {} ({} entries)", cache.path().display(), cache.len()})
+            }
+            None => vlog!(args, {
+                "Cache: disabled (cannot read the running executable)"
+            }),
+        }
+        cache
+    }
 
     /// Entry point for the chloro CLI
     ///
@@ -41,10 +70,13 @@ pub mod cli {
             std::process::exit(0);
         }
 
-        if let Err(e) = args.formatting_config() {
-            eprintln!("Error: invalid --config: {e}");
-            std::process::exit(1);
-        }
+        let config = match args.formatting_config() {
+            Ok(config) => config,
+            Err(e) => {
+                eprintln!("Error: invalid --config: {e}");
+                std::process::exit(1);
+            }
+        };
 
         if args.verbose {
             eprintln!("Sources: {}", args.sources.join(", "));
@@ -87,23 +119,23 @@ pub mod cli {
 
         if args.verbose {
             eprintln!("Found {} Rust file(s)", all_files.len());
-            let num_threads = std::thread::available_parallelism().map_or(1, |n| n.get());
-
-            // Calculate chunk info for display
-            let oversubscribe = 4;
-            let total_chunks = num_threads * oversubscribe;
-            let chunk_size = all_files.len().div_ceil(total_chunks);
-
-            eprintln!(
-                "Processing with {} threads ({} chunks of ~{} files)",
-                num_threads, total_chunks, chunk_size
-            );
+            eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
 
+        let cache = open_cache(&args, &config);
+
         // Format files in parallel
-        let results = format_all(&all_files, &args);
+        let results = format_all(&all_files, &args, cache.as_ref());
         let agg = aggregate_results(results);
+
+        if let Some(cache) = cache {
+            let path = cache.path().to_path_buf();
+            match cache.save(agg.fixed_points.iter().copied()) {
+                Ok(()) => vlog!(args, {"Cache written: {}", path.display()}),
+                Err(e) => vlog!(args, {"Cache not written: {}: {e}", path.display()}),
+            }
+        }
 
         // Print summary
         print_summary(&agg, &args);

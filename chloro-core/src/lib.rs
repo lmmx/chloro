@@ -3,7 +3,7 @@ pub mod debug;
 pub mod formatter;
 
 pub use formatter::config::Config;
-pub use formatter::{format_source, format_source_with_config};
+pub use formatter::{format_source, format_source_with_config, format_source_with_config_parallel};
 
 /// Macro for debug output in chloro.
 ///

@@ -2,7 +2,8 @@
 
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, AstToken, HasGenericArgs, HasName, HasTypeBounds};
-use ra_ap_syntax::{SyntaxKind, SyntaxToken};
+use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxToken};
+use rowan::Language;
 
 use super::attr::rewrite_attrs;
 use super::comment::{combine_strs_with_missing_comments, contains_comment};
@@ -15,7 +16,7 @@ use super::lists::{
 };
 use super::macros::{MacroPosition, rewrite_macro};
 use super::nodes::{Attribute, child, outer_attributes};
-use super::nodes::{has_token, node_text};
+use super::nodes::{green_has_token, has_child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
@@ -53,8 +54,6 @@ pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
 /// a name and no qualifier, `::` or arguments. Reads the green tree.
 fn single_ident_path(path: &ast::Path) -> Option<String> {
-    use ra_ap_syntax::{NodeOrToken, RustLanguage};
-    use rowan::Language;
     let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
         let mut children = green.children();
         match (children.next(), children.next()) {
@@ -306,9 +305,9 @@ fn rewrite_segment(
     let ident_len = result.len();
     let shape = shape.offset_left(ident_len)?;
 
-    if let Some(args) = segment.generic_arg_list() {
+    if let Some(args) = child::<ast::GenericArgList>(segment.syntax()) {
         let generics_str = rewrite_generic_args(&args, context, shape, mk_sp(*span_lo, span_hi))?;
-        if args.generic_args().next().is_some() {
+        if has_child::<ast::GenericArg>(args.syntax()) {
             // HACK: squeeze out the span between the identifier and the parameters.
             // The hack is required so that we don't remove the separator inside macro calls.
             let force_separator = context.inside_macro() && has_token(args.syntax(), T![::]);
@@ -325,7 +324,7 @@ fn rewrite_segment(
                 .span_after(mk_sp(*span_lo, span_hi), "<");
         }
         result.push_str(&generics_str)
-    } else if let Some(args) = segment.parenthesized_arg_list() {
+    } else if let Some(args) = child::<ast::ParenthesizedArgList>(segment.syntax()) {
         let s = rewrite_parenthesized_args(
             &args,
             child::<ast::RetType>(segment.syntax()),
@@ -1118,10 +1117,19 @@ fn rewrite_fn_ptr(
 
 /// Whether a parameter list ends with C variadics (`...`).
 pub(crate) fn has_c_variadic(params: &ast::ParamList) -> bool {
+    // `ParamList::params().last()` on the green tree.
     params
-        .params()
-        .last()
-        .is_some_and(|p| has_token(p.syntax(), T![...]))
+        .syntax()
+        .green()
+        .children()
+        .filter_map(|c| match c {
+            NodeOrToken::Node(n) if ast::Param::can_cast(RustLanguage::kind_from_raw(n.kind())) => {
+                Some(n)
+            }
+            _ => None,
+        })
+        .next_back()
+        .is_some_and(|p| green_has_token(p, T![...]))
 }
 
 fn is_generic_bounds_in_order(generic_bounds: &[ast::TypeBound]) -> bool {
@@ -1338,5 +1346,31 @@ pub(crate) fn rewrite_bound_params(
         None
     } else {
         Some(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `has_c_variadic` answers what `params().last()` answers on parameter lists with a
+    /// trailing `...`, with `...` elsewhere, without parameters, and with a `self` parameter.
+    #[test]
+    fn has_c_variadic_matches_the_generated_param_accessor() {
+        let src = "extern \"C\" { fn a(x: u8, ...); fn b(...); fn c(); fn d(x: u8); }\n\
+                   impl S { fn e(&self) {} fn f(&self, x: u8, ...) {} }\n\
+                   fn g(x: u8, y: ...) {}\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = [0usize; 2];
+        for params in file.syntax().descendants().filter_map(ast::ParamList::cast) {
+            let by_cursor = params
+                .params()
+                .last()
+                .is_some_and(|p| has_token(p.syntax(), T![...]));
+            assert_eq!(has_c_variadic(&params), by_cursor, "{params}");
+            seen[usize::from(by_cursor)] += 1;
+        }
+        assert_eq!(seen, [3, 4]);
     }
 }

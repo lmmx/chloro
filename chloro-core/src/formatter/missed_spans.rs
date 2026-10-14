@@ -6,7 +6,8 @@
 //! comments are re-indented, and code is copied with trailing whitespace removed.
 
 use super::comment::{CodeCharKind, CommentCodeSlices, is_last_comment_block, rewrite_comment};
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
+use super::parallel::GapOp;
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, mk_sp};
 use super::utils::{count_newlines, last_line_width};
@@ -17,6 +18,11 @@ struct SnippetStatus {
     line_start: usize,
     /// A length of trailing whitespaces on the current line.
     last_wspace: Option<usize>,
+    /// F6: under `rustfmt_version = "1.8.0"`, the `line_start` rustfmt 1.8.0 computes
+    /// after a run of blank lines falls inside a multi-byte whitespace character; the
+    /// next slice of the snippet taken from it panics in rustfmt (#5739) and fails the
+    /// file here. A comment resets `line_start` without slicing, which clears it.
+    line_start_unaligned: bool,
 }
 
 impl FmtVisitor<'_> {
@@ -25,6 +31,9 @@ impl FmtVisitor<'_> {
     }
 
     pub(crate) fn format_missing(&mut self, end: BytePos) {
+        if self.defer_gap(GapOp::NoIndent(end), end) {
+            return;
+        }
         // rustfmt uses `format_missing()` to extract a missing comment between a macro (or
         // similar) and a trailing semicolon, and avoids the general path in the common case
         // where there is no such comment.
@@ -46,6 +55,14 @@ impl FmtVisitor<'_> {
     }
 
     fn format_missing_indent(&mut self, end: BytePos, should_indent: bool) {
+        let op = if should_indent {
+            GapOp::WithIndent(end)
+        } else {
+            GapOp::WithoutIndent(end)
+        };
+        if self.defer_gap(op, end) {
+            return;
+        }
         self.format_missing_inner(end, |this, last_snippet, snippet| {
             this.push_str(last_snippet.trim_end());
             if last_snippet == snippet && !this.output_at_start() {
@@ -134,6 +151,7 @@ impl FmtVisitor<'_> {
         let mut status = SnippetStatus {
             line_start: 0,
             last_wspace: None,
+            line_start_unaligned: false,
         };
 
         for (kind, offset, subslice) in CommentCodeSlices::new(snippet) {
@@ -148,15 +166,39 @@ impl FmtVisitor<'_> {
                 );
             } else if subslice.trim().is_empty() && subslice.contains('\n') {
                 // 2: blank lines.
-                self.push_vertical_spaces(count_newlines(subslice));
-                // To avoid any issues with whitespace unicode chars just add the len of the slice
-                status.line_start = offset + subslice.len()
+                let newline_count = count_newlines(subslice);
+                self.push_vertical_spaces(newline_count);
+                match self.config.rustfmt_version() {
+                    // To avoid any issues with whitespace unicode chars just add the len of the slice
+                    RustfmtVersion::V1_9_0 => status.line_start = offset + subslice.len(),
+                    // F6: rustfmt 1.8.0 advances by the newline count (`v1.8.0
+                    // src/missed_spans.rs:209`; the source holds no `\r\n` after
+                    // normalisation), which is not a char boundary when the run holds a
+                    // multi-byte whitespace character such as U+2029; rustfmt 1.9.0
+                    // advances by the slice length (commit `74931504`, CHANGELOG 1.9.0
+                    // Fixed #5739).
+                    RustfmtVersion::V1_8_0 => {
+                        let line_start = offset + newline_count;
+                        status.line_start_unaligned = !snippet.is_char_boundary(line_start);
+                        status.line_start = if status.line_start_unaligned {
+                            offset + subslice.len()
+                        } else {
+                            line_start
+                        };
+                    }
+                }
             } else {
                 // 3: code which we failed to format.
+                if status.line_start_unaligned {
+                    self.run.format_failure.set(true);
+                }
                 self.process_missing_code(&mut status, snippet, subslice, offset);
             }
         }
 
+        if status.line_start_unaligned {
+            self.run.format_failure.set(true);
+        }
         let last_snippet = &snippet[status.line_start..];
         process_last_snippet(self, last_snippet, snippet);
     }
@@ -236,6 +278,7 @@ impl FmtVisitor<'_> {
 
         status.last_wspace = None;
         status.line_start = offset + subslice.len();
+        status.line_start_unaligned = false;
 
         // Add a newline:
         // - if there isn't one already

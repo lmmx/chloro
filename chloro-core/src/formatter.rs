@@ -38,6 +38,7 @@ mod missed_spans;
 mod nodes;
 mod overflow;
 mod pairs;
+mod parallel;
 mod patterns;
 pub mod printer;
 mod reorder;
@@ -82,6 +83,33 @@ pub fn format_source_with_config(source: &str, config: &Config) -> String {
             let mut text = formatted.text;
             // rustfmt detects the `Auto` style on the normalised source, in which no
             // `\r\n` is left: `Auto` produces `\n` line endings.
+            formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
+            text
+        }
+        None => source.to_owned(),
+    }
+}
+
+/// [`format_source_with_config`] with the file's top-level items formatted on up to
+/// `threads` threads. The output is identical; `threads <= 1`, a file with fewer than two
+/// top-level items, or one returned unchanged costs no thread. The threads are spawned
+/// for the call and joined before it returns (`std::thread::scope`).
+///
+/// Each item is formatted on its own, as it is in `format_source_with_config`: the text
+/// between items and the sorting of `use`, `mod` and `extern crate` groups stay on the
+/// calling thread. Worth it for a large file; for a small one the thread start-up costs
+/// more than it saves, so a caller formatting many files should keep file-level
+/// parallelism and use this only above a size of its choosing.
+pub fn format_source_with_config_parallel(source: &str, config: &Config, threads: usize) -> String {
+    let settings = Settings::new(config);
+    if settings.disable_all_formatting() {
+        return source.to_owned();
+    }
+    let normalized = formatting::normalize_src(source);
+    match formatting::format_text_parallel(&normalized, &settings, threads) {
+        Some(formatted) if formatted.echoed => source.to_owned(),
+        Some(formatted) => {
+            let mut text = formatted.text;
             formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
             text
         }

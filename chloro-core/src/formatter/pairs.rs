@@ -4,7 +4,7 @@ use ra_ap_syntax::ast::{self, AstNode};
 
 use super::context::{Rewrite, RewriteContext};
 use super::lists::SeparatorPlace;
-use super::nodes::child;
+use super::nodes::{bin_op_kind, bin_op_text, child, has_child, nth_child};
 use super::shape::Shape;
 use super::utils::{
     first_line_width, is_assignment, is_single_line, last_line_width, trimmed_last_line_width,
@@ -278,18 +278,13 @@ impl PairList {
     }
 }
 
-/// The operator of a binary expression as written, e.g. `&&` or `+=`.
-pub(crate) fn bin_op_text(expr: &ast::BinExpr) -> Option<String> {
-    expr.op_token().map(|t| t.text().to_string())
-}
-
 /// Turn a tree of same-operator binary expressions into a list using a depth-first,
 /// in-order traversal.
 fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> Option<PairList> {
     if is_assignment(expr) {
         return None;
     }
-    let top_op = expr.op_kind()?;
+    let top_op = bin_op_kind(expr)?;
 
     let default_rewrite = |node: &ast::Expr, sep: usize, is_first: bool| -> Option<String> {
         if is_first {
@@ -314,7 +309,9 @@ fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> O
     let mut node = ast::Expr::BinExpr(expr.clone());
     loop {
         match &node {
-            ast::Expr::BinExpr(b) if b.op_kind() == Some(top_op) && b.lhs().is_some() => {
+            ast::Expr::BinExpr(b)
+                if bin_op_kind(b) == Some(top_op) && has_child::<ast::Expr>(b.syntax()) =>
+            {
                 stack.push(b.clone());
                 node = b.lhs()?;
             }
@@ -324,7 +321,7 @@ fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> O
                 list.push((node.clone(), rw));
                 if let Some(pop) = stack.pop() {
                     separators.push(bin_op_text(&pop)?);
-                    node = pop.rhs()?;
+                    node = nth_child::<ast::Expr>(pop.syntax(), 1)?;
                 } else {
                     break;
                 }

@@ -5,8 +5,12 @@
 //! removed syntax, and leaves some rustc parse errors to a later validation pass, which
 //! also reports semantic errors that rustc's parser does not (and that rustfmt therefore
 //! formats through). [`rejected_by_rustc`] reproduces the rustc parse errors that matter
-//! for formatting. Each rule below was checked against rustfmt 1.9.0.
+//! for formatting. Each rule below was checked against rustfmt 1.9.0 (rustc 1.97.0);
+//! the rules that depend on the toolchain take the [`RustfmtVersion`] and reproduce the
+//! rustc 1.88.0 parser for `RustfmtVersion::V1_8_0` (classes P1, P2 and P8 of
+//! `docs/journal/2026-10-14-autoresearch/rustfmt-versions.md`).
 
+use super::config::RustfmtVersion;
 use ra_ap_syntax::ast::{self, AstNode};
 use ra_ap_syntax::{Edition, NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, T};
 use rowan::{GreenNodeData, GreenTokenData, Language};
@@ -57,18 +61,48 @@ fn condition_index(node: &GreenNodeData) -> Option<usize> {
     })
 }
 
+/// The parser being reproduced: the edition and the rustc release of the rustfmt build.
+#[derive(Clone, Copy)]
+struct Toolchain {
+    edition: Edition,
+    rustfmt_version: RustfmtVersion,
+}
+
+/// The state of one walk: the toolchain, the path from the root and the `:` tracker, so
+/// that the recursion passes one reference.
+struct Walker<'a> {
+    toolchain: Toolchain,
+    /// The ancestors of the current node as `(node, index of the child on the path)`.
+    path: Vec<(&'a GreenNodeData, usize)>,
+    /// Whether the previous token was a `:` — rustc lexes `:::` as `::` followed by `:`,
+    /// rust-analyzer as `:` followed by `::`.
+    prev_colon: bool,
+    /// Inside a token tree (macro input), which rustc does not parse as part of the file.
+    token_tree_depth: usize,
+    /// An inner doc comment is allowed here: at the start of a file or of a module, block,
+    /// `impl`/`trait`, `extern` or `match` body, after inner attributes only.
+    inner_doc_ok: bool,
+    /// An outer doc comment was seen and nothing it documents yet.
+    pending_outer_doc: bool,
+}
+
 /// rustc accepts `let` only as an operand of a `&&` chain in an `if`/`while` condition or
 /// a match guard, and accepts a `let` chained with `&&` in an `if`/`while` condition only
 /// from edition 2024. `path` holds the ancestors of the `let`, innermost last.
-fn let_expr_allowed(path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
+fn let_expr_allowed(path: &[(&GreenNodeData, usize)], toolchain: Toolchain) -> bool {
+    // P1: rustc 1.97.0 rejects a chained `let` before edition 2024 (`let chains are only
+    // allowed in Rust 2024 or later`, stabilised in Rust 1.88.0 for edition 2024 only);
+    // rustc 1.88.0's parser accepts the chain in every edition and leaves the gate to a
+    // later pass, so rustfmt 1.8.0 formats it.
+    let chain_allowed =
+        toolchain.edition.at_least_2024() || toolchain.rustfmt_version < RustfmtVersion::V1_9_0;
     let mut chained = false;
     for &(parent, index) in path.iter().rev() {
         match kind(parent.kind()) {
             SyntaxKind::BIN_EXPR if has_token(parent, T![&&]) => chained = true,
             // A `let` in a branch block is reached through the block, not directly.
             SyntaxKind::IF_EXPR | SyntaxKind::WHILE_EXPR => {
-                return condition_index(parent) == Some(index)
-                    && (!chained || edition.at_least_2024());
+                return condition_index(parent) == Some(index) && (!chained || chain_allowed);
             }
             SyntaxKind::MATCH_GUARD => return true,
             _ => return false,
@@ -374,7 +408,12 @@ fn trait_param_rejected(
     pat.is_some_and(|pat| !is_named_param_pat(pat))
 }
 
-fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
+fn node_rejected(
+    node: &GreenNodeData,
+    path: &[(&GreenNodeData, usize)],
+    toolchain: Toolchain,
+) -> bool {
+    let rustfmt_version = toolchain.rustfmt_version;
     let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
     match kind(node.kind()) {
         // `const mut X: T = ..;`
@@ -382,12 +421,14 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
         // `unsafe impl Foo {}`, `default impl Foo {}`, `impl !Foo {}`: only trait impls
         // take these.
         SyntaxKind::IMPL => {
+            // P8: `impl !Foo {}` is a parse error in rustc 1.97.0 (`inherent impls cannot
+            // be negative`) and accepted by rustc 1.88.0's parser, so rustfmt 1.8.0
+            // formats it.
+            let negative = has_token(node, T![!]) && rustfmt_version >= RustfmtVersion::V1_9_0;
             !has_token(node, T![for])
-                && (has_token(node, T![unsafe])
-                    || has_token(node, T![default])
-                    || has_token(node, T![!]))
+                && (has_token(node, T![unsafe]) || has_token(node, T![default]) || negative)
         }
-        SyntaxKind::LET_EXPR => !let_expr_allowed(path, edition),
+        SyntaxKind::LET_EXPR => !let_expr_allowed(path, toolchain),
         // `static async || {}`
         SyntaxKind::CLOSURE_EXPR => has_token(node, T![static]) && has_token(node, T![async]),
         // `&raw place` without `const` or `mut`
@@ -396,8 +437,14 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
         }
         // Inline `const { .. }` patterns.
         SyntaxKind::CONST_BLOCK_PAT => true,
-        // `for<'a> ?Sized`
-        SyntaxKind::TYPE_BOUND => has_node(node, SyntaxKind::FOR_BINDER) && has_token(node, T![?]),
+        // `for<'a> ?Sized`; P2: `[const] Trait` bounds (rust-lang/rust#140838, Rust 1.89.0)
+        // are a parse error in rustc 1.88.0, so rustfmt 1.8.0 leaves the file as it is.
+        SyntaxKind::TYPE_BOUND => {
+            (has_node(node, SyntaxKind::FOR_BINDER) && has_token(node, T![?]))
+                || (rustfmt_version < RustfmtVersion::V1_9_0
+                    && has_token(node, T!['['])
+                    && has_token(node, T![const]))
+        }
         // `S { x, #[attr] .. }`
         SyntaxKind::REST_PAT => {
             parent_kind == Some(SyntaxKind::RECORD_PAT_FIELD_LIST)
@@ -419,9 +466,9 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
         SyntaxKind::DYN_TRAIT_TYPE | SyntaxKind::IMPL_TRAIT_TYPE => ambiguous_plus(node, path),
         // `builtin # asm(..)`, `builtin # format_args(..)`, `builtin # global_asm(..)`
         SyntaxKind::ASM_EXPR | SyntaxKind::FORMAT_ARGS_EXPR => true,
-        SyntaxKind::OFFSET_OF_EXPR => offset_of_rejected(node, edition),
+        SyntaxKind::OFFSET_OF_EXPR => offset_of_rejected(node, toolchain.edition),
         SyntaxKind::CONST_PARAM => const_param_default_rejected(node),
-        SyntaxKind::PARAM => trait_param_rejected(node, path, edition),
+        SyntaxKind::PARAM => trait_param_rejected(node, path, toolchain.edition),
         _ => false,
     }
 }
@@ -449,22 +496,7 @@ pub(crate) fn doc_comment_style(text: &str) -> Option<DocStyle> {
     }
 }
 
-/// Token-level state of [`walk`].
-struct Scan {
-    edition: Edition,
-    /// The previous token was a `:` — rustc lexes `:::` as `::` followed by `:`,
-    /// rust-analyzer as `:` followed by `::`.
-    prev_colon: bool,
-    /// Inside a token tree (macro input), which rustc does not parse as part of the file.
-    token_tree_depth: usize,
-    /// An inner doc comment is allowed here: at the start of a file or of a module, block,
-    /// `impl`/`trait`, `extern` or `match` body, after inner attributes only.
-    inner_doc_ok: bool,
-    /// An outer doc comment was seen and nothing it documents yet.
-    pending_outer_doc: bool,
-}
-
-impl Scan {
+impl Walker<'_> {
     /// `true` if rustc rejects token `k` (text `text`) of a node of kind `parent`.
     fn token(&mut self, k: SyntaxKind, text: &str, parent: SyntaxKind) -> bool {
         if k == T![::] && self.prev_colon {
@@ -488,7 +520,7 @@ impl Scan {
         }
         // `c"..."` is a C string literal from edition 2021; before, `c` is an identifier
         // followed by a string literal.
-        if k == SyntaxKind::C_STRING && !self.edition.at_least_2021() {
+        if k == SyntaxKind::C_STRING && !self.toolchain.edition.at_least_2021() {
             return true;
         }
         // "found a documentation comment that doesn't document anything", "expected item
@@ -516,39 +548,35 @@ impl Scan {
 }
 
 /// Walks the tree under `node` in source order.
-fn walk<'a>(
-    node: &'a GreenNodeData,
-    path: &mut Vec<(&'a GreenNodeData, usize)>,
-    scan: &mut Scan,
-) -> bool {
+fn walk<'a>(node: &'a GreenNodeData, w: &mut Walker<'a>) -> bool {
     let node_kind = kind(node.kind());
-    if node_rejected(node, path, scan.edition) {
+    if node_rejected(node, &w.path, w.toolchain) {
         return true;
     }
     // An inner attribute leaves the inner-doc-comment state as it was; after an outer doc
     // comment it is an error ("expected outer doc comment" has a counterpart for `#![..]`).
     let inner_attr = node_kind == SyntaxKind::ATTR && has_token(node, T![!]);
-    if inner_attr && scan.token_tree_depth == 0 && scan.pending_outer_doc {
+    if inner_attr && w.token_tree_depth == 0 && w.pending_outer_doc {
         return true;
     }
-    let inner_doc_ok = scan.inner_doc_ok;
+    let inner_doc_ok = w.inner_doc_ok;
     let is_token_tree = node_kind == SyntaxKind::TOKEN_TREE;
     for (index, child) in node.children().enumerate() {
         match child {
             NodeOrToken::Token(t) => {
-                if scan.token(kind(t.kind()), t.text(), node_kind) {
+                if w.token(kind(t.kind()), t.text(), node_kind) {
                     return true;
                 }
                 // The opening delimiter of a token tree is a token of the file; the rest of
                 // the tree is macro input.
                 if is_token_tree && index == 0 {
-                    scan.token_tree_depth += 1;
+                    w.token_tree_depth += 1;
                 }
             }
             NodeOrToken::Node(n) => {
-                path.push((node, index));
-                let rejected = walk(n, path, scan);
-                path.pop();
+                w.path.push((node, index));
+                let rejected = walk(n, w);
+                w.path.pop();
                 if rejected {
                     return true;
                 }
@@ -556,34 +584,47 @@ fn walk<'a>(
         }
     }
     if is_token_tree && node.children().next().is_some() {
-        scan.token_tree_depth -= 1;
+        w.token_tree_depth -= 1;
     }
-    if inner_attr && scan.token_tree_depth == 0 {
-        scan.inner_doc_ok = inner_doc_ok;
+    if inner_attr && w.token_tree_depth == 0 {
+        w.inner_doc_ok = inner_doc_ok;
     }
     false
 }
 
 /// `true` if rustc's parser rejects `file`, which rust-analyzer's parser accepted.
-pub(crate) fn rejected_by_rustc(file: &ast::SourceFile, edition: Edition) -> bool {
-    subtree_rejected_by_rustc(file.syntax(), edition)
+pub(crate) fn rejected_by_rustc(
+    file: &ast::SourceFile,
+    edition: Edition,
+    rustfmt_version: RustfmtVersion,
+) -> bool {
+    subtree_rejected_by_rustc(file.syntax(), edition, rustfmt_version)
 }
 
 /// `true` if rustc's parser rejects the syntax under `root` (a file or a macro argument).
 ///
 /// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
 /// `root`; for a file, that is all of them.
-pub(crate) fn subtree_rejected_by_rustc(root: &SyntaxNode, edition: Edition) -> bool {
+pub(crate) fn subtree_rejected_by_rustc(
+    root: &SyntaxNode,
+    edition: Edition,
+    rustfmt_version: RustfmtVersion,
+) -> bool {
     let is_file = root.kind() == SyntaxKind::SOURCE_FILE;
-    let mut scan = Scan {
-        edition,
+    let mut walker = Walker {
+        toolchain: Toolchain {
+            edition,
+            rustfmt_version,
+        },
+        path: Vec::new(),
         prev_colon: false,
         token_tree_depth: 0,
         inner_doc_ok: is_file,
         pending_outer_doc: false,
     };
+    let green = root.green();
     // A doc comment at the end of a file documents nothing.
-    walk(&root.green(), &mut Vec::new(), &mut scan) || (is_file && scan.pending_outer_doc)
+    walk(&green, &mut walker) || (is_file && walker.pending_outer_doc)
 }
 
 #[cfg(test)]
@@ -596,7 +637,52 @@ mod tests {
     }
 
     fn rejected_in(src: &str, edition: Edition) -> bool {
-        rejected_by_rustc(&SourceFile::parse(src, edition).tree(), edition)
+        rejected_by_rustc(
+            &SourceFile::parse(src, edition).tree(),
+            edition,
+            RustfmtVersion::V1_9_0,
+        )
+    }
+
+    fn rejected_by_1_8_0(src: &str, edition: Edition) -> bool {
+        rejected_by_rustc(
+            &SourceFile::parse(src, edition).tree(),
+            edition,
+            RustfmtVersion::V1_8_0,
+        )
+    }
+
+    #[test]
+    fn rustc_1_88_acceptance_differs_on_p1_p2_p8() {
+        // P1: let chains before edition 2024.
+        let chain = "fn f() { if a && let x = 1 {} }";
+        assert!(rejected_in(chain, Edition::Edition2021));
+        assert!(!rejected_by_1_8_0(chain, Edition::Edition2021));
+        assert!(!rejected_by_1_8_0(chain, Edition::Edition2024));
+        assert!(rejected_by_1_8_0(
+            "fn f() { if let x = 1 || true {} }",
+            Edition::Edition2021
+        ));
+        // P2: `[const]` bounds.
+        for src in [
+            "fn f<T: [const] Trait>() {}",
+            "fn g() where T: [const] Trait {}",
+            "fn h(x: impl [const] Trait) {}",
+        ] {
+            assert!(!rejected_in(src, Edition::Edition2024), "{src}");
+            assert!(rejected_by_1_8_0(src, Edition::Edition2024), "{src}");
+        }
+        // P8: negative inherent impls.
+        assert!(rejected_in("impl !Foo {}", Edition::Edition2024));
+        assert!(!rejected_by_1_8_0("impl !Foo {}", Edition::Edition2024));
+        assert!(!rejected_by_1_8_0(
+            "impl !Send for Foo {}",
+            Edition::Edition2024
+        ));
+        assert!(rejected_by_1_8_0(
+            "unsafe impl Foo {}",
+            Edition::Edition2024
+        ));
     }
 
     #[test]

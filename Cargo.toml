@@ -12,7 +12,14 @@ rust-version = "1.88"
 chloro-core = { path = "chloro-core", version = "0.8.0" }
 
 assert_cmd = "2"
+blake3 = "1.8"
 facet = "0.30.0"
 facet-args = "0.30.0"
 insta = "1.0"
 tempfile = "3"
+
+# Release binaries: whole-program LTO in one codegen unit. Measured in
+# docs/journal/2026-10-14-autoresearch/experiments/EXP-002-cli-build.md.
+[profile.release]
+codegen-units = 1
+lto = "fat"

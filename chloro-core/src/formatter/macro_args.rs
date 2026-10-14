@@ -21,9 +21,11 @@
 use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, StrStep, TopEntryPoint};
 use ra_ap_syntax::{AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast};
 
+use super::config::RustfmtVersion;
 use super::context::RewriteContext;
 use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
+use super::nodes::green_children_with_ranges;
 use super::rustc_compat::{doc_comment_style, subtree_rejected_by_rustc};
 use super::span::{BytePos, Span, mk_sp};
 
@@ -103,6 +105,7 @@ struct MacroTokens<'a> {
     /// Start of the first doc comment after the last token, if any.
     doc_at_end: Option<usize>,
     edition: Edition,
+    rustfmt_version: RustfmtVersion,
     run: std::rc::Rc<super::context::RunState>,
 }
 
@@ -152,6 +155,7 @@ impl<'a> MacroTokens<'a> {
             toks,
             doc_at_end: doc_lo,
             edition,
+            rustfmt_version: context.config.rustfmt_version(),
             run: context.run.clone(),
         })
     }
@@ -326,7 +330,9 @@ impl<'a> MacroTokens<'a> {
         } else {
             root
         };
-        if node.kind() == SyntaxKind::ERROR || subtree_rejected_by_rustc(&node, self.edition) {
+        if node.kind() == SyntaxKind::ERROR
+            || subtree_rejected_by_rustc(&node, self.edition, self.rustfmt_version)
+        {
             return None;
         }
         Some(node.green().into_owned())
@@ -349,8 +355,7 @@ impl<'a> MacroTokens<'a> {
         let mut children = Vec::new();
         let mut positions = Vec::with_capacity(fragments.len());
         let mut frags = fragments.iter().peekable();
-        for child in tt.children_with_tokens() {
-            let range = child.text_range();
+        for (range, child) in green_children_with_ranges(tt) {
             let (lo, hi) = (usize::from(range.start()), usize::from(range.end()));
             if let Some(frag) = frags.peek() {
                 let (flo, fhi) = (base + frag.lo, base + frag.hi);
@@ -369,10 +374,7 @@ impl<'a> MacroTokens<'a> {
                     return None;
                 }
             }
-            children.push(match child {
-                NodeOrToken::Node(n) => NodeOrToken::Node(n.green().into_owned()),
-                NodeOrToken::Token(t) => NodeOrToken::Token(t.green().to_owned()),
-            });
+            children.push(child);
         }
         if frags.next().is_some() {
             return None;
