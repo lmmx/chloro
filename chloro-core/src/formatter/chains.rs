@@ -312,8 +312,10 @@ impl ChainItem {
 
             format!("::<{}>", type_list.join(", "))
         };
-        let mut callee_str = String::from(".");
-        callee_str.push_str(&node_text(method_name.syntax()));
+        let name = node_text(method_name.syntax());
+        let mut callee_str = String::with_capacity(1 + name.len() + type_str.len());
+        callee_str.push('.');
+        callee_str.push_str(&name);
         callee_str.push_str(&type_str);
         let args = args.iter().cloned().map(OverflowableItem::Expr).collect();
         rewrite_call(context, &callee_str, args, span, shape)
