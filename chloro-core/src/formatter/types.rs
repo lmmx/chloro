@@ -1,5 +1,7 @@
 //! Types, paths, generics and bounds (rustfmt's `types.rs`).
 
+use std::borrow::Cow;
+
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, AstToken, HasGenericArgs, HasName, HasTypeBounds};
 use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxToken};
@@ -47,24 +49,35 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
 }
 
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
-/// a name and no qualifier, `::` or arguments. Reads the green tree.
-fn single_ident_path(path: &ast::Path) -> Option<String> {
-    let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
+/// a name and no qualifier, `::` or arguments. Reads the green tree, borrowing the text of
+/// a name that is one token.
+fn single_ident_path(path: &ast::Path) -> Option<Cow<'_, str>> {
+    fn only_node(green: &rowan::GreenNodeData, kind: SyntaxKind) -> Option<&rowan::GreenNodeData> {
         let mut children = green.children();
         match (children.next(), children.next()) {
             (Some(NodeOrToken::Node(n)), None) if RustLanguage::kind_from_raw(n.kind()) == kind => {
-                Some(n.to_owned())
+                Some(n)
             }
             _ => None,
         }
-    };
-    let segment = only_node(&path.syntax().green(), SyntaxKind::PATH_SEGMENT)?;
-    let name_ref = only_node(&segment, SyntaxKind::NAME_REF)?;
-    let mut text = String::new();
-    for child in name_ref.children() {
-        text.push_str(child.as_token()?.text());
     }
-    Some(text)
+    fn ident(path: &rowan::GreenNodeData) -> Option<Cow<'_, str>> {
+        let segment = only_node(path, SyntaxKind::PATH_SEGMENT)?;
+        let name_ref = only_node(segment, SyntaxKind::NAME_REF)?;
+        let mut children = name_ref.children();
+        if let (Some(NodeOrToken::Token(token)), None) = (children.next(), children.next()) {
+            return Some(Cow::Borrowed(token.text()));
+        }
+        let mut text = String::new();
+        for child in name_ref.children() {
+            text.push_str(child.as_token()?.text());
+        }
+        Some(Cow::Owned(text))
+    }
+    match path.syntax().green() {
+        Cow::Borrowed(green) => ident(green),
+        Cow::Owned(green) => ident(&green).map(|text| Cow::Owned(text.into_owned())),
+    }
 }
 
 /// Does not wrap on simple segments.
@@ -76,7 +89,7 @@ pub(crate) fn rewrite_path(
 ) -> Option<String> {
     // The general code below gives such a path its identifier, if the identifier fits.
     if let Some(ident) = single_ident_path(path) {
-        return (ident.len() <= shape.width).then_some(ident);
+        return (ident.len() <= shape.width).then(|| ident.into_owned());
     }
     let segments = path_segments(path);
     let first = segments.first()?;
@@ -1350,5 +1363,40 @@ mod tests {
             seen[usize::from(by_cursor)] += 1;
         }
         assert_eq!(seen, [3, 4]);
+    }
+
+    #[test]
+    fn single_ident_path_matches_the_concatenated_name() {
+        // The previous form: the name's token texts collected into a `String`.
+        fn by_string(path: &ast::Path) -> Option<String> {
+            let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
+                let mut children = green.children();
+                match (children.next(), children.next()) {
+                    (Some(NodeOrToken::Node(n)), None)
+                        if RustLanguage::kind_from_raw(n.kind()) == kind =>
+                    {
+                        Some(n.to_owned())
+                    }
+                    _ => None,
+                }
+            };
+            let segment = only_node(&path.syntax().green(), SyntaxKind::PATH_SEGMENT)?;
+            let name_ref = only_node(&segment, SyntaxKind::NAME_REF)?;
+            let mut text = String::new();
+            for child in name_ref.children() {
+                text.push_str(child.as_token()?.text());
+            }
+            Some(text)
+        }
+        let src = "use a::b;\nfn f(x: String, y: r#type) -> Self { \
+                   let z = ::std::mem::take(&mut self.0); <T>::f(x); a::<u8>(y); crate::g(super::h) }\n";
+        let file = SourceFile::parse(src, Edition::CURRENT).tree();
+        let mut idents = 0;
+        for path in file.syntax().descendants().filter_map(ast::Path::cast) {
+            let ident = single_ident_path(&path);
+            idents += usize::from(ident.is_some());
+            assert_eq!(ident.map(Cow::into_owned), by_string(&path), "{path}");
+        }
+        assert!(idents > 5);
     }
 }
