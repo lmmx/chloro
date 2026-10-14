@@ -9,8 +9,10 @@
 use std::borrow::Cow;
 use std::cmp::{max, min};
 
-use ra_ap_syntax::ast::{self, AstNode, HasGenericParams, HasName};
-use ra_ap_syntax::{SyntaxNode, T};
+use crate::cst::ast::{self, AstNode, HasGenericParams, HasName};
+use ra_ap_parser::T;
+
+use crate::cst::Node;
 
 use super::comment::{
     FindUncommented, combine_strs_with_missing_comments, contains_comment, is_last_comment_block,
@@ -50,7 +52,7 @@ fn type_annotation_separator(context: &RewriteContext<'_>) -> &'static str {
 }
 
 /// rustc's item span: the item without its outer attributes and doc comments.
-pub(crate) fn item_span(node: &SyntaxNode) -> Span {
+pub(crate) fn item_span(node: Node<'_>) -> Span {
     span_without_attrs(node)
 }
 
@@ -59,7 +61,7 @@ fn name_span(name: &ast::Name) -> Span {
 }
 
 fn name_text(name: Option<ast::Name>) -> Option<String> {
-    Some(node_text(name?.syntax()))
+    Some(node_text(name?.syntax()).to_owned())
 }
 
 /// The `(lo, hi)` of rustc's visibility span: the visibility, or an empty span at the start
@@ -80,13 +82,13 @@ fn vis_lo_hi(vis: Option<&ast::Visibility>, item_lo: BytePos) -> (BytePos, ByteP
 
 /// rustc's `ast::WhereClause`: the predicates and the clause span (empty when absent).
 #[derive(Clone, Debug)]
-pub(crate) struct WhereClause {
-    pub(crate) predicates: Vec<ast::WherePred>,
+pub(crate) struct WhereClause<'a> {
+    pub(crate) predicates: Vec<ast::WherePred<'a>>,
     pub(crate) span: Span,
 }
 
-impl WhereClause {
-    pub(crate) fn new(wc: Option<ast::WhereClause>, fallback: BytePos) -> WhereClause {
+impl<'a> WhereClause<'a> {
+    pub(crate) fn new(wc: Option<ast::WhereClause<'a>>, fallback: BytePos) -> WhereClause<'a> {
         WhereClause {
             span: where_clause_span(wc.as_ref(), fallback),
             predicates: wc.map(|wc| wc.predicates().collect()).unwrap_or_default(),
@@ -97,20 +99,20 @@ impl WhereClause {
 /// rustc's `ast::Generics`: parameters, their `<...>` span (empty right after the name
 /// when absent) and the where clause.
 #[derive(Clone, Debug)]
-pub(crate) struct Generics {
-    pub(crate) params: Vec<ast::GenericParam>,
+pub(crate) struct Generics<'a> {
+    pub(crate) params: Vec<ast::GenericParam<'a>>,
     pub(crate) span: Span,
-    pub(crate) where_clause: WhereClause,
+    pub(crate) where_clause: WhereClause<'a>,
 }
 
-impl Generics {
+impl<'a> Generics<'a> {
     /// `where_fallback` is where rustc would have parsed a `where` keyword.
     pub(crate) fn new(
-        list: Option<ast::GenericParamList>,
+        list: Option<ast::GenericParamList<'a>>,
         name_hi: BytePos,
-        wc: Option<ast::WhereClause>,
+        wc: Option<ast::WhereClause<'a>>,
         where_fallback: BytePos,
-    ) -> Generics {
+    ) -> Generics<'a> {
         Generics {
             span: generics_span(list.as_ref(), name_hi),
             params: list
@@ -126,7 +128,7 @@ impl Generics {
 // ---------------------------------------------------------------------------------------
 
 /// Statements of the form `let pat: ty = init;` or `let pat: ty = init else { .. };`.
-impl Rewrite for ast::LetStmt {
+impl Rewrite for ast::LetStmt<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let attrs = outer_attributes(self.syntax());
         if contains_skip(&attrs) {
@@ -313,13 +315,13 @@ fn allow_single_line_let_else_block(result: &str, block: &Block) -> bool {
 
 /// A function parameter: rustc models `self` as an ordinary parameter.
 #[derive(Clone, Debug)]
-pub(crate) enum FnParam {
-    SelfParam(ast::SelfParam),
-    Param(ast::Param),
+pub(crate) enum FnParam<'a> {
+    SelfParam(ast::SelfParam<'a>),
+    Param(ast::Param<'a>),
 }
 
-impl FnParam {
-    fn syntax(&self) -> &SyntaxNode {
+impl<'a> FnParam<'a> {
+    fn syntax(&self) -> Node<'a> {
         match self {
             FnParam::SelfParam(p) => p.syntax(),
             FnParam::Param(p) => p.syntax(),
@@ -342,13 +344,13 @@ impl FnParam {
     }
 }
 
-impl Spanned for FnParam {
+impl Spanned for FnParam<'_> {
     fn span(&self) -> Span {
         rustc_span(self.syntax())
     }
 }
 
-impl Rewrite for FnParam {
+impl Rewrite for FnParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             FnParam::SelfParam(p) => p.rewrite(context, shape),
@@ -358,24 +360,24 @@ impl Rewrite for FnParam {
 }
 
 /// A fn's signature (rustc's `FnSig` together with the fn's generics and visibility).
-pub(crate) struct FnSig {
-    vis: Option<ast::Visibility>,
+pub(crate) struct FnSig<'a> {
+    vis: Option<ast::Visibility<'a>>,
     defaultness: &'static str,
     constness: &'static str,
     coroutine: &'static str,
     safety: &'static str,
-    abi: Option<ast::Abi>,
+    abi: Option<ast::Abi<'a>>,
     has_abi: bool,
-    pub(crate) generics: Generics,
-    params: Vec<FnParam>,
+    pub(crate) generics: Generics<'a>,
+    params: Vec<FnParam<'a>>,
     variadic: bool,
-    ret: Option<ast::RetType>,
+    ret: Option<ast::RetType<'a>>,
     /// rustc's `FnRetTy::Default(span)`: an empty span right after the parameter list.
     default_ret_lo: BytePos,
 }
 
-impl FnSig {
-    pub(crate) fn from_fn(f: &ast::Fn) -> Option<FnSig> {
+impl<'a> FnSig<'a> {
+    pub(crate) fn from_fn(f: &ast::Fn<'a>) -> Option<FnSig<'a>> {
         let name_hi = name_span(&f.name()?).hi();
         let param_list = child::<ast::ParamList>(f.syntax())?;
         let params_hi = node_range_span(param_list.syntax()).hi();
@@ -461,7 +463,7 @@ impl FnSig {
     }
 }
 
-impl Rewrite for ast::RetType {
+impl Rewrite for ast::RetType<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let ty = self.ty()?;
         let arrow_width = "-> ".len();
@@ -527,7 +529,7 @@ fn get_missing_param_comments(
 /// The attributes of a parameter, the span between them and the parameter, and whether
 /// they span several lines or include doc comments.
 fn param_attrs(
-    node: &SyntaxNode,
+    node: Node<'_>,
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<(String, Span, bool, bool)> {
@@ -545,7 +547,7 @@ fn param_attrs(
     })
 }
 
-impl Rewrite for ast::Param {
+impl Rewrite for ast::Param<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let (param_attrs_result, span, has_multiple_attr_lines, has_doc_comments) =
             param_attrs(self.syntax(), context, shape)?;
@@ -624,7 +626,7 @@ impl Rewrite for ast::Param {
     }
 }
 
-impl Rewrite for ast::SelfParam {
+impl Rewrite for ast::SelfParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let (param_attrs, span, has_multiple_attr_lines, _) =
             param_attrs(self.syntax(), context, shape)?;
@@ -1887,7 +1889,7 @@ impl FmtVisitor<'_> {
                 self.block_indent,
                 Some(one_line_width),
             )?,
-            None => node_text(field.name()?.syntax()),
+            None => node_text(field.name()?.syntax()).to_owned(),
         };
 
         let variant_body = if let Some(expr) = field.expr() {
@@ -1936,7 +1938,7 @@ pub(crate) fn format_impl(
         iimpl.generic_param_list(),
         iimpl
             .impl_token()
-            .map_or(item_span.lo(), |t| token_span(&t).hi()),
+            .map_or(item_span.lo(), |t| token_span(t).hi()),
         child::<ast::WhereClause>(iimpl.syntax()),
         self_ty_hi,
     );
@@ -2217,7 +2219,7 @@ fn generics_shape_from_config(context: &RewriteContext<'_>, shape: Shape) -> Opt
 }
 
 /// The type bounds of a trait or type alias (`: A + B`).
-fn type_bounds(node: &SyntaxNode) -> Vec<ast::TypeBound> {
+fn type_bounds(node: Node<'_>) -> Vec<ast::TypeBound<'_>> {
     node.children()
         .find_map(ast::TypeBoundList::cast)
         .map(|l| l.bounds().collect())
@@ -2403,8 +2405,8 @@ pub(crate) fn format_trait(
 }
 
 struct TraitAliasBounds<'a> {
-    generic_bounds: &'a [ast::TypeBound],
-    generics: &'a Generics,
+    generic_bounds: &'a [ast::TypeBound<'a>],
+    generics: &'a Generics<'a>,
 }
 
 impl Rewrite for TraitAliasBounds<'_> {
@@ -2487,14 +2489,14 @@ pub(crate) fn format_trait_alias(
 
 /// rustc's `VariantData`.
 #[derive(Clone)]
-pub(crate) enum VariantData {
+pub(crate) enum VariantData<'a> {
     Unit,
-    Tuple(Vec<ast::TupleField>),
-    Struct(Vec<ast::RecordField>),
+    Tuple(Vec<ast::TupleField<'a>>),
+    Struct(Vec<ast::RecordField<'a>>),
 }
 
-impl VariantData {
-    fn of(field_list: Option<ast::FieldList>) -> VariantData {
+impl<'a> VariantData<'a> {
+    fn of(field_list: Option<ast::FieldList<'a>>) -> VariantData<'a> {
         match field_list {
             None => VariantData::Unit,
             Some(ast::FieldList::TupleFieldList(l)) => VariantData::Tuple(l.fields().collect()),
@@ -2503,16 +2505,16 @@ impl VariantData {
     }
 }
 
-pub(crate) struct StructParts {
+pub(crate) struct StructParts<'a> {
     prefix: &'static str,
-    name: ast::Name,
-    vis: Option<ast::Visibility>,
-    def: VariantData,
-    generics: Option<Generics>,
+    name: ast::Name<'a>,
+    vis: Option<ast::Visibility<'a>>,
+    def: VariantData<'a>,
+    generics: Option<Generics<'a>>,
     pub(crate) span: Span,
 }
 
-impl StructParts {
+impl<'a> StructParts<'a> {
     fn format_header(&self, context: &RewriteContext<'_>, offset: Indent) -> String {
         format_header(
             context,
@@ -2528,7 +2530,7 @@ impl StructParts {
         name_span(&self.name).hi()
     }
 
-    fn from_variant(variant: &ast::Variant, context: &RewriteContext<'_>) -> Option<Self> {
+    fn from_variant(variant: &ast::Variant<'a>, context: &RewriteContext<'_>) -> Option<Self> {
         Some(StructParts {
             prefix: "",
             name: variant.name()?,
@@ -2539,7 +2541,7 @@ impl StructParts {
         })
     }
 
-    pub(crate) fn from_struct(s: &ast::Struct) -> Option<Self> {
+    pub(crate) fn from_struct(s: &ast::Struct<'a>) -> Option<Self> {
         let name = s.name()?;
         let name_hi = name_span(&name).hi();
         let params_hi = s
@@ -2565,7 +2567,7 @@ impl StructParts {
         })
     }
 
-    pub(crate) fn from_union(u: &ast::Union) -> Option<Self> {
+    pub(crate) fn from_union(u: &ast::Union<'a>) -> Option<Self> {
         let name = u.name()?;
         let name_hi = name_span(&name).hi();
         let params_hi = u
@@ -2940,20 +2942,20 @@ fn format_tuple_struct(
 }
 
 /// A struct field: named (`a: T`) or positional (`T`).
-pub(crate) enum FieldDef {
-    Named(ast::RecordField),
-    Positional(ast::TupleField),
+pub(crate) enum FieldDef<'a> {
+    Named(ast::RecordField<'a>),
+    Positional(ast::TupleField<'a>),
 }
 
-impl FieldDef {
-    fn syntax(&self) -> &SyntaxNode {
+impl<'a> FieldDef<'a> {
+    fn syntax(&self) -> Node<'_> {
         match self {
             FieldDef::Named(f) => f.syntax(),
             FieldDef::Positional(f) => f.syntax(),
         }
     }
 
-    fn vis(&self) -> Option<ast::Visibility> {
+    fn vis(&self) -> Option<ast::Visibility<'_>> {
         match self {
             FieldDef::Named(f) => child::<ast::Visibility>(f.syntax()),
             FieldDef::Positional(f) => child::<ast::Visibility>(f.syntax()),
@@ -2977,7 +2979,7 @@ fn rewrite_struct_field_prefix(field: &FieldDef) -> Option<String> {
     }
 }
 
-impl Rewrite for ast::TupleField {
+impl Rewrite for ast::TupleField<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_struct_field(context, &FieldDef::Positional(self.clone()), shape)
     }
@@ -3109,7 +3111,7 @@ pub(crate) fn rewrite_type_alias(
         indent,
         generics: &generics,
         after_where_clause: &after_where_clause,
-        name: node_text(name.syntax()),
+        name: node_text(name.syntax()).to_owned(),
         bounds: &bounds,
         span,
     };
@@ -3153,18 +3155,18 @@ pub(crate) fn rewrite_type_alias(
     }
 }
 
-struct TyAliasRewriteInfo<'c, 'g> {
-    context: &'c RewriteContext<'c>,
+struct TyAliasRewriteInfo<'c, 'g, 'r> {
+    context: &'c RewriteContext<'r>,
     indent: Indent,
-    generics: &'g Generics,
-    after_where_clause: &'g WhereClause,
+    generics: &'g Generics<'g>,
+    after_where_clause: &'g WhereClause<'g>,
     name: String,
-    bounds: &'g [ast::TypeBound],
+    bounds: &'g [ast::TypeBound<'g>],
     span: Span,
 }
 
 fn rewrite_ty<R: Rewrite>(
-    rw_info: &TyAliasRewriteInfo<'_, '_>,
+    rw_info: &TyAliasRewriteInfo<'_, '_, '_>,
     rhs: Option<&R>,
     // the span of the end of the RHS (or the end of the generics, if there is no RHS)
     rhs_hi: BytePos,
@@ -3298,7 +3300,7 @@ fn rewrite_ty<R: Rewrite>(
 // https://github.com/rust-lang/rustfmt/issues/4373
 // https://github.com/rust-lang/rustfmt/issues/5027
 struct OpaqueType<'a> {
-    bounds: &'a [ast::TypeBound],
+    bounds: &'a [ast::TypeBound<'a>],
 }
 
 impl Rewrite for OpaqueType<'_> {
@@ -3314,23 +3316,23 @@ impl Rewrite for OpaqueType<'_> {
 // Statics and constants
 // ---------------------------------------------------------------------------------------
 
-pub(crate) struct StaticParts {
+pub(crate) struct StaticParts<'a> {
     prefix: &'static str,
     safety: &'static str,
-    vis: Option<ast::Visibility>,
+    vis: Option<ast::Visibility<'a>>,
     name: String,
     has_generics: bool,
-    ty: Option<ast::Type>,
+    ty: Option<ast::Type<'a>>,
     mutability: &'static str,
-    expr: Option<ast::Expr>,
+    expr: Option<ast::Expr<'a>>,
     defaultness: &'static str,
     pub(crate) span: Span,
 }
 
-impl StaticParts {
-    pub(crate) fn from_const(c: &ast::Const) -> Option<Self> {
+impl<'a> StaticParts<'a> {
+    pub(crate) fn from_const(c: &ast::Const<'a>) -> Option<Self> {
         let name = match c.name() {
-            Some(n) => node_text(n.syntax()),
+            Some(n) => node_text(n.syntax()).to_owned(),
             None => c.underscore_token()?.text().to_string(),
         };
         Some(StaticParts {
@@ -3352,7 +3354,7 @@ impl StaticParts {
         })
     }
 
-    pub(crate) fn from_static(s: &ast::Static) -> Option<Self> {
+    pub(crate) fn from_static(s: &ast::Static<'a>) -> Option<Self> {
         Some(StaticParts {
             prefix: "static",
             safety: if has_token(s.syntax(), T![unsafe]) {
@@ -3363,7 +3365,7 @@ impl StaticParts {
                 ""
             },
             vis: child::<ast::Visibility>(s.syntax()),
-            name: node_text(s.name()?.syntax()),
+            name: node_text(s.name()?.syntax()).to_owned(),
             has_generics: false,
             ty: child::<ast::Type>(s.syntax()),
             mutability: if has_token(s.syntax(), T![mut]) {
@@ -3451,7 +3453,7 @@ fn rewrite_static(
 // Items of `extern` blocks
 // ---------------------------------------------------------------------------------------
 
-impl Rewrite for ast::ExternItem {
+impl Rewrite for ast::ExternItem<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let attrs = outer_attributes(self.syntax());
         let attrs_str = attrs.rewrite(context, shape)?;
@@ -3543,7 +3545,7 @@ impl Rewrite for ast::ExternItem {
 /// Rewrite the attributes of an item.
 fn rewrite_attrs(
     context: &RewriteContext<'_>,
-    node: &SyntaxNode,
+    node: Node<'_>,
     item_str: &str,
     shape: Shape,
 ) -> Option<String> {

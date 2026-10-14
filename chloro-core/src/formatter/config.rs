@@ -95,12 +95,12 @@ pub enum StyleEdition {
 
 impl Edition {
     /// The parser edition passed to `ra_ap_syntax`.
-    pub(crate) fn to_ra(self) -> ra_ap_syntax::Edition {
+    pub(crate) fn to_ra(self) -> ra_ap_parser::Edition {
         match self {
-            Edition::Edition2015 => ra_ap_syntax::Edition::Edition2015,
-            Edition::Edition2018 => ra_ap_syntax::Edition::Edition2018,
-            Edition::Edition2021 => ra_ap_syntax::Edition::Edition2021,
-            Edition::Edition2024 => ra_ap_syntax::Edition::Edition2024,
+            Edition::Edition2015 => ra_ap_parser::Edition::Edition2015,
+            Edition::Edition2018 => ra_ap_parser::Edition::Edition2018,
+            Edition::Edition2021 => ra_ap_parser::Edition::Edition2021,
+            Edition::Edition2024 => ra_ap_parser::Edition::Edition2024,
         }
     }
 }

@@ -5,8 +5,7 @@ use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 
-use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode};
-use rowan::Language;
+use crate::cst::{Node, Tree, TreeArena};
 
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
@@ -15,8 +14,8 @@ use super::span::{BytePos, SnippetProvider, Span};
 
 /// Parsed macro arguments keyed by token tree range and the `vec!` flag. rustfmt rewrites
 /// a macro call once per candidate shape; the arguments are parsed once.
-pub(crate) type MacroArgsCache =
-    HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs>, FxBuildHasher>;
+pub(crate) type MacroArgsCache<'a> =
+    HashMap<(BytePos, BytePos, bool), Option<ParsedMacroArgs<'a>>, FxBuildHasher>;
 
 /// FxHash (rustc's hasher): the memo keys are a few machine words, for which SipHash's
 /// setup cost dominates.
@@ -53,10 +52,10 @@ pub(crate) type FxBuildHasher = BuildHasherDefault<FxHasher>;
 /// What a memoized rewrite reads besides its node: the shape and the context flags.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct MemoKey {
-    /// Address of the node's green node and its offset: rowan's identity of a node. The
-    /// entry keeps the node alive, so the address is not reused while the key is stored.
-    green: usize,
-    offset: u32,
+    /// The node's tree (the file or a macro-argument fragment, numbered per run) and its
+    /// index in it: the identity of a node. Trees live for the run, so no key is reused.
+    tree: u32,
+    index: u32,
     /// The rewrite function and its other arguments.
     tag: u8,
     shape: Shape,
@@ -65,7 +64,6 @@ pub(crate) struct MemoKey {
 
 /// A memoized rewrite: its result and the effects it had on the run, replayed on a hit.
 struct MemoEntry {
-    _node: SyntaxNode,
     result: Option<String>,
     macro_failure: bool,
     lost_comment: bool,
@@ -73,45 +71,53 @@ struct MemoEntry {
 }
 
 /// State shared by every context of one formatting run (rustfmt's `FormatReport` and
-/// `skipped_range`).
-#[derive(Default)]
-pub(crate) struct RunState {
+/// `skipped_range`), and the owner of the run's syntax trees.
+///
+/// The file's tree is numbered 0; every macro-argument fragment the run parses is laid
+/// out as a tree of its own ([`Tree::from_steps_at`]), numbered from 1, and appended to the
+/// arena, whose lifetime `'a` every handle in the run borrows. The memo and the
+/// macro-argument cache hold such handles.
+pub(crate) struct RunState<'a> {
     /// Line ranges (1-based, inclusive) left as in the input: `#[rustfmt::skip]` items and
     /// macro calls that could not be parsed.
     pub(crate) skipped_range: RefCell<Vec<(usize, usize)>>,
     /// Set when a rewrite dropped a comment and fell back to the original text. Only
     /// consulted while formatting a macro definition body.
     pub(crate) lost_comment: Cell<bool>,
-    pub(crate) macro_args: RefCell<MacroArgsCache>,
+    pub(crate) macro_args: RefCell<MacroArgsCache<'a>>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
-    /// `padding[k]` is a whitespace token of 2^k spaces; see [`RunState::padding`].
-    padding: RefCell<Vec<rowan::GreenToken>>,
     /// Start offsets of the source lines, computed on first use.
     line_starts: OnceCell<Vec<BytePos>>,
+    /// The fragment trees of the run, in the order they were parsed.
+    arena: &'a TreeArena<'a>,
+    /// The id of the next tree to be built ([`RunState::next_tree_id`]).
+    next_tree_id: Cell<u32>,
 }
 
-impl RunState {
-    /// Whitespace tokens of `len` bytes in total, shared between calls: at most one token
-    /// of each power of two.
-    pub(crate) fn padding(
-        &self,
-        len: usize,
-    ) -> Vec<NodeOrToken<rowan::GreenNode, rowan::GreenToken>> {
-        let mut pads = self.padding.borrow_mut();
-        let mut out = Vec::new();
-        let mut k = 0;
-        while len >> k != 0 {
-            if pads.len() == k {
-                let kind = RustLanguage::kind_to_raw(SyntaxKind::WHITESPACE);
-                pads.push(rowan::GreenToken::new(kind, &" ".repeat(1 << k)));
-            }
-            if len & (1 << k) != 0 {
-                out.push(NodeOrToken::Token(pads[k].clone()));
-            }
-            k += 1;
+impl<'a> RunState<'a> {
+    pub(crate) fn new(arena: &'a TreeArena<'a>) -> RunState<'a> {
+        RunState {
+            skipped_range: RefCell::default(),
+            lost_comment: Cell::default(),
+            macro_args: RefCell::default(),
+            memo: RefCell::default(),
+            line_starts: OnceCell::new(),
+            arena,
+            next_tree_id: Cell::new(1),
         }
-        out
+    }
+
+    /// The id for the next tree built in this run: 1, 2, ... (the file's tree is 0).
+    pub(crate) fn next_tree_id(&self) -> u32 {
+        let id = self.next_tree_id.get();
+        self.next_tree_id.set(id + 1);
+        id
+    }
+
+    /// Keeps `tree` for the rest of the run and returns it by reference.
+    pub(crate) fn keep_tree(&self, tree: Tree<'a>) -> &'a Tree<'a> {
+        self.arena.alloc(tree)
     }
 
     /// Drops the memoized rewrites (see [`RewriteContext::memoize`]); only their memory is
@@ -161,9 +167,9 @@ pub(crate) struct RewriteContext<'a> {
     /// When rewriting chain, veto going multi line except the last element
     pub(crate) force_one_line_chain: Cell<bool>,
     /// Used for `format_snippet`
-    pub(crate) macro_rewrite_failure: Cell<bool>,
+    pub(crate) macro_rewrite_failure: Rc<Cell<bool>>,
     pub(crate) is_macro_def: bool,
-    pub(crate) run: Rc<RunState>,
+    pub(crate) run: Rc<RunState<'a>>,
 }
 
 pub(crate) struct InsideMacroGuard {
@@ -187,7 +193,7 @@ impl<'a> RewriteContext<'a> {
     pub(crate) fn new(
         config: &'a Settings,
         snippet_provider: SnippetProvider<'a>,
-        run: Rc<RunState>,
+        run: Rc<RunState<'a>>,
     ) -> Self {
         RewriteContext {
             config,
@@ -196,7 +202,7 @@ impl<'a> RewriteContext<'a> {
             is_if_else_block: Cell::new(false),
             is_loop_block: Cell::new(false),
             force_one_line_chain: Cell::new(false),
-            macro_rewrite_failure: Cell::new(false),
+            macro_rewrite_failure: Rc::new(Cell::new(false)),
             is_macro_def: false,
             run,
         }
@@ -270,20 +276,18 @@ impl<'a> RewriteContext<'a> {
     /// A rewrite that leaves a context flag changed is not stored.
     pub(crate) fn memoize(
         &self,
-        node: &SyntaxNode,
+        node: Node<'_>,
         tag: u8,
         shape: Shape,
         rewrite: impl FnOnce() -> Option<String>,
     ) -> Option<String> {
-        let green = node.green();
         let key = MemoKey {
-            green: &*green as *const _ as *const u8 as usize,
-            offset: node.text_range().start().into(),
+            tree: node.tree_id(),
+            index: node.index(),
             tag,
             shape,
             flags: self.flags(),
         };
-        drop(green);
         if let Some(entry) = self.run.memo.borrow().get(&key) {
             if entry.macro_failure {
                 self.macro_rewrite_failure.set(true);
@@ -312,7 +316,6 @@ impl<'a> RewriteContext<'a> {
             self.run.memo.borrow_mut().insert(
                 key,
                 MemoEntry {
-                    _node: node.clone(),
                     result: result.clone(),
                     macro_failure,
                     lost_comment,

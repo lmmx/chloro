@@ -3,9 +3,9 @@
 use std::borrow::Cow;
 use std::cmp::min;
 
-use ra_ap_syntax::SyntaxKind;
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
+use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
+use crate::cst::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody, IsString};
 
 use super::attr::rewrite_attrs;
 use super::chains::rewrite_chain;
@@ -39,7 +39,7 @@ use super::utils::{
 };
 use super::visitor::FmtVisitor;
 
-impl Rewrite for ast::Expr {
+impl Rewrite for ast::Expr<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         format_expr(self, ExprType::SubExpression, context, shape)
     }
@@ -85,7 +85,7 @@ pub(crate) fn expr_span(expr: &ast::Expr) -> Span {
 
 /// The attributes rustc attaches to an expression: its outer attributes and, for block-like
 /// expressions, the inner attributes of the block.
-pub(crate) fn expr_attrs(expr: &ast::Expr) -> Vec<Attribute> {
+pub(crate) fn expr_attrs<'a>(expr: &ast::Expr<'a>) -> Vec<Attribute<'a>> {
     let mut attrs = outer_attributes(expr.syntax());
     if let ast::Expr::BlockExpr(b) = expr
         && let Some(list) = child::<ast::StmtList>(b.syntax())
@@ -475,9 +475,9 @@ fn rewrite_block_expr(
     }
 }
 
-pub(crate) fn rewrite_array(
+pub(crate) fn rewrite_array<'a>(
     name: &str,
-    exprs: impl IntoIterator<Item = OverflowableItem>,
+    exprs: impl IntoIterator<Item = OverflowableItem<'a>>,
     span: Span,
     context: &RewriteContext<'_>,
     shape: Shape,
@@ -627,13 +627,13 @@ pub(crate) fn rewrite_block_with_visitor(
     Some(format!("{}{}{}", prefix, label_str, visitor.buffer))
 }
 
-impl Rewrite for Block {
+impl Rewrite for Block<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_block(self, None, None, context, shape)
     }
 }
 
-impl Rewrite for ast::BlockExpr {
+impl Rewrite for ast::BlockExpr<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_block(&Block::from_block_expr(self)?, None, None, context, shape)
     }
@@ -711,11 +711,11 @@ pub(crate) fn rewrite_cond(
 /// Abstraction over control flow expressions
 #[derive(Debug)]
 struct ControlFlow<'a> {
-    cond: Option<ast::Expr>,
-    block: Block,
-    else_block: Option<ast::Expr>,
-    label: Option<ast::Label>,
-    pat: Option<ast::Pat>,
+    cond: Option<ast::Expr<'a>>,
+    block: Block<'a>,
+    else_block: Option<ast::Expr<'a>>,
+    label: Option<ast::Label<'a>>,
+    pat: Option<ast::Pat<'a>>,
     keyword: &'a str,
     matcher: &'a str,
     connector: &'a str,
@@ -740,7 +740,7 @@ fn else_branch_expr(branch: ast::ElseBranch) -> ast::Expr {
     }
 }
 
-fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<'static>> {
+fn to_control_flow<'a>(expr: &ast::Expr<'a>, expr_type: ExprType) -> Option<ControlFlow<'a>> {
     let span = expr_span(expr);
     match expr {
         ast::Expr::IfExpr(i) => {
@@ -804,16 +804,16 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
     }
 }
 
-impl ControlFlow<'static> {
+impl<'a> ControlFlow<'a> {
     fn new_if(
-        cond: ast::Expr,
-        pat: Option<ast::Pat>,
-        block: Block,
-        else_block: Option<ast::Expr>,
+        cond: ast::Expr<'a>,
+        pat: Option<ast::Pat<'a>>,
+        block: Block<'a>,
+        else_block: Option<ast::Expr<'a>>,
         allow_single_line: bool,
         nested_if: bool,
         span: Span,
-    ) -> ControlFlow<'static> {
+    ) -> ControlFlow<'a> {
         let matcher = if pat.is_some() { "let" } else { "" };
         ControlFlow {
             cond: Some(cond),
@@ -1581,9 +1581,9 @@ fn rewrite_index(
     }
 }
 
-enum StructLitField {
-    Regular(ast::RecordExprField),
-    Base(ast::Expr, Span),
+enum StructLitField<'a> {
+    Regular(ast::RecordExprField<'a>),
+    Base(ast::Expr<'a>, Span),
     Rest(Span),
 }
 
@@ -1622,7 +1622,7 @@ fn rewrite_struct_lit(
             .cloned()
             .map(StructLitField::Regular)
             .collect();
-        match (&dotdot, base) {
+        match (dotdot, base) {
             (Some(dd), Some(expr)) => field_iter.push(StructLitField::Base(expr, token_span(dd))),
             (Some(dd), None) => field_iter.push(StructLitField::Rest(token_span(dd))),
             _ => {}

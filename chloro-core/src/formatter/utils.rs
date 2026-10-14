@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
 use unicode_width::UnicodeWidthStr;
 
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
@@ -194,7 +194,7 @@ pub(crate) fn colon_spaces(config: &Settings) -> &'static str {
 }
 
 /// The left-most sub-expression whose text starts the given expression.
-pub(crate) fn left_most_sub_expr(e: &ast::Expr) -> ast::Expr {
+pub(crate) fn left_most_sub_expr<'a>(e: &ast::Expr<'a>) -> ast::Expr<'a> {
     let next = match e {
         ast::Expr::CallExpr(c) => c.expr(),
         ast::Expr::BinExpr(b) => b.lhs(),
@@ -257,7 +257,7 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
 /// `true` for `=` and compound assignment operators, which rustc models as
 /// `ExprKind::Assign` / `ExprKind::AssignOp` rather than `ExprKind::Binary`.
 pub(crate) fn is_assignment(b: &ast::BinExpr) -> bool {
-    matches!(b.op_kind(), Some(ast::BinaryOp::Assignment { .. }))
+    b.op_kind().is_some_and(ast::is_assign_op)
 }
 
 /// Removes trailing spaces from the specified snippet. We do not remove spaces
