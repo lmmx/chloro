@@ -33,10 +33,10 @@ use super::utils::{last_line_width, left_most_sub_expr};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
-fn plain_block(expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn plain_block(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
     match expr {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((b.clone(), context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -48,12 +48,12 @@ pub(crate) fn rewrite_closure(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let body = closure.body()?;
+    let body = child::<ast::Expr>(closure.syntax())?;
     let (prefix, extra_offset) = rewrite_closure_fn_decl(closure, &body, span, context, shape)?;
     // 1 = space between `|...|` and body.
     let body_shape = shape.offset_left(extra_offset)?;
 
-    if let Some((_, block)) = plain_block(&body) {
+    if let Some((_, block)) = plain_block(context, &body) {
         // The body of the closure is an empty block.
         if block.stmts.is_empty() && !block_contains_comment(context, &block) {
             return body
@@ -98,7 +98,7 @@ fn try_rewrite_without_block(
 }
 
 fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr {
-    if let Some((block_expr, block)) = plain_block(expr)
+    if let Some((block_expr, block)) = plain_block(context, expr)
         && !needs_block(
             &block,
             // F2: rustfmt 1.9.0 keeps a labelled block as the closure body (commit
@@ -211,7 +211,7 @@ fn rewrite_closure_block(
     // of it, with the `{`, as code it could not format (`rewrite_block_with_visitor`,
     // `v1.8.0 src/expr.rs:526`). rustfmt 1.9.0 passes the expression (commit `5619b644`).
     if context.config.rustfmt_version() < RustfmtVersion::V1_9_0
-        && let Some((block_expr, mut inner)) = plain_block(block)
+        && let Some((block_expr, mut inner)) = plain_block(context, block)
         && let Some(label) = child::<ast::Label>(block_expr.syntax())
     {
         inner.span = inner.span.with_lo(node_range_span(label.syntax()).lo());
@@ -266,12 +266,7 @@ fn rewrite_closure_fn_decl(
     };
     let capture_str = if has_token(closure.syntax(), T![move]) {
         "move "
-    } else if closure
-        .syntax()
-        .children_with_tokens()
-        .filter_map(|e| e.into_token())
-        .any(|t| t.kind() == ra_ap_syntax::SyntaxKind::USE_KW)
-    {
+    } else if has_token(closure.syntax(), T![use]) {
         "use "
     } else {
         ""
@@ -294,8 +289,7 @@ fn rewrite_closure_fn_decl(
         None => String::new(),
     };
 
-    let params: Vec<ast::Param> = closure
-        .param_list()
+    let params: Vec<ast::Param> = child::<ast::ParamList>(closure.syntax())
         .map(|l| l.params().collect())
         .unwrap_or_default();
     let param_items = itemize_list(
@@ -355,8 +349,8 @@ pub(crate) fn rewrite_last_closure(
     let ast::Expr::ClosureExpr(closure) = expr else {
         return None;
     };
-    let body = closure.body()?;
-    let body = match plain_block(&body) {
+    let body = child::<ast::Expr>(closure.syntax())?;
+    let body = match plain_block(context, &body) {
         Some((block_expr, block))
             if !block.is_unsafe()
                 && !context.inside_macro()

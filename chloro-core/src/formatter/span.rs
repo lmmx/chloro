@@ -62,6 +62,7 @@ pub(crate) fn node_range_span(node: &SyntaxNode) -> Span {
 }
 
 /// Returns `true` for comments that rustc parses as doc attributes (`///`, `/** */`).
+#[cfg(test)]
 pub(crate) fn is_outer_doc_comment(token: &SyntaxToken) -> bool {
     token.kind() == SyntaxKind::COMMENT
         && ast::Comment::cast(token.clone()).is_some_and(|c| c.is_outer() && c.kind().doc.is_some())
@@ -78,6 +79,12 @@ pub(crate) fn is_inner_doc_comment(token: &SyntaxToken) -> bool {
 pub(crate) fn is_outer_doc_text(text: &str) -> bool {
     (text.starts_with("///") && !text.starts_with("////"))
         || (text.starts_with("/**") && !text.starts_with("/***") && !text.starts_with("/**/"))
+}
+
+/// `true` for the text of an inner doc comment (`//!`, `/*! */`), with rust-analyzer's
+/// classification.
+pub(crate) fn is_inner_doc_text(text: &str) -> bool {
+    text.starts_with("//!") || text.starts_with("/*!")
 }
 
 /// The rustc-style span of a node: leading trivia that rust-analyzer attached to the

@@ -25,6 +25,7 @@ use super::config::RustfmtVersion;
 use super::context::RewriteContext;
 use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
+use super::nodes::green_children_with_ranges;
 use super::rustc_compat::subtree_rejected_by_rustc;
 use super::span::{BytePos, Span, mk_sp};
 
@@ -326,8 +327,7 @@ impl<'a> MacroTokens<'a> {
         let mut children = Vec::new();
         let mut positions = Vec::with_capacity(fragments.len());
         let mut frags = fragments.iter().peekable();
-        for child in tt.children_with_tokens() {
-            let range = child.text_range();
+        for (range, child) in green_children_with_ranges(tt) {
             let (lo, hi) = (usize::from(range.start()), usize::from(range.end()));
             if let Some(frag) = frags.peek() {
                 let (flo, fhi) = (base + frag.lo, base + frag.hi);
@@ -346,10 +346,7 @@ impl<'a> MacroTokens<'a> {
                     return None;
                 }
             }
-            children.push(match child {
-                NodeOrToken::Node(n) => NodeOrToken::Node(n.green().into_owned()),
-                NodeOrToken::Token(t) => NodeOrToken::Token(t.green().to_owned()),
-            });
+            children.push(child);
         }
         if frags.next().is_some() {
             return None;

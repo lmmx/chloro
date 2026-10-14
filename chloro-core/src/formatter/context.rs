@@ -5,7 +5,10 @@ use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 
+use ra_ap_syntax::ast::{self, AstNode};
 use ra_ap_syntax::{NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode};
+
+use super::nodes::Block;
 use rowan::Language;
 
 use super::config::Settings;
@@ -89,6 +92,9 @@ pub(crate) struct RunState {
     pub(crate) macro_args: RefCell<MacroArgsCache>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
+    /// Blocks already built in this run, by rowan's identity of the block expression; see
+    /// [`RunState::block_of`].
+    blocks: RefCell<HashMap<(usize, u32), Block, FxBuildHasher>>,
     /// `padding[k]` is a whitespace token of 2^k spaces; see [`RunState::padding`].
     padding: RefCell<Vec<rowan::GreenToken>>,
     /// Start offsets of the source lines, computed on first use.
@@ -122,6 +128,28 @@ impl RunState {
     /// lost, as every later rewrite can be computed again.
     pub(crate) fn clear_memo(&self) {
         self.memo.borrow_mut().clear();
+        self.blocks.borrow_mut().clear();
+    }
+
+    /// [`Block::from_block_expr`], computed once per block expression in a run: a block is
+    /// rewritten several times (each attempt at a layout of the expression around it), and
+    /// its statements are the same each time. The key is the memo's: the address of the
+    /// green node and its offset; the stored block keeps the node alive, so the address is
+    /// not reused while the entry exists.
+    pub(crate) fn block_of(&self, block: &ast::BlockExpr) -> Option<Block> {
+        let node = block.syntax();
+        let green = node.green();
+        let key = (
+            &*green as *const _ as *const u8 as usize,
+            u32::from(node.text_range().start()),
+        );
+        drop(green);
+        if let Some(cached) = self.blocks.borrow().get(&key) {
+            return Some(cached.clone());
+        }
+        let built = Block::from_block_expr(block)?;
+        self.blocks.borrow_mut().insert(key, built.clone());
+        Some(built)
     }
 
     /// 1-based line number of `pos` in `src`, the source this run formats.
@@ -325,5 +353,50 @@ impl<'a> RewriteContext<'a> {
             );
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::formatter::nodes::StmtKind;
+    use ra_ap_syntax::{Edition, SourceFile};
+
+    /// `block_of` answers what `Block::from_block_expr` answers on every block of a source
+    /// with nested, empty, `unsafe` and labeled blocks, and a second call returns the same
+    /// block without building it again.
+    #[test]
+    fn block_of_matches_from_block_expr_and_is_cached() {
+        let src = "fn f() { let a = { 1 }; unsafe { a; } 'l: { break 'l; } if a {} else { b } }\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let run = RunState::default();
+        let key = |b: &Block| {
+            let stmts: Vec<_> = b
+                .stmts
+                .iter()
+                .map(|s| {
+                    let node = match &s.kind {
+                        StmtKind::Let(l) => Some(l.syntax().clone()),
+                        StmtKind::Item(i) => Some(i.syntax().clone()),
+                        StmtKind::Expr(e) | StmtKind::Semi(e) => Some(e.syntax().clone()),
+                        StmtKind::MacCall(m) => Some(m.syntax().clone()),
+                        StmtKind::Empty => None,
+                    };
+                    (s.span, node)
+                })
+                .collect();
+            (stmts, b.span, b.rules, b.stmt_list.clone())
+        };
+        let mut blocks = 0;
+        for b in file.syntax().descendants().filter_map(ast::BlockExpr::cast) {
+            let fresh = Block::from_block_expr(&b).unwrap();
+            assert_eq!(key(&run.block_of(&b).unwrap()), key(&fresh), "{b}");
+            assert_eq!(key(&run.block_of(&b).unwrap()), key(&fresh), "{b}");
+            blocks += 1;
+        }
+        assert_eq!(run.blocks.borrow().len(), blocks);
+        assert_eq!(blocks, 6);
+        run.clear_memo();
+        assert!(run.blocks.borrow().is_empty());
     }
 }
