@@ -6,6 +6,7 @@
 //! cargo run --release -p chloro-core --example bench -- --root ~/.cargo/registry/src
 //! cargo run --release -p chloro-core --example bench -- --record out.tsv  # hash every output
 //! cargo run --release -p chloro-core --example bench -- --check out.tsv   # compare with a record
+//! cargo run --release -p chloro-core --example bench -- --threads 4       # the parallel API
 //! ```
 //!
 //! Times `format_source` over every `.rs` file under the roots (default: the conformance
@@ -14,6 +15,11 @@
 //! `--record` writes a hash of the formatted output of every file; `--check` formats again and
 //! lists the files whose output hash changed. A change meant to be behaviour-preserving (a
 //! performance change) should leave every hash as recorded.
+//!
+//! `--threads N` formats every file with `format_source_with_config_parallel(src, .., N)`
+//! instead of `format_source`, for the timings and the hashes alike, and additionally
+//! compares each output with `format_source`'s: `--threads 4 --check out.tsv` checks the
+//! parallel path against hashes recorded from the sequential one.
 
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::{Path, PathBuf};
@@ -43,6 +49,7 @@ fn main() {
     let mut roots = Vec::new();
     let mut record = None;
     let mut check = None;
+    let mut threads = None;
     while let Some(arg) = args.next() {
         let mut value = || args.next().expect("option takes a value");
         match arg.as_str() {
@@ -51,6 +58,7 @@ fn main() {
             "--root" => roots.push(PathBuf::from(value())),
             "--record" => record = Some(PathBuf::from(value())),
             "--check" => check = Some(PathBuf::from(value())),
+            "--threads" => threads = Some(value().parse().expect("--threads takes a number")),
             _ => panic!("unknown argument {arg}"),
         }
     }
@@ -65,10 +73,33 @@ fn main() {
         .collect();
     let bytes: usize = files.iter().map(|(_, src)| src.len()).sum();
 
+    let config = chloro_core::Config::default();
+    let format = |src: &str| match threads {
+        Some(n) => chloro_core::format_source_with_config_parallel(src, &config, n),
+        None => chloro_core::format_source(src),
+    };
+
+    if let Some(n) = threads {
+        let mut differ = 0;
+        for (p, src) in &files {
+            if format(src) != chloro_core::format_source(src) {
+                differ += 1;
+                println!("parallel output differs: {}", p.display());
+            }
+        }
+        println!(
+            "{differ} of {} outputs differ between {n} threads and format_source",
+            files.len()
+        );
+        if differ > 0 {
+            std::process::exit(1);
+        }
+    }
+
     if record.is_some() || check.is_some() {
         let hashes: Vec<u64> = files
             .iter()
-            .map(|(_, src)| output_hash(&chloro_core::format_source(src)))
+            .map(|(_, src)| output_hash(&format(src)))
             .collect();
         if let Some(path) = record {
             let text: String = files
@@ -113,7 +144,7 @@ fn main() {
         let start = Instant::now();
         for ((_, src), slot) in files.iter().zip(per_file.iter_mut()) {
             let t = Instant::now();
-            std::hint::black_box(chloro_core::format_source(src));
+            std::hint::black_box(format(src));
             *slot = slot.min(t.elapsed().as_secs_f64());
         }
         best = best.min(start.elapsed().as_secs_f64());

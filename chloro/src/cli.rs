@@ -87,17 +87,7 @@ pub mod cli {
 
         if args.verbose {
             eprintln!("Found {} Rust file(s)", all_files.len());
-            let num_threads = std::thread::available_parallelism().map_or(1, |n| n.get());
-
-            // Calculate chunk info for display
-            let oversubscribe = 4;
-            let total_chunks = num_threads * oversubscribe;
-            let chunk_size = all_files.len().div_ceil(total_chunks);
-
-            eprintln!(
-                "Processing with {} threads ({} chunks of ~{} files)",
-                num_threads, total_chunks, chunk_size
-            );
+            eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
 

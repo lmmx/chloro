@@ -22,6 +22,10 @@ pub struct Args {
     #[facet(named, long, default)]
     pub config: String,
 
+    /// Threads to use (default: one per core)
+    #[facet(named, long, default)]
+    pub threads: usize,
+
     /// Show this help message
     #[facet(named, short = 'h', long, default)]
     pub help: bool,
@@ -40,6 +44,7 @@ pub fn print_usage() {
     println!("  -w, --write        Write formatted output back to files");
     println!("  -v, --verbose      Show verbose output");
     println!("      --config OPTS  rustfmt options as comma-separated key=value pairs");
+    println!("      --threads N    Threads to use (default: one per core)");
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");
@@ -60,6 +65,15 @@ pub fn print_usage() {
 }
 
 impl Args {
+    /// `--threads`, or one thread per core.
+    pub fn thread_count(&self) -> usize {
+        if self.threads > 0 {
+            self.threads
+        } else {
+            std::thread::available_parallelism().map_or(1, |n| n.get())
+        }
+    }
+
     /// The formatting configuration given by `--config`.
     ///
     /// # Errors
