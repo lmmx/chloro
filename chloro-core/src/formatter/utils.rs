@@ -8,7 +8,7 @@ use unicode_width::UnicodeWidthStr;
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::nodes::node_text;
+use super::nodes::{bin_op_kind, node_text, nth_child};
 use super::shape::{Indent, Shape};
 
 /// Computes the length of a string's last line, minus offset.
@@ -239,9 +239,11 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
         | ast::Expr::MatchExpr(..) => repr.contains('\n'),
         ast::Expr::ParenExpr(p) => p.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::BinExpr(b) if !is_assignment(b) => {
-            b.rhs().is_some_and(|e| is_block_expr(context, &e, repr))
+            nth_child::<ast::Expr>(b.syntax(), 1).is_some_and(|e| is_block_expr(context, &e, repr))
         }
-        ast::Expr::IndexExpr(i) => i.index().is_some_and(|e| is_block_expr(context, &e, repr)),
+        ast::Expr::IndexExpr(i) => {
+            nth_child::<ast::Expr>(i.syntax(), 1).is_some_and(|e| is_block_expr(context, &e, repr))
+        }
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
         ast::Expr::YieldExpr(y) => y.expr().is_some_and(|e| is_block_expr(context, &e, repr)),
@@ -257,7 +259,7 @@ pub(crate) fn is_block_expr(context: &RewriteContext<'_>, expr: &ast::Expr, repr
 /// `true` for `=` and compound assignment operators, which rustc models as
 /// `ExprKind::Assign` / `ExprKind::AssignOp` rather than `ExprKind::Binary`.
 pub(crate) fn is_assignment(b: &ast::BinExpr) -> bool {
-    matches!(b.op_kind(), Some(ast::BinaryOp::Assignment { .. }))
+    matches!(bin_op_kind(b), Some(ast::BinaryOp::Assignment { .. }))
 }
 
 /// Removes trailing spaces from the specified snippet. We do not remove spaces
