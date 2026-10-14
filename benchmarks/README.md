@@ -24,7 +24,7 @@ benchmarks/compare_rustfmt.sh                                 # everything, 10 r
 benchmarks/compare_rustfmt.sh -r 5 --rounds 2 fx-hir fx-hir-ty  # 10 runs per command, interleaved
 benchmarks/compare_rustfmt.sh --groups b,c --core 3           # single-core workloads only
 benchmarks/compare_rustfmt.sh --mode stdout fx-hir            # formatted text to stdout, no --check
-benchmarks/compare_rustfmt.sh --input formatted fx-hir        # inputs pre-formatted by rustfmt
+benchmarks/compare_rustfmt.sh --input raw fx-hir              # inputs as found (rustfmt --check prints diffs)
 benchmarks/compare_rustfmt.sh --baseline /path/to/other/target/release --groups b,e
 python3 benchmarks/report.py benchmarks/results/<stamp>       # tables again (also written to report.md)
 benchmarks/profile.sh --core 3                                # Ir on the sample
@@ -68,7 +68,10 @@ Every rustfmt command also carries `--edition 2024 --config-path <empty file>`.
 ## What is held equal
 
 - **Bytes.** Each workload is copied into `--work`; both tools read the copy. With
-  `--input formatted` the copy is first rewritten by rustfmt itself.
+  `--input formatted` (the default) the copy is first rewritten by rustfmt itself, so
+  neither tool finds a change and both exit 0; both still parse and lay out every file.
+  `--input raw` keeps the bytes as found (the rust-analyzer fixtures and most registry
+  crates are not rustfmt 1.9.0 `--edition 2024` output, so most files change).
 - **File set.** rustfmt given a crate root formats that file and every out-of-line module it
   declares, recursively (`skip_children` is nightly-only). The harness lists the files
   rustfmt formats from its `--verbose` output (`Formatting <path>`, one line per file,
@@ -97,10 +100,12 @@ Every rustfmt command also carries `--edition 2024 --config-path <empty file>`.
 ## Known confounders
 
 - **`--check` costs differ.** rustfmt `--check` builds a line diff of every changed file and
-  prints it; chloro `--check` compares two strings and prints a one-line count. On the raw
-  fixtures most files change, so rustfmt's figure includes diff construction. `--mode
-  stdout` (both print all output) and `--input formatted` (no file changes, so rustfmt
-  prints no diff) bound this cost.
+  prints it; chloro `--check` compares two strings and prints a one-line count. On raw
+  input, where most files change, the diff dominates rustfmt's time on some crates:
+  `regex-syntax` took rustfmt 1706 ms with `--check` against 592 ms with `--emit stdout`
+  and 627 ms with `--check` on formatted input, and 423 MiB peak RSS against 66 MiB
+  (measured, `docs/journal/2026-10-14-autoresearch/baseline.md`). This is why
+  `--input formatted` is the default; `--input raw` figures are not like-for-like.
 - **The rustup proxy.** `~/.cargo/bin/rustfmt` is rustup's proxy, which resolves the
   toolchain and execs the real binary. The harness runs `rustup which rustfmt` (recorded in
   `env.txt`) so rustfmt's figures do not include the proxy.
@@ -169,7 +174,8 @@ The rule of `protocol.md` §3, restated for these tools:
    <dir>` with at least 10 runs per command over at least 2 interleaved rounds, the `mc`
    and `1c` rows both reported, and the chloro and chloro-base ranges not overlapping
    (`ranges vs base`).
-3. **Against rustfmt:** a ratio is quoted with its workload, variant, mode, input, `n`, the
+3. **Against rustfmt:** ratios come from `--input formatted` (the default) or `--mode
+   stdout`, never from `--input raw --mode check`. A ratio is quoted with its workload, variant, mode, input, `n`, the
    min–max ranges of both tools and the load recorded in `env.txt`; a ratio from
    overlapping ranges is reported as overlapping, not as a speedup.
 4. Figures from different windows or hosts are not compared.
