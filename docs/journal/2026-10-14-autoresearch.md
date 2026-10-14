@@ -244,6 +244,24 @@ design — a chloro-only `rustfmt_version` setting branched like `style_edition`
 snapshots for the differing files only — is being implemented as E8 for 1.8.0; 1.7.0 is
 recorded as unsupported with the numbers above.
 
+**E7, flat syntax array (`20261014-flat-cst`, feasibility; prototype on the branch, record
+merged).** A preorder array of (kind, subtree end, byte range) built from the same parser
+events, with `Copy` node handles and a typed layer generated from rust-analyzer's grammar
+(`rust.ungram`: 154 structs, 15 enums, 501 accessors, the same set as `ra_ap_syntax`'s
+generated `nodes.rs`, 0 differences). On the 42 parsing files of the sample: build plus free
+27.8 M instructions against rowan's 90.1 M (3.24x); a query workload that imitates
+`format_expr_uncached`, `stmts_of` and `rewrite_path_segments` costs 15.5 M against 118.9 M
+over red nodes (7.66x), 132 against 1,012 instructions per accessor result; element-by-element
+equality with the rowan tree on all 1,042 parsing fixtures, and 10,142 macro-argument
+fragments laid out at their file offsets without padding tokens. Estimated formatter-level
+gain, with the arithmetic in the record: 146.5 M of 587.2 M (24.9%), assuming the formatter's
+typed queries cost what the workload's do. The port touches 2,140 sites in 23 modules: 1,962
+mechanical (imports and names), 164 needing an equivalent operation, 14 design sites in
+`macro_args.rs`, `context.rs` and `formatting.rs`. The design problem is ownership: handles
+borrow their tree, and fragment trees are created mid-run and held by the macro-argument
+cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena design
+(trees owned for the run's lifetime, memo keyed by tree id and index).
+
 ## Current State
 
 - Formatting runs rustfmt 1.9.0's algorithm single-threaded in process at 4.57 MB/s on
