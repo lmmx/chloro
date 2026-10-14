@@ -46,11 +46,6 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
     segments
 }
 
-/// The text of a path segment's name as written (`r#type` keeps its prefix).
-pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
-    child::<ast::NameRef>(segment.syntax()).map(|n| node_text(n.syntax()))
-}
-
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
 /// a name and no qualifier, `::` or arguments. Reads the green tree.
 fn single_ident_path(path: &ast::Path) -> Option<String> {
@@ -300,7 +295,10 @@ fn rewrite_segment(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&segment_ident(segment)?);
+    // The segment's name as written (`r#type` keeps its prefix).
+    result.push_str(&node_text(
+        child::<ast::NameRef>(segment.syntax())?.syntax(),
+    ));
 
     let ident_len = result.len();
     let shape = shape.offset_left(ident_len)?;

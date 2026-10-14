@@ -32,7 +32,7 @@ pub(crate) fn format_visibility(vis: Option<&ast::Visibility>) -> Cow<'static, s
     };
     let path_str = path
         .segments()
-        .map(|seg| node_text(seg.syntax()))
+        .map(|seg| node_text(seg.syntax()).into_owned())
         .collect::<Vec<_>>()
         .join("::");
     let is_keyword = |s: &str| s == "crate" || s == "self" || s == "super";
@@ -469,6 +469,22 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn node_text_matches_the_node_text_of_every_node() {
+        use ra_ap_syntax::{Edition, SourceFile};
+        let src = "use a::{b, r#type};\nfn r#match<'a>(x: &'a str) -> Vec<u8> {\n    \
+                   let y = x.len() /* c */ + 1;\n    foo::<T>(y, |z| z)?.await\n}\n\
+                   struct S(pub u8);\n";
+        let file = SourceFile::parse(src, Edition::CURRENT).tree();
+        let mut borrowed = 0;
+        for node in file.syntax().descendants() {
+            let text = node_text(&node);
+            borrowed += usize::from(matches!(text, Cow::Borrowed(_)));
+            assert_eq!(text, node.text().to_string(), "{node:?}");
+        }
+        assert!(borrowed > 0);
     }
 
     #[test]

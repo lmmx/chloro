@@ -1,5 +1,7 @@
 //! Patterns (rustfmt's `patterns.rs`).
 
+use std::borrow::Cow;
+
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasName};
 
@@ -276,14 +278,14 @@ fn rewrite_ident_pat(
 
     let next = if !sub_pat.is_empty() {
         let hi = context.snippet_provider.span_before(span, "@");
-        combine_strs_with_missing_comments(
+        Cow::Owned(combine_strs_with_missing_comments(
             context,
             &id_str,
             &sub_pat,
             mk_sp(name_span.hi(), hi),
             shape,
             true,
-        )?
+        )?)
     } else {
         id_str
     };
