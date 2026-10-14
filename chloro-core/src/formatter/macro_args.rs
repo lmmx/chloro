@@ -21,6 +21,7 @@
 use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, StrStep, TopEntryPoint};
 use ra_ap_syntax::{AstNode, GreenNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast};
 
+use super::config::RustfmtVersion;
 use super::context::RewriteContext;
 use super::formatting::TreeBuilder;
 use super::macros::MacroArg;
@@ -98,6 +99,7 @@ struct MacroTokens<'a> {
     base: BytePos,
     toks: Vec<Tok>,
     edition: Edition,
+    rustfmt_version: RustfmtVersion,
     run: std::rc::Rc<super::context::RunState>,
 }
 
@@ -138,6 +140,7 @@ impl<'a> MacroTokens<'a> {
             base,
             toks,
             edition,
+            rustfmt_version: context.config.rustfmt_version(),
             run: context.run.clone(),
         })
     }
@@ -298,7 +301,9 @@ impl<'a> MacroTokens<'a> {
         } else {
             root
         };
-        if node.kind() == SyntaxKind::ERROR || subtree_rejected_by_rustc(&node, self.edition) {
+        if node.kind() == SyntaxKind::ERROR
+            || subtree_rejected_by_rustc(&node, self.edition, self.rustfmt_version)
+        {
             return None;
         }
         Some(node.green().into_owned())

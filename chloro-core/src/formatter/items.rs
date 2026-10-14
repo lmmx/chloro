@@ -2120,16 +2120,20 @@ fn format_impl_ref_and_type(
     let generics_str = rewrite_generics(context, "impl", generics, shape)?;
     result.push_str(&generics_str);
 
+    // P8: a negative inherent impl (`impl !Foo {}`) reaches the formatter only under
+    // `rustfmt_version = "1.8.0"` (`rustc_compat`); rustfmt writes the polarity before
+    // the self type as rustfmt 1.8.0 `src/items.rs` `format_impl` does.
+    let polarity_str = if has_token(iimpl.syntax(), T![!]) {
+        "!"
+    } else {
+        ""
+    };
+    let polarity_overhead;
     let trait_ref_overhead;
     if let Some(of_trait) = &of_trait {
         if constness {
             result.push_str(" const");
         }
-        let polarity_str = if has_token(iimpl.syntax(), T![!]) {
-            "!"
-        } else {
-            ""
-        };
         let result_len = last_line_width(&result);
         result.push_str(&rewrite_trait_ref(
             context,
@@ -2138,8 +2142,10 @@ fn format_impl_ref_and_type(
             polarity_str,
             result_len,
         )?);
+        polarity_overhead = 0; // already written
         trait_ref_overhead = " for".len();
     } else {
+        polarity_overhead = polarity_str.len();
         trait_ref_overhead = 0;
     }
 
@@ -2151,7 +2157,8 @@ fn format_impl_ref_and_type(
     } else {
         0
     };
-    let used_space = last_line_width(&result) + trait_ref_overhead + curly_brace_overhead;
+    let used_space =
+        last_line_width(&result) + polarity_overhead + trait_ref_overhead + curly_brace_overhead;
     // 1 = space before the type.
     let budget = context.budget(used_space + 1);
     if let Some(self_ty_str) = self_ty.rewrite(context, Shape::legacy(budget, offset))
@@ -2161,6 +2168,7 @@ fn format_impl_ref_and_type(
             result.push_str(" for ");
         } else {
             result.push(' ');
+            result.push_str(polarity_str);
         }
         result.push_str(&self_ty_str);
         return Some(result);
@@ -2173,8 +2181,10 @@ fn format_impl_ref_and_type(
     result.push_str(&new_line_offset.to_string(context.config));
     if of_trait.is_some() {
         result.push_str("for ");
+    } else {
+        result.push_str(polarity_str);
     }
-    let budget = context.budget(last_line_width(&result));
+    let budget = context.budget(last_line_width(&result) + polarity_overhead);
     let type_offset = new_line_offset;
     result.push_str(&self_ty.rewrite(context, Shape::legacy(budget, type_offset))?);
     Some(result)
