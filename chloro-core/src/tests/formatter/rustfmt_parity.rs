@@ -39,3 +39,34 @@ fn macro_def_nested_block_trailing_return_gets_semicolon() {
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// `[value; count]` is rustc's `ExprKind::Repeat`, not `ExprKind::Array`: rustfmt's
+/// `is_block_expr` (chain roots), `can_flatten_block_around_this` (match arm bodies) and
+/// `can_be_overflowed_expr` (last call argument) list only `Array`.
+#[test]
+fn repeat_array_is_not_block_like() {
+    let input = "fn main() {
+    let a = [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb].into();
+    let x = foo.bar([0u8; 1024]).baz([aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb]);
+    match x {
+        A => { [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb] }
+    }
+}
+";
+    let rustfmt = "fn main() {
+    let a = [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb]
+        .into();
+    let x = foo.bar([0u8; 1024]).baz(
+        [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb],
+    );
+    match x {
+        A => {
+            [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
+                bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb]
+        }
+    }
+}
+";
+    assert_rustfmt(input, rustfmt);
+}
