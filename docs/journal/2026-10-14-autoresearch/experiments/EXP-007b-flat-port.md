@@ -166,7 +166,7 @@ crates, and `--check` reports the added files as "not recorded").
 | `bench --check` fixtures | 0 of 1,238 outputs changed | — |
 | `bench --check` registry | 0 of 20,022 outputs changed (19,463 recorded, the rest not recorded) | — |
 | `conform -i` | 1,219/1,220 identical, 0 not idempotent | 1,219/1,220, 0 |
-| `config_matrix -n 1220` | TBD | 31 option values, counts in the row below |
+| `config_matrix -n 1220` | every one of the 31 option values has the base's count (1021/1022 for 25 values, 1020/1022 for `hard_tabs=true` and `tab_spaces=2`, 1019/1022 for `newline_style=Windows`, 843/844, 842/843 and 837/838 for the three editions) and the same 35 listed files | identical |
 | `cargo test --workspace --all-features` | all pass (156 lib, 17 conformance batch, 10 + 4 integration, 7 `chloro`, 1 doc) | |
 | `cargo fmt --all -- --check` | exit 0 | |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | exit 0 | |
@@ -178,13 +178,13 @@ crates, and `--check` reports the added files as "not recorded").
 | metric | base `aa1e058` | port | change |
 |---|---|---|---|
 | `Ir`, sample, `benchmarks/profile.sh` (measured) | 518,953,599 | 391,198,779 | −127,754,820 (−24.62%) |
-| `bench -n 5`, 1,238 fixtures, best of 5, core 1, 3 interleaved pairs (measured) | TBD | TBD | TBD |
+| `bench -n 5`, 1,238 fixtures (13.9 MB), best of 5, core 1, 3 interleaved pairs, load 0 (measured) | 2.607, 2.505, 2.593 s (5.33, 5.55, 5.36 MB/s) | 1.982, 1.977, 1.843 s (7.01, 7.03, 7.54 MB/s) | the ranges 2.505–2.607 s and 1.843–1.982 s do not overlap; −20.9% to −28.9% per pair |
 | heap allocations, `alloc_count` over the 1,238 fixtures (measured) | 14,612,436 (1.051 per input byte), 5,906,451,686 bytes requested | 8,309,517 (0.598 per byte), 5,563,674,858 bytes | −6,302,919 (−43.1%) allocations, −5.8% bytes |
 | red nodes created on the sample | 141,544 (E4's figure) | 0 by construction | |
 | peak RSS, `fmt_stdin` on `lints.rs` (639,689 bytes), `ru_maxrss`, 3 runs (measured) | 10,028–10,144 KB | 9,604–9,680 KB | about −440 KB (−4.4%) |
 | `chloro` binary, `--features cli`, release profile (measured) | 2,059,824 bytes, `.text` 1,737,746 | 1,923,184 bytes, `.text` 1,636,190 | −136,640 bytes (−6.6%); `.text` −5.8% |
 | `bench` example binary (measured) | 1,855,080 bytes, `.text` 1,575,201 | 1,717,672 bytes, `.text` 1,472,861 | −7.4% |
-| release build of `chloro-core` after touching `src/lib.rs` (measured) | TBD | TBD | |
+| release build of `chloro-core` (lib only, fat LTO) after touching `src/lib.rs`, 2 runs (measured) | 14.37, 14.64 s | 14.83, 14.93 s | +0.3 to +0.5 s (the 7,865-line generated layer) |
 | dependencies, `chloro-core` no-dev (measured) | 37 crates | 16 crates | −21 (`ra_ap_syntax`, `rowan` and their graph: `ra_ap_stdx`, `countme`, `hashbrown`, `memoffset`, `text-size`, `triomphe`, `smol_str`, `itertools`, `either`, `crossbeam-*`, `jod-thread`, `libc`, `rustc-hash`, ...), +1 (`typed-arena`) |
 | dependencies, `chloro --features cli` no-dev | 69 | 48 | |
 
@@ -248,11 +248,13 @@ of the port are `CharClasses::next` (7.1%), `unicode_str_width` (5.3%), `event::
 ## Current State
 
 - The formatter reads `crate::cst` only; `rowan` and `ra_ap_syntax` are dev-dependencies
-- All gates pass at `353a18e` except the ones marked TBD above, which are running
-- `Ir` on the sample: 518,953,599 → 391,198,779 (−24.62%); allocations on the fixtures −43%
+- All gates pass at `353a18e`: both goldens, conform, config_matrix, tests, fmt, clippy
+- `Ir` on the sample: 518,953,599 → 391,198,779 (−24.62%); `bench -n 5` ahead in 3 of 3
+  pairs with non-overlapping ranges; allocations on the fixtures −43%
 
 ## Missing
 
-- `bench -n 5` interleaved pairs and the build-time figure (TBD rows above)
-- `config_matrix -n 1220` on the port build (TBD row above)
 - `benchmarks/compare_rustfmt.sh` process-level numbers against rustfmt on this build
+- A measurement of the block cache on the flat tree alone (E4 measured −0.21% on rowan;
+  here it is kept for its semantics, not re-measured in isolation)
+- A parent column measured against the two `parent()` sites (decision 4 left it out)
