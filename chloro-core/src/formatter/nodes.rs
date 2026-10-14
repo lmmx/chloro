@@ -13,10 +13,13 @@ use ra_ap_syntax::{
 };
 use rowan::Language;
 
+#[cfg(test)]
+use super::span::is_outer_doc_comment;
 use super::span::{
-    BytePos, Span, Spanned, is_inner_doc_comment, is_outer_doc_comment, is_outer_doc_text, mk_sp,
+    BytePos, Span, Spanned, is_inner_doc_comment, is_inner_doc_text, is_outer_doc_text, mk_sp,
     node_range_span, rustc_span, token_span,
 };
+use ra_ap_syntax::SyntaxElement;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum AttrStyle {
@@ -178,30 +181,43 @@ fn has_leading_attrs(node: &SyntaxNode) -> bool {
 }
 
 /// Outer attributes (including sugared doc comments) at the start of `node`, in source order.
+///
+/// The leading children are classified on the green tree; a red element is created for each
+/// attribute kept, and for none of the whitespace, plain comments and inner attributes
+/// between them, nor for the child the scan stops at.
 pub(crate) fn outer_attributes(node: &SyntaxNode) -> Vec<Attribute> {
     if !has_leading_attrs(node) {
         return Vec::new();
     }
     let mut attrs = Vec::new();
-    for child in node.children_with_tokens() {
+    let mut offset = node.text_range().start();
+    for (index, child) in node.green().children().enumerate() {
+        let len = child.text_len();
         match child {
-            NodeOrToken::Token(t) => match t.kind() {
+            NodeOrToken::Token(t) => match RustLanguage::kind_from_raw(t.kind()) {
                 SyntaxKind::WHITESPACE => {}
                 SyntaxKind::COMMENT => {
-                    if is_outer_doc_comment(&t) {
+                    if is_outer_doc_text(t.text())
+                        && let Some(t) = element_at(node, index, offset, len)
+                        && let Some(t) = t.into_token()
+                    {
                         attrs.push(Attribute::Doc(t));
                     }
                 }
                 _ => break,
             },
-            NodeOrToken::Node(n) => match ast::Attr::cast(n) {
-                Some(attr) if !has_token(attr.syntax(), T![!]) => {
-                    attrs.push(Attribute::Normal(attr))
+            NodeOrToken::Node(n) => {
+                if RustLanguage::kind_from_raw(n.kind()) != SyntaxKind::ATTR {
+                    break;
                 }
-                Some(_) => {}
-                None => break,
-            },
+                if !green_has_token(n, T![!])
+                    && let Some(attr) = child_at(node, index, offset, len).and_then(ast::Attr::cast)
+                {
+                    attrs.push(Attribute::Normal(attr));
+                }
+            }
         }
+        offset += len;
     }
     attrs
 }
@@ -231,16 +247,36 @@ pub(crate) fn inner_attributes(container: &SyntaxNode) -> Vec<Attribute> {
     if !may_have_inner_attrs(container) {
         return Vec::new();
     }
-    container
-        .children_with_tokens()
-        .filter_map(|child| match child {
-            NodeOrToken::Token(t) if is_inner_doc_comment(&t) => Some(Attribute::Doc(t)),
-            NodeOrToken::Node(n) => ast::Attr::cast(n)
-                .filter(|a| has_token(a.syntax(), T![!]))
-                .map(Attribute::Normal),
-            _ => None,
-        })
-        .collect()
+    let mut attrs = Vec::new();
+    let mut offset = container.text_range().start();
+    for (index, child) in container.green().children().enumerate() {
+        let len = child.text_len();
+        match child {
+            NodeOrToken::Token(t)
+                if RustLanguage::kind_from_raw(t.kind()) == SyntaxKind::COMMENT
+                    && is_inner_doc_text(t.text()) =>
+            {
+                if let Some(t) = element_at(container, index, offset, len)
+                    && let Some(t) = t.into_token()
+                {
+                    attrs.push(Attribute::Doc(t));
+                }
+            }
+            NodeOrToken::Node(n)
+                if RustLanguage::kind_from_raw(n.kind()) == SyntaxKind::ATTR
+                    && green_has_token(n, T![!]) =>
+            {
+                if let Some(attr) =
+                    child_at(container, index, offset, len).and_then(ast::Attr::cast)
+                {
+                    attrs.push(Attribute::Normal(attr));
+                }
+            }
+            _ => {}
+        }
+        offset += len;
+    }
+    attrs
 }
 
 pub(crate) fn contains_skip(attrs: &[Attribute]) -> bool {
@@ -298,21 +334,29 @@ pub(crate) fn token_start(node: &SyntaxNode, kind: SyntaxKind) -> Option<BytePos
     None
 }
 
-/// The red node for the `index`-th green child of `parent`, which starts at `offset` and is
-/// `len` long: a binary search on the range when the child has text, a walk to the position
-/// otherwise (a range search cannot tell empty siblings apart).
+/// The red element for the `index`-th green child of `parent`, which starts at `offset` and
+/// is `len` long: a binary search on the range when the child has text, a walk to the
+/// position otherwise (a range search cannot tell empty siblings apart).
+pub(crate) fn element_at(
+    parent: &SyntaxNode,
+    index: usize,
+    offset: TextSize,
+    len: TextSize,
+) -> Option<SyntaxElement> {
+    if len == TextSize::from(0) {
+        return parent.children_with_tokens().nth(index);
+    }
+    parent.child_or_token_at_range(TextRange::at(offset, len))
+}
+
+/// [`element_at`] for a child node.
 pub(crate) fn child_at(
     parent: &SyntaxNode,
     index: usize,
     offset: TextSize,
     len: TextSize,
 ) -> Option<SyntaxNode> {
-    if len == TextSize::from(0) {
-        return parent.children_with_tokens().nth(index)?.into_node();
-    }
-    parent
-        .child_or_token_at_range(TextRange::at(offset, len))?
-        .into_node()
+    element_at(parent, index, offset, len)?.into_node()
 }
 
 /// The first child node of `parent` that casts to `N`: the generated `support::child`
@@ -878,16 +922,104 @@ mod tests {
 
     #[test]
     fn inner_attributes_match_a_cursor_walk_on_every_node() {
-        for src in ATTRIBUTE_SOURCES {
-            let file = SourceFile::parse(src, Edition::CURRENT).tree();
+        let mut seen = [0usize; 2];
+        for src in ATTRIBUTE_SOURCES.iter().chain(BLOCK_SOURCES) {
+            let file = SourceFile::parse(src, Edition::Edition2024).tree();
             for node in file.syntax().descendants() {
+                let attrs = inner_attributes(&node);
                 assert_eq!(
-                    inner_attributes(&node),
+                    attrs,
                     inner_attributes_by_cursor(&node),
                     "{node:?} in {src:?}"
                 );
+                for attr in &attrs {
+                    seen[usize::from(attr.is_doc_comment())] += 1;
+                }
             }
         }
+        assert!(seen.iter().all(|&n| n > 0), "normal and doc: {seen:?}");
+    }
+
+    /// The red-cursor computation `outer_attributes` replaced.
+    fn outer_attributes_by_cursor(node: &SyntaxNode) -> Vec<Attribute> {
+        let mut attrs = Vec::new();
+        for child in node.children_with_tokens() {
+            match child {
+                NodeOrToken::Token(t) => match t.kind() {
+                    SyntaxKind::WHITESPACE => {}
+                    SyntaxKind::COMMENT => {
+                        if is_outer_doc_comment(&t) {
+                            attrs.push(Attribute::Doc(t));
+                        }
+                    }
+                    _ => break,
+                },
+                NodeOrToken::Node(n) => match ast::Attr::cast(n) {
+                    Some(attr) if attr.excl_token().is_none() => {
+                        attrs.push(Attribute::Normal(attr))
+                    }
+                    Some(_) => {}
+                    None => break,
+                },
+            }
+        }
+        attrs
+    }
+
+    /// `outer_attributes` answers what the cursor walk answers on every node of sources with
+    /// doc comments, plain comments that look like doc comments, inner attributes before
+    /// outer ones, attributes on statements, and nodes without attributes.
+    #[test]
+    fn outer_attributes_match_a_cursor_walk_on_every_node() {
+        let mut seen = [0usize; 3];
+        for src in ATTRIBUTE_SOURCES.iter().chain(BLOCK_SOURCES) {
+            let file = SourceFile::parse(src, Edition::Edition2024).tree();
+            for node in file.syntax().descendants() {
+                let attrs = outer_attributes(&node);
+                assert_eq!(
+                    attrs,
+                    outer_attributes_by_cursor(&node),
+                    "{node:?} in {src:?}"
+                );
+                seen[2] += usize::from(attrs.is_empty() && has_leading_attrs(&node));
+                for attr in &attrs {
+                    seen[usize::from(attr.is_doc_comment())] += 1;
+                }
+            }
+        }
+        assert!(
+            seen.iter().all(|&n| n > 0),
+            "normal, doc, leading inner attributes only: {seen:?}"
+        );
+    }
+
+    /// `is_inner_doc_text` on a comment's text answers what `is_inner_doc_comment` answers
+    /// on the token, on every comment of the attribute sources.
+    #[test]
+    fn inner_doc_text_matches_the_comment_classification() {
+        let mut comments = 0;
+        for src in ATTRIBUTE_SOURCES {
+            let file = SourceFile::parse(src, Edition::CURRENT).tree();
+            for token in file
+                .syntax()
+                .descendants_with_tokens()
+                .filter_map(|e| e.into_token())
+                .filter(|t| t.kind() == SyntaxKind::COMMENT)
+            {
+                assert_eq!(
+                    is_inner_doc_text(token.text()),
+                    is_inner_doc_comment(&token),
+                    "{token}"
+                );
+                assert_eq!(
+                    is_outer_doc_text(token.text()),
+                    is_outer_doc_comment(&token),
+                    "{token}"
+                );
+                comments += 1;
+            }
+        }
+        assert!(comments > 10, "{comments} comments");
     }
 
     #[test]
