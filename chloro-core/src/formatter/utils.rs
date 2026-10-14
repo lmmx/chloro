@@ -246,6 +246,14 @@ fn is_ascii_single_line(bytes: &[u8]) -> bool {
     acc == 0
 }
 
+/// Joins string pieces with one allocation of the exact length. Gives what `format!` gives
+/// for a format string of literal text and `{}` placeholders whose arguments are strings
+/// (`str`'s `Display` writes the text unchanged when no width or precision is given),
+/// without the formatting machinery.
+pub(crate) fn concat(parts: &[&str]) -> String {
+    parts.concat()
+}
+
 pub(crate) fn count_newlines(input: &str) -> usize {
     input.bytes().filter(|&b| b == b'\n').count()
 }
@@ -571,6 +579,19 @@ mod tests {
             assert_eq!(first_line_width(s), first, "{s:?}");
             assert_eq!(last_line_width(s), last, "{s:?}");
             assert_eq!(unicode_str_width(s), s.width(), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn concat_matches_format_on_strings() {
+        let owned = String::from("é {x} ");
+        let borrowed = "}{";
+        let cow: Cow<'_, str> = Cow::Owned("\n    ".to_owned());
+        for (a, b) in [("", ""), ("a", "b"), ("ünï", "\t\r\n"), ("{}", "%s")] {
+            assert_eq!(
+                concat(&[a, "{", &owned, borrowed, &cow, b, "}"]),
+                format!("{a}{{{owned}{borrowed}{cow}{b}}}")
+            );
         }
     }
 

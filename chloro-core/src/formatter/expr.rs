@@ -36,7 +36,7 @@ use super::span::{Span, Spanned, mk_sp, token_span};
 use super::stmt::Stmt as FmtStmt;
 use super::types::{PathContext, rewrite_path};
 use super::utils::{
-    colon_spaces, count_newlines, filtered_str_fits, first_line_ends_with, is_assignment,
+    colon_spaces, concat, count_newlines, filtered_str_fits, first_line_ends_with, is_assignment,
     last_line_extendable, last_line_width, semicolon_for_expr, unicode_str_width, wrap_str,
 };
 use super::visitor::FmtVisitor;
@@ -539,7 +539,7 @@ fn rewrite_empty_block(
     }
 
     if !block_contains_comment(context, block) && shape.width >= 2 {
-        return Some(format!("{prefix}{label_str}{{}}"));
+        return Some(concat(&[prefix, &label_str, "{}"]));
     }
 
     // If a block contains only a single-line comment, then leave it on one line.
@@ -599,7 +599,7 @@ fn rewrite_single_line_block(
         let expr_shape = shape.offset_left(last_line_width(prefix))?;
         let expr_str = block_expr.rewrite(context, expr_shape)?;
         let label_str = rewrite_label(context, label);
-        let result = format!("{prefix}{label_str}{{ {expr_str} }}");
+        let result = concat(&[prefix, &label_str, "{ ", &expr_str, " }"]);
         if result.len() <= shape.width && !result.contains('\n') {
             return Some(result);
         }
@@ -643,7 +643,7 @@ pub(crate) fn rewrite_block_with_visitor(
     if visitor.macro_rewrite_failure {
         context.macro_rewrite_failure.replace(true);
     }
-    Some(format!("{}{}{}", prefix, label_str, visitor.buffer))
+    Some(concat(&[prefix, &label_str, &visitor.buffer]))
 }
 
 impl Rewrite for Block {
@@ -958,7 +958,7 @@ impl ControlFlow<'_> {
             .with_max_width(context.config);
         let nested_indent_str = nested_shape.indent.to_string_with_newline(context.config);
         expr.rewrite(context, nested_shape)
-            .map(|expr_rw| format!("{nested_indent_str}{expr_rw}"))
+            .map(|expr_rw| concat(&[&nested_indent_str, &expr_rw]))
     }
 
     fn rewrite_cond(
@@ -1147,7 +1147,7 @@ impl Rewrite for ControlFlow<'_> {
             result?
         };
 
-        let mut result = format!("{cond_str}{block_str}");
+        let mut result = concat(&[&cond_str, &block_str]);
 
         if let Some(else_block) = &self.else_block {
             let shape = Shape::indented(shape.indent, context.config);
@@ -1531,7 +1531,13 @@ pub(crate) fn rewrite_paren(
     let subexpr_str = subexpr.rewrite(context, sub_shape)?;
     let fits_single_line = !pre_comment.contains("//") && !post_comment.contains("//");
     if fits_single_line {
-        Some(format!("({pre_comment}{subexpr_str}{post_comment})"))
+        Some(concat(&[
+            "(",
+            &pre_comment,
+            &subexpr_str,
+            &post_comment,
+            ")",
+        ]))
     } else {
         rewrite_paren_in_multi_line(context, &subexpr, shape, pre_span, post_span)
     }
@@ -1592,7 +1598,7 @@ fn rewrite_index(
     // Return if index fits in a single line.
     match orig_index_rw {
         Some(ref index_str) if !index_str.contains('\n') => {
-            return Some(format!("{expr_str}[{index_str}]"));
+            return Some(concat(&[&expr_str, "[", index_str, "]"]));
         }
         _ => (),
     }
@@ -1616,7 +1622,7 @@ fn rewrite_index(
             indent.to_string_with_newline(context.config),
             new_index_str,
         )),
-        (Some(ref index_str), _) => Some(format!("{expr_str}[{index_str}]")),
+        (Some(ref index_str), _) => Some(concat(&[&expr_str, "[", index_str, "]"])),
         (None, None) => None,
     }
 }
@@ -1723,7 +1729,7 @@ fn rewrite_struct_lit(
 
     let fields_str =
         wrap_struct_field(context, attrs, &fields_str, shape, v_shape, one_line_width)?;
-    Some(format!("{path_str} {{{fields_str}}}"))
+    Some(concat(&[&path_str, " {", &fields_str, "}"]))
 }
 
 pub(crate) fn wrap_struct_field(
@@ -1753,7 +1759,7 @@ pub(crate) fn wrap_struct_field(
             ))
         } else {
             // One liner or visual indent.
-            Some(format!(" {fields_str} "))
+            Some(concat(&[" ", fields_str, " "]))
         }
     } else {
         Some(format!(
@@ -1805,7 +1811,7 @@ pub(crate) fn rewrite_field(
                 {
                     Some(attrs_str + name)
                 }
-                Some(e) => Some(format!("{attrs_str}{name}{separator}{e}")),
+                Some(e) => Some(concat(&[&attrs_str, name, &separator, &e])),
                 None => {
                     let expr_offset = shape.indent.block_indent(context.config);
                     let expr = expr.rewrite(context, Shape::indented(expr_offset, context.config));
@@ -1897,7 +1903,7 @@ pub(crate) fn rewrite_unary_prefix<R: Rewrite + ?Sized>(
     let shape = shape.offset_left(prefix.len())?;
     rewrite
         .rewrite(context, shape)
-        .map(|r| format!("{prefix}{r}"))
+        .map(|r| concat(&[prefix, &r]))
 }
 
 /// FIXME: this is probably not correct for multi-line Rewrites. we should
@@ -2053,7 +2059,7 @@ fn choose_rhs<R: Rewrite + ?Sized>(
         Some(ref new_str)
             if !new_str.contains('\n') && unicode_str_width(new_str) <= shape.width =>
         {
-            Some(format!(" {new_str}"))
+            Some(concat(&[" ", new_str]))
         }
         _ => {
             // Expression did not fit on the same line as the identifier.
@@ -2070,21 +2076,21 @@ fn choose_rhs<R: Rewrite + ?Sized>(
                 (Some(ref orig_rhs), Some(ref new_rhs))
                     if !filtered_str_fits(new_rhs, context.config.max_width(), new_shape) =>
                 {
-                    Some(format!("{before_space_str}{orig_rhs}"))
+                    Some(concat(&[before_space_str, orig_rhs]))
                 }
                 (Some(ref orig_rhs), Some(ref new_rhs))
                     if prefer_next_line(orig_rhs, new_rhs, rhs_tactics) =>
                 {
-                    Some(format!("{new_indent_str}{new_rhs}"))
+                    Some(concat(&[new_indent_str, new_rhs]))
                 }
-                (None, Some(ref new_rhs)) => Some(format!("{new_indent_str}{new_rhs}")),
+                (None, Some(ref new_rhs)) => Some(concat(&[new_indent_str, new_rhs])),
                 (None, None) if rhs_tactics == RhsTactics::AllowOverflow => {
                     let shape = shape.infinite_width();
                     expr.rewrite(context, shape)
-                        .map(|s| format!("{before_space_str}{s}"))
+                        .map(|s| concat(&[before_space_str, &s]))
                 }
                 (None, None) => None,
-                (Some(orig_rhs), _) => Some(format!("{before_space_str}{orig_rhs}")),
+                (Some(orig_rhs), _) => Some(concat(&[before_space_str, &orig_rhs])),
             }
         }
     }
