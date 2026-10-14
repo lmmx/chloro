@@ -447,8 +447,8 @@ impl FindUncommented for str {
         let mut needle_iter = pat.chars();
         let mut classes = CharClasses::new(self);
         loop {
-            // A skipped character is `Normal` and differs from the first character of the
-            // pattern, so it would only reset a needle that is already reset.
+            // A skipped character is `Normal` or `InString` and differs from the first
+            // character of the pattern, so it would only reset a needle that is already reset.
             if let Some(first) = first
                 && needle_iter.as_str().len() == pat.len()
             {
@@ -663,18 +663,60 @@ impl<'a> CharClasses<'a> {
         (0..count as usize).all(|n| self.peek_nth(n) == Some('#'))
     }
 
-    /// In the `Normal` state, moves past the characters that `next` would classify as
-    /// `Normal` without leaving the state: everything but `r`, `"`, `'` and `/`, all ASCII,
-    /// so the scan can work on bytes. Also stops at `stop`, a byte the caller looks for.
+    /// Moves past the characters that `next` would yield as `Normal` or `InString` without
+    /// changing the state, in three states:
+    /// - `Normal`: `next` leaves the state only at `"`, at `r` before `#` or `"`, at `/`
+    ///   before `*` or `/`, and at `'` before `\\` or before a character followed by `'`; the
+    ///   scan stops there (and, conservatively, at `'` before a non-ASCII character);
+    /// - `LitString`: the state changes only at `"` and `\\`;
+    /// - `LitRawString`: the state changes only at `"`.
+    ///
+    /// All of these are ASCII, so the scan can work on bytes. Also stops at `stop`, a byte the
+    /// caller looks for.
     fn skip_plain(&mut self, stop: Option<u8>) {
-        if self.status != CharClassesStatus::Normal {
-            return;
-        }
         let bytes = self.src.as_bytes();
         let mut pos = self.pos;
+        match self.status {
+            CharClassesStatus::Normal => {}
+            CharClassesStatus::LitString => {
+                while let Some(&b) = bytes.get(pos) {
+                    if b == b'"' || b == b'\\' || Some(b) == stop {
+                        break;
+                    }
+                    pos += 1;
+                }
+                self.pos = pos;
+                return;
+            }
+            CharClassesStatus::LitRawString(_) => {
+                while let Some(&b) = bytes.get(pos) {
+                    if b == b'"' || Some(b) == stop {
+                        break;
+                    }
+                    pos += 1;
+                }
+                self.pos = pos;
+                return;
+            }
+            _ => return,
+        }
         while let Some(&b) = bytes.get(pos) {
             if matches!(b, b'r' | b'"' | b'\'' | b'/') || Some(b) == stop {
-                break;
+                let next = bytes.get(pos + 1).copied();
+                let leaves_normal = match b {
+                    _ if Some(b) == stop => true,
+                    b'r' => matches!(next, Some(b'#' | b'"')),
+                    b'/' => matches!(next, Some(b'*' | b'/')),
+                    b'\'' => match next {
+                        None => false,
+                        Some(n) if n == b'\\' || !n.is_ascii() => true,
+                        Some(_) => bytes.get(pos + 2) == Some(&b'\''),
+                    },
+                    _ => true,
+                };
+                if leaves_normal {
+                    break;
+                }
             }
             pos += 1;
         }
@@ -923,7 +965,7 @@ impl<'a> Iterator for UngroupedCommentCodeSlices<'a> {
         match kind {
             FullCodeCharKind::Normal | FullCodeCharKind::InString => {
                 // Consume all the Normal code. Characters skipped by `skip_plain` are
-                // `Normal`, so they belong to this slice.
+                // `Normal` or `InString`, so they belong to this slice.
                 loop {
                     if self.peeked.is_none() {
                         self.iter.skip_plain(None);
@@ -1254,6 +1296,61 @@ mod tests {
                     filter_normal_code_by_lines(code),
                     "{code:?}"
                 );
+            }
+        }
+    }
+
+    /// Every string of up to `max_len` characters over the characters that drive the
+    /// `CharClasses` state machine, plus `SCAN_SAMPLES`.
+    fn scan_strings(max_len: u32) -> Vec<String> {
+        const ALPHABET: [char; 10] = ['r', '#', '"', '\'', '/', '*', '\\', 'a', '\n', 'é'];
+        let mut out: Vec<String> = SCAN_SAMPLES.iter().map(|s| s.to_string()).collect();
+        for len in 0..=max_len {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                out.push(s);
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn skip_plain_skips_only_unchanged_normal_or_string_characters() {
+        for s in scan_strings(5) {
+            // The full scan: each character's kind and the state after it.
+            let mut full = CharClasses::new(&s);
+            let mut steps = vec![];
+            while let Some((kind, i, c)) = full.next() {
+                steps.push((i, kind, c, full.status));
+            }
+            for stop in [None, Some(b'a'), Some(b'/'), Some(b'"'), Some(b'#')] {
+                let mut fast = CharClasses::new(&s);
+                let mut prev_status = CharClassesStatus::Normal;
+                let mut step = 0;
+                loop {
+                    fast.skip_plain(stop);
+                    while step < steps.len() && steps[step].0 < fast.pos {
+                        let (i, kind, c, status) = steps[step];
+                        assert!(
+                            matches!(kind, FullCodeCharKind::Normal | FullCodeCharKind::InString)
+                                && status == prev_status
+                                && Some(c as u32) != stop.map(u32::from),
+                            "{s:?} {stop:?}: skipped {c:?} at {i}"
+                        );
+                        step += 1;
+                    }
+                    let Some(item) = fast.next() else { break };
+                    let (i, kind, c, status) = steps[step];
+                    assert_eq!(item, (kind, i, c), "{s:?} {stop:?}");
+                    assert_eq!(fast.status, status, "{s:?} {stop:?}");
+                    prev_status = status;
+                    step += 1;
+                }
+                assert_eq!(step, steps.len(), "{s:?} {stop:?}");
             }
         }
     }
