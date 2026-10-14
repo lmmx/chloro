@@ -1,4 +1,5 @@
 use super::args::Args;
+use super::cache::Cache;
 use super::worker::{ProcessResult, format_file};
 use std::path::PathBuf;
 use std::thread::{available_parallelism, scope};
@@ -25,8 +26,8 @@ fn discover_recursive(dir: &std::path::Path, files: &mut Vec<PathBuf>) -> std::i
     Ok(())
 }
 
-/// Format all files in parallel
-pub fn format_all(files: &[PathBuf], args: &Args) -> Vec<ProcessResult> {
+/// Format all files in parallel, consulting `cache` for files already known to be formatted
+pub fn format_all(files: &[PathBuf], args: &Args, cache: Option<&Cache>) -> Vec<ProcessResult> {
     let num_threads = available_parallelism().map_or(1, |n| n.get());
 
     if args.verbose {
@@ -46,7 +47,7 @@ pub fn format_all(files: &[PathBuf], args: &Args) -> Vec<ProcessResult> {
                 s.spawn(|| {
                     chunk
                         .iter()
-                        .map(|file| format_file(file, args))
+                        .map(|file| format_file(file, args, cache))
                         .collect::<Vec<_>>()
                 })
             })
