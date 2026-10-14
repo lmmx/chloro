@@ -59,7 +59,7 @@ fn name_span(name: &ast::Name) -> Span {
 }
 
 fn name_text(name: Option<ast::Name>) -> Option<String> {
-    Some(node_text(name?.syntax()))
+    Some(node_text(name?.syntax()).into_owned())
 }
 
 /// The `(lo, hi)` of rustc's visibility span: the visibility, or an empty span at the start
@@ -1892,7 +1892,7 @@ impl FmtVisitor<'_> {
                 self.block_indent,
                 Some(one_line_width),
             )?,
-            None => node_text(field.name()?.syntax()),
+            None => node_text(field.name()?.syntax()).into_owned(),
         };
 
         let variant_body = if let Some(expr) = field.expr() {
@@ -3114,7 +3114,7 @@ pub(crate) fn rewrite_type_alias(
         indent,
         generics: &generics,
         after_where_clause: &after_where_clause,
-        name: node_text(name.syntax()),
+        name: node_text(name.syntax()).into_owned(),
         bounds: &bounds,
         span,
     };
@@ -3335,7 +3335,7 @@ pub(crate) struct StaticParts {
 impl StaticParts {
     pub(crate) fn from_const(c: &ast::Const) -> Option<Self> {
         let name = match c.name() {
-            Some(n) => node_text(n.syntax()),
+            Some(n) => node_text(n.syntax()).into_owned(),
             None => c.underscore_token()?.text().to_string(),
         };
         Some(StaticParts {
@@ -3368,7 +3368,7 @@ impl StaticParts {
                 ""
             },
             vis: child::<ast::Visibility>(s.syntax()),
-            name: node_text(s.name()?.syntax()),
+            name: node_text(s.name()?.syntax()).into_owned(),
             has_generics: false,
             ty: child::<ast::Type>(s.syntax()),
             mutability: if has_token(s.syntax(), T![mut]) {

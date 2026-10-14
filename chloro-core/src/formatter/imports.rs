@@ -250,7 +250,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
         }
         let text = seg
             .name_ref()
-            .map_or_else(String::new, |n| node_text(n.syntax()));
+            .map_or_else(String::new, |n| node_text(n.syntax()).into_owned());
         names.push(text);
     }
     (names, global)
@@ -428,7 +428,7 @@ impl UseTree {
             };
             let alias = a.rename().and_then(|rename| {
                 let alias = match rename.name() {
-                    Some(n) => node_text(n.syntax()),
+                    Some(n) => node_text(n.syntax()).into_owned(),
                     // for impl-only-use
                     None => "_".to_owned(),
                 };

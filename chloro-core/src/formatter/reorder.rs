@@ -31,7 +31,7 @@ fn symbol(text: String) -> String {
 
 fn mod_name(item: &ast::Item) -> String {
     match item {
-        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()))),
+        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()).into_owned())),
         _ => None,
     }
     .unwrap_or_default()
@@ -42,11 +42,13 @@ fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
     match item {
         ast::Item::ExternCrate(e) => (
             child::<ast::NameRef>(e.syntax())
-                .map(|n| symbol(node_text(n.syntax())))
+                .map(|n| symbol(node_text(n.syntax()).into_owned()))
                 .unwrap_or_default(),
             e.rename().map(|r| {
-                r.name()
-                    .map_or_else(|| "_".to_owned(), |n| symbol(node_text(n.syntax())))
+                r.name().map_or_else(
+                    || "_".to_owned(),
+                    |n| symbol(node_text(n.syntax()).into_owned()),
+                )
             }),
         ),
         _ => (String::new(), None),

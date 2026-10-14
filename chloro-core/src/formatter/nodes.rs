@@ -577,8 +577,11 @@ pub(crate) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
 }
 
 /// The source text of `node`. Reads the green tree, which costs neither a red node per
-/// token nor `fmt` machinery, unlike `node.text().to_string()`.
-pub(crate) fn node_text(node: &SyntaxNode) -> String {
+/// token nor `fmt` machinery, unlike `node.text().to_string()`. The text of a node whose
+/// tokens are one token (a name, a lone path segment) is that token's text, borrowed from
+/// the green token.
+pub(crate) fn node_text(node: &SyntaxNode) -> std::borrow::Cow<'_, str> {
+    use std::borrow::Cow;
     fn push(green: &rowan::GreenNodeData, out: &mut String) {
         for child in green.children() {
             match child {
@@ -587,9 +590,21 @@ pub(crate) fn node_text(node: &SyntaxNode) -> String {
             }
         }
     }
+    let green = node.green();
+    if let Cow::Borrowed(mut single) = green {
+        loop {
+            let mut children = single.children();
+            match (children.next(), children.next()) {
+                (None, _) => return Cow::Borrowed(""),
+                (Some(NodeOrToken::Token(t)), None) => return Cow::Borrowed(t.text()),
+                (Some(NodeOrToken::Node(n)), None) => single = n,
+                (Some(_), Some(_)) => break,
+            }
+        }
+    }
     let mut out = String::with_capacity(usize::from(node.text_range().len()));
-    push(&node.green(), &mut out);
-    out
+    push(&green, &mut out);
+    Cow::Owned(out)
 }
 
 /// rustc's expression kind for a block expression. rust-analyzer has one `BlockExpr` for all

@@ -713,7 +713,10 @@ impl<'a> FmtVisitor<'a> {
             self.push_str("unsafe ");
         }
         self.push_str("mod ");
-        let name = m.name().map(|n| node_text(n.syntax())).unwrap_or_default();
+        let name = m
+            .name()
+            .map(|n| node_text(n.syntax()).into_owned())
+            .unwrap_or_default();
         self.push_str(&name);
 
         if let Some(item_list) = m.item_list() {
