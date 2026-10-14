@@ -173,10 +173,10 @@ fn is_default_block(body: &ast::Expr) -> bool {
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
-fn as_block(body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn as_block(context: &RewriteContext<'_>, body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((b.clone(), context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -353,7 +353,7 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
 }
 
 fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
-    let (block_expr, block) = as_block(expr)?;
+    let (block_expr, block) = as_block(context, expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
         && !context.inside_macro()
@@ -414,7 +414,7 @@ fn rewrite_match_body(
         body,
         shape.offset_left(extra_offset(pats_str, shape) + 4),
     );
-    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(&body) {
+    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(context, &body) {
         (
             true,
             is_empty_block(context, &block, Some(&expr_attrs(&body))),
