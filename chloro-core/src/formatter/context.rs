@@ -364,14 +364,13 @@ mod tests {
         let tree = Tree::parse(src, Edition::Edition2024).unwrap();
         let arena = TreeArena::new();
         let run = RunState::new(&arena);
-        fn key<'t>(
-            b: &Block<'t>,
-        ) -> (
+        type Key<'t> = (
             Vec<(Span, Option<Node<'t>>, bool)>,
             Span,
             nodes::BlockRules,
             Option<ast::StmtList<'t>>,
-        ) {
+        );
+        fn key<'t>(b: &Block<'t>) -> Key<'t> {
             let stmts: Vec<_> = b
                 .stmts
                 .iter()
