@@ -18,8 +18,6 @@ default = []
 ctor = { default-features = false, version = "0.6.1" }
 
 ra_ap_parser = "0.0.307"
-ra_ap_syntax = "0.0.307"
-rowan = "0.15.15"
 typed-arena = "2.0"
 unicode-width = "0.1"
 
@@ -28,6 +26,9 @@ braces = "0.2.6"
 duct = "1.1.1"
 imara-diff = "0.2.0"
 insta.workspace = true
+# The equality test of `cst` against rowan's tree, and `examples/parse_floor.rs`.
+ra_ap_syntax = "0.0.307"
+rowan = "0.15.15"
 rust-format = "0.3.4"
 tempfile.workspace = true
 walkdir = "2.5.0"
