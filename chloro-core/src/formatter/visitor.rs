@@ -12,9 +12,12 @@ use ra_ap_syntax::SyntaxKind;
 use ra_ap_syntax::T;
 use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName};
 
-use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
+use super::comment::{
+    CodeCharKind, CommentCodeSlices, contains_comment, recover_comment_removed, rewrite_comment,
+};
 use super::config::{Settings, StyleEdition};
 use super::context::{Rewrite, RewriteContext, RunState};
+use super::expr::rewrite_block;
 use super::items::{
     ItemVisitorKind, StaticParts, StructParts, format_impl, format_trait, format_trait_alias,
     is_mod_decl, is_use_item, item_span, rewrite_extern_crate, rewrite_type_alias,
@@ -23,14 +26,14 @@ use super::macros::{
     MacroDef, MacroPosition, mac_span, macro_style, rewrite_macro, rewrite_macro_def,
 };
 use super::nodes::{
-    AttrStyle, Attribute, Block, StmtKind, child, contains_skip, inner_attributes,
-    outer_attributes, span_without_attrs,
+    AttrStyle, Attribute, Block, StmtKind, child, const_block_item, contains_skip,
+    inner_attributes, outer_attributes, span_without_attrs,
 };
 use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
 use super::shape::{Indent, Shape};
 use super::skip::SkipContext;
-use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
+use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span, token_span};
 use super::stmt::Stmt;
 use super::utils::{count_newlines, format_visibility, last_line_width, starts_with_newline};
 
@@ -479,6 +482,23 @@ impl<'a> FmtVisitor<'a> {
                 Some(parts) => self.visit_static(&parts),
                 None => self.push_rewrite(span, None),
             },
+            ast::Item::Const(c) if let Some(block) = const_block_item(c) => {
+                // rustfmt formats `ItemKind::ConstBlock` with `get_context`, not
+                // `with_context`: a macro failure inside the block is not this visitor's.
+                let context = self.get_context();
+                let offset = self.block_indent;
+                let shape = Shape::legacy(context.budget(offset.block_indent), offset.block_only());
+                let const_span = c
+                    .const_token()
+                    .map(|t| mk_sp(token_span(&t).lo(), span.hi()))
+                    .unwrap_or(span);
+                let rewrite = Block::from_block_expr(&block)
+                    .and_then(|b| rewrite_block(&b, None, None, &context, shape))
+                    .map(|rhs| {
+                        recover_comment_removed(format!("const {rhs}"), const_span, &context)
+                    });
+                self.push_rewrite(span, rewrite);
+            }
             ast::Item::Const(c) => match StaticParts::from_const(c) {
                 Some(parts) => self.visit_static(&parts),
                 None => self.push_rewrite(span, None),

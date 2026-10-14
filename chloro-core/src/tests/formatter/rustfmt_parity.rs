@@ -239,3 +239,61 @@ fn j() {
 "#;
     assert_rustfmt(input, rustfmt);
 }
+
+/// A const block item, `const { .. }` in a file or module, is rustc's `ItemKind::ConstBlock`;
+/// rust-analyzer's parser rejects it (`rustc_syntax` builds a `CONST` item). rustfmt drops
+/// a visibility, and formats the block with `get_context`, so a macro call it cannot format
+/// inside a `macro_rules!` body does not leave the whole body as written (facet-core 0.30.0
+/// `src/macros.rs`; the misplaced `if` line is rustfmt's output).
+#[test]
+fn const_block_items() {
+    let input = r#"#[a]
+pub const {   a( ) ; }
+
+mod m {
+    const { 1 }
+}
+
+macro_rules! value_vtable {
+    ($type_name:ty) => {
+        const {
+            builder::<$type_name>()
+                .display(|| {
+                    if $crate::spez::impls!($type_name: core::fmt::Display) {
+                        Some(|data, f| { f(data) })
+                    } else {
+                        None
+                    }
+                })
+                .build()
+        }
+    };
+}
+"#;
+    let rustfmt = r#"#[a]
+const {
+    a();
+}
+
+mod m {
+    const { 1 }
+}
+
+macro_rules! value_vtable {
+    ($type_name:ty) => {
+        const {
+            builder::<$type_name>()
+                .display(|| {
+            if $crate::spez::impls!($type_name: core::fmt::Display) {
+                        Some(|data, f| f(data))
+                    } else {
+                        None
+                    }
+                })
+                .build()
+        }
+    };
+}
+"#;
+    assert_rustfmt(input, rustfmt);
+}
