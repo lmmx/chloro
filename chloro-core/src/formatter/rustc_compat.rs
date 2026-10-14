@@ -125,6 +125,101 @@ fn chained_comparison(node: &GreenNodeData) -> bool {
             .any(|c| matches!(c, NodeOrToken::Node(n) if is_comparison(n)))
 }
 
+/// The kind of the first token under `child`, trivia included.
+fn first_token_kind(child: &Child<'_>) -> Option<SyntaxKind> {
+    match child {
+        NodeOrToken::Token(t) => Some(kind(t.kind())),
+        NodeOrToken::Node(n) => n.children().next().and_then(|c| first_token_kind(&c)),
+    }
+}
+
+/// `a <- b`: rustc's lexer glues `<` and an adjacent `-` into one token, `<-` (`LArrow`),
+/// which is not a binary operator ("unexpected token: `<-`"); rust-analyzer reads `a < -b`.
+fn larrow(bin: &GreenNodeData) -> bool {
+    let mut children = bin.children();
+    while let Some(c) = children.next() {
+        if child_kind(&c) == T![<] {
+            return children
+                .next()
+                .is_some_and(|rhs| first_token_kind(&rhs) == Some(T![-]));
+        }
+    }
+    false
+}
+
+fn is_assignment(bin: &GreenNodeData) -> bool {
+    kind(bin.kind()) == SyntaxKind::BIN_EXPR
+        && bin.children().any(|c| {
+            matches!(
+                child_kind(&c),
+                T![=]
+                    | T![+=]
+                    | T![-=]
+                    | T![*=]
+                    | T![/=]
+                    | T![%=]
+                    | T![&=]
+                    | T![|=]
+                    | T![^=]
+                    | T![<<=]
+                    | T![>>=]
+            )
+        })
+}
+
+/// A range without a start: `..`, `..b`, `..=b`.
+fn is_prefix_range(child: &Child<'_>) -> bool {
+    let NodeOrToken::Node(n) = child else {
+        return false;
+    };
+    kind(n.kind()) == SyntaxKind::RANGE_EXPR
+        && n.children()
+            .find(|c| !child_kind(c).is_trivia())
+            .is_some_and(|c| c.as_node().is_none())
+}
+
+/// `..a = b`: rustc's `parse_expr_assoc_with` returns a range that starts an expression
+/// without looking for a binary operator after it, so the `=` is unexpected. Where an outer
+/// operator loop takes over after the range, the `=` is that loop's: on the right of an
+/// assignment (`x = ..a = b` reads `(x = ..a) = b`), and as the operand of a closure,
+/// `return`, `break`, `yield`, `become` or `do yeet` (`|x| ..a = b` reads `(|x| ..a) = b`).
+fn prefix_range_assigned(bin: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool {
+    let lhs_is_prefix_range = bin
+        .children()
+        .find(|c| c.as_node().is_some())
+        .is_some_and(|c| is_prefix_range(&c));
+    if !is_assignment(bin) || !lhs_is_prefix_range {
+        return false;
+    }
+    match path.last() {
+        Some(&(parent, index)) if is_assignment(parent) => {
+            // The right operand: some node precedes it in the parent.
+            !parent.children().take(index).any(|c| c.as_node().is_some())
+        }
+        Some(&(parent, _)) => !matches!(
+            kind(parent.kind()),
+            SyntaxKind::CLOSURE_EXPR
+                | SyntaxKind::RETURN_EXPR
+                | SyntaxKind::BREAK_EXPR
+                | SyntaxKind::YIELD_EXPR
+                | SyntaxKind::BECOME_EXPR
+                | SyntaxKind::YEET_EXPR
+        ),
+        None => true,
+    }
+}
+
+/// `a..=`, `a...`: an inclusive range without an end (E0586), in an expression or a pattern.
+fn inclusive_without_end(range: &GreenNodeData) -> bool {
+    let mut children = range.children();
+    for c in children.by_ref() {
+        if matches!(child_kind(&c), T![..=] | T![...]) {
+            return !children.any(|c| c.as_node().is_some());
+        }
+    }
+    false
+}
+
 fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
     let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
     match kind(node.kind()) {
@@ -162,8 +257,11 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
                         if kind(n.kind()) == SyntaxKind::STMT_LIST && has_inner_attr(n))
                 })
         }
-        SyntaxKind::RANGE_EXPR => chained_range(node),
-        SyntaxKind::BIN_EXPR => chained_comparison(node),
+        SyntaxKind::RANGE_EXPR => chained_range(node) || inclusive_without_end(node),
+        SyntaxKind::RANGE_PAT => inclusive_without_end(node),
+        SyntaxKind::BIN_EXPR => {
+            chained_comparison(node) || larrow(node) || prefix_range_assigned(node, path)
+        }
         _ => false,
     }
 }
@@ -262,6 +360,10 @@ mod tests {
             "fn f() { let x = (1..2)..3; }",
             "fn f() { let x = a < (b == c) && d > e; }",
             "fn f() { ..=..=..; .. ..; }",
+            "fn f() { a < -b; foo::<-1>(); }",
+            "fn f() { x = ..z = 2; let _ = |x| ..z = 2; (..z) = 2; }",
+            "fn f() { return ..z = 2; }",
+            "fn f() { let x = 0..; 0..=1; match x { 0.. => {} } }",
         ] {
             assert!(!rejected(src), "{src}");
         }
@@ -287,6 +389,16 @@ mod tests {
             "fn f() { let x = 1..=2..=3; }",
             "fn f() { let x = a < b > c; }",
             "fn f() { let x = a == b != c; }",
+            // `<-` is one token to rustc.
+            "fn f() { let x = a <- b; }",
+            // A range that starts an expression ends it.
+            "fn f() { ..z = 2; }",
+            "fn f() { ..=z += 2; }",
+            "fn f() { foo(..z = 2); }",
+            // Inclusive ranges need an end.
+            "fn f() { 0..=; }",
+            "fn f() { ..=; }",
+            "fn f() { match x { 0..= => {} } }",
         ] {
             assert!(rejected(src), "{src}");
         }
