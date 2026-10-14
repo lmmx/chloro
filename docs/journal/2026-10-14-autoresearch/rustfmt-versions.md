@@ -35,8 +35,8 @@ sort for `mod`), `a43eef16` (#6425 raw labels), `5619b644` (#6468 closure labels
 `334670e0` (#6573 `use self::self`), `a57ce886` (pre-2024 import order), `74931504` (#5739)
 or `f371e165`. The shipped 1.8.0 builds are therefore the rustfmt tree of the
 2024-09-19 sync (`28beb813`, `v1.8.0` era) plus rust-side commits up to each beta branch:
-`7de0ca8b` "Disable overflow_delimited_expr in edition 2024" (2025-01-30) is in both
-(probe `ode.rs`: all four toolchains print `do_thing(x, Bar {..})` with the struct on its
+the effect of `7de0ca8b` "Disable overflow_delimited_expr in edition 2024" (2025-01-30)
+is present in both (probe `ode.rs`: all four toolchains print `do_thing(x, Bar {..})` with the struct on its
 own lines), and `266da427` "Do not remove super keyword from super-let" (2025-05-12) is in
 neither (class F4). The tags `v1.8.0` and `v1.9.0` are rustfmt-repository states; line
 citations below use the worktrees `/home/user/ref/rustfmt-v1.{7,8,9}.0`, and a `v1.8.0`
@@ -53,8 +53,11 @@ citation shows the behaviour the shipped 1.8.0 builds have unless stated otherwi
   outputs in `S/out/<run>/`, exit codes in `S/out/<run>.rc`, unified diffs and lists in
   `S/diffs/<runA>__<runB>/`, probes in `S/probes/` (outputs of every probe on every
   toolchain and edition in `S/probes/res/`). Driver scripts: `S/bin/fixtures_all.sh`,
-  `S/bin/fixtures_more.sh`, `S/bin/registry_all.sh`, comparison `S/bin/cmp.sh <A> <B>`,
-  import-only classifier `S/bin/strip_use.py`.
+  `S/bin/fixtures_more.sh`, `S/bin/registry_all.sh` (stopped by the session's 30 min
+  background limit during `reg-1.9.0-e2021`; the rest ran from `S/bin/registry_rest.sh`,
+  which resumed that run at the file it had reached), comparison `S/bin/cmp.sh <A> <B>`,
+  import-only classifier `S/bin/strip_use.py`. The fixture runs started before the 120 s
+  timeout was added to `run.sh`; every fixture invocation ended with exit 0, 1 or 101.
 - Fixtures: the 1220 files under `chloro-core/tests/conformance/fixtures/rust-analyzer`,
   sorted (`S/fixtures.list`). The run `fx-1.9.0-e2024` equals the tracked snapshots
   `snapshots/ra/**.rustfmt.rs` byte for byte for all 1004 files rustfmt accepts, and the
@@ -63,6 +66,9 @@ citation shows the behaviour the shipped 1.8.0 builds have unless stated otherwi
   at the time of the run (`S/registry_all.list`, `LC_ALL=C sort`; the protocol's figure of
   20,570 predates this listing). The subset `S/registry_q.list` holds lines 1, 5, 9, ...
   of that list (every 4th file starting with the first, 5149 files).
+- chloro line citations are against `HEAD` = `fbe8685`; another session had uncommitted
+  edits in `imports.rs`, `missed_spans.rs`, `reorder.rs` and `visitor.rs` while this was
+  written, which shift some of those lines in the working tree.
 - "Accepted" means exit status 0. Two runs are compared on files both accept; a file one
   run accepts and the other rejects is counted as an exit-status mismatch.
 
@@ -119,7 +125,21 @@ Comparisons are against 1.9.0 with the same arguments unless the row says otherw
 
 ## Compatibility matrix: registry (measured)
 
-REGISTRY_TABLE
+Comparisons against 1.9.0 with the same arguments. The subset is `S/registry_q.list`
+(5149 files); "all" is `S/registry_all.list` (20,593 files).
+
+| run | files | accepted (1.9.0 / other) | both | identical | differing | rc | classes |
+|---|---|---|---|---|---|---|---|
+| 1.8.0 (1.88) `--edition 2024` | all | 20,285 / 20,283 | 20,282 | 20,280 | 2 | 5 | F13 `facet-core-0.30.0/src/macros.rs`; F4 `ra_ap_parser-0.0.307/.../let_stmt.rs`; rc: P2 ×3 (`ra_ap_parser` test data), P8 `syn-1.0.109/tests/test_item.rs`, and `pest_meta-2.9.2/src/grammar.rs` (no output on either within the limit: the 1.9.0 process was stopped by hand after 2 min 41 s, the 1.88 one by the 120 s timeout) |
+| 1.8.0 (1.88) `--edition 2021` | subset | 5088 / 5093 | 5088 | 5081 | 7 | 5 | F5 ×7 (`event-listener-5.4.2/src/lib.rs`, `nix-0.31.3/src/sys/termios.rs`, `winapi-0.3.9/src/um/sapi.rs`, four `winnow` files); rc: P1 ×5 (all `let chains are only allowed in Rust 2024 or later` from 1.9.0) |
+| 1.8.0 (1.85) `--edition 2024` | subset | 5078 / 5078 | 5078 | 5078 | 0 | 1 | rc: `pest_meta` grammar.rs (both time out) |
+| 1.8.0 (1.85) vs 1.8.0 (1.88), `--edition 2024` | subset | 5078 / 5078 | 5078 | 5078 | 0 | 0 | |
+| 1.7.0 `--edition 2021` | subset | 5088 / 5090 | 5085 | 5049 | 36 | 8 | F10 ×25 (`zerocopy-0.8.63/benches/*`, `#[unsafe(no_mangle)]` → `#[no_mangle]`); F5 ×7 (the same files as the 1.88 row); F14 ×2 (`syn-{2.0.119,3.0.9}/tests/test_generics.rs`); F8 ×1, F9 ×1 (`ra_ap_parser` test data); rc: P1 ×4, P7 ×3 (`use<..>` ×2, `unsafe` field ×1), and `pest_meta` grammar.rs, which 1.7.0 formats within 120 s and 1.9.0 does not |
+
+- The 1.8.0 (1.88) runs show no file of classes F1, F2, F3 or F6 in the registry; the
+  classes the registry adds over the fixtures are F5 (7 of 5149 files at edition 2021),
+  F13 (1 of 20,593) and P8 (1 of 20,593).
+- 1.7.0 at `--edition 2024` was not run on the registry.
 
 ## Difference classes
 
@@ -127,15 +147,15 @@ F = formatting classes: both releases parse the input, the text differs. P = acc
 classes: one toolchain's rustc parser rejects the file (exit 1, rustfmt prints nothing and
 the expected output is the input) where the other formats it; these follow the toolchain,
 not rustfmt's code. Counts are fixture files (`--edition 2024` unless stated) and registry
-files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and edition in
-`S/probes/res/<probe>.<toolchain>.e<edition>.{out,rc,err}`.
+files (from the registry rows above). Reproducers are in `S/probes/`; outputs per
+toolchain and edition in `S/probes/res/<probe>.<toolchain>.e<edition>.{out,rc,err}`.
 
 ### F1 raw labels lose `r#` in `break`/`continue` (1.8.0; 1.7.0 rejects the syntax)
 
 - Reproducer `raw_label.rs`: `'r#if: { break 'r#if; }`. 1.8.0 (1.85, 1.88), editions 2021
   and 2024: `break 'if;` (the label no longer resolves). 1.9.0: `break 'r#if;`. 1.7.0:
   exit 1, ``expected `while`, `for`, `loop` or `{` after a label``.
-- Counts: fixtures 0; registry F1_REG.
+- Counts: fixtures 0; registry 0 (both 1.88 runs).
 - CHANGELOG 1.9.0 Fixed #6411; commit `a43eef16` (PR #6425).
 - rustfmt: `v1.9.0 src/expr.rs:225-244` take `context.snippet(label.ident.span)`;
   `v1.8.0 src/expr.rs:201-210` format `label.ident` (rustc's `Ident` drops `r#`).
@@ -148,12 +168,13 @@ files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and
   dropped); 1.9.0 `bar(|| 'b: { 1 })`. Inside a macro call, `foo!(|| 'a: { break 'a 1; })`
   → 1.7.0/1.8.0 print `foo!(|| {        a: {        break 'a 1;` followed by `});`, which
   does not parse; 1.9.0 prints the closure with its label on three lines.
-- Counts: fixtures 0; registry F2_REG.
+- Counts: fixtures 0; registry 0 (both 1.88 runs).
 - CHANGELOG 1.9.0 Fixed #6465; commit `5619b644` (PR #6468).
 - rustfmt: `v1.9.0 src/closures.rs:121-137` (`needs_block` takes the label, `|| label.is_some()`
   at :136) and `:75` passes `body` to `rewrite_closure_block`; `v1.8.0 src/closures.rs:123`
   (`needs_block` without label) and `:77` passes the inner `block`, whose span starts after
-  the label, so the snippet arithmetic produces the broken text.
+  the label, so the snippet arithmetic produces the broken text (hypothesis: the span
+  arithmetic was not traced).
 - chloro branch points: `closures.rs:120-132` (`needs_block`'s `has_label`) and
   `closures.rs:71-74` (`rewrite_closure_block(&body, ..)`). Reproducing the broken macro
   text needs the 1.8.0 span offsets (see Design: partial support).
@@ -161,7 +182,7 @@ files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and
 ### F3 `use self::self;` reduced to `use self;` (1.7.0, 1.8.0)
 
 - Reproducer `use_self_self.rs`: 1.7.0/1.8.0 `use self;`; 1.9.0 `use self::self;`.
-- Counts: fixtures 0; registry F3_REG.
+- Counts: fixtures 0; registry 0 (both 1.88 runs).
 - CHANGELOG 1.9.0 Fixed #6558; commit `334670e0` (PR #6573).
 - rustfmt: `v1.9.0 src/imports.rs:574-584` keep a `self` preceded by `self`;
   `v1.8.0 src/imports.rs:572` normalises unconditionally.
@@ -172,7 +193,7 @@ files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and
 - Reproducer `super_let.rs`: `super let x = 1;` → 1.8.0 (1.88) `let x = 1;`; 1.9.0
   unchanged (statement not formatted); 1.7.0 and 1.8.0 (1.85) exit 1 (rustc parser has no
   `super let`, class P6).
-- Counts: fixtures 1 (`parser/test_data/parser/inline/ok/let_stmt.rs`); registry F4_REG.
+- Counts: fixtures 1 (`parser/test_data/parser/inline/ok/let_stmt.rs`); registry 1 (`ra_ap_parser-0.0.307`, the same test file).
 - No CHANGELOG entry; rust-side commit `266da427` (2025-05-12), after the 1.88 beta branch.
 - rustfmt: `v1.9.0 src/items.rs:68-71` returns `SkipFormatting` when `self.super_` is set;
   `v1.8.0 src/items.rs:49` (`impl Rewrite for ast::Local`) has no such check (the 1.88 AST
@@ -183,14 +204,19 @@ files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and
 
 - Reproducer `use_underscore2.rs`, `--edition 2021`: `use b::{Ab, _x};` → 1.7.0/1.8.0
   `use b::{Ab, _x};`, 1.9.0 `use b::{_x, Ab};`. `use a::{ab, _x, Ab};` gives
-  `{_x, ab, Ab}` on all releases. Under style edition 2024 the releases agree (version sort).
-- Counts: fixtures 0; registry F5_REG.
+  `{_x, ab, Ab}` on all releases. `use_underscore3.rs` (the registry pattern):
+  `use libc::{NCCS, _POSIX_VDISABLE};` stays as written on 1.7.0/1.8.0 and becomes
+  `{_POSIX_VDISABLE, NCCS}` on 1.9.0; `use crate::Parser;` sorts before
+  `use crate::_tutorial::chapter_7;` on 1.7.0/1.8.0 and after it on 1.9.0. Under style
+  edition 2024 the releases agree (version sort).
+- Counts: fixtures 0; registry 7 of the 5149-file subset at `--edition 2021`, for 1.8.0 (1.88) and for 1.7.0
+  alike; 0 at edition 2024 (version sort applies).
 - CHANGELOG 1.9.0 Fixed #6668 (panic when sorting imports starting with `_`); commit
   `a57ce886`.
 - rustfmt: `v1.9.0 src/imports.rs:953-960` sort by the key `(is_upper_snake_case,
   starts_with_uppercase, ident)`; `v1.8.0 src/imports.rs:945-958` compare with early
   returns, which is not transitive (`Ab < _x < ab < Ab`): the result depends on the sort
-  algorithm and the input order, and the commit message reports panics from std's sort.
+  algorithm and the input order, and CHANGELOG #6668 reports a panic from it.
 - chloro branch point: `imports.rs:574-583` (the `else` arm of the `style_edition >=
   Edition2024` test).
 
@@ -201,7 +227,7 @@ files (REGISTRY_NOTE). Reproducers are in `S/probes/`; outputs per toolchain and
   `byte index 23 is not a char boundary`; 1.9.0 exit 0. U+2028/U+2029/U+200E between
   items without the preceding comment (`unicode_ws.rs`) format identically on 1.8.0 (1.88)
   and 1.9.0.
-- Counts: fixtures 0; registry F6_REG.
+- Counts: fixtures 0; registry 0 (both 1.88 runs).
 - CHANGELOG 1.9.0 Fixed #5739; commit `74931504`.
 - rustfmt: `v1.9.0 src/missed_spans.rs:210` `line_start = offset + subslice.len()`;
   `v1.8.0 src/missed_spans.rs:209` `offset + lf_count + crlf_count * 2`.
@@ -252,7 +278,7 @@ gated), so they matter only for 1.7.0 with `version=Two`.
   and 1.8.0 (1.85, 1.88) leave the macro body as written; 1.9.0 formats it, with the
   mixed indentation the chloro journal describes (`Some(` at 12 columns inside a block at
   16).
-- Counts: fixtures 0; registry F13_REG.
+- Counts: fixtures 0; registry 1 of 20,593 (`facet-core-0.30.0/src/macros.rs`).
 - No CHANGELOG entry; rust-side commits `a0dc8e3c` (2025-11-22, "Audit
   `AllowConstBlockItems`") and `d7923b14` (2025-11-26, "rustfmt: support const block
   items"): rustc's parser reads `const { .. }` in item position as `ItemKind::ConstBlock`
@@ -262,6 +288,16 @@ gated), so they matter only for 1.7.0 with `version=Two`.
   [../2026-10-10-performance-checkpoint.md](../2026-10-10-performance-checkpoint.md));
   `target/release/chloro` (built 2026-10-14 14:44 from this checkout) prints the 1.8.0
   (1.88) output byte for byte on the reproducer.
+
+### F14 `?for<> Trait` inside macro arguments (1.7.0)
+
+- Input `quote!(?for<> Trait)` (in `syn-2.0.119/tests/test_generics.rs`): 1.7.0 prints
+  `quote!(?Trait)`; 1.8.0 (1.88) and 1.9.0 print it unchanged (`--edition 2021`). The
+  rustc 1.80 parser reads the argument as a type and its rewrite drops the empty binder
+  (hypothesis, from the output; the 1.7.0 bound rewrite was not read); rustc 1.97 rejects
+  `for<>` after `?` (P7'), so the macro call is left as written. chloro rejects the same
+  bound (`rustc_compat.rs`, `TYPE_BOUND` with `FOR_BINDER` and `?`). Registry: 2 files of
+  the subset; fixtures 0.
 
 **chloro on the reproducers (measured).** `target/release/chloro` gives rustfmt 1.9.0's
 output (`--edition 2024`) on every probe of F1–F12 (`raw_label`, `closure_label`,
@@ -287,15 +323,16 @@ output (`--edition 2024`) on every probe of F1–F12 (`raw_label`, `closure_labe
 chloro expresses rustc's acceptance in `rustc_compat.rs`: P1 at `rustc_compat.rs:63-71`
 (`let_expr_allowed`, `edition.at_least_2024()`), P4/P5/P7'/P8 at `rustc_compat.rs:128-170`
 (`node_rejected`: `CONST_BLOCK_PAT`, `REST_PAT`, `TYPE_BOUND`, `IMPL` with `!` and no
-`for` at `:133-138`); P2, P3, P6, P7 have no
-rule there because rust-analyzer and rustc 1.97 both accept them.
+`for` at `:133-138`); P2, P3, P6, P7 have no rule there because rust-analyzer and
+rustc 1.97 both accept them.
 
 ## Step 4: 1.8.0 from 1.85.0 and from 1.88.0 (measured)
 
 - Fixtures: no file both builds accept is formatted differently (997/997 at 2024,
   995/995 at 2021). The six exit-status mismatches are P3 (3 files), P4, P5 and P6 (one
   each).
-- Registry subset: REG_8A8B.
+- Registry subset at `--edition 2024`: 5078 files both builds accept, all identical, no
+  exit-status mismatch.
 - The F4 text difference (`super let`) is reachable only on 1.88, because 1.85 rejects the
   syntax.
 
@@ -361,19 +398,21 @@ rule there because rust-analyzer and rustc 1.97 both accept them.
 | F4 `super let` | `items.rs:135-138` | format as `let` without `super` | ~3 | exact |
 | F5 `_` import order | `imports.rs:574-583` | old early-return comparator | ~15 | partial: the order is not transitive, so the output depends on the sort algorithm and its std version; a panic in 1.8.0's sort means "file unchanged" |
 | F6 Unicode gap panic | `missed_spans.rs:150-153` | compute 1.8.0's `line_start`; when it is not a char boundary, fail the file | ~10 | exact for the panic; other wrong offsets that land on a char boundary are not modelled |
-| P1 let chains ≤ 2021 | `rustc_compat.rs:63-71` | accept chained `let` before 2024 | ~2 | exact (formatting already follows `style_edition`, shown by the `edition=2021` row of the option matrix) |
+| P1 let chains ≤ 2021 | `rustc_compat.rs:63-71` | accept chained `let` before 2024 | ~2 | exact: the 176 fixture files 1.88 formats at `--edition 2021` equal 1.9.0's `--edition 2024 --config style_edition=2021` output byte for byte (measured), and chloro matches that configuration on 1021/1022 files (option matrix) |
+| P8 negative inherent impl | `rustc_compat.rs:133-138` | accept `impl !T {}` before 1.9.0 | ~2 | exact |
+| F13 `const { .. }` macro body | none | chloro already prints the 1.8.0 output (const block items Missing) | 0 | exact for 1.8.0; the 1.9.0 behaviour is the open Missing item |
 | P2 `[const]` bounds | `rustc_compat.rs:128-170` | reject `TYPE_BOUND` with `[const]` | ~4 | exact |
 | P3–P6 (1.85 only) | `rustc_compat.rs:128-170`, `patterns.rs:50`, `items.rs:135` | reject frontmatter and `super let`; accept const block patterns and `#[attr] ..` | ~10 + formatting of const block patterns | partial until the two accepted constructs are formatted |
 | 1.7.0 style | `config.rs:373-379` | style edition 2015 always | ~3 | exact |
 | F8–F11 | `items.rs:3166`, `items.rs:3317-3381`, `attr.rs:517`, `items.rs:3331` | leave type alias unformatted; drop `safe`/`unsafe` on statics; drop `unsafe(..)` around path/name-value metas; drop const generics and `where` | ~25 | exact on the probes; F11 is unstable syntax |
-| P7 | `rustc_compat.rs:128-170` | reject `use<..>`, `(..)` RTN, field defaults, `unsafe` fields; accept `for<'a> ?Trait` | ~15 | exact on the probes |
+| P7, F14 (1.7.0) | `rustc_compat.rs:128-170`, `types.rs` (bound rewrite) | reject `use<..>`, `(..)` RTN, field defaults, `unsafe` fields; accept `for<'a> ?Trait` and drop an empty `for<>` | ~20 | exact on the probes |
 
 - 1.9.0: exact (the current state, 1219/1220).
-- 1.8.0 (1.88): the fixtures need F4 and P2 only; the registry adds REG_CLASSES. F1–F4 and
-  P1–P2 are exact; F5 and F6 are partial for the reasons in the table; F2 is partial inside
+- 1.8.0 (1.88): the fixtures need F4 and P2 at edition 2024, and P1 at edition 2021; the
+  registry adds F5 (edition ≤ 2021), F13 and P8. F1–F4, P1, P2 and P8 are exact; F5 and F6 are partial for the reasons in the table; F2 is partial inside
   macro calls. Several of these 1.8.0 outputs change program meaning or validity (F1, F2,
   F3, F4), so supporting 1.8.0 means emitting that text on purpose.
-- 1.7.0: the style mapping plus F1–F6, F8–F11 and P1–P7; without `version=Two`. Larger and
+- 1.7.0: the style mapping plus F1–F6, F8–F11, F14 and P1–P8; without `version=Two`. Larger and
   less tested (fixtures exercise F8–F11 with one or two files each).
 
 ### Reference snapshots
@@ -382,7 +421,9 @@ rule there because rust-analyzer and rustc 1.97 both accept them.
   written only for cases whose 1.8.0 output differs from `snapshots/ra/<crate>/<case>.rustfmt.rs`,
   with the input as content where 1.8.0 rejects the file (the existing convention). The
   expected output for 1.8.0 is the `ra-1.8.0` file when present, else the `ra` file. On the
-  current fixtures `ra-1.8.0` holds 4 files (`let_stmt` and the three P2 files).
+  current fixtures `ra-1.8.0` holds 4 files (`let_stmt` and the three P2 files); the
+  registry corpus has 6 more cases at edition 2024 (F13, F4, P2 ×3, P8) and is checked
+  live, not snapshotted, as now.
 - Probes: the fixtures exercise few classes, so each reproducer in `S/probes/` becomes a
   case under `chloro-core/tests/conformance/fixtures/versions/` with one expected file
   per release and edition (`<probe>.<version>.e<edition>.rustfmt.rs`).
