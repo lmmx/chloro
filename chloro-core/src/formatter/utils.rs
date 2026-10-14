@@ -152,6 +152,23 @@ fn multi_line_or_unicode_str_width(s: &str) -> usize {
     // unicode-width 0.1.14 counts every ASCII character as one column, except `\n` and a
     // `\r` before `\n`, which count as none.
     let bytes = s.as_bytes();
+    // Without `\r`, the width is the length minus the number of `\n`, counted eight bytes
+    // at a time: `(found >> 7)` holds 0 or 1 per byte, and the multiplication sums the
+    // bytes into the top byte.
+    const ONES: u64 = 0x0101_0101_0101_0101;
+    let mut chunks = bytes.chunks_exact(8);
+    let mut newlines = 0;
+    let mut carriage_returns = 0;
+    for chunk in &mut chunks {
+        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+        let found = newline_or_non_ascii(w);
+        newlines += ((found >> 7).wrapping_mul(ONES) >> 56) as usize;
+        carriage_returns |= newline_or_non_ascii(w ^ 0x0707_0707_0707_0707);
+    }
+    let rest = chunks.remainder();
+    if carriage_returns == 0 && !rest.contains(&b'\r') {
+        return bytes.len() - newlines - rest.iter().filter(|&&b| b == b'\n').count();
+    }
     let mut width = bytes.len();
     for (i, &b) in bytes.iter().enumerate() {
         if b == b'\n' {
@@ -523,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn line_widths_match_the_split_lines() {
+    fn line_widths_match_the_split_lines_and_unicode_width() {
         // Lengths around the eight-byte words, with one or two of `\n`, `\r\n`, `\r` and
         // non-ASCII characters (bytes `0xc2 0x8a`, `0xe2 0x80 0x8b`) at every position.
         let specials = ["\n", "\r\n", "\r", "\u{8a}", "\u{200b}", "\t"];
@@ -553,6 +570,7 @@ mod tests {
             let last = unicode_str_width(s.rsplit('\n').next().unwrap_or(""));
             assert_eq!(first_line_width(s), first, "{s:?}");
             assert_eq!(last_line_width(s), last, "{s:?}");
+            assert_eq!(unicode_str_width(s), s.width(), "{s:?}");
         }
     }
 
