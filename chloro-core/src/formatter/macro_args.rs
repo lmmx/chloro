@@ -27,7 +27,8 @@ use crate::cst::{AstNode, Node, Tree, TreeBuilder, ast};
 use super::config::RustfmtVersion;
 use super::context::{RewriteContext, RunState};
 use super::macros::MacroArg;
-use super::rustc_compat::subtree_rejected_by_rustc;
+use super::rustc_compat::{doc_comment_style, subtree_rejected_by_rustc};
+use super::rustc_syntax::lexer_rejects;
 use super::span::{BytePos, Span, mk_sp};
 
 /// The arguments of a macro call, as rustfmt's `ParsedMacroArgs`.
@@ -82,6 +83,9 @@ struct Tok {
     hi: usize,
     /// `true` for `,` and `;` outside any nested delimiter.
     top_level_sep: bool,
+    /// Start of the first doc comment between the previous token and this one. rustc's
+    /// lexer makes a doc comment a token (`DocComment`); rust-analyzer's makes it trivia.
+    doc_lo: Option<usize>,
 }
 
 /// A parsed fragment: its byte range in the interior and its node, laid out at its file
@@ -104,6 +108,8 @@ struct MacroTokens<'a, 't> {
     /// Absolute offset of `text`.
     base: BytePos,
     toks: Vec<Tok>,
+    /// Start of the first doc comment after the last token, if any.
+    doc_at_end: Option<usize>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
     run: std::rc::Rc<RunState<'a>>,
@@ -117,14 +123,21 @@ impl<'a, 't> MacroTokens<'a, 't> {
         let text = context.snippet(mk_sp(base, end));
         let edition = context.config.edition().to_ra();
         let lexed = LexedStr::new(edition, text);
-        if lexed.errors().next().is_some() {
+        if lexer_rejects(&lexed, edition) {
             return None;
         }
         let mut toks = Vec::with_capacity(lexed.len());
         let mut depth = 0usize;
+        let mut doc_lo = None;
         for i in 0..lexed.len() {
             let kind = lexed.kind(i);
             if kind.is_trivia() {
+                if kind == SyntaxKind::COMMENT
+                    && doc_lo.is_none()
+                    && doc_comment_style(lexed.text(i)).is_some()
+                {
+                    doc_lo = Some(lexed.text_range(i).start);
+                }
                 continue;
             }
             match kind {
@@ -138,6 +151,7 @@ impl<'a, 't> MacroTokens<'a, 't> {
                 lo: range.start,
                 hi: range.end,
                 top_level_sep: depth == 0 && matches!(kind, T![,] | T![;]),
+                doc_lo: doc_lo.take(),
             });
         }
         Some(MacroTokens {
@@ -146,6 +160,7 @@ impl<'a, 't> MacroTokens<'a, 't> {
             text,
             base,
             toks,
+            doc_at_end: doc_lo,
             edition,
             rustfmt_version: context.config.rustfmt_version(),
             run: context.run.clone(),
@@ -154,6 +169,15 @@ impl<'a, 't> MacroTokens<'a, 't> {
 
     fn kind(&self, pos: usize) -> Option<SyntaxKind> {
         self.toks.get(pos).map(|t| t.kind)
+    }
+
+    /// The start of the doc comment that rustc sees as the token at `pos` (before the token
+    /// at `pos`, or at the end when `pos` is past the last token).
+    fn doc_at(&self, pos: usize) -> Option<usize> {
+        match self.toks.get(pos) {
+            Some(t) => t.doc_lo,
+            None => self.doc_at_end,
+        }
     }
 
     fn span_of(&self, start: usize, end: usize) -> Span {
@@ -231,7 +255,12 @@ impl<'a, 't> MacroTokens<'a, 't> {
             }
         };
         let end = start + consumed;
-        let (lo, hi) = (self.toks[start].lo, self.toks[end - 1].hi);
+        // An item's doc comments are its attributes.
+        let lo = match self.toks[start].doc_lo {
+            Some(doc_lo) if kind == FragmentKind::Item => doc_lo,
+            _ => self.toks[start].lo,
+        };
+        let hi = self.toks[end - 1].hi;
         let node = self.build(kind, lo, hi)?;
         Some(Fragment { kind, lo, hi, node })
     }
@@ -342,10 +371,12 @@ impl<'a, 't> MacroTokens<'a, 't> {
 
     /// rustc's `check_keyword`: a reserved word followed by `,` or the end.
     fn keyword_at(&self, pos: usize) -> bool {
-        self.kind(pos).is_some_and(|k| {
-            (k.is_strict_keyword(self.edition) || k == T![_])
-                && self.kind(pos + 1).is_none_or(|next| next == T![,])
-        })
+        self.doc_at(pos).is_none()
+            && self.kind(pos).is_some_and(|k| {
+                (k.is_strict_keyword(self.edition) || k == T![_])
+                    && self.doc_at(pos + 1).is_none()
+                    && self.kind(pos + 1).is_none_or(|next| next == T![,])
+            })
     }
 }
 
@@ -377,8 +408,15 @@ enum Slot {
 }
 
 /// rustc's `parse_macro_arg`: the first of expression, type, pattern and item that parses.
+///
+/// A doc comment cannot begin an expression, a type or a pattern
+/// (`Parser::nonterminal_may_begin_with`), so an argument that starts with one can only be
+/// an item.
 fn parse_macro_arg<'a>(tokens: &MacroTokens<'a, '_>, pos: usize) -> Option<Fragment<'a>> {
     let limit = tokens.toks.len();
+    if tokens.doc_at(pos).is_some() {
+        return tokens.parse_fragment(FragmentKind::Item, pos, limit);
+    }
     [
         FragmentKind::Expr,
         FragmentKind::Ty,
@@ -422,6 +460,13 @@ pub(crate) fn parse_macro_args<'a>(
             slots.last(),
             Some(Slot::Fragment(i)) if fragments[*i].kind == FragmentKind::Item
         );
+        // A doc comment after an argument is a token that is neither a separator nor the end.
+        if tokens.doc_at(pos).is_some() {
+            if last_is_item {
+                continue;
+            }
+            return None;
+        }
         match tokens.kind(pos) {
             None => break,
             Some(T![,]) => {}
@@ -447,7 +492,7 @@ pub(crate) fn parse_macro_args<'a>(
         }
 
         pos += 1;
-        if pos >= n {
+        if pos >= n && tokens.doc_at(pos).is_none() {
             trailing_comma = true;
             break;
         }

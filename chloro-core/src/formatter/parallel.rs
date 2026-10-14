@@ -40,7 +40,7 @@ use crate::cst::ast::{self, AstNode, HasModuleItem};
 use super::config::Settings;
 use super::context::RunState;
 use super::formatting::Formatted;
-use super::nodes::{AttrStyle, inner_attributes};
+use super::nodes::{AttrStyle, Attribute, inner_attributes};
 use super::shape::Indent;
 use super::span::{BytePos, SnippetProvider, Spanned};
 use super::visitor::FmtVisitor;
@@ -102,14 +102,16 @@ pub(crate) fn format_file(
 
     // `format_separate_mod`, with the walk over the items replaced.
     main.block_indent = Indent::empty();
-    main.visit_attrs(&inner_attributes(file.syntax()), AttrStyle::Inner);
+    let file_attrs = inner_attributes(file.syntax());
+    main.update_skip_context(&file_attrs);
+    main.visit_attrs(&file_attrs, AttrStyle::Inner);
     let items: Vec<ast::Item<'_>> = file.items().collect();
     let units = main.unit_ranges(&items);
 
     if threads <= 1 || units.len() < 2 {
         main.visit_items_with_reordering(&items);
     } else {
-        let outputs = format_units(source, config, &items, &units, threads);
+        let outputs = format_units(source, config, &file_attrs, &items, &units, threads);
         for (unit, out) in units.iter().zip(&outputs) {
             let Some(gap) = out.gap else {
                 // The unit wrote nothing and consumed nothing (a skipped `mod x;`): its
@@ -168,6 +170,7 @@ pub(crate) fn format_file(
 fn format_units(
     source: &str,
     config: &Settings,
+    file_attrs: &[Attribute<'_>],
     items: &[ast::Item<'_>],
     units: &[(usize, usize)],
     threads: usize,
@@ -190,6 +193,9 @@ fn format_units(
                     let run = Rc::new(RunState::new(&arena));
                     let mut visitor =
                         FmtVisitor::new(config, SnippetProvider::new(source), run.clone());
+                    // The file's `rustfmt::skip::macros`/`attributes` names, as the
+                    // sequential visitor has them at a top-level item.
+                    visitor.update_skip_context(file_attrs);
                     // The buffer starts with one newline, as the sequential buffer does
                     // after the gap before an item: the unit's text is what follows it.
                     visitor.buffer = String::from("\n");

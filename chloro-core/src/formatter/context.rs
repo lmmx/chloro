@@ -11,6 +11,7 @@ use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
 use super::nodes::{Block, CachedBlock};
 use super::shape::Shape;
+use super::skip::SkipContext;
 use super::span::{BytePos, SnippetProvider, Span};
 
 /// Parsed macro arguments keyed by token tree range and the `vec!` flag. rustfmt rewrites
@@ -203,6 +204,10 @@ pub(crate) struct RewriteContext<'a> {
     /// Used for `format_snippet`
     pub(crate) macro_rewrite_failure: Rc<Cell<bool>>,
     pub(crate) is_macro_def: bool,
+    /// Macro and attribute names left as written (rustfmt's `skip_context`); `None` when
+    /// there are none, which is every context outside an item with a
+    /// `#[rustfmt::skip::macros(..)]` or `#[rustfmt::skip::attributes(..)]` attribute.
+    pub(crate) skip_context: Option<Rc<SkipContext>>,
     pub(crate) run: Rc<RunState<'a>>,
 }
 
@@ -238,8 +243,23 @@ impl<'a> RewriteContext<'a> {
             force_one_line_chain: Cell::new(false),
             macro_rewrite_failure: Rc::new(Cell::new(false)),
             is_macro_def: false,
+            skip_context: None,
             run,
         }
+    }
+
+    /// Whether `#[rustfmt::skip::macros(..)]` lists `name` here.
+    pub(crate) fn skips_macro(&self, name: &str) -> bool {
+        self.skip_context
+            .as_ref()
+            .is_some_and(|s| s.macros.skip(name))
+    }
+
+    /// Whether `#[rustfmt::skip::attributes(..)]` lists `name` here.
+    pub(crate) fn skips_attribute(&self, name: &str) -> bool {
+        self.skip_context
+            .as_ref()
+            .is_some_and(|s| s.attributes.skip(name))
     }
 
     pub(crate) fn snippet(&self, span: Span) -> &'a str {

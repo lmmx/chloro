@@ -250,7 +250,7 @@ pub(crate) fn attr_meta(attr: &ast::Attr) -> Option<MetaItem> {
 }
 
 /// Returns the meta items listed inside a list attribute such as `#[derive(A, B)]`.
-fn meta_item_list(attr: &ast::Attr) -> Option<Vec<MetaItemInner>> {
+pub(crate) fn meta_item_list(attr: &ast::Attr) -> Option<Vec<MetaItemInner>> {
     match attr_meta(attr)?.kind {
         MetaItemKind::List(list) => Some(list),
         _ => None,
@@ -501,7 +501,13 @@ impl Rewrite for Attribute<'_> {
         };
         let prefix = attr_prefix(self);
 
-        if contains_comment(snippet) {
+        // `#[rustfmt::skip::attributes(name)]` leaves attributes named `name` as written.
+        let should_skip = context.skip_context.is_some()
+            && self
+                .path_text()
+                .filter(|path| !path.contains("::"))
+                .is_some_and(|name| context.skips_attribute(&name));
+        if should_skip || contains_comment(snippet) {
             return Some(snippet.to_owned());
         }
 
@@ -536,6 +542,10 @@ pub(crate) fn rewrite_attrs(
     // The current remaining attributes.
     let mut attrs = attrs;
     let mut result = String::new();
+
+    // Determine if the source text is annotated with `#[rustfmt::skip::attributes(derive)]`
+    // or `#![rustfmt::skip::attributes(derive)]`
+    let skip_derives = context.skips_attribute("derive");
 
     // This is not just a simple map because we need to handle doc comments
     // (where we take as many doc comment attributes as possible) and possibly
@@ -579,7 +589,7 @@ pub(crate) fn rewrite_attrs(
 
         // Handle derives if we will merge them.
         let is_derive = |a: &Attribute| a.has_name("derive");
-        if context.config.merge_derives() && is_derive(&attrs[0]) {
+        if !skip_derives && context.config.merge_derives() && is_derive(&attrs[0]) {
             let derives = take_while_with_pred(context, attrs, is_derive);
             let derive_str = format_derive(derives, shape, context)?;
             result.push_str(&derive_str);

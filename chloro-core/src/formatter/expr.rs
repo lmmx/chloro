@@ -25,7 +25,7 @@ use super::matches::rewrite_match;
 use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, child, contains_skip,
-    inner_attributes, outer_attributes, span_without_attrs,
+    inner_attributes, is_repeat_array, outer_attributes, span_without_attrs,
 };
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::pairs::{PairParts, bin_op_text, rewrite_all_pairs, rewrite_pair};
@@ -141,7 +141,7 @@ fn format_expr_uncached(
 
     let expr_rw = match expr {
         ast::Expr::ArrayExpr(array) => {
-            if has_token(array.syntax(), T![;]) {
+            if is_repeat_array(array) {
                 let mut exprs = array.exprs();
                 let value = exprs.next()?;
                 let repeats = exprs.next()?;
@@ -1363,7 +1363,7 @@ pub(crate) fn is_simple_expr(expr: &ast::Expr) -> bool {
             i.base().is_some_and(|e| is_simple_expr(&e))
                 && i.index().is_some_and(|e| is_simple_expr(&e))
         }
-        ast::Expr::ArrayExpr(a) if has_token(a.syntax(), T![;]) => {
+        ast::Expr::ArrayExpr(a) if is_repeat_array(a) => {
             let mut exprs = a.exprs();
             exprs.next().is_some_and(|e| is_simple_expr(&e))
                 && exprs.next().is_some_and(|e| is_simple_expr(&e))
@@ -1400,6 +1400,7 @@ pub(crate) fn can_be_overflowed_expr(
         ast::Expr::ClosureExpr(..) => true,
 
         // Handle `[]` and `{}`-like expressions
+        ast::Expr::ArrayExpr(a) if is_repeat_array(a) => false,
         ast::Expr::ArrayExpr(..) | ast::Expr::RecordExpr(..) => {
             context.config.overflow_delimited_expr()
                 || (context.use_block_indent() && args_len == 1)
