@@ -516,7 +516,9 @@ impl<'a> FmtVisitor<'a> {
                     .const_token()
                     .map(|t| mk_sp(token_span(t).lo(), span.hi()))
                     .unwrap_or(span);
-                let rewrite = Block::from_block_expr(&block)
+                let rewrite = context
+                    .run
+                    .block_of(&block)
                     .and_then(|b| rewrite_block(&b, None, None, &context, shape))
                     .map(|rhs| {
                         recover_comment_removed(format!("const {rhs}"), const_span, &context)
