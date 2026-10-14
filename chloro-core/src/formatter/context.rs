@@ -11,6 +11,7 @@ use rowan::Language;
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
 use super::shape::Shape;
+use super::skip::SkipContext;
 use super::span::{BytePos, SnippetProvider, Span};
 
 /// Parsed macro arguments keyed by token tree range and the `vec!` flag. rustfmt rewrites
@@ -163,6 +164,8 @@ pub(crate) struct RewriteContext<'a> {
     /// Used for `format_snippet`
     pub(crate) macro_rewrite_failure: Cell<bool>,
     pub(crate) is_macro_def: bool,
+    /// Macro and attribute names left as written (rustfmt's `skip_context`).
+    pub(crate) skip_context: Rc<SkipContext>,
     pub(crate) run: Rc<RunState>,
 }
 
@@ -198,6 +201,7 @@ impl<'a> RewriteContext<'a> {
             force_one_line_chain: Cell::new(false),
             macro_rewrite_failure: Cell::new(false),
             is_macro_def: false,
+            skip_context: Rc::default(),
             run,
         }
     }

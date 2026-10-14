@@ -179,6 +179,17 @@ pub(crate) fn rewrite_macro(
     shape: Shape,
     position: MacroPosition,
 ) -> Option<String> {
+    // `#[rustfmt::skip::macros(name)]`: left as written, which is not a macro failure.
+    if !context.skip_context.macros.is_empty()
+        && mac.path().is_some_and(|path| {
+            context
+                .skip_context
+                .macros
+                .skip(context.snippet(path.span()))
+        })
+    {
+        return None;
+    }
     let guard = context.enter_macro();
     let result = rewrite_macro_inner(mac, context, shape, position, guard.is_nested());
     if result.is_none() {

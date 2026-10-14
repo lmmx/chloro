@@ -12,6 +12,7 @@
 //! | `macros`, `macro_args` | macro calls (re-parsed arguments) and `macro_rules!` bodies |
 //! | `overflow`, `lists` | comma-separated lists and the "overflow the last item" heuristic |
 //! | `attr`, `comment` | attributes, doc comments, comment re-indentation and recovery |
+//! | `skip` | names listed by `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]` |
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
 //! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, parsed with inserted keywords |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
@@ -43,6 +44,7 @@ mod reorder;
 mod rustc_compat;
 mod rustc_syntax;
 mod shape;
+mod skip;
 mod sort;
 mod span;
 mod stmt;

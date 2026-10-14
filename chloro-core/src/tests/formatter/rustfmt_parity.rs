@@ -149,3 +149,93 @@ let a = s.1e0;
 ";
     assert_rustfmt(input, rustfmt);
 }
+
+/// `#[rustfmt::skip::macros(name)]` and `#[rustfmt::skip::attributes(name)]` on an item (or
+/// as inner attributes of a module) leave the macro calls and attributes with that
+/// single-segment name inside the item as written (rustfmt's `SkipContext`);
+/// `attributes(derive)` also keeps derives from being merged.
+#[test]
+fn skip_macros_and_attributes() {
+    let input = r#"#[rustfmt::skip::macros(foo)]
+fn f() {
+    foo!(  a,b  );
+    bar!(  a,b  );
+    a::foo!(  a,b  );
+}
+
+#[rustfmt::skip::attributes(custom, derive)]
+#[derive(Debug)]
+#[derive(Clone)]
+struct S {
+    #[custom(  a,b  )]
+    #[other(  a,b  )]
+    x: u8,
+}
+
+#[derive(Debug)]
+#[derive(Clone)]
+struct T;
+
+mod m {
+    #![rustfmt::skip::macros(qux)]
+    fn h() {
+        qux!(  a,b  );
+        foo!(  a,b  );
+    }
+}
+
+#[rustfmt::skip::macros(mac)]
+impl X {
+    fn i() {
+        mac!(  a,b  );
+        let x = vec![  1,2  ];
+    }
+}
+
+fn j() {
+    mac!(  a,b  );
+    let y = foo!(  a,b  ) + 1;
+}
+"#;
+    let rustfmt = r#"#[rustfmt::skip::macros(foo)]
+fn f() {
+    foo!(  a,b  );
+    bar!(a, b);
+    a::foo!(a, b);
+}
+
+#[rustfmt::skip::attributes(custom, derive)]
+#[derive(Debug)]
+#[derive(Clone)]
+struct S {
+    #[custom(  a,b  )]
+    #[other(a, b)]
+    x: u8,
+}
+
+#[derive(Debug, Clone)]
+struct T;
+
+mod m {
+    #![rustfmt::skip::macros(qux)]
+    fn h() {
+        qux!(  a,b  );
+        foo!(a, b);
+    }
+}
+
+#[rustfmt::skip::macros(mac)]
+impl X {
+    fn i() {
+        mac!(  a,b  );
+        let x = vec![1, 2];
+    }
+}
+
+fn j() {
+    mac!(a, b);
+    let y = foo!(a, b) + 1;
+}
+"#;
+    assert_rustfmt(input, rustfmt);
+}
