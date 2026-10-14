@@ -1,6 +1,6 @@
 //! The rewrite context and the `Rewrite` trait (rustfmt's `rewrite.rs`).
 
-use std::cell::{Cell, OnceCell, RefCell};
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
@@ -87,8 +87,10 @@ pub(crate) struct RunState {
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
     /// `padding[k]` is a whitespace token of 2^k spaces; see [`RunState::padding`].
     padding: RefCell<Vec<rowan::GreenToken>>,
-    /// Start offsets of the source lines, computed on first use.
-    line_starts: OnceCell<Vec<BytePos>>,
+    /// Start offsets of the source lines that follow a `\n` in the first `.1` bytes of the
+    /// source, after the start of the first line; extended on demand by
+    /// [`RunState::line_of`].
+    line_starts: RefCell<(Vec<BytePos>, usize)>,
 }
 
 impl RunState {
@@ -122,16 +124,22 @@ impl RunState {
 
     /// 1-based line number of `pos` in `src`, the source this run formats.
     pub(crate) fn line_of(&self, src: &str, pos: BytePos) -> usize {
-        let starts = self.line_starts.get_or_init(|| {
-            std::iter::once(0)
-                .chain(
-                    src.bytes()
-                        .enumerate()
-                        .filter(|&(_, b)| b == b'\n')
-                        .map(|(i, _)| i as BytePos + 1),
-                )
-                .collect()
-        });
+        let mut line_starts = self.line_starts.borrow_mut();
+        let (starts, scanned) = &mut *line_starts;
+        if starts.is_empty() {
+            starts.push(0);
+        }
+        // Every line start at or before `pos` follows a `\n` before `pos`, so the count below
+        // needs the source scanned only up to `pos`.
+        let end = (pos as usize).min(src.len());
+        if *scanned < end {
+            for (i, &b) in src.as_bytes()[*scanned..end].iter().enumerate() {
+                if b == b'\n' {
+                    starts.push((*scanned + i) as BytePos + 1);
+                }
+            }
+            *scanned = end;
+        }
         starts.partition_point(|&start| start <= pos)
     }
 }
@@ -321,5 +329,41 @@ impl<'a> RewriteContext<'a> {
             );
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn line_of_counts_the_lines_up_to_the_position() {
+        let src = "use a;\n\nuse b;\r\nfn f() {}\n\n";
+        let len = src.len() as BytePos;
+        // Positions out of order, repeated, and past the end of the source.
+        let positions: Vec<BytePos> = (0..=len + 2)
+            .rev()
+            .chain(0..=len + 2)
+            .chain([7, 3, 20, 0, len, 9])
+            .collect();
+        let run = RunState::default();
+        for pos in positions {
+            let expected = src.as_bytes()[..(pos as usize).min(src.len())]
+                .iter()
+                .filter(|&&b| b == b'\n')
+                .count()
+                + 1;
+            assert_eq!(run.line_of(src, pos), expected, "{pos}");
+        }
+        // A run whose first query is in the middle of the source.
+        let run = RunState::default();
+        for pos in [12, 0, 5, 30, 8] {
+            let expected = src.as_bytes()[..(pos as usize).min(src.len())]
+                .iter()
+                .filter(|&&b| b == b'\n')
+                .count()
+                + 1;
+            assert_eq!(run.line_of(src, pos), expected, "{pos}");
+        }
     }
 }
