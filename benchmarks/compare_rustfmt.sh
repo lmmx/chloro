@@ -64,7 +64,8 @@ Options (defaults in brackets):
   --cpus LIST          taskset CPU list for mc variants; empty = unpinned [empty]
   --mode check|stdout  crate/files output: --check for both, or formatted text to
                        stdout for both (rustfmt --emit stdout, chloro print mode) [check]
-  --input raw|formatted  workload bytes as found, or first formatted by rustfmt [raw]
+  --input formatted|raw  workload bytes first formatted by rustfmt, so --check finds
+                       nothing to report, or the bytes as found [formatted]
   --out DIR            results directory [benchmarks/results/<UTC timestamp>]
   --work DIR           scratch directory for workload copies [\${TMPDIR:-/tmp}/chloro-bench]
   --chloro BIN         chloro CLI [target/release/chloro]
@@ -83,7 +84,7 @@ die() { echo "compare_rustfmt.sh: error: $*" >&2; exit 2; }
 note() { echo "== $*" >&2; }
 
 # --- options -----------------------------------------------------------------------------
-GROUPS_SEL=a,b,c,d,e RUNS=10 WARMUP=2 ROUNDS=1 CORE=3 CPUS= MODE=check INPUT=raw
+GROUPS_SEL=a,b,c,d,e RUNS=10 WARMUP=2 ROUNDS=1 CORE=3 CPUS= MODE=check INPUT=formatted
 OUT= WORK=${TMPDIR:-/tmp}/chloro-bench FRESH=0 LIST=0 BASELINE=
 CHLORO=$REPO/target/release/chloro
 FMT_STDIN=$REPO/target/release/examples/fmt_stdin

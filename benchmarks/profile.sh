@@ -43,6 +43,7 @@ BENCH=$(cd "$(dirname "$BENCH")" && pwd)/$(basename "$BENCH")
 [ -d "$FIXTURES" ] || die "$FIXTURES not found"
 [ -n "$OUT" ] || OUT=$(mktemp -d "${TMPDIR:-/tmp}/chloro-callgrind.XXXXXX")
 mkdir -p "$OUT"
+OUT=$(cd "$OUT" && pwd)
 
 # Build the sample.
 rm -rf "$SAMPLE"; mkdir -p "$SAMPLE"
