@@ -465,6 +465,67 @@ input, the cache disabled through the harness.
   copies through stdin. M2's stdin rows for those two files timed a full format in every
   build, so the ratios stand.
 
+## What the programme established
+
+Instruction counts on the 49-file sample under `benchmarks/profile.sh`, each step measured
+on the merged tree against the previous best-known-good:
+
+| step | `Ir` | change | kind |
+|---|---|---|---|
+| `884f9c9`, the start | 587,988,576 | | |
+| E2: fat LTO, one codegen unit | 554,185,388 | −5.75% | codegen |
+| E4: green-tree reads | 518,951,890 | −6.36% | fewer red nodes |
+| E8: `rustfmt_version` | 518,738,160 | −0.04% | no cost on the default path |
+| E7b: flat syntax array | 390,690,264 | −24.7% | no red nodes, cheap tree build |
+| E3: hot paths | 316,076,716 | −19.1% | scans and copies removed |
+| R2: conformance fixes | 312,734,032 | −1.06% | a one-pass `rustc_compat` |
+| PGO on top (measured on `8d418ee`) | 306,889,893 against 390,689,247 | −21.4% | code layout |
+
+The gains compound multiplicatively, not additively: the per-byte cost of the formatter is
+0.532 of what it was, 0.42 with PGO. Every step left every output on 1238 fixtures and
+20,850 registry files unchanged, except the conformance fixes, which changed exactly the 13
+files they target, checked file by file against a record of the starting outputs.
+
+Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
+(M2, before E3 and the conformance fixes; M3 on the final head is pending): 0.44–0.61 of
+its wall time per crate on one core and 0.13–0.20 on four, with every chloro run below
+every rustfmt run; 0.37–0.51 and 0.10–0.19 with PGO. At the start of the programme the
+per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
+time.
+
+Conformance moved from 1219/1220 under the default options and 31 option values with one to
+three differing files each, to 1220/1220 everywhere, at rustfmt 1.9.0 and 1.8.0, and from
+20526/20536 to 20540/20540 on the registry; the six open cases are rustfmt's own failures
+and non-idempotence and two constructs rust-analyzer's parser does not represent.
+
+What was tried and does not pay, with the numbers in the records: `mimalloc` in the CLI
+(instructions −12.4%, wall time inside the spread, peak memory 2–10x); `panic = "abort"`
+(changes the CLI's behaviour after a panic); `target-cpu=native` (no gain beyond LTO
+outside the spread, not shippable); splitting medium-sized files across threads (slower on
+crates from oversubscription); a vectorised newline count (+4.47 M); per-byte lookahead in
+the comment scanner (+784 K); `node_text` as a borrow (superseded by the substrate);
+reusing rewrites across indentation (not exact, from the earlier entries).
+
+## What is left, with its ceiling
+
+From [profile-flat.md](2026-10-14-autoresearch/profile-flat.md) and the E3 record, on the
+final build:
+
+- The allocator in the CLI: glibc is about 12% of instructions; `mimalloc` trades it for
+  memory; another allocator or glibc tunables are untested.
+- Intermediate `String`s per rewrite: the remaining `String` creation and growth is about
+  8% of instructions after E3; the rest needs rustfmt's `Option<String>` control flow to
+  write into a shared buffer, a change across every module.
+- The parser's output decoded twice (`event::process`, then `intersperse_trivia`): about
+  7%, reachable only with a change to `ra_ap_parser`.
+- Lexing and parsing: 22% of instructions, in `ra_ap_parser`, now the largest single
+  component; the tree build on top of it is 2.8%.
+- Profile-guided optimisation in the release workflow: −21% of instructions on the sample,
+  measured, waiting on the `binaries.yml` step proposed in EXP-002.
+- Sub-item parallel units for files dominated by one `const` table or one `impl`, where E1's
+  ceiling is about 2x (`lints.rs`: two arrays hold 49% of the item work).
+- The six open conformance cases.
+
 ## Current State
 
 - The formatter reads syntax from a flat preorder array with a generated typed layer
