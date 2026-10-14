@@ -311,6 +311,12 @@ fn format_expr_uncached(
     };
 
     let expr_str = expr_rw.map(|expr_str| recover_comment_removed(expr_str, span, context))?;
+    if outer.is_empty() {
+        // Without attributes, `attrs_str` and `attrs_span` below are empty, so
+        // `combine_strs_with_missing_comments` finds no comment and returns a copy of
+        // `expr_str`.
+        return Some(expr_str);
+    }
     let attrs_str = rewrite_attrs(&outer, context, shape)?;
     let attrs_span = mk_sp(
         outer.last().map_or(span.lo(), |attr| attr.span().hi()),
@@ -2238,6 +2244,43 @@ mod tests {
                 ends_with_comma(s),
                 "{s:?}"
             );
+        }
+    }
+
+    #[test]
+    fn no_attributes_combine_to_the_expression() {
+        use crate::formatter::config::Settings;
+        use crate::formatter::span::SnippetProvider;
+        let settings = Settings::default();
+        let src = "fn f() { a /* c */ + b }\n";
+        let context = RewriteContext::new(&settings, SnippetProvider::new(src), Default::default());
+        for expr_str in [
+            "",
+            "a",
+            "a + b",
+            "foo(\n    a,\n)",
+            "x // c",
+            "/* c */ y",
+            "\"long string literal well past the width of the narrow shape\"",
+        ] {
+            for width in [0, 5, 100] {
+                for pos in [0, 11, 18] {
+                    let shape = Shape::legacy(width, Indent::new(4, 0));
+                    assert_eq!(
+                        combine_strs_with_missing_comments(
+                            &context,
+                            "",
+                            expr_str,
+                            mk_sp(pos, pos),
+                            shape,
+                            false
+                        )
+                        .as_deref(),
+                        Some(expr_str),
+                        "{expr_str:?} {width} {pos}"
+                    );
+                }
+            }
         }
     }
 }
