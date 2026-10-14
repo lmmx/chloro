@@ -220,6 +220,67 @@ fn inclusive_without_end(range: &GreenNodeData) -> bool {
     false
 }
 
+/// `&dyn A + B`, `*const impl A + B`, `x as dyn A + B`, `fn() -> dyn A + B`,
+/// `Fn() -> impl A + B`: rustc parses these types with `AllowPlus::No` and reports
+/// "ambiguous `+` in a type" for a `dyn` or `impl` type with more than one bound or a
+/// trailing `+` (`maybe_report_ambiguous_plus`).
+fn ambiguous_plus(ty: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool {
+    let k = kind(ty.kind());
+    let is_multi = (k == SyntaxKind::IMPL_TRAIT_TYPE || has_token(ty, T![dyn]))
+        && ty.children().any(|c| {
+            matches!(c, NodeOrToken::Node(n)
+                if kind(n.kind()) == SyntaxKind::TYPE_BOUND_LIST && has_token(n, T![+]))
+        });
+    if !is_multi {
+        return false;
+    }
+    let mut ancestors = path.iter().rev().map(|(p, _)| kind(p.kind()));
+    match ancestors.next() {
+        Some(SyntaxKind::REF_TYPE | SyntaxKind::PTR_TYPE | SyntaxKind::CAST_EXPR) => true,
+        Some(SyntaxKind::RET_TYPE) => matches!(
+            ancestors.next(),
+            Some(SyntaxKind::FN_PTR_TYPE | SyntaxKind::PATH_SEGMENT)
+        ),
+        _ => false,
+    }
+}
+
+/// `const N: i32 = i32::MAX`: rustc's `expr_is_valid_const_arg` accepts only a block, a
+/// literal, a negated literal or a single-segment path without generic arguments as a
+/// const argument without braces.
+fn const_param_default_rejected(param: &GreenNodeData) -> bool {
+    let Some(arg) = param.children().find_map(|c| match c {
+        NodeOrToken::Node(n) if kind(n.kind()) == SyntaxKind::CONST_ARG => Some(n),
+        _ => None,
+    }) else {
+        return false;
+    };
+    let Some(expr) = arg.children().find_map(|c| c.into_node()) else {
+        return false;
+    };
+    let first_node = |n: &GreenNodeData| {
+        n.children()
+            .find_map(|c| c.into_node().map(|n| n.to_owned()))
+    };
+    match kind(expr.kind()) {
+        SyntaxKind::BLOCK_EXPR | SyntaxKind::LITERAL => false,
+        SyntaxKind::PREFIX_EXPR => {
+            !(has_token(expr, T![-])
+                && first_node(expr).is_some_and(|n| kind(n.kind()) == SyntaxKind::LITERAL))
+        }
+        SyntaxKind::PATH_EXPR => !first_node(expr).is_some_and(|path| {
+            // A single segment: the path has no qualifier path and its segment no
+            // generic arguments.
+            !has_node(&path, SyntaxKind::PATH)
+                && path.children().all(|c| match c {
+                    NodeOrToken::Node(seg) => !has_node(seg, SyntaxKind::GENERIC_ARG_LIST),
+                    NodeOrToken::Token(_) => true,
+                })
+        }),
+        _ => true,
+    }
+}
+
 fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition: Edition) -> bool {
     let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
     match kind(node.kind()) {
@@ -262,6 +323,8 @@ fn node_rejected(node: &GreenNodeData, path: &[(&GreenNodeData, usize)], edition
         SyntaxKind::BIN_EXPR => {
             chained_comparison(node) || larrow(node) || prefix_range_assigned(node, path)
         }
+        SyntaxKind::DYN_TRAIT_TYPE | SyntaxKind::IMPL_TRAIT_TYPE => ambiguous_plus(node, path),
+        SyntaxKind::CONST_PARAM => const_param_default_rejected(node),
         _ => false,
     }
 }
@@ -364,6 +427,12 @@ mod tests {
             "fn f() { x = ..z = 2; let _ = |x| ..z = 2; (..z) = 2; }",
             "fn f() { return ..z = 2; }",
             "fn f() { let x = 0..; 0..=1; match x { 0.. => {} } }",
+            "fn f(_: &(dyn A + B)) -> impl A + B {}",
+            "impl dyn A + B {}",
+            "type T = Box<dyn Fn() -> Box<dyn A + B>>;",
+            "type T = &[dyn A + B];",
+            "fn f() { let _ = |x| -> dyn A + B { x }; }",
+            "struct A<const N: i32 = MAX, const M: i32 = -1, const O: i32 = { i32::MAX }>;",
         ] {
             assert!(!rejected(src), "{src}");
         }
@@ -399,6 +468,17 @@ mod tests {
             "fn f() { 0..=; }",
             "fn f() { ..=; }",
             "fn f() { match x { 0..= => {} } }",
+            // Ambiguous `+` in a type parsed without `+`.
+            "fn f(_: &impl A + B) {}",
+            "type T = *const dyn A + B;",
+            "type T = &'a dyn A + 'a;",
+            "type T = &dyn A +;",
+            "type T = fn() -> dyn A + B;",
+            "fn f(_: impl Fn() -> impl A + B) {}",
+            "fn f() { x as dyn A + B; }",
+            // Const parameter defaults without braces.
+            "struct A<const N: i32 = i32::MAX>;",
+            "struct A<const N: i32 = MAX::<u8>>;",
         ] {
             assert!(rejected(src), "{src}");
         }
