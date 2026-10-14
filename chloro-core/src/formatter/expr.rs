@@ -34,7 +34,7 @@ use super::span::{Span, Spanned, mk_sp, token_span};
 use super::stmt::Stmt as FmtStmt;
 use super::types::{PathContext, rewrite_path};
 use super::utils::{
-    colon_spaces, count_newlines, filtered_str_fits, first_line_ends_with, is_assignment,
+    colon_spaces, concat, count_newlines, filtered_str_fits, first_line_ends_with, is_assignment,
     last_line_extendable, last_line_width, semicolon_for_expr, unicode_str_width, wrap_str,
 };
 use super::visitor::FmtVisitor;
@@ -298,6 +298,12 @@ fn format_expr_uncached(
     };
 
     let expr_str = expr_rw.map(|expr_str| recover_comment_removed(expr_str, span, context))?;
+    if outer.is_empty() {
+        // Without attributes, `attrs_str` and `attrs_span` below are empty, so
+        // `combine_strs_with_missing_comments` finds no comment and returns a copy of
+        // `expr_str`.
+        return Some(expr_str);
+    }
     let attrs_str = rewrite_attrs(&outer, context, shape)?;
     let attrs_span = mk_sp(
         outer.last().map_or(span.lo(), |attr| attr.span().hi()),
@@ -520,7 +526,7 @@ fn rewrite_empty_block(
     }
 
     if !block_contains_comment(context, block) && shape.width >= 2 {
-        return Some(format!("{prefix}{label_str}{{}}"));
+        return Some(concat(&[prefix, &label_str, "{}"]));
     }
 
     // If a block contains only a single-line comment, then leave it on one line.
@@ -580,7 +586,7 @@ fn rewrite_single_line_block(
         let expr_shape = shape.offset_left(last_line_width(prefix))?;
         let expr_str = block_expr.rewrite(context, expr_shape)?;
         let label_str = rewrite_label(context, label);
-        let result = format!("{prefix}{label_str}{{ {expr_str} }}");
+        let result = concat(&[prefix, &label_str, "{ ", &expr_str, " }"]);
         if result.len() <= shape.width && !result.contains('\n') {
             return Some(result);
         }
@@ -640,7 +646,7 @@ pub(crate) fn rewrite_block_with_visitor(
     if visitor.macro_rewrite_failure {
         context.macro_rewrite_failure.replace(true);
     }
-    Some(format!("{}{}{}", prefix, label_str, visitor.buffer))
+    Some(concat(&[prefix, &label_str, &visitor.buffer]))
 }
 
 impl Rewrite for Block<'_> {
@@ -962,7 +968,7 @@ impl ControlFlow<'_> {
             .with_max_width(context.config);
         let nested_indent_str = nested_shape.indent.to_string_with_newline(context.config);
         expr.rewrite(context, nested_shape)
-            .map(|expr_rw| format!("{nested_indent_str}{expr_rw}"))
+            .map(|expr_rw| concat(&[&nested_indent_str, &expr_rw]))
     }
 
     fn rewrite_cond(
@@ -1151,7 +1157,7 @@ impl Rewrite for ControlFlow<'_> {
             result?
         };
 
-        let mut result = format!("{cond_str}{block_str}");
+        let mut result = concat(&[&cond_str, &block_str]);
 
         if let Some(else_block) = &self.else_block {
             let shape = Shape::indented(shape.indent, context.config);
@@ -1458,7 +1464,7 @@ pub(crate) fn span_ends_with_comma(context: &RewriteContext<'_>, span: Span) -> 
     let mut prev_char: char = Default::default();
     let closing_delimiters = &[')', '}', ']'];
 
-    for (kind, _, c) in CharClasses::new(context.snippet(span)) {
+    for (kind, _, c) in CharClasses::new(comma_scan_tail(context.snippet(span))) {
         match c {
             _ if kind.is_comment() || c.is_whitespace() => continue,
             c if closing_delimiters.contains(&c) => {
@@ -1471,6 +1477,28 @@ pub(crate) fn span_ends_with_comma(context: &RewriteContext<'_>, span: Span) -> 
     }
 
     result
+}
+
+/// The part of `snippet` that the loop of `span_ends_with_comma` needs to read.
+///
+/// The loop's result depends only on the last two characters that are neither whitespace
+/// nor in a comment: it is `true` iff the last is `,`, or the last is a closing delimiter
+/// and the one before is `,`. Without a comment in `snippet`, those are its last two
+/// non-whitespace characters, and a scan that starts at the first of them classifies both
+/// as the full scan does, unless they are `/` directly followed by `*` or `/`, which the
+/// shorter scan reads as a comment; the result is `false` for both scans then.
+fn comma_scan_tail(snippet: &str) -> &str {
+    if contains_comment(snippet) {
+        return snippet;
+    }
+    let trimmed = snippet.trim_end();
+    let Some((last, _)) = trimmed.char_indices().next_back() else {
+        return snippet;
+    };
+    match trimmed[..last].trim_end().char_indices().next_back() {
+        Some((second_last, _)) => &snippet[second_last..],
+        None => snippet,
+    }
 }
 
 pub(crate) fn rewrite_paren(
@@ -1514,7 +1542,13 @@ pub(crate) fn rewrite_paren(
     let subexpr_str = subexpr.rewrite(context, sub_shape)?;
     let fits_single_line = !pre_comment.contains("//") && !post_comment.contains("//");
     if fits_single_line {
-        Some(format!("({pre_comment}{subexpr_str}{post_comment})"))
+        Some(concat(&[
+            "(",
+            &pre_comment,
+            &subexpr_str,
+            &post_comment,
+            ")",
+        ]))
     } else {
         rewrite_paren_in_multi_line(context, &subexpr, shape, pre_span, post_span)
     }
@@ -1575,7 +1609,7 @@ fn rewrite_index(
     // Return if index fits in a single line.
     match orig_index_rw {
         Some(ref index_str) if !index_str.contains('\n') => {
-            return Some(format!("{expr_str}[{index_str}]"));
+            return Some(concat(&[&expr_str, "[", index_str, "]"]));
         }
         _ => (),
     }
@@ -1599,7 +1633,7 @@ fn rewrite_index(
             indent.to_string_with_newline(context.config),
             new_index_str,
         )),
-        (Some(ref index_str), _) => Some(format!("{expr_str}[{index_str}]")),
+        (Some(ref index_str), _) => Some(concat(&[&expr_str, "[", index_str, "]"])),
         (None, None) => None,
     }
 }
@@ -1706,7 +1740,7 @@ fn rewrite_struct_lit(
 
     let fields_str =
         wrap_struct_field(context, attrs, &fields_str, shape, v_shape, one_line_width)?;
-    Some(format!("{path_str} {{{fields_str}}}"))
+    Some(concat(&[&path_str, " {", &fields_str, "}"]))
 }
 
 pub(crate) fn wrap_struct_field(
@@ -1736,7 +1770,7 @@ pub(crate) fn wrap_struct_field(
             ))
         } else {
             // One liner or visual indent.
-            Some(format!(" {fields_str} "))
+            Some(concat(&[" ", fields_str, " "]))
         }
     } else {
         Some(format!(
@@ -1788,7 +1822,7 @@ pub(crate) fn rewrite_field(
                 {
                     Some(attrs_str + name)
                 }
-                Some(e) => Some(format!("{attrs_str}{name}{separator}{e}")),
+                Some(e) => Some(concat(&[&attrs_str, name, &separator, &e])),
                 None => {
                     let expr_offset = shape.indent.block_indent(context.config);
                     let expr = expr.rewrite(context, Shape::indented(expr_offset, context.config));
@@ -1880,7 +1914,7 @@ pub(crate) fn rewrite_unary_prefix<R: Rewrite + ?Sized>(
     let shape = shape.offset_left(prefix.len())?;
     rewrite
         .rewrite(context, shape)
-        .map(|r| format!("{prefix}{r}"))
+        .map(|r| concat(&[prefix, &r]))
 }
 
 /// FIXME: this is probably not correct for multi-line Rewrites. we should
@@ -2036,7 +2070,7 @@ fn choose_rhs<R: Rewrite + ?Sized>(
         Some(ref new_str)
             if !new_str.contains('\n') && unicode_str_width(new_str) <= shape.width =>
         {
-            Some(format!(" {new_str}"))
+            Some(concat(&[" ", new_str]))
         }
         _ => {
             // Expression did not fit on the same line as the identifier.
@@ -2053,21 +2087,21 @@ fn choose_rhs<R: Rewrite + ?Sized>(
                 (Some(ref orig_rhs), Some(ref new_rhs))
                     if !filtered_str_fits(new_rhs, context.config.max_width(), new_shape) =>
                 {
-                    Some(format!("{before_space_str}{orig_rhs}"))
+                    Some(concat(&[before_space_str, orig_rhs]))
                 }
                 (Some(ref orig_rhs), Some(ref new_rhs))
                     if prefer_next_line(orig_rhs, new_rhs, rhs_tactics) =>
                 {
-                    Some(format!("{new_indent_str}{new_rhs}"))
+                    Some(concat(&[new_indent_str, new_rhs]))
                 }
-                (None, Some(ref new_rhs)) => Some(format!("{new_indent_str}{new_rhs}")),
+                (None, Some(ref new_rhs)) => Some(concat(&[new_indent_str, new_rhs])),
                 (None, None) if rhs_tactics == RhsTactics::AllowOverflow => {
                     let shape = shape.infinite_width();
                     expr.rewrite(context, shape)
-                        .map(|s| format!("{before_space_str}{s}"))
+                        .map(|s| concat(&[before_space_str, &s]))
                 }
                 (None, None) => None,
-                (Some(orig_rhs), _) => Some(format!("{before_space_str}{orig_rhs}")),
+                (Some(orig_rhs), _) => Some(concat(&[before_space_str, &orig_rhs])),
             }
         }
     }
@@ -2145,5 +2179,101 @@ mod tests {
         assert!(last_line_offsetted(2, lines));
         let lines = "one\n two      three";
         assert!(!last_line_offsetted(2, lines));
+    }
+
+    /// The loop of `span_ends_with_comma` over a whole string.
+    fn ends_with_comma(snippet: &str) -> bool {
+        let mut result = false;
+        let mut prev_char: char = Default::default();
+        let closing_delimiters = &[')', '}', ']'];
+        for (kind, _, c) in CharClasses::new(snippet) {
+            match c {
+                _ if kind.is_comment() || c.is_whitespace() => continue,
+                c if closing_delimiters.contains(&c) => {
+                    result &= !closing_delimiters.contains(&prev_char);
+                }
+                ',' => result = true,
+                _ => result = false,
+            }
+            prev_char = c;
+        }
+        result
+    }
+
+    #[test]
+    fn comma_scan_tail_gives_the_full_scan_result() {
+        const ALPHABET: [char; 12] = [',', ')', ']', ' ', '/', '*', '"', '\'', 'r', '#', '\n', 'a'];
+        let mut strings: Vec<String> = [
+            "f(a, b,)",
+            "f(a, b, /* c */)",
+            "f(a, b /* , */)",
+            "f(a, b, // c\n)",
+            "f(a, \"b,)\")",
+            "f(a, r#\"b,)\"#)",
+            "f(a, b,\r\n)",
+            "f(a, b,\u{3000})",
+            "vec![a, b,]",
+            "m!{ a, }",
+            "f(a, b),)",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        for s in &strings {
+            assert_eq!(
+                ends_with_comma(comma_scan_tail(s)),
+                ends_with_comma(s),
+                "{s:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn no_attributes_combine_to_the_expression() {
+        use crate::formatter::config::Settings;
+        use crate::formatter::span::SnippetProvider;
+        let settings = Settings::default();
+        let src = "fn f() { a /* c */ + b }\n";
+        let arena = crate::cst::TreeArena::new();
+        let run = std::rc::Rc::new(RunState::new(&arena));
+        let context = RewriteContext::new(&settings, SnippetProvider::new(src), run);
+        for expr_str in [
+            "",
+            "a",
+            "a + b",
+            "foo(\n    a,\n)",
+            "x // c",
+            "/* c */ y",
+            "\"long string literal well past the width of the narrow shape\"",
+        ] {
+            for width in [0, 5, 100] {
+                for pos in [0, 11, 18] {
+                    let shape = Shape::legacy(width, Indent::new(4, 0));
+                    assert_eq!(
+                        combine_strs_with_missing_comments(
+                            &context,
+                            "",
+                            expr_str,
+                            mk_sp(pos, pos),
+                            shape,
+                            false
+                        )
+                        .as_deref(),
+                        Some(expr_str),
+                        "{expr_str:?} {width} {pos}"
+                    );
+                }
+            }
+        }
     }
 }

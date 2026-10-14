@@ -63,13 +63,24 @@ pub(crate) fn is_attributes_extendable(attrs_str: &str) -> bool {
 /// The width of the first line in s.
 #[inline]
 pub(crate) fn first_line_width(s: &str) -> usize {
-    unicode_str_width(s.split('\n').next().unwrap_or(""))
+    // A first line of ASCII characters is as wide as it is long: a `\r` before the `\n`
+    // belongs to the line and counts one column there.
+    match first_newline_or_non_ascii(s.as_bytes()) {
+        None => s.len(),
+        Some(i) if s.as_bytes()[i] == b'\n' => i,
+        Some(_) => unicode_str_width(s.split('\n').next().unwrap_or("")),
+    }
 }
 
 /// The width of the last line in s.
 #[inline]
 pub(crate) fn last_line_width(s: &str) -> usize {
-    unicode_str_width(s.rsplit('\n').next().unwrap_or(""))
+    // A last line of ASCII characters is as wide as it is long.
+    match last_newline_or_non_ascii(s.as_bytes()) {
+        None => s.len(),
+        Some(i) if s.as_bytes()[i] == b'\n' => s.len() - i - 1,
+        Some(_) => unicode_str_width(s.rsplit('\n').next().unwrap_or("")),
+    }
 }
 
 /// The total used width of the last line.
@@ -124,12 +135,40 @@ pub(crate) fn semicolon_for_expr(context: &RewriteContext<'_>, expr: &ast::Expr)
 
 /// Computes the length of the given string, as it would appear in the output.
 pub(crate) fn unicode_str_width(s: &str) -> usize {
+    if is_ascii_single_line(s.as_bytes()) {
+        s.len()
+    } else {
+        multi_line_or_unicode_str_width(s)
+    }
+}
+
+/// `unicode_str_width` for a string with a `\n` or a non-ASCII character. Kept out of line
+/// so that the common case does not pay for its registers.
+#[inline(never)]
+fn multi_line_or_unicode_str_width(s: &str) -> usize {
     if !s.is_ascii() {
         return s.width();
     }
     // unicode-width 0.1.14 counts every ASCII character as one column, except `\n` and a
     // `\r` before `\n`, which count as none.
     let bytes = s.as_bytes();
+    // Without `\r`, the width is the length minus the number of `\n`, counted eight bytes
+    // at a time: `(found >> 7)` holds 0 or 1 per byte, and the multiplication sums the
+    // bytes into the top byte.
+    const ONES: u64 = 0x0101_0101_0101_0101;
+    let mut chunks = bytes.chunks_exact(8);
+    let mut newlines = 0;
+    let mut carriage_returns = 0;
+    for chunk in &mut chunks {
+        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+        let found = newline_or_non_ascii(w);
+        newlines += ((found >> 7).wrapping_mul(ONES) >> 56) as usize;
+        carriage_returns |= newline_or_non_ascii(w ^ 0x0707_0707_0707_0707);
+    }
+    let rest = chunks.remainder();
+    if carriage_returns == 0 && !rest.contains(&b'\r') {
+        return bytes.len() - newlines - rest.iter().filter(|&&b| b == b'\n').count();
+    }
     let mut width = bytes.len();
     for (i, &b) in bytes.iter().enumerate() {
         if b == b'\n' {
@@ -137,6 +176,82 @@ pub(crate) fn unicode_str_width(s: &str) -> usize {
         }
     }
     width
+}
+
+/// Bit 7 of a byte of the result is set iff that byte of `w` is non-ASCII or `\n`; the
+/// other bits are clear. `(y & 0x7f) + 0x7f` has bit 7 set iff `y & 0x7f != 0`, and no byte
+/// carries into the next, so `!(... | y)` has bit 7 set iff the byte of `y = w ^ 0x0a..` is
+/// zero. Every byte is flagged exactly, so both the lowest and the highest flag can be read.
+fn newline_or_non_ascii(w: u64) -> u64 {
+    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
+    const NEWLINES: u64 = 0x0a0a_0a0a_0a0a_0a0a;
+    let y = w ^ NEWLINES;
+    (w | !(((y & LOW7) + LOW7) | y)) & !LOW7
+}
+
+/// The position of the first byte that is `\n` or non-ASCII, eight bytes at a time.
+fn first_newline_or_non_ascii(bytes: &[u8]) -> Option<usize> {
+    let mut chunks = bytes.chunks_exact(8);
+    let mut pos = 0;
+    for chunk in &mut chunks {
+        // Read little-endian, the lowest flag is the first byte.
+        let found = newline_or_non_ascii(u64::from_le_bytes(chunk.try_into().unwrap()));
+        if found != 0 {
+            return Some(pos + (found.trailing_zeros() / 8) as usize);
+        }
+        pos += 8;
+    }
+    chunks
+        .remainder()
+        .iter()
+        .position(|&b| b == b'\n' || !b.is_ascii())
+        .map(|i| pos + i)
+}
+
+/// The position of the last byte that is `\n` or non-ASCII, eight bytes at a time from
+/// the end.
+fn last_newline_or_non_ascii(bytes: &[u8]) -> Option<usize> {
+    let mut end = bytes.len();
+    while end >= 8 {
+        // Read little-endian, the highest flag is the last byte.
+        let found =
+            newline_or_non_ascii(u64::from_le_bytes(bytes[end - 8..end].try_into().unwrap()));
+        if found != 0 {
+            return Some(end - 1 - (found.leading_zeros() / 8) as usize);
+        }
+        end -= 8;
+    }
+    bytes[..end]
+        .iter()
+        .rposition(|&b| b == b'\n' || !b.is_ascii())
+}
+
+/// Returns `true` if `bytes` is ASCII and contains no `\n`: the case where
+/// `unicode_str_width` is the byte length. Tests eight bytes at a time.
+fn is_ascii_single_line(bytes: &[u8]) -> bool {
+    let flags = newline_or_non_ascii;
+    if bytes.len() < 8 {
+        return bytes.iter().all(|&b| b < 0x80 && b != b'\n');
+    }
+    let mut acc = 0;
+    let mut chunks = bytes.chunks_exact(8);
+    for chunk in &mut chunks {
+        acc |= flags(u64::from_ne_bytes(chunk.try_into().unwrap()));
+    }
+    if !chunks.remainder().is_empty() {
+        // The last eight bytes overlap bytes already tested, which leaves `acc` as it is.
+        let last = &bytes[bytes.len() - 8..];
+        acc |= flags(u64::from_ne_bytes(last.try_into().unwrap()));
+    }
+    acc == 0
+}
+
+/// Joins string pieces with one allocation of the exact length. Gives what `format!` gives
+/// for a format string of literal text and `{}` placeholders whose arguments are strings
+/// (`str`'s `Display` writes the text unchanged when no width or precision is given),
+/// without the formatting machinery.
+pub(crate) fn concat(parts: &[&str]) -> String {
+    parts.concat()
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
@@ -407,6 +522,76 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn ascii_width_fast_path_matches_unicode_width() {
+        // Every length around the eight-byte words, with one special character at every
+        // position: `\n`, `\r\n`, a lone `\r`, the last ASCII byte, NUL, a tab, and non-ASCII
+        // characters whose UTF-8 bytes are `0xc2 0x8a`, `0xc4 0x8a` and `0xe2 0x80 0x8b`.
+        for len in 0..40 {
+            let plain: String = (0..len)
+                .map(|i| char::from(b'a' + (i % 26) as u8))
+                .collect();
+            assert_eq!(unicode_str_width(&plain), plain.width(), "{plain:?}");
+            for at in 0..=len {
+                for special in [
+                    "\n", "\r\n", "\r", "\x7f", "\0", "\t", "\u{8a}", "\u{10a}", "\u{200b}",
+                ] {
+                    let mut s = plain.clone();
+                    s.insert_str(at, special);
+                    assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn line_widths_match_the_split_lines_and_unicode_width() {
+        // Lengths around the eight-byte words, with one or two of `\n`, `\r\n`, `\r` and
+        // non-ASCII characters (bytes `0xc2 0x8a`, `0xe2 0x80 0x8b`) at every position.
+        let specials = ["\n", "\r\n", "\r", "\u{8a}", "\u{200b}", "\t"];
+        let mut strings = vec![];
+        for len in 0..40 {
+            let plain: String = (0..len)
+                .map(|i| char::from(b'a' + (i % 26) as u8))
+                .collect();
+            strings.push(plain.clone());
+            for at in 0..=len {
+                for first in specials {
+                    let mut s = plain.clone();
+                    s.insert_str(at, first);
+                    strings.push(s.clone());
+                    for second in specials {
+                        for at2 in (0..=s.len()).filter(|&i| s.is_char_boundary(i)).step_by(3) {
+                            let mut t = s.clone();
+                            t.insert_str(at2, second);
+                            strings.push(t);
+                        }
+                    }
+                }
+            }
+        }
+        for s in &strings {
+            let first = unicode_str_width(s.split('\n').next().unwrap_or(""));
+            let last = unicode_str_width(s.rsplit('\n').next().unwrap_or(""));
+            assert_eq!(first_line_width(s), first, "{s:?}");
+            assert_eq!(last_line_width(s), last, "{s:?}");
+            assert_eq!(unicode_str_width(s), s.width(), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn concat_matches_format_on_strings() {
+        let owned = String::from("é {x} ");
+        let borrowed = "}{";
+        let cow: Cow<'_, str> = Cow::Owned("\n    ".to_owned());
+        for (a, b) in [("", ""), ("a", "b"), ("ünï", "\t\r\n"), ("{}", "%s")] {
+            assert_eq!(
+                concat(&[a, "{", &owned, borrowed, &cow, b, "}"]),
+                format!("{a}{{{owned}{borrowed}{cow}{b}}}")
+            );
+        }
+    }
 
     #[test]
     fn remove_trailing_white_spaces_keeps_raw_strings() {
