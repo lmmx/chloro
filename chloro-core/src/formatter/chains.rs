@@ -19,7 +19,7 @@
 use std::borrow::Cow;
 use std::cmp::min;
 
-use ra_ap_syntax::ast::{self, AstNode, HasGenericArgs, RangeItem};
+use ra_ap_syntax::ast::{self, AstNode, RangeItem};
 
 use super::comment::{CharClasses, FullCodeCharKind, rewrite_comment};
 use super::config::StyleEdition;
@@ -168,9 +168,8 @@ impl ChainItemKind {
 
     fn is_tup_field_access(expr: &ast::Expr) -> bool {
         match expr {
-            ast::Expr::FieldExpr(f) => f
-                .name_ref()
-                .is_some_and(|n| n.text().chars().all(|c| c.is_ascii_digit())),
+            ast::Expr::FieldExpr(f) => child::<ast::NameRef>(f.syntax())
+                .is_some_and(|n| node_text(n.syntax()).chars().all(|c| c.is_ascii_digit())),
             _ => false,
         }
     }
@@ -183,8 +182,7 @@ impl ChainItemKind {
         let full = expr_span(expr);
         let (kind, span) = match expr {
             ast::Expr::MethodCallExpr(call) => {
-                let types = call
-                    .generic_arg_list()
+                let types = child::<ast::GenericArgList>(call.syntax())
                     .map(|args| {
                         args.generic_args()
                             .filter(|a| !matches!(a, ast::GenericArg::AssocTypeArg(_)))

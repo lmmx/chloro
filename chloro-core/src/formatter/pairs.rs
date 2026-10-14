@@ -4,7 +4,7 @@ use ra_ap_syntax::ast::{self, AstNode};
 
 use super::context::{Rewrite, RewriteContext};
 use super::lists::SeparatorPlace;
-use super::nodes::{bin_op_kind, bin_op_text, child, has_child};
+use super::nodes::{bin_op_kind, bin_op_text, child, has_child, nth_child};
 use super::shape::Shape;
 use super::utils::{
     first_line_width, is_assignment, is_single_line, last_line_width, trimmed_last_line_width,
@@ -321,7 +321,7 @@ fn flatten(expr: &ast::BinExpr, context: &RewriteContext<'_>, shape: Shape) -> O
                 list.push((node.clone(), rw));
                 if let Some(pop) = stack.pop() {
                     separators.push(bin_op_text(&pop)?);
-                    node = pop.rhs()?;
+                    node = nth_child::<ast::Expr>(pop.syntax(), 1)?;
                 } else {
                     break;
                 }

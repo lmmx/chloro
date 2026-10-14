@@ -157,7 +157,7 @@ impl Rewrite for ast::LetStmt {
         let pat_shape = shape.offset_left(4)?;
         // 1 = ;
         let pat_shape = pat_shape.sub_width(1)?;
-        let pat = self.pat()?;
+        let pat = child::<ast::Pat>(self.syntax())?;
         let pat_str = pat.rewrite(context, pat_shape)?;
 
         result.push_str(&pat_str);
@@ -166,7 +166,7 @@ impl Rewrite for ast::LetStmt {
         let infix = {
             let mut infix = String::with_capacity(32);
 
-            if let Some(ty) = self.ty() {
+            if let Some(ty) = child::<ast::Type>(self.syntax()) {
                 let separator = type_annotation_separator(context);
                 let ty_shape = if pat_str.contains('\n') {
                     shape.with_max_width(context.config)
@@ -183,7 +183,7 @@ impl Rewrite for ast::LetStmt {
                 infix.push_str(&rewrite);
             }
 
-            if self.initializer().is_some() {
+            if has_child::<ast::Expr>(self.syntax()) {
                 infix.push_str(" =");
             }
 
@@ -192,14 +192,16 @@ impl Rewrite for ast::LetStmt {
 
         result.push_str(&infix);
 
-        if let Some(init) = self.initializer() {
+        if let Some(init) = child::<ast::Expr>(self.syntax()) {
             // 1 = trailing semicolon;
             let nested_shape = shape.sub_width(1)?;
 
             result =
                 rewrite_assign_rhs(context, result, &init, &RhsAssignKind::Expr, nested_shape)?;
 
-            if let Some(block_expr) = self.let_else().and_then(|le| le.block_expr()) {
+            if let Some(block_expr) = child::<ast::LetElse>(self.syntax())
+                .and_then(|le| child::<ast::BlockExpr>(le.syntax()))
+            {
                 let block = Block::from_block_expr(&block_expr)?;
                 let else_kw_span = init.span().between(block.span);
                 // Strip attributes and comments to check if newline is needed before the else
@@ -376,7 +378,7 @@ pub(crate) struct FnSig {
 
 impl FnSig {
     pub(crate) fn from_fn(f: &ast::Fn) -> Option<FnSig> {
-        let name_hi = name_span(&f.name()?).hi();
+        let name_hi = name_span(&child::<ast::Name>(f.syntax())?).hi();
         let param_list = child::<ast::ParamList>(f.syntax())?;
         let params_hi = node_range_span(param_list.syntax()).hi();
         let ret = child::<ast::RetType>(f.syntax());
@@ -423,7 +425,7 @@ impl FnSig {
             has_abi: child::<ast::Abi>(f.syntax()).is_some(),
             abi: child::<ast::Abi>(f.syntax()),
             generics: Generics::new(
-                f.generic_param_list(),
+                child::<ast::GenericParamList>(f.syntax()),
                 name_hi,
                 child::<ast::WhereClause>(f.syntax()),
                 where_fallback,
@@ -550,13 +552,13 @@ impl Rewrite for ast::Param {
         let (param_attrs_result, span, has_multiple_attr_lines, has_doc_comments) =
             param_attrs(self.syntax(), context, shape)?;
 
-        let Some(pat) = self.pat() else {
+        let Some(pat) = child::<ast::Pat>(self.syntax()) else {
             // An unnamed parameter (fn pointer types, C variadics). rustfmt rewrites only the
             // type, which drops any attributes of the parameter.
             if has_token(self.syntax(), T![...]) {
                 return Some("...".to_owned());
             }
-            return self.ty()?.rewrite(context, shape);
+            return child::<ast::Type>(self.syntax())?.rewrite(context, shape);
         };
         if has_token(self.syntax(), T![...]) {
             // `name: ...`
@@ -1675,9 +1677,11 @@ impl FmtVisitor<'_> {
 
     /// A fn with a body (rustfmt's `visit_fn`).
     pub(crate) fn visit_fn(&mut self, f: &ast::Fn, s: Span) {
-        let (Some(body), Some(sig), Some(name)) =
-            (f.body(), FnSig::from_fn(f), name_text(f.name()))
-        else {
+        let (Some(body), Some(sig), Some(name)) = (
+            child::<ast::BlockExpr>(f.syntax()),
+            FnSig::from_fn(f),
+            name_text(child::<ast::Name>(f.syntax())),
+        ) else {
             self.push_rewrite(s, None);
             return;
         };
