@@ -297,3 +297,18 @@ macro_rules! value_vtable {
 "#;
     assert_rustfmt(input, rustfmt);
 }
+
+/// rustc's parser accepts an `impl Trait` type as the self type of an impl (AST validation
+/// rejects it later); rust-analyzer's parser ends the impl at the second `impl`.
+#[test]
+fn impl_trait_self_type() {
+    let input = "impl   impl   NotType   {}
+impl Trait2 for impl A + B {  fn f( ) { } }
+";
+    let rustfmt = "impl impl NotType {}
+impl Trait2 for impl A + B {
+    fn f() {}
+}
+";
+    assert_rustfmt(input, rustfmt);
+}
