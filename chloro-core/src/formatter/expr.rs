@@ -5,7 +5,7 @@ use std::cmp::min;
 
 use ra_ap_syntax::SyntaxKind;
 use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasArgList, HasLoopBody};
+use ra_ap_syntax::ast::{self, AstNode, AstToken};
 
 use super::attr::rewrite_attrs;
 use super::chains::rewrite_chain;
@@ -26,7 +26,9 @@ use super::nodes::{
     Attribute, Block, BlockExprKind, Stmt, StmtKind, block_expr_kind, child, contains_skip,
     inner_attributes, outer_attributes, span_without_attrs,
 };
-use super::nodes::{bin_op_text, has_token};
+use super::nodes::{
+    bin_op_text, condition_expr, else_branch, has_token, loop_body, nth_child, then_branch,
+};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::pairs::{PairParts, rewrite_all_pairs, rewrite_pair};
 use super::shape::{Indent, Shape};
@@ -182,8 +184,7 @@ fn format_expr_uncached(
             let callee = call.expr()?;
             let inner_span = mk_sp(callee.span().hi(), span.hi());
             let callee_str = callee.rewrite(context, shape)?;
-            let args: Vec<_> = call
-                .arg_list()?
+            let args: Vec<_> = child::<ast::ArgList>(call.syntax())?
                 .args()
                 .map(OverflowableItem::Expr)
                 .collect();
@@ -196,7 +197,7 @@ fn format_expr_uncached(
             rewrite_all_pairs(bin, shape, context).or_else(|| {
                 rewrite_pair(
                     &bin.lhs()?,
-                    &bin.rhs()?,
+                    &nth_child::<ast::Expr>(bin.syntax(), 1)?,
                     PairParts::infix(&format!(" {} ", bin_op_text(bin)?)),
                     context,
                     shape,
@@ -295,7 +296,12 @@ fn format_expr_uncached(
             shape,
             SeparatorPlace::Front,
         ),
-        ast::Expr::IndexExpr(i) => rewrite_index(&i.base()?, &i.index()?, context, shape),
+        ast::Expr::IndexExpr(i) => rewrite_index(
+            &i.base()?,
+            &nth_child::<ast::Expr>(i.syntax(), 1)?,
+            context,
+            shape,
+        ),
         ast::Expr::RangeExpr(r) => rewrite_range(context, r, shape),
         // We do not format these expressions yet, but they should still
         // satisfy our width restrictions.
@@ -330,7 +336,7 @@ fn rewrite_range(context: &RewriteContext<'_>, r: &ast::RangeExpr, shape: Shape)
             ast::Expr::Literal(lit) => lit_ends_in_dot(lit),
             ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| needs_space_before_range(&e)),
             ast::Expr::BinExpr(b) if !is_assignment(b) => {
-                b.rhs().is_some_and(|e| needs_space_before_range(&e))
+                nth_child::<ast::Expr>(b.syntax(), 1).is_some_and(|e| needs_space_before_range(&e))
             }
             _ => false,
         }
@@ -740,31 +746,24 @@ fn extract_pats_and_cond(expr: ast::Expr) -> (Option<ast::Pat>, Option<ast::Expr
     }
 }
 
-fn else_branch_expr(branch: ast::ElseBranch) -> ast::Expr {
-    match branch {
-        ast::ElseBranch::Block(b) => ast::Expr::BlockExpr(b),
-        ast::ElseBranch::IfExpr(i) => ast::Expr::IfExpr(i),
-    }
-}
-
 fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<'static>> {
     let span = expr_span(expr);
     match expr {
         ast::Expr::IfExpr(i) => {
-            let (pat, cond) = extract_pats_and_cond(i.condition()?);
+            let (pat, cond) = extract_pats_and_cond(condition_expr(i.syntax())?);
             Some(ControlFlow::new_if(
                 cond?,
                 pat,
-                Block::from_block_expr(&i.then_branch()?)?,
-                i.else_branch().map(else_branch_expr),
+                Block::from_block_expr(&then_branch(i)?)?,
+                else_branch(i),
                 expr_type == ExprType::SubExpression,
                 false,
                 span,
             ))
         }
         ast::Expr::ForExpr(f) => Some(ControlFlow {
-            cond: Some(f.iterable()?),
-            block: Block::from_block_expr(&f.loop_body()?)?,
+            cond: Some(condition_expr(f.syntax())?),
+            block: Block::from_block_expr(&loop_body(f.syntax())?)?,
             else_block: None,
             label: child::<ast::Label>(f.syntax()),
             pat: Some(child::<ast::Pat>(f.syntax())?),
@@ -778,7 +777,7 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
         }),
         ast::Expr::LoopExpr(l) => Some(ControlFlow {
             cond: None,
-            block: Block::from_block_expr(&l.loop_body()?)?,
+            block: Block::from_block_expr(&child::<ast::BlockExpr>(l.syntax())?)?,
             else_block: None,
             label: child::<ast::Label>(l.syntax()),
             pat: None,
@@ -791,10 +790,10 @@ fn to_control_flow(expr: &ast::Expr, expr_type: ExprType) -> Option<ControlFlow<
             span,
         }),
         ast::Expr::WhileExpr(w) => {
-            let (pat, cond) = extract_pats_and_cond(w.condition()?);
+            let (pat, cond) = extract_pats_and_cond(condition_expr(w.syntax())?);
             Some(ControlFlow {
                 cond: Some(cond?),
-                block: Block::from_block_expr(&w.loop_body()?)?,
+                block: Block::from_block_expr(&loop_body(w.syntax())?)?,
                 else_block: None,
                 label: child::<ast::Label>(w.syntax()),
                 matcher: if pat.is_some() { "let" } else { "" },
@@ -1147,12 +1146,12 @@ impl Rewrite for ControlFlow<'_> {
                 // Note how we're passing the original shape, as the
                 // cost of "else" should not cascade.
                 ast::Expr::IfExpr(i) => {
-                    let (pats, cond) = extract_pats_and_cond(i.condition()?);
+                    let (pats, cond) = extract_pats_and_cond(condition_expr(i.syntax())?);
                     ControlFlow::new_if(
                         cond?,
                         pats,
-                        Block::from_block_expr(&i.then_branch()?)?,
-                        i.else_branch().map(else_branch_expr),
+                        Block::from_block_expr(&then_branch(i)?)?,
+                        else_branch(i),
                         false,
                         true,
                         mk_sp(expr_span(else_block).lo(), self.span.hi()),
@@ -1340,7 +1339,7 @@ pub(crate) fn is_simple_expr(expr: &ast::Expr) -> bool {
         ast::Expr::PrefixExpr(p) => p.expr().is_some_and(|e| is_simple_expr(&e)),
         ast::Expr::IndexExpr(i) => {
             i.base().is_some_and(|e| is_simple_expr(&e))
-                && i.index().is_some_and(|e| is_simple_expr(&e))
+                && nth_child::<ast::Expr>(i.syntax(), 1).is_some_and(|e| is_simple_expr(&e))
         }
         ast::Expr::ArrayExpr(a) if has_token(a.syntax(), T![;]) => {
             let mut exprs = a.exprs();
@@ -1605,10 +1604,10 @@ fn rewrite_struct_lit(
     let path_shape = shape.sub_width(2)?;
     let path_str = rewrite_path(context, PathContext::Expr, &record.path()?, path_shape)?;
 
-    let field_list = record.record_expr_field_list()?;
+    let field_list = child::<ast::RecordExprFieldList>(record.syntax())?;
     let fields: Vec<ast::RecordExprField> = field_list.fields().collect();
     let dotdot = field_list.dotdot_token();
-    let base = field_list.spread();
+    let base = child::<ast::Expr>(field_list.syntax());
 
     let has_base_or_rest = match (&dotdot, &base) {
         (None, _) if fields.is_empty() => return Some(format!("{path_str} {{}}")),
@@ -1896,7 +1895,7 @@ fn rewrite_assignment(
     shape: Shape,
 ) -> Option<String> {
     let lhs = bin.lhs()?;
-    let rhs = bin.rhs()?;
+    let rhs = nth_child::<ast::Expr>(bin.syntax(), 1)?;
     let operator_str = bin_op_text(bin)?;
 
     // 1 = space between lhs and operator.

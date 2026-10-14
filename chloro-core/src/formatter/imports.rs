@@ -335,8 +335,9 @@ impl UseTree {
         };
 
         // rustc's prefix path: `::` alone (`use ::*`, `use ::{a}`) is a global empty path.
-        let (names, path_global) = a.path().map(|p| path_segment_names(&p)).unwrap_or_default();
-        let bare_root = a.path().is_none() && has_token(a.syntax(), T![::]);
+        let path = child::<ast::Path>(a.syntax());
+        let (names, path_global) = path.as_ref().map(path_segment_names).unwrap_or_default();
+        let bare_root = path.is_none() && has_token(a.syntax(), T![::]);
         let is_global = path_global || bare_root;
         // Number of rustc prefix segments, counting the `{{root}}` segment of a global path.
         let prefix_len = names.len() + usize::from(is_global);

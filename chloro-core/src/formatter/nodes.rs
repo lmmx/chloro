@@ -454,6 +454,71 @@ pub(crate) fn element_at(
     parent.child_or_token_at_range(TextRange::at(offset, len))
 }
 
+/// The `n`-th child node of `parent` that casts to `N`: the hand-written rust-analyzer
+/// accessors `support::children(..).nth(n)` (`BinExpr::rhs`, `IndexExpr::index`, the `if`
+/// branches), but a red node is created only for the child returned.
+pub(crate) fn nth_child<N: AstNode>(parent: &SyntaxNode, n: usize) -> Option<N> {
+    let mut offset = parent.text_range().start();
+    let mut seen = 0;
+    for (index, green_child) in parent.green().children().enumerate() {
+        let len = green_child.text_len();
+        if let NodeOrToken::Node(node) = green_child
+            && N::can_cast(RustLanguage::kind_from_raw(node.kind()))
+        {
+            if seen == n {
+                return child_at(parent, index, offset, len).and_then(N::cast);
+            }
+            seen += 1;
+        }
+        offset += len;
+    }
+    None
+}
+
+/// The first expression child of an `if`, `while` or `for` expression, as rust-analyzer's
+/// `IfExpr::condition`, `WhileExpr::condition` and `ForExpr::iterable` answer it: a block
+/// expression there counts as the condition only when another expression follows it (else
+/// it is the body of a condition-less expression).
+pub(crate) fn condition_expr(parent: &SyntaxNode) -> Option<ast::Expr> {
+    let first = nth_child::<ast::Expr>(parent, 0)?;
+    if matches!(first, ast::Expr::BlockExpr(_)) && !has_nth_child::<ast::Expr>(parent, 1) {
+        return None;
+    }
+    Some(first)
+}
+
+/// Whether `parent` has an `n`-th child node that casts to `N`, read from the green tree.
+fn has_nth_child<N: AstNode>(parent: &SyntaxNode, n: usize) -> bool {
+    parent
+        .green()
+        .children()
+        .filter(|c| {
+            matches!(c, NodeOrToken::Node(node) if N::can_cast(RustLanguage::kind_from_raw(node.kind())))
+        })
+        .nth(n)
+        .is_some()
+}
+
+/// `IfExpr::then_branch`: the second expression child, when it is a block.
+pub(crate) fn then_branch(if_expr: &ast::IfExpr) -> Option<ast::BlockExpr> {
+    match nth_child::<ast::Expr>(if_expr.syntax(), 1)? {
+        ast::Expr::BlockExpr(block) => Some(block),
+        _ => None,
+    }
+}
+
+/// `IfExpr::else_branch` as an expression: the third expression child, when it is a block
+/// or another `if`.
+pub(crate) fn else_branch(if_expr: &ast::IfExpr) -> Option<ast::Expr> {
+    nth_child::<ast::Expr>(if_expr.syntax(), 2)
+        .filter(|e| matches!(e, ast::Expr::BlockExpr(_) | ast::Expr::IfExpr(_)))
+}
+
+/// `HasLoopBody::loop_body` for `while` and `for`: the second block child, else the first.
+pub(crate) fn loop_body(parent: &SyntaxNode) -> Option<ast::BlockExpr> {
+    nth_child::<ast::BlockExpr>(parent, 1).or_else(|| nth_child::<ast::BlockExpr>(parent, 0))
+}
+
 /// [`element_at`] for a child node.
 pub(crate) fn child_at(
     parent: &SyntaxNode,
@@ -1226,6 +1291,56 @@ mod tests {
             }
         }
         assert!(attrs > 10, "{attrs} attributes");
+    }
+
+    /// `nth_child` and the control-flow accessors answer what rust-analyzer's hand-written
+    /// accessors answer on `if`, `while`, `for`, index and binary expressions, including the
+    /// malformed forms (a block where a condition is expected, a missing body) that the
+    /// accessors special-case.
+    #[test]
+    fn control_flow_accessors_match_the_generated_ones() {
+        use ra_ap_syntax::ast::HasLoopBody;
+        let src = "fn f() {\n    if a {} else {}\n    if a {} else if b {} else {}\n    if a {}\n    \
+                   if let Some(x) = y {}\n    if {a} {}\n    if {}\n    if a\n    while a {}\n    \
+                   while let Some(x) = y {}\n    while {a} {}\n    while {}\n    'l: while a {}\n    \
+                   for x in y {}\n    for x in {y} {}\n    for x in {}\n    'l: for x in y {}\n    \
+                   loop {}\n    'l: loop {}\n    a[b]; a[b][c]; a[{b}];\n    a + b; a = b + c; a +\n}\n";
+        let file = SourceFile::parse(src, Edition::Edition2024).tree();
+        let mut seen = [0usize; 9];
+        for node in file.syntax().descendants() {
+            if let Some(i) = ast::IfExpr::cast(node.clone()) {
+                assert_eq!(condition_expr(&node), i.condition(), "{node}");
+                assert_eq!(then_branch(&i), i.then_branch(), "{node}");
+                let by_cursor = i.else_branch().map(|b| match b {
+                    ast::ElseBranch::Block(b) => ast::Expr::BlockExpr(b),
+                    ast::ElseBranch::IfExpr(i) => ast::Expr::IfExpr(i),
+                });
+                assert_eq!(else_branch(&i), by_cursor, "{node}");
+                seen[0] += 1;
+                seen[1] += usize::from(i.condition().is_none());
+                seen[2] += usize::from(by_cursor.is_some());
+            } else if let Some(w) = ast::WhileExpr::cast(node.clone()) {
+                assert_eq!(condition_expr(&node), w.condition(), "{node}");
+                assert_eq!(loop_body(&node), w.loop_body(), "{node}");
+                seen[3] += 1;
+                seen[4] += usize::from(w.condition().is_none());
+            } else if let Some(f) = ast::ForExpr::cast(node.clone()) {
+                assert_eq!(condition_expr(&node), f.iterable(), "{node}");
+                assert_eq!(loop_body(&node), f.loop_body(), "{node}");
+                seen[5] += 1;
+                seen[6] += usize::from(f.iterable().is_none());
+            } else if let Some(i) = ast::IndexExpr::cast(node.clone()) {
+                assert_eq!(nth_child::<ast::Expr>(&node, 0), i.base(), "{node}");
+                assert_eq!(nth_child::<ast::Expr>(&node, 1), i.index(), "{node}");
+                seen[7] += 1;
+            } else if let Some(b) = ast::BinExpr::cast(node.clone()) {
+                assert_eq!(nth_child::<ast::Expr>(&node, 0), b.lhs(), "{node}");
+                assert_eq!(nth_child::<ast::Expr>(&node, 1), b.rhs(), "{node}");
+                assert_eq!(nth_child::<ast::Expr>(&node, 2), None, "{node}");
+                seen[8] += 1;
+            }
+        }
+        assert!(seen.iter().all(|&n| n > 0), "every form occurs: {seen:?}");
     }
 
     #[test]

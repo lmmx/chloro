@@ -48,7 +48,7 @@ pub(crate) fn rewrite_closure(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    let body = closure.body()?;
+    let body = child::<ast::Expr>(closure.syntax())?;
     let (prefix, extra_offset) = rewrite_closure_fn_decl(closure, &body, span, context, shape)?;
     // 1 = space between `|...|` and body.
     let body_shape = shape.offset_left(extra_offset)?;
@@ -269,8 +269,7 @@ fn rewrite_closure_fn_decl(
         None => String::new(),
     };
 
-    let params: Vec<ast::Param> = closure
-        .param_list()
+    let params: Vec<ast::Param> = child::<ast::ParamList>(closure.syntax())
         .map(|l| l.params().collect())
         .unwrap_or_default();
     let param_items = itemize_list(
@@ -330,7 +329,7 @@ pub(crate) fn rewrite_last_closure(
     let ast::Expr::ClosureExpr(closure) = expr else {
         return None;
     };
-    let body = closure.body()?;
+    let body = child::<ast::Expr>(closure.syntax())?;
     let body = match plain_block(&body) {
         Some((block_expr, block))
             if !block.is_unsafe()

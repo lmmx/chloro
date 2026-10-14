@@ -267,7 +267,7 @@ fn rewrite_match_arm(
 ) -> Option<String> {
     let attrs = outer_attributes(arm.syntax());
     let pat = child::<ast::Pat>(arm.syntax())?;
-    let body = arm.expr()?;
+    let body = child::<ast::Expr>(arm.syntax())?;
     let (missing_span, attrs_str) = if !attrs.is_empty() {
         if contains_skip(&attrs) {
             let (_, body) = flatten_arm_body(context, &body, None);
@@ -318,7 +318,7 @@ fn rewrite_match_arm(
     // Guard
     let block_like_pat = trimmed_last_line_width(&pats_str) <= context.config.tab_spaces();
     let new_line_guard = pats_str.contains('\n') && !block_like_pat;
-    let guard = arm.guard().and_then(|g| g.condition());
+    let guard = child::<ast::MatchGuard>(arm.syntax()).and_then(|g| child::<ast::Expr>(g.syntax()));
     let guard_str = rewrite_guard(
         context,
         guard.as_ref(),
