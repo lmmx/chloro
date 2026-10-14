@@ -696,7 +696,13 @@ impl<'a> ChainFormatterShared<'a> {
         };
 
         let mut rewrite_iter = self.rewrites.iter();
-        let mut result = rewrite_iter.next()?.clone();
+        let first = rewrite_iter.next()?;
+        // Room for every rewrite and a separator before each but the first, so the loop
+        // below does not grow the buffer.
+        let parts_len: usize = self.rewrites.iter().map(String::len).sum();
+        let mut result =
+            String::with_capacity(parts_len + (self.rewrites.len() - 1) * connector.len().max(1));
+        result.push_str(first);
         let children_iter = self.children.iter();
         let iter = rewrite_iter.zip(children_iter);
 
