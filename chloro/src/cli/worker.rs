@@ -20,9 +20,12 @@ pub enum ProcessResult {
 }
 
 /// Files of at least this many bytes have their top-level items formatted on `threads`
-/// threads; below it the thread start-up costs more than the split saves (measured in
+/// threads. In process the split pays from about 8 KiB, but the CLI already runs one
+/// file per core: splitting every medium file oversubscribes the cores and costs more
+/// than it saves on a crate, while splitting only the largest files shortens the wall
+/// time of crates whose time is one file's (measured in
 /// `docs/journal/2026-10-14-autoresearch/experiments/EXP-001-parallel-items.md`).
-pub const PARALLEL_ITEMS_MIN_BYTES: usize = 32 * 1024;
+pub const PARALLEL_ITEMS_MIN_BYTES: usize = 128 * 1024;
 
 /// Process a single Rust source file, formatting its items on up to `threads` threads
 /// when it is large enough.
