@@ -29,7 +29,7 @@ use super::overflow::OverflowableItem;
 use super::shape::Shape;
 use super::span::{Span, Spanned, node_range_span};
 use super::types::{binder_params, rewrite_bound_params};
-use super::utils::{last_line_width, left_most_sub_expr};
+use super::utils::{concat, last_line_width, left_most_sub_expr};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
@@ -61,7 +61,7 @@ pub(crate) fn rewrite_closure(
         if block.stmts.is_empty() && !block_contains_comment(context, &block) {
             return body
                 .rewrite(context, shape)
-                .map(|s| format!("{prefix} {s}"));
+                .map(|s| concat(&[&prefix, " ", &s]));
         }
 
         let result = if child::<ast::RetType>(closure.syntax()).is_none() && !context.inside_macro()
@@ -172,7 +172,7 @@ fn rewrite_closure_with_block(
     let block = Block::synthetic(body);
     let attrs = expr_attrs(body);
     let block = rewrite_block_with_visitor(context, "", &block, Some(&attrs), None, shape, false)?;
-    Some(format!("{prefix} {block}"))
+    Some(concat(&[prefix, " ", &block]))
 }
 
 /// Rewrite closure with a single expression without wrapping its body with block.
@@ -202,7 +202,7 @@ fn rewrite_closure_expr(
         || context.config.force_multiline_blocks();
     expr.rewrite(context, shape)
         .filter(|rw| !(veto_multiline && rw.contains('\n')))
-        .map(|rw| format!("{prefix} {rw}"))
+        .map(|rw| concat(&[prefix, " ", &rw]))
 }
 
 /// Rewrite closure whose body is block.
@@ -228,7 +228,7 @@ fn rewrite_closure_block(
             rewrite_block(&inner, None, None, context, shape)?
         ));
     }
-    Some(format!("{} {}", prefix, block.rewrite(context, shape)?))
+    Some(concat(&[prefix, " ", &block.rewrite(context, shape)?]))
 }
 
 /// Return type is (prefix, extra_offset)
@@ -243,7 +243,7 @@ fn rewrite_closure_fn_decl(
         Some(binder) => {
             let generic_params = binder_params(Some(binder));
             match rewrite_bound_params(context, shape, &generic_params) {
-                Some(lifetime_str) => format!("for<{lifetime_str}> "),
+                Some(lifetime_str) => concat(&["for<", &lifetime_str, "> "]),
                 None if generic_params.is_empty() => "for<> ".to_owned(),
                 None => return None,
             }
@@ -296,7 +296,7 @@ fn rewrite_closure_fn_decl(
             let ty = child::<ast::Type>(ret.syntax())?;
             let arrow_width = "-> ".len();
             let shape = param_shape.offset_left(arrow_width)?;
-            format!("-> {}", ty.rewrite(context, shape)?)
+            concat(&["-> ", &ty.rewrite(context, shape)?])
         }
         None => String::new(),
     };
@@ -335,7 +335,16 @@ fn rewrite_closure_fn_decl(
         .tactic(tactic)
         .preserve_newline(true);
     let list_str = write_list(&item_vec, &fmt)?;
-    let mut prefix = format!("{binder}{const_}{immovable}{coro}{capture_str}|{list_str}|");
+    let mut prefix = concat(&[
+        &binder,
+        const_,
+        immovable,
+        coro,
+        capture_str,
+        "|",
+        &list_str,
+        "|",
+    ]);
 
     if !ret_str.is_empty() {
         if prefix.contains('\n') {

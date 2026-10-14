@@ -143,13 +143,22 @@ both accept (528 of them in `use` items alone, from the version sort of style ed
 rustfmt chooses a layout by trying several and keeping the first that fits, so chloro does
 the same work rustfmt does; it memoizes rewrites to keep nested code from multiplying it,
 and reads syntax from a flat array whose handles are a reference and an index, so a query
-allocates nothing (the flat tree replaced rowan's red nodes and cut the instruction count
-on the profiling sample by 24.6% and heap allocations on the fixtures by 43%, measured in
-[EXP-007b](docs/journal/2026-10-14-autoresearch/experiments/EXP-007b-flat-port.md)).
-Single-threaded and in process it formats about 4.1 MB/s on the rust-analyzer fixtures and
-5.7 MB/s on a local cargo registry (figures from before the flat tree); a `chloro` process
-on one large file takes 0.28x–0.56x the time of a `rustfmt` process. The CLI formats files
-in parallel.
+allocates nothing. Measured against rustfmt 1.9.0 on the same files, rustfmt-formatted
+input, `--check`, in an idle 4-core container (`benchmarks/compare_rustfmt.sh`, 30 runs per
+cell; the record is
+[`docs/journal/2026-10-14-autoresearch/measurements/m2-quiet-host.md`](docs/journal/2026-10-14-autoresearch/measurements/m2-quiet-host.md)):
+
+| workload | one core, wall time as a share of rustfmt's | four cores (chloro one thread per core, rustfmt one) |
+|---|---|---|
+| nine crates of 215 KB to 2.9 MB (rust-analyzer, tokio, regex-syntax, clap_builder, winnow) | 0.44–0.61 | 0.13–0.20 |
+| the same, profile-guided build (`benchmarks/pgo.sh`) | 0.37–0.51 | 0.10–0.19 |
+
+Every chloro run was below every rustfmt run in those sweeps. Peak memory was 5–31 MiB
+against rustfmt's 43–85 MiB. In process on one core the formatter runs at 7.3–7.7 MB/s on
+the rust-analyzer fixtures (8.9–9.3 MB/s profile-guided). Files of 128 KiB and more have
+their top-level items formatted on all cores, which takes the largest fixtures to 0.39–0.56
+of their single-threaded time. A tree whose files were all formatted before is checked from
+the cache in about 30 ms for 1238 files (13.9 MB).
 
 ```sh
 cargo run --release -p chloro-core --example bench -- -w 10   # throughput, 10 slowest files

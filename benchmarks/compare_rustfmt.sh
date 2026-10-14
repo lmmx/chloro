@@ -235,6 +235,15 @@ prepare() {
   if [ "$INPUT" = formatted ]; then
     if [ "$kind" = crate ]; then
       "${RF[@]}" "$W/tree/$root" 2>/dev/null || true
+    elif [ "$kind" = stdin ]; then
+      # Through stdin, as the workload itself runs: in file mode rustfmt follows the `mod`
+      # declarations of a crate root, finds no module files beside the copy, and formats
+      # nothing (M2 found the hir and config copies left as found for this reason).
+      if "${RF[@]}" < "$W/tree/input.rs" > "$W/tree/input.fmt" 2>/dev/null; then
+        mv "$W/tree/input.fmt" "$W/tree/input.rs"
+      else
+        rm -f "$W/tree/input.fmt"
+      fi
     else
       (cd "$W/tree" && xargs -a "$W/files.txt" "${RF[@]}" 2>/dev/null) || true
     fi

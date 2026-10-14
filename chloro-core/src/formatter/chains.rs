@@ -318,8 +318,10 @@ impl<'a> ChainItem<'a> {
 
             format!("::<{}>", type_list.join(", "))
         };
-        let mut callee_str = String::from(".");
-        callee_str.push_str(node_text(method_name.syntax()));
+        let name = node_text(method_name.syntax());
+        let mut callee_str = String::with_capacity(1 + name.len() + type_str.len());
+        callee_str.push('.');
+        callee_str.push_str(name);
         callee_str.push_str(&type_str);
         let args = args.iter().cloned().map(OverflowableItem::Expr).collect();
         rewrite_call(context, &callee_str, args, span, shape)
@@ -706,7 +708,13 @@ impl<'a> ChainFormatterShared<'a> {
         };
 
         let mut rewrite_iter = self.rewrites.iter();
-        let mut result = rewrite_iter.next()?.clone();
+        let first = rewrite_iter.next()?;
+        // Room for every rewrite and a separator before each but the first, so the loop
+        // below does not grow the buffer.
+        let parts_len: usize = self.rewrites.iter().map(String::len).sum();
+        let mut result =
+            String::with_capacity(parts_len + (self.rewrites.len() - 1) * connector.len().max(1));
+        result.push_str(first);
         let children_iter = self.children.iter();
         let iter = rewrite_iter.zip(children_iter);
 
