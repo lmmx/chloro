@@ -343,6 +343,36 @@ lookahead in `skip_plain` (+784 K), the line table via `match_indices` (+519 K).
 removed scans or copies rather than speeding the state machine up: `CharClasses::next`
 itself keeps its structure and now costs 4.47 M.
 
+**R2, the conformance ledger and fixes (`20261014-conformance-fixes`, gated, merge
+pending on its instruction cost).** [conformance-ledger.md](2026-10-14-autoresearch/conformance-ledger.md)
+records 24 cases: every mismatch found on the fixtures under all 31 option values, on the
+20,850-file registry, and in the rustc-recovery and `#[rustfmt::skip::*]` gaps the earlier
+entries left open, each with a reproducer, both outputs, the cause in rustfmt's or rustc's
+code and the fix. Fourteen fixes, one commit each with a regression test: trailing
+semicolons in nested blocks of a macro definition (`from_context` copied `is_macro_def`);
+a repeat array `[x; n]` is not block-like; doc comments in macro arguments are tokens;
+`rustc_compat` rejects `<-`, `..a = b`, `a..=`, an ambiguous `+` in types, unbraced const
+parameter defaults, `builtin #`, pattern parameters in 2015 trait methods, misplaced doc
+comments and C strings before 2021; a new `rustc_syntax` module rebuilds the tree where
+rustc's parser accepts what rust-analyzer's rejects (the parenthesised first bound of a bare
+trait object behind `0024_many_type_parens.rs`, `s.1e0` field names, const block items,
+`impl impl Trait {}`); `#[rustfmt::skip::macros(..)]` and `::attributes(..)`; unknown
+literal prefixes before 2021. Reproduced here on `b464243`: `conform -i` 1220/1220 at
+1.9.0 and at 1.8.0 with 0 non-idempotent; all 31 option values fully identical (1022/1022,
+editions 844/844, 843/843, 838/838); the fixture goldens change exactly `0024`, the
+registry goldens exactly the 12 files the fixes target; 20540/20540 registry files
+identical in the agent's live comparison. Six cases stay open and documented: doc comments
+as attributes of expressions (no registry file affected), anonymous trait-method
+parameters in edition 2015 (rust-analyzer's parser rejects them), rustfmt's own internal
+error on one rustyline file (chloro's output equals what rustfmt still writes), rustfmt's
+run time on one pest_meta file, non-idempotent outputs that are rustfmt's own (chloro on
+rustfmt's first output equals rustfmt's second), and a trailing comma in `builtin #
+offset_of`. The branch costs 401,021,302 instructions on the sample against 390,690,264 for
+its base (+2.6%), attributed to `rustc_compat::walk` (+5.5 M: new rules run at every node),
+a path building blocks outside E4's cache (+0.6 M), the per-context skip state (+0.4 M) and
+the allocations behind them (+1.6 M); the merge waits for the common-path cost to come
+within +0.5%.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
