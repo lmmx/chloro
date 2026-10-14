@@ -22,7 +22,7 @@ use super::nodes::{
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
-    extra_offset, first_line_width, last_line_extendable, semicolon_for_expr,
+    concat, extra_offset, first_line_width, last_line_extendable, semicolon_for_expr,
     trimmed_last_line_width, unicode_str_width,
 };
 
@@ -126,7 +126,8 @@ pub(crate) fn rewrite_match(
         } else {
             shape.block_indent(context.config.tab_spaces())
         };
-        rewrite_attrs(&inner_attrs, context, shape).map(|s| format!("{nested_indent_str}{s}\n"))?
+        rewrite_attrs(&inner_attrs, context, shape)
+            .map(|s| concat(&[&nested_indent_str, &s, "\n"]))?
     };
 
     let cond_span = expr_span(&cond);
@@ -146,7 +147,7 @@ pub(crate) fn rewrite_match(
     if arms.is_empty() {
         let snippet = context.snippet(mk_sp(open_brace_pos, span.hi() - 1));
         if snippet.trim().is_empty() {
-            Some(format!("match {cond_str} {{}}"))
+            Some(concat(&["match ", &cond_str, " {}"]))
         } else {
             // Empty match with comments or inner attributes? We are not going to bother, sorry ;)
             Some(context.snippet(span).to_owned())
@@ -330,7 +331,7 @@ fn rewrite_match_arm(
     let lhs_str = combine_strs_with_missing_comments(
         context,
         &attrs_str,
-        &format!("{pipe_str}{pats_str}{guard_str}"),
+        &concat(&[pipe_str, &pats_str, &guard_str]),
         missing_span,
         shape,
         false,
@@ -430,7 +431,7 @@ fn rewrite_match_body(
     let alt_block_sep = &shape.indent.to_string_with_newline(context.config);
 
     // `control_brace_style` is fixed at `AlwaysSameLine`.
-    let combine_orig_body = |body_str: &str| Some(format!("{pats_str} => {body_str}{comma}"));
+    let combine_orig_body = |body_str: &str| Some(concat(&[pats_str, " => ", body_str, comma]));
 
     let next_line_indent = if !is_block || is_empty_block {
         shape.indent.block_indent(context.config)
@@ -491,7 +492,7 @@ fn rewrite_match_body(
                 } else {
                     ""
                 };
-                ("{", format!("{semicolon}{indent_str}}}{comma}"))
+                ("{", concat(&[semicolon, &indent_str, "}", comma]))
             } else {
                 ("", String::from(","))
             };
@@ -499,9 +500,9 @@ fn rewrite_match_body(
         let block_sep = if body_prefix.is_empty() {
             String::new()
         } else if forbid_same_line || !arrow_comment.is_empty() {
-            format!("{alt_block_sep}{body_prefix}")
+            concat(&[alt_block_sep, body_prefix])
         } else {
-            format!(" {body_prefix}")
+            concat(&[" ", body_prefix])
         } + &nested_indent_str;
 
         let mut result = pats_str.to_owned();
@@ -591,7 +592,7 @@ fn rewrite_guard(
         && let Some(cond_str) = guard.rewrite(context, cond_shape)
         && (!cond_str.contains('\n') || pattern_width <= context.config.tab_spaces())
     {
-        return Some(format!(" if {cond_str}"));
+        return Some(concat(&[" if ", &cond_str]));
     }
 
     // Not enough space to put the guard after the pattern, try a newline.

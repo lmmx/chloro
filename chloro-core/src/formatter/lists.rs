@@ -324,7 +324,6 @@ where
     // Now that we know how we will layout, we can decide for sure if there
     // will be a trailing separator.
     let mut trailing_separator = formatting.needs_trailing_separator();
-    let mut result = String::with_capacity(128);
     let cloned_items = items.clone();
     let mut iter = items.into_iter().enumerate().peekable();
     let mut item_max_width: Option<usize> = None;
@@ -335,6 +334,23 @@ where
 
     let mut line_len = 0;
     let indent_str = &formatting.shape.indent.to_string(formatting.config);
+    // Room for every item with its comments, a separator, a newline and an indent, so the
+    // loop rarely grows the buffer; at least rustfmt's 128 bytes.
+    let estimate: usize = cloned_items
+        .clone()
+        .into_iter()
+        .map(|item| {
+            let item = item.as_ref();
+            let len = |s: &Option<String>| s.as_deref().map_or(0, str::len);
+            len(&item.item)
+                + len(&item.pre_comment)
+                + len(&item.post_comment)
+                + sep_len
+                + 1
+                + indent_str.len()
+        })
+        .sum();
+    let mut result = String::with_capacity(128.max(estimate));
     while let Some((i, item)) = iter.next() {
         let item = item.as_ref();
         let inner_item = item.item.as_deref()?;
@@ -391,7 +407,8 @@ where
                 if (line_len > 0 && line_len + 1 + total_width > formatting.shape.width)
                     || prev_item_had_post_comment
                     || (formatting.nested
-                        && (prev_item_is_nested_import || (!first && inner_item.contains("::"))))
+                        && (prev_item_is_nested_import
+                            || (!first && inner_item.contains(':') && inner_item.contains("::"))))
                 {
                     result.push('\n');
                     result.push_str(indent_str);
@@ -571,7 +588,9 @@ where
         }
 
         prev_item_had_post_comment = item.post_comment.is_some();
-        prev_item_is_nested_import = inner_item.contains("::");
+        // `contains(':')` is a `memchr`; most items have no `:` and skip the substring
+        // search.
+        prev_item_is_nested_import = inner_item.contains(':') && inner_item.contains("::");
     }
 
     Some(result)
