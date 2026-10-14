@@ -262,6 +262,24 @@ borrow their tree, and fragment trees are created mid-run and held by the macro-
 cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena design
 (trees owned for the run's lifetime, memo keyed by tree id and index).
 
+**E8, `rustfmt_version` (`20261014-rustfmt-version`, merged `79d69c9`).** A chloro-only
+`Config` field with two values, `1.9.0` (default, unchanged path) and `1.8.0` (the build
+shipped with Rust 1.88.0); `1.7.0` is refused by `Config::set` with the reason from the
+matrix. Six formatting classes (F1–F6) and three acceptance classes (P1, P2, P8) are
+branched next to the rustfmt code they reproduce, each with a comment naming the class and
+the rustfmt change. Against `rustup run 1.88.0 rustfmt`: 1219/1220 fixtures at edition 2024
+and at 2021 (the differing file is `0024_many_type_parens.rs`, as for 1.9.0); on a
+20,019-file registry, 20,007 identical, where the 12 differences are the same files chloro
+gets wrong under 1.9.0 as well, plus 3 files both releases reject and chloro formats. Two of
+the three cases the matrix called partial turned out exact (F2's labelled closure bodies,
+including a fourth site the matrix missed; F6's panic on Unicode whitespace); F5 stays
+partial above 20 `_`-prefixed names, where the old sort's non-transitive comparator makes
+the order depend on the sort algorithm. Snapshots: `snapshots/ra-1.8.0/` holds the one
+fixture whose 1.8.0 output differs from the 1.9.0 snapshot, and a 32-case reproducer suite
+is snapshotted for both releases at both editions, regenerated with
+`CHLORO_RUSTFMT_VERSIONS=1.8.0=1.88.0`. The default path's instruction count moves by
+−0.04%.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
@@ -327,10 +345,13 @@ the same way.
 - The CLI records content digests of files found already formatted and skips formatting
   them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs, merged from
   `20261014-cli-cache`, E6)
+- `Config::rustfmt_version` selects rustfmt 1.9.0 (default) or 1.8.0 output; 1.7.0 is
+  refused with the reason (chloro-core/src/formatter/config.rs; `conform -V 1.8.0`;
+  snapshots under chloro-core/tests/conformance/snapshots/ra-1.8.0/ and
+  chloro-core/tests/conformance/rustfmt-versions/)
 
 ## Missing
 
 - No quiet-host run of `benchmarks/compare_rustfmt.sh`; every wall-clock figure in
   baseline.md was taken at load average 6–10
-- No support for a rustfmt version other than 1.9.0 (E8 running on the design in rustfmt-versions.md)
 - `0024_many_type_parens.rs` differs from rustfmt (R2 running)
