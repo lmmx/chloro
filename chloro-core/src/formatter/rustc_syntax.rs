@@ -1,11 +1,13 @@
 //! Syntax that rustc's parser accepts and rust-analyzer's parser rejects.
 //!
 //! rustfmt formats a file that rustc's parser accepts. Where rust-analyzer's parser rejects
-//! such syntax but has a node for the construct rustc builds, the file is parsed again with
-//! a keyword inserted where rust-analyzer needs it, and the inserted tokens are then removed
-//! from the tree, so that the tree's text is the source again.
+//! such syntax but has a node for the construct rustc builds, the file's tree is rebuilt
+//! from the parser's steps with that node. The steps are collected into an owned tree
+//! ([`ONode`]), edited, and laid out as a flat [`Tree`] over the source, so every token's
+//! text is the source slice at its offset, as for a file that parses.
 //!
-//! The constructs (each checked against rustfmt 1.9.0):
+//! One construct needs a second parse, of the source with a keyword inserted where
+//! rust-analyzer needs it; the inserted tokens are left out of the tree:
 //!
 //! - A parenthesized first bound of a bare trait object, `Box<(Copy) + Send>` or
 //!   `Box<(?Sized) + Send>`. rustc's `parse_ty_tuple_or_parens` reads a parenthesized path
@@ -16,11 +18,11 @@
 //!   bare trait object only when it starts with a path. With `dyn` inserted before the
 //!   `(`, rust-analyzer builds a `DYN_TRAIT_TYPE` whose first `TYPE_BOUND` holds the
 //!   parentheses; without the `dyn`, it is the node rust-analyzer builds for `Send + Sync`.
-//! - A type that starts with `?`, `(?Sized)`: a trait object with a "maybe" bound to rustc.
-//!   rust-analyzer has no type starting with `?`; with `dyn` inserted before the `?`, it
-//!   builds a `DYN_TRAIT_TYPE`.
+//!   A type that starts with `?`, `(?Sized)`, is a trait object with a "maybe" bound to
+//!   rustc; rust-analyzer has no type starting with `?`, and with `dyn` inserted before the
+//!   `?` builds a `DYN_TRAIT_TYPE`.
 //!
-//! Three constructs need no second parse, only an edit of the tree:
+//! Three constructs need only an edit of the tree:
 //!
 //! - A float literal without `.` as a field name, `s.1e0`: rustc's `break_up_float` reads
 //!   `1e0` as a single component (`DestructuredFloat::Single`) and the field name is `1e0`.
@@ -28,24 +30,21 @@
 //!   an `ERROR` node; the edit makes it a `NAME_REF`, as for `s.0`.
 //! - A const block item, `const { .. }` in a file or module (rustc's `ItemKind::ConstBlock`,
 //!   the unstable `const_block_items`; rustc 1.88.0's parser, and so rustfmt 1.8.0, rejects
-//!   it). rust-analyzer reports "expected an item" and keeps
-//!   the `const` keyword and the block (parsed as block contents) in two `ERROR` nodes; the
-//!   edit makes them a `CONST` item without a name whose body is a `BLOCK_EXPR`, which
-//!   `nodes::const_block_item` recognises.
+//!   it). rust-analyzer reports "expected an item" and keeps the `const` keyword and the
+//!   block (parsed as block contents) in two `ERROR` nodes; the edit makes them a `CONST`
+//!   item without a name whose body is a `BLOCK_EXPR`, which `nodes::const_block_item`
+//!   recognises.
 //! - An `impl Trait` type as the self type of an impl, `impl impl Trait {}` or
 //!   `impl Tr for impl Trait {}`: rustc's parser accepts it (AST validation rejects it
 //!   later). rust-analyzer's `impl_type` reports "expected trait or type" and ends the
 //!   impl, then parses `impl Trait {}` as a second impl; the edit merges the two, with the
 //!   second one's type in an `IMPL_TRAIT_TYPE`.
 
-use ra_ap_parser::{Edition, LexedStr, StrStep, TopEntryPoint};
-use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
-use ra_ap_syntax::{RustLanguage, SyntaxElement};
-use rowan::Language;
-use rowan::{GreenNode, GreenNodeData};
+use ra_ap_parser::{Edition, LexedStr, StrStep, SyntaxKind, T, TopEntryPoint};
+
+use crate::cst::{Node, Tree, TreeBuilder};
 
 use super::config::RustfmtVersion;
-use super::formatting::TreeBuilder;
 
 /// The text inserted before a `(` or `?`: `dyn` and the space after it.
 const DYN: &str = "dyn ";
@@ -53,21 +52,6 @@ const DYN: &str = "dyn ";
 /// rust-analyzer's message for a float literal without `.` after a `.` (`s.1e0`); its
 /// position is a token index, not a text offset.
 const FLOAT_FIELD: &str = "illegal float literal";
-
-/// The parse of a source text.
-pub(crate) struct Parsed {
-    pub(crate) tree: SyntaxNode,
-    /// Text offsets of the parser's errors, other than float field names.
-    pub(crate) errors: Vec<usize>,
-    /// The number of float literals without `.` used as field names.
-    pub(crate) float_fields: usize,
-}
-
-impl Parsed {
-    pub(crate) fn is_ok(&self) -> bool {
-        self.errors.is_empty() && self.float_fields == 0
-    }
-}
 
 /// `true` if rustc's lexer rejects the text `lexed` holds. rust-analyzer reports an
 /// identifier directly followed by `#`, a string or a character literal (`foo#bar`,
@@ -79,71 +63,183 @@ pub(crate) fn lexer_rejects(lexed: &LexedStr<'_>, edition: Edition) -> bool {
         .any(|(_, msg)| edition.at_least_2021() || !msg.starts_with("unknown literal prefix"))
 }
 
-/// The parse of a source text. `None` when the lexer reports an error.
-pub(crate) fn build_tree(source: &str, edition: Edition) -> Option<Parsed> {
-    let lexed = LexedStr::new(edition, source);
+/// An element of an owned tree: a node, or a token of a kind and a length.
+#[derive(Clone)]
+enum El {
+    Node(ONode),
+    Token(SyntaxKind, u32),
+}
+
+/// A node of an owned tree; offsets follow from the lengths of the tokens before.
+#[derive(Clone)]
+struct ONode {
+    kind: SyntaxKind,
+    children: Vec<El>,
+}
+
+impl El {
+    fn kind(&self) -> SyntaxKind {
+        match self {
+            El::Node(n) => n.kind,
+            El::Token(kind, _) => *kind,
+        }
+    }
+
+    fn len(&self) -> u32 {
+        match self {
+            El::Node(n) => n.len(),
+            El::Token(_, len) => *len,
+        }
+    }
+
+    fn as_node(&self) -> Option<&ONode> {
+        match self {
+            El::Node(n) => Some(n),
+            El::Token(..) => None,
+        }
+    }
+
+    /// The kind of the first token under the element.
+    fn first_token(&self) -> Option<SyntaxKind> {
+        match self {
+            El::Node(n) => n.children.iter().find_map(El::first_token),
+            El::Token(kind, _) => Some(*kind),
+        }
+    }
+
+    fn last_token(&self) -> Option<SyntaxKind> {
+        match self {
+            El::Node(n) => n.children.iter().rev().find_map(El::last_token),
+            El::Token(kind, _) => Some(*kind),
+        }
+    }
+}
+
+impl ONode {
+    fn new(kind: SyntaxKind, children: Vec<El>) -> ONode {
+        ONode { kind, children }
+    }
+
+    fn len(&self) -> u32 {
+        self.children.iter().map(El::len).sum()
+    }
+}
+
+/// The parse of a text as an owned tree.
+struct Parse {
+    root: ONode,
+    /// Text offsets of the parser's errors, other than float field names.
+    errors: Vec<usize>,
+    /// The number of float literals without `.` used as field names.
+    float_fields: usize,
+}
+
+/// Lexes and parses `text` into an owned tree, errors included. `None` when rustc's lexer
+/// rejects the text.
+fn parse_owned(text: &str, edition: Edition) -> Option<Parse> {
+    let lexed = LexedStr::new(edition, text);
     if lexer_rejects(&lexed, edition) {
         return None;
     }
     let input = lexed.to_input(edition);
     let output = TopEntryPoint::SourceFile.parse(&input, edition);
-    let mut builder = TreeBuilder::default();
+    let mut stack: Vec<ONode> = Vec::new();
+    let mut root = None;
     let mut errors = Vec::new();
     let mut float_fields = 0;
     lexed.intersperse_trivia(&output, &mut |step| match step {
-        StrStep::Token { kind, text } => builder.token(kind, text),
-        StrStep::Enter { kind } => builder.start_node(kind),
-        StrStep::Exit => builder.finish_node(),
+        StrStep::Token { kind, text } => {
+            if let Some(top) = stack.last_mut() {
+                top.children.push(El::Token(kind, text.len() as u32));
+            }
+        }
+        StrStep::Enter { kind } => stack.push(ONode::new(kind, Vec::new())),
+        StrStep::Exit => {
+            if let Some(node) = stack.pop() {
+                match stack.last_mut() {
+                    Some(parent) => parent.children.push(El::Node(node)),
+                    None => root = Some(node),
+                }
+            }
+        }
         StrStep::Error { msg, .. } if msg == FLOAT_FIELD => float_fields += 1,
         StrStep::Error { pos, .. } => errors.push(pos),
     });
-    Some(Parsed {
-        tree: builder.finish(),
+    Some(Parse {
+        root: root?,
         errors,
         float_fields,
     })
 }
 
-/// The tree rustc's parser would accept for `source`, which rust-analyzer's parser rejected
-/// (`parsed`), built as the module documentation describes. `None` if there is none.
-pub(crate) fn reparse(
-    source: &str,
+fn emit(builder: &mut TreeBuilder<'_>, el: &El) {
+    match el {
+        El::Node(n) => {
+            builder.start_node(n.kind);
+            for c in &n.children {
+                emit(builder, c);
+            }
+            builder.finish_node();
+        }
+        El::Token(kind, len) => builder.token(*kind, *len),
+    }
+}
+
+/// The flat tree of `root` over `src`.
+fn to_tree<'s>(src: &'s str, root: ONode) -> Tree<'s> {
+    let mut builder = TreeBuilder::new(src, 0, 0, src.len() / 2 + 16);
+    emit(&mut builder, &El::Node(root));
+    builder.finish()
+}
+
+/// The tree rustc's parser would accept for `source`, which rust-analyzer's lexer or parser
+/// rejected, built as the module documentation describes. `None` if there is none.
+pub(crate) fn reparse<'s>(
+    source: &'s str,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
-    parsed: Parsed,
-) -> Option<SyntaxNode> {
-    if parsed.errors.is_empty() {
-        return float_fields_as_names(&parsed.tree, parsed.float_fields);
+) -> Option<Tree<'s>> {
+    let parse = parse_owned(source, edition)?;
+    if parse.errors.is_empty() {
+        let root = float_fields_as_names(&parse.root, source, parse.float_fields)?;
+        return Some(to_tree(source, root));
     }
-    let mut explained = vec![false; parsed.errors.len()];
+    let mut explained = vec![false; parse.errors.len()];
+    let mut root = parse.root.clone();
     // rustc 1.88.0's parser (rustfmt 1.8.0) has no const block items.
-    let tree = if rustfmt_version >= RustfmtVersion::V1_9_0 {
-        SyntaxNode::new_root(rebuild_const_blocks(
-            &parsed.tree,
-            &parsed.errors,
-            &mut explained,
-        ))
-    } else {
-        parsed.tree.clone()
-    };
-    let green = rebuild_impl_self_types(&tree, &parsed.errors, &mut explained);
-    if explained.iter().all(|&e| e) {
-        return float_fields_as_names(&SyntaxNode::new_root(green), parsed.float_fields);
+    if rustfmt_version >= RustfmtVersion::V1_9_0 {
+        root = rebuild_const_blocks(&root, 0, source, &parse.errors, &mut explained);
     }
+    root = rebuild_impl_self_types(&root, 0, &parse.errors, &mut explained);
+    if explained.iter().all(|&e| e) {
+        let root = float_fields_as_names(&root, source, parse.float_fields)?;
+        return Some(to_tree(source, root));
+    }
+    with_inserted_dyn(source, edition, parse)
+}
+
+/// The parse of `source` with `DYN` inserted, one insertion per round at the first error
+/// (the tree after an error is the parser's recovery, so only the first error is trusted),
+/// and the inserted tokens left out.
+fn with_inserted_dyn<'s>(source: &'s str, edition: Edition, parse: Parse) -> Option<Tree<'s>> {
     // Offsets in `source` before which `DYN` is inserted, sorted.
     let mut inserts: Vec<usize> = Vec::new();
-    let mut found = insertion(&parsed.tree, &parsed.errors);
-    // Each round adds the insertion for the first error. The tree after an error is the
-    // parser's recovery, so only the first error is trusted.
+    let mut text = source.to_owned();
+    let mut parse = parse;
     for _ in 0..64 {
-        let original = to_original(&inserts, found?)?;
+        let found = {
+            let errors = parse.errors.clone();
+            let tree = to_tree(&text, parse.root);
+            insertion(&tree, &errors)?
+        };
+        let original = to_original(&inserts, found)?;
         match inserts.binary_search(&original) {
             Ok(_) => return None,
             Err(i) => inserts.insert(i, original),
         }
-        let text = with_insertions(source, &inserts);
-        let parsed = build_tree(&text, edition)?;
-        if parsed.errors.is_empty() {
+        text = with_insertions(source, &inserts);
+        parse = parse_owned(&text, edition)?;
+        if parse.errors.is_empty() {
             let removed: Vec<usize> = inserts
                 .iter()
                 .enumerate()
@@ -153,11 +249,14 @@ pub(crate) fn reparse(
                 })
                 .collect();
             let mut offset = 0;
-            let green = without_tokens(&parsed.tree.green(), &mut offset, &removed);
-            let root = float_fields_as_names(&SyntaxNode::new_root(green), parsed.float_fields)?;
-            return (root.text() == source).then_some(root);
+            let mut kept = String::with_capacity(source.len());
+            let root = without_tokens(&parse.root, &mut offset, &removed, &text, &mut kept);
+            if kept != source {
+                return None;
+            }
+            let root = float_fields_as_names(&root, source, parse.float_fields)?;
+            return Some(to_tree(source, root));
         }
-        found = insertion(&parsed.tree, &parsed.errors);
     }
     None
 }
@@ -187,55 +286,64 @@ fn to_original(inserts: &[usize], pos: usize) -> Option<usize> {
     (before == inserts.len() || original <= inserts[before]).then_some(original)
 }
 
-/// A copy of `node` without the tokens that start at the offsets in `removed` (sorted).
-fn without_tokens(node: &GreenNodeData, offset: &mut usize, removed: &[usize]) -> GreenNode {
-    let mut children = Vec::new();
-    for child in node.children() {
+/// A copy of `node` (at `offset` in `text`) without the tokens that start at the offsets in
+/// `removed` (sorted); the text of the tokens kept is appended to `kept`.
+fn without_tokens(
+    node: &ONode,
+    offset: &mut usize,
+    removed: &[usize],
+    text: &str,
+    kept: &mut String,
+) -> ONode {
+    let mut children = Vec::with_capacity(node.children.len());
+    for child in &node.children {
         match child {
-            NodeOrToken::Token(t) => {
+            El::Token(kind, len) => {
                 let start = *offset;
-                *offset += t.text().len();
+                *offset += *len as usize;
                 if removed.binary_search(&start).is_err() {
-                    children.push(NodeOrToken::Token(t.to_owned()));
+                    kept.push_str(&text[start..*offset]);
+                    children.push(El::Token(*kind, *len));
                 }
             }
-            NodeOrToken::Node(n) => {
-                children.push(NodeOrToken::Node(without_tokens(n, offset, removed)));
-            }
+            El::Node(n) => children.push(El::Node(without_tokens(n, offset, removed, text, kept))),
         }
     }
-    GreenNode::new(node.kind(), children)
+    ONode::new(node.kind, children)
 }
 
-fn next_significant(token: &SyntaxToken) -> Option<SyntaxToken> {
-    let mut t = token.next_token()?;
-    while t.kind().is_trivia() {
-        t = t.next_token()?;
-    }
-    Some(t)
+/// The next token after element `index` of `tree` that is not trivia: its kind and offset.
+fn next_significant(tree: &Tree<'_>, index: u32) -> Option<(SyntaxKind, usize)> {
+    (index + 1..tree.len() as u32)
+        .map(|i| tree.elem(i))
+        .find(|e| !e.is_node && !e.kind.is_trivia())
+        .map(|e| (e.kind, e.start as usize))
 }
 
-/// The `)` that closes the `(` token `open`.
-fn closing_paren(open: &SyntaxToken) -> Option<SyntaxToken> {
+/// The index of the `)` token that closes the `(` token at `open`.
+fn closing_paren(tree: &Tree<'_>, open: u32) -> Option<u32> {
     let mut depth = 0usize;
-    let mut t = open.clone();
-    loop {
-        match t.kind() {
+    for i in open..tree.len() as u32 {
+        let e = tree.elem(i);
+        if e.is_node {
+            continue;
+        }
+        match e.kind {
             T!['('] => depth += 1,
             T![')'] => {
                 depth -= 1;
                 if depth == 0 {
-                    return Some(t);
+                    return Some(i);
                 }
             }
             _ => {}
         }
-        t = t.next_token()?;
     }
+    None
 }
 
 /// rustc parses a type with `+` after it here (`AllowPlus::Yes`).
-fn plus_allowed(parent: Option<SyntaxNode>) -> bool {
+fn plus_allowed(parent: Option<Node<'_>>) -> bool {
     let Some(parent) = parent else {
         return false;
     };
@@ -260,8 +368,8 @@ fn plus_allowed(parent: Option<SyntaxNode>) -> bool {
 /// A parenthesized type rustc reads as the first bound of a trait object when `+` follows:
 /// a path without a qualified self type (`TyKind::Path(None, ..)`), or `for<..>` and a path
 /// (a trait object with one bound).
-fn bound_like(inner: &SyntaxNode) -> bool {
-    let path_type = |n: &SyntaxNode| {
+fn bound_like(inner: Node<'_>) -> bool {
+    let path_type = |n: Node<'_>| {
         n.kind() == SyntaxKind::PATH_TYPE && n.first_token().is_some_and(|t| t.kind() != T![<])
     };
     match inner.kind() {
@@ -269,7 +377,7 @@ fn bound_like(inner: &SyntaxNode) -> bool {
         SyntaxKind::FOR_TYPE => inner
             .children()
             .find(|c| c.kind() != SyntaxKind::FOR_BINDER)
-            .is_some_and(|c| path_type(&c)),
+            .is_some_and(path_type),
         _ => false,
     }
 }
@@ -277,7 +385,7 @@ fn bound_like(inner: &SyntaxNode) -> bool {
 /// The offset (in the parsed text) where `DYN` makes rust-analyzer's parser build the node
 /// for a construct rustc accepts, at the first error of a failed parse: the candidate
 /// closest before that error.
-fn insertion(tree: &SyntaxNode, errors: &[usize]) -> Option<usize> {
+fn insertion(tree: &Tree<'_>, errors: &[usize]) -> Option<usize> {
     let first_error = errors.iter().copied().min()?;
     insertions(tree, errors)
         .into_iter()
@@ -287,47 +395,43 @@ fn insertion(tree: &SyntaxNode, errors: &[usize]) -> Option<usize> {
 
 /// Offsets (in the parsed text) where `DYN` makes rust-analyzer's parser build the node for
 /// a construct rustc accepts, found from a failed parse.
-fn insertions(tree: &SyntaxNode, errors: &[usize]) -> Vec<usize> {
+fn insertions(tree: &Tree<'_>, errors: &[usize]) -> Vec<usize> {
     let mut found = Vec::new();
-    for paren in tree
-        .descendants()
-        .filter(|n| n.kind() == SyntaxKind::PAREN_TYPE)
-    {
+    for paren in tree.nodes().filter(|n| n.kind() == SyntaxKind::PAREN_TYPE) {
         let Some(open) = paren.first_token().filter(|t| t.kind() == T!['(']) else {
             continue;
         };
-        let start = usize::from(paren.text_range().start());
-        let Some(first) = next_significant(&open) else {
+        let start = paren.text_range().start() as usize;
+        let Some((first, first_at)) = next_significant(tree, open.index()) else {
             continue;
         };
-        if first.kind() == T![?] {
+        if first == T![?] {
             // `(?Bound..)`: the first bound of a trait object if `+` follows the `)`,
             // otherwise a parenthesized trait object.
-            let Some(close) = closing_paren(&open) else {
+            let Some(close) = closing_paren(tree, open.index()) else {
                 continue;
             };
-            let plus_follows = next_significant(&close).is_some_and(|t| t.kind() == T![+]);
+            let plus_follows = next_significant(tree, close).is_some_and(|(k, _)| k == T![+]);
             if plus_follows && plus_allowed(paren.parent()) {
                 found.push(start);
             } else {
-                found.push(usize::from(first.text_range().start()));
+                found.push(first_at);
             }
             continue;
         }
-        let end = usize::from(paren.text_range().end());
-        let closed = paren.last_token().is_some_and(|t| t.kind() == T![')']);
+        let end = paren.text_range().end() as usize;
+        let Some(last) = paren.last_token() else {
+            continue;
+        };
         let Some(inner) = paren.children().next() else {
             continue;
         };
-        let plus_follows = paren
-            .last_token()
-            .and_then(|t| next_significant(&t))
-            .is_some_and(|t| t.kind() == T![+]);
-        if closed
+        let plus_follows = next_significant(tree, last.index()).is_some_and(|(k, _)| k == T![+]);
+        if last.kind() == T![')']
             && plus_follows
             && errors.contains(&end)
             && plus_allowed(paren.parent())
-            && bound_like(&inner)
+            && bound_like(inner)
         {
             found.push(start);
         }
@@ -347,91 +451,96 @@ fn float_field_name(text: &str) -> bool {
         && exponent.chars().all(|c| c.is_ascii_digit() || c == '_')
 }
 
-/// `tree` with each float literal field name in a `NAME_REF` instead of an `ERROR` node,
-/// and without the `FIELD_EXPR` that rust-analyzer opens around it for a second field
-/// (`s.1.2`) and leaves with that single child. `None` unless there are `expected` such
-/// field names, all of rustc's single-component form, and no other `ERROR` node.
-fn float_fields_as_names(tree: &SyntaxNode, expected: usize) -> Option<SyntaxNode> {
+/// `root` (over `text`) with each float literal field name in a `NAME_REF` instead of an
+/// `ERROR` node, and without the `FIELD_EXPR` that rust-analyzer opens around it for a
+/// second field (`s.1.2`) and leaves with that single child. `None` unless there are
+/// `expected` such field names, all of rustc's single-component form, and no other `ERROR`
+/// node.
+fn float_fields_as_names(root: &ONode, text: &str, expected: usize) -> Option<ONode> {
     let mut fixed = 0;
-    let green = rebuild_field_names(tree, &mut fixed)?;
-    (fixed == expected).then(|| SyntaxNode::new_root(green))
+    let mut offset = 0;
+    let root = rebuild_field_names(root, &mut offset, text, &mut fixed)?;
+    (fixed == expected).then_some(root)
 }
 
-fn rebuild_field_names(node: &SyntaxNode, fixed: &mut usize) -> Option<GreenNode> {
-    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
-    let mut children = Vec::new();
-    for child in node.children_with_tokens() {
+fn rebuild_field_names(
+    node: &ONode,
+    offset: &mut usize,
+    text: &str,
+    fixed: &mut usize,
+) -> Option<ONode> {
+    let mut children = Vec::with_capacity(node.children.len());
+    for child in &node.children {
         match child {
-            SyntaxElement::Token(t) => children.push(NodeOrToken::Token(t.green().to_owned())),
-            SyntaxElement::Node(n) if n.kind() == SyntaxKind::ERROR => {
+            El::Token(kind, len) => {
+                *offset += *len as usize;
+                children.push(El::Token(*kind, *len));
+            }
+            El::Node(n) if n.kind == SyntaxKind::ERROR => {
                 // `ERROR(FLOAT_NUMBER)` as the field of a `FIELD_EXPR`.
-                let mut tokens = n.children_with_tokens();
-                let literal = match (tokens.next(), tokens.next()) {
-                    (Some(SyntaxElement::Token(t)), None)
-                        if t.kind() == SyntaxKind::FLOAT_NUMBER && float_field_name(t.text()) =>
-                    {
-                        t
-                    }
+                let literal = match n.children.as_slice() {
+                    [El::Token(SyntaxKind::FLOAT_NUMBER, len)] => *len,
                     _ => return None,
                 };
-                if node.kind() != SyntaxKind::FIELD_EXPR {
+                let literal_text = &text[*offset..*offset + literal as usize];
+                if node.kind != SyntaxKind::FIELD_EXPR || !float_field_name(literal_text) {
                     return None;
                 }
+                *offset += literal as usize;
                 *fixed += 1;
-                let name_ref = GreenNode::new(
-                    raw(SyntaxKind::NAME_REF),
-                    [NodeOrToken::Token(literal.green().to_owned())],
-                );
-                children.push(NodeOrToken::Node(name_ref));
+                children.push(El::Node(ONode::new(
+                    SyntaxKind::NAME_REF,
+                    vec![El::Token(SyntaxKind::FLOAT_NUMBER, literal)],
+                )));
             }
-            SyntaxElement::Node(n) => {
-                let rebuilt = rebuild_field_names(&n, fixed)?;
-                children.push(NodeOrToken::Node(rebuilt));
-            }
+            El::Node(n) => children.push(El::Node(rebuild_field_names(n, offset, text, fixed)?)),
         }
     }
     // The `FIELD_EXPR` left around a repaired one, with no other child.
-    if node.kind() == SyntaxKind::FIELD_EXPR
-        && children.len() == 1
-        && matches!(&children[0], NodeOrToken::Node(n) if n.kind() == raw(SyntaxKind::FIELD_EXPR))
+    if node.kind == SyntaxKind::FIELD_EXPR
+        && let [El::Node(inner)] = children.as_slice()
+        && inner.kind == SyntaxKind::FIELD_EXPR
     {
-        return children.pop().and_then(NodeOrToken::into_node);
+        return Some(inner.clone());
     }
-    Some(GreenNode::new(node.green().kind(), children))
+    Some(ONode::new(node.kind, children))
 }
 
-fn is_error_with(element: &SyntaxElement, first: SyntaxKind) -> bool {
-    matches!(element, SyntaxElement::Node(n)
-        if n.kind() == SyntaxKind::ERROR
-            && n.first_token().is_some_and(|t| t.kind() == first))
+fn is_error_with(element: &El, first: SyntaxKind) -> bool {
+    element.kind() == SyntaxKind::ERROR && element.first_token() == Some(first)
 }
 
 /// An `ERROR` node holding only outer attributes, a visibility and trivia: what
 /// rust-analyzer keeps of `#[a] pub` when no item follows. rustfmt prints the attributes and
 /// drops the visibility (`ast::ConstBlockItem` has none).
-fn is_item_prefix(element: &SyntaxElement) -> bool {
-    matches!(element, SyntaxElement::Node(n)
-    if n.kind() == SyntaxKind::ERROR
-        && n.children_with_tokens().all(|c| {
-            c.kind().is_trivia()
-                || matches!(c.kind(), SyntaxKind::ATTR | SyntaxKind::VISIBILITY)
-        }))
+fn is_item_prefix(element: &El) -> bool {
+    element.as_node().is_some_and(|n| {
+        n.kind == SyntaxKind::ERROR
+            && n.children.iter().all(|c| {
+                c.kind().is_trivia()
+                    || matches!(c.kind(), SyntaxKind::ATTR | SyntaxKind::VISIBILITY)
+            })
+    })
 }
 
-fn green_element(element: &SyntaxElement) -> NodeOrToken<GreenNode, rowan::GreenToken> {
-    match element {
-        SyntaxElement::Node(n) => NodeOrToken::Node(n.green().into_owned()),
-        SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+/// A copy of `node` (at `start` in `text`) with each const block item of a file or module
+/// as a `CONST` node; marks in `explained` the errors (offsets in `errors`) that are theirs.
+fn rebuild_const_blocks(
+    node: &ONode,
+    start: usize,
+    text: &str,
+    errors: &[usize],
+    explained: &mut [bool],
+) -> ONode {
+    let elements = &node.children;
+    let mut starts = Vec::with_capacity(elements.len());
+    let mut at = start;
+    for e in elements {
+        starts.push(at);
+        at += e.len() as usize;
     }
-}
-
-/// A copy of `node` with each const block item of a file or module as a `CONST` node; marks
-/// in `explained` the errors (offsets in `errors`) that are theirs.
-fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bool]) -> GreenNode {
-    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
-    let elements: Vec<SyntaxElement> = node.children_with_tokens().collect();
-    let in_module = matches!(node.kind(), SyntaxKind::SOURCE_FILE | SyntaxKind::ITEM_LIST);
-    let mut children = Vec::with_capacity(elements.len());
+    let in_module = matches!(node.kind, SyntaxKind::SOURCE_FILE | SyntaxKind::ITEM_LIST);
+    let mut children: Vec<El> = Vec::with_capacity(elements.len());
     let mut i = 0;
     while i < elements.len() {
         if in_module && is_error_with(&elements[i], T![const]) {
@@ -442,37 +551,36 @@ fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bo
             }
             let block = elements
                 .get(j)
-                .filter(|e| is_error_with(e, T!['{']))
-                .and_then(|e| e.as_node().cloned())
-                .filter(|b| b.last_token().is_some_and(|t| t.kind() == T!['}']));
+                .filter(|e| is_error_with(e, T!['{']) && e.last_token() == Some(T!['}']))
+                .and_then(El::as_node);
             if let Some(block) = block {
                 // Attributes and a visibility before `const`, then the trivia in between.
-                let mut start = i;
+                let mut first = i;
                 let mut k = i;
                 while k > 0 && elements[k - 1].kind().is_trivia() {
                     k -= 1;
                 }
                 if k > 0 && is_item_prefix(&elements[k - 1]) {
-                    start = k - 1;
+                    first = k - 1;
                 }
                 // Comments right before the item belong to it, as rust-analyzer attaches
                 // them to items, up to a blank line.
-                let mut attached = start;
+                let mut attached = first;
                 while attached > 0 {
                     let prev = &elements[attached - 1];
+                    let prev_text = &text[starts[attached - 1]..starts[attached]];
                     let blank_line =
-                        prev.kind() == SyntaxKind::WHITESPACE && prev.to_string().contains("\n\n");
+                        prev.kind() == SyntaxKind::WHITESPACE && prev_text.contains("\n\n");
                     if !prev.kind().is_trivia() || blank_line {
                         break;
                     }
                     attached -= 1;
                 }
-                while attached < start && elements[attached].kind() == SyntaxKind::WHITESPACE {
+                while attached < first && elements[attached].kind() == SyntaxKind::WHITESPACE {
                     attached += 1;
                 }
                 children.truncate(children.len() - (i - attached));
-                let lo = usize::from(elements[start].text_range().start());
-                let hi = usize::from(block.text_range().start());
+                let (lo, hi) = (starts[first], starts[j]);
                 for (e, done) in errors.iter().zip(explained.iter_mut()) {
                     if (lo..=hi).contains(e) {
                         *done = true;
@@ -481,94 +589,92 @@ fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bo
                 let mut item = Vec::new();
                 for e in &elements[attached..i] {
                     match e {
-                        SyntaxElement::Node(prefix) if prefix.kind() == SyntaxKind::ERROR => {
-                            item.extend(prefix.children_with_tokens().map(|c| green_element(&c)))
+                        El::Node(prefix) if prefix.kind == SyntaxKind::ERROR => {
+                            item.extend(prefix.children.iter().cloned())
                         }
-                        e => item.push(green_element(e)),
+                        e => item.push(e.clone()),
                     }
                 }
-                if let SyntaxElement::Node(const_kw) = &elements[i] {
-                    item.extend(const_kw.children_with_tokens().map(|c| green_element(&c)));
+                if let El::Node(const_kw) = &elements[i] {
+                    item.extend(const_kw.children.iter().cloned());
                 }
-                item.extend(elements[i + 1..j].iter().map(green_element));
-                let stmt_list = GreenNode::new(
-                    raw(SyntaxKind::STMT_LIST),
-                    block
-                        .children_with_tokens()
-                        .map(|c| green_element(&c))
-                        .collect::<Vec<_>>(),
-                );
-                let block_expr =
-                    GreenNode::new(raw(SyntaxKind::BLOCK_EXPR), [NodeOrToken::Node(stmt_list)]);
-                item.push(NodeOrToken::Node(block_expr));
-                children.push(NodeOrToken::Node(GreenNode::new(
-                    raw(SyntaxKind::CONST),
-                    item,
-                )));
+                item.extend(elements[i + 1..j].iter().cloned());
+                let stmt_list = ONode::new(SyntaxKind::STMT_LIST, block.children.clone());
+                let block_expr = ONode::new(SyntaxKind::BLOCK_EXPR, vec![El::Node(stmt_list)]);
+                item.push(El::Node(block_expr));
+                children.push(El::Node(ONode::new(SyntaxKind::CONST, item)));
                 i = j + 1;
                 continue;
             }
         }
         children.push(match &elements[i] {
-            SyntaxElement::Node(n) => NodeOrToken::Node(rebuild_const_blocks(n, errors, explained)),
-            SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+            El::Node(n) => El::Node(rebuild_const_blocks(n, starts[i], text, errors, explained)),
+            token => token.clone(),
         });
         i += 1;
     }
-    GreenNode::new(node.green().kind(), children)
+    ONode::new(node.kind, children)
 }
 
-/// The type, the trivia after it and the remaining elements of an impl that rust-analyzer
-/// parsed from `impl Trait {}` after an impl it ended at a second `impl`: `impl`, trivia, a
-/// path type or a bare trait object, no `for`, then an optional where clause and the body.
-fn impl_trait_parts(second: &SyntaxNode) -> Option<(SyntaxNode, GreenNode, Vec<SyntaxElement>)> {
-    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
-    let elements: Vec<SyntaxElement> = second.children_with_tokens().collect();
-    let mut significant = elements.iter().filter(|e| !e.kind().is_trivia());
-    if significant.next()?.kind() != T![impl] {
+/// The type, its bounds and the elements after it of an impl that rust-analyzer parsed
+/// from `impl Trait {}` after an impl it ended at a second `impl`: `impl`, trivia, a path
+/// type or a bare trait object, no `for`, then an optional where clause and the body.
+fn impl_trait_parts(second: &ONode) -> Option<(usize, ONode, Vec<El>)> {
+    let mut significant = second
+        .children
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| !e.kind().is_trivia());
+    if significant.next()?.1.kind() != T![impl] {
         return None;
     }
-    let ty = significant.next()?.as_node()?.clone();
+    let (position, ty) = significant.next()?;
+    let ty = ty.as_node()?;
     // The bounds of the `impl Trait` type.
-    let bounds = match ty.kind() {
+    let bounds = match ty.kind {
         SyntaxKind::PATH_TYPE => {
-            let bound = GreenNode::new(
-                raw(SyntaxKind::TYPE_BOUND),
-                [NodeOrToken::Node(ty.green().into_owned())],
-            );
-            GreenNode::new(raw(SyntaxKind::TYPE_BOUND_LIST), [NodeOrToken::Node(bound)])
+            let bound = ONode::new(SyntaxKind::TYPE_BOUND, vec![El::Node(ty.clone())]);
+            ONode::new(SyntaxKind::TYPE_BOUND_LIST, vec![El::Node(bound)])
         }
-        SyntaxKind::DYN_TRAIT_TYPE if ty.first_token().is_some_and(|t| t.kind() != T![dyn]) => {
-            ty.children().next()?.green().into_owned()
+        SyntaxKind::DYN_TRAIT_TYPE if El::Node(ty.clone()).first_token() != Some(T![dyn]) => {
+            ty.children.iter().find_map(El::as_node)?.clone()
         }
         _ => return None,
     };
-    let rest: Vec<SyntaxKind> = significant.map(|e| e.kind()).collect();
+    let rest: Vec<SyntaxKind> = significant.map(|(_, e)| e.kind()).collect();
     let body_ok = matches!(
         rest.as_slice(),
         [SyntaxKind::ASSOC_ITEM_LIST] | [SyntaxKind::WHERE_CLAUSE, SyntaxKind::ASSOC_ITEM_LIST]
     );
-    let position = elements.iter().position(|e| e.as_node() == Some(&ty))?;
-    body_ok.then(|| (ty, bounds, elements[position + 1..].to_vec()))
+    body_ok.then(|| (position, bounds, second.children[position + 1..].to_vec()))
 }
 
-/// A copy of `node` with each impl whose self type is `impl Trait` merged as described in the
-/// module documentation; marks in `explained` the errors that are theirs.
+/// A copy of `node` (at `start`) with each impl whose self type is `impl Trait` merged as
+/// described in the module documentation; marks in `explained` the errors that are theirs.
 fn rebuild_impl_self_types(
-    node: &SyntaxNode,
+    node: &ONode,
+    start: usize,
     errors: &[usize],
     explained: &mut [bool],
-) -> GreenNode {
-    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
-    let elements: Vec<SyntaxElement> = node.children_with_tokens().collect();
+) -> ONode {
+    let elements = &node.children;
+    let mut starts = Vec::with_capacity(elements.len());
+    let mut at = start;
+    for e in elements {
+        starts.push(at);
+        at += e.len() as usize;
+    }
     let mut children = Vec::with_capacity(elements.len());
     let mut i = 0;
     while i < elements.len() {
-        if let SyntaxElement::Node(first) = &elements[i]
-            && first.kind() == SyntaxKind::IMPL
+        if let El::Node(first) = &elements[i]
+            && first.kind == SyntaxKind::IMPL
             && !first
-                .children_with_tokens()
+                .children
+                .iter()
                 .any(|c| c.kind() == SyntaxKind::ASSOC_ITEM_LIST)
+            // `impl impl A for B` is an error to rustc: the trait must be a path.
+            && matches!(elements[i].last_token(), Some(T![impl] | T![for] | T![>]))
         {
             let mut j = i + 1;
             while j < elements.len() && elements[j].kind().is_trivia() {
@@ -576,53 +682,36 @@ fn rebuild_impl_self_types(
             }
             let second = elements
                 .get(j)
-                .and_then(|e| e.as_node())
-                .filter(|n| n.kind() == SyntaxKind::IMPL);
-            // `impl impl A for B` is an error to rustc: the trait must be a path.
-            let first_ends_ok = first
-                .last_token()
-                .is_some_and(|t| matches!(t.kind(), T![impl] | T![for] | T![>]));
-            if let Some((second, (ty, bounds, rest))) =
+                .and_then(El::as_node)
+                .filter(|n| n.kind == SyntaxKind::IMPL);
+            if let Some((second, (position, bounds, rest))) =
                 second.and_then(|s| Some((s, impl_trait_parts(s)?)))
-                && first_ends_ok
             {
-                let end = usize::from(first.text_range().end());
+                let end = starts[i] + first.len() as usize;
                 for (e, done) in errors.iter().zip(explained.iter_mut()) {
                     if *e == end {
                         *done = true;
                     }
                 }
-                let mut item: Vec<_> = first
-                    .children_with_tokens()
-                    .map(|c| green_element(&c))
-                    .collect();
-                item.extend(elements[i + 1..j].iter().map(green_element));
-                let mut impl_trait: Vec<_> = second
-                    .children_with_tokens()
-                    .take_while(|c| c.as_node() != Some(&ty))
-                    .map(|c| green_element(&c))
-                    .collect();
-                impl_trait.push(NodeOrToken::Node(bounds));
-                item.push(NodeOrToken::Node(GreenNode::new(
-                    raw(SyntaxKind::IMPL_TRAIT_TYPE),
+                let mut item: Vec<El> = first.children.clone();
+                item.extend(elements[i + 1..j].iter().cloned());
+                let mut impl_trait: Vec<El> = second.children[..position].to_vec();
+                impl_trait.push(El::Node(bounds));
+                item.push(El::Node(ONode::new(
+                    SyntaxKind::IMPL_TRAIT_TYPE,
                     impl_trait,
                 )));
-                item.extend(rest.iter().map(green_element));
-                children.push(NodeOrToken::Node(GreenNode::new(
-                    raw(SyntaxKind::IMPL),
-                    item,
-                )));
+                item.extend(rest);
+                children.push(El::Node(ONode::new(SyntaxKind::IMPL, item)));
                 i = j + 1;
                 continue;
             }
         }
         children.push(match &elements[i] {
-            SyntaxElement::Node(n) => {
-                NodeOrToken::Node(rebuild_impl_self_types(n, errors, explained))
-            }
-            SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+            El::Node(n) => El::Node(rebuild_impl_self_types(n, starts[i], errors, explained)),
+            token => token.clone(),
         });
         i += 1;
     }
-    GreenNode::new(node.green().kind(), children)
+    ONode::new(node.kind, children)
 }

@@ -280,7 +280,7 @@ is snapshotted for both releases at both editions, regenerated with
 `CHLORO_RUSTFMT_VERSIONS=1.8.0=1.88.0`. The default path's instruction count moves by
 −0.04%.
 
-**E7b, the flat substrate under the formatter (`20261014-flat-port`).** The port replaces
+**E7b, the flat substrate under the formatter (`20261014-flat-port`, merged after the orchestrator reproduced every gate on `b4fdd1a`: 390,690,264 instructions on the sample, −24.7%).** The port replaces
 rowan's red and green trees with the flat preorder array of E7: `chloro-core/src/cst/`
 holds the `Tree`, `Copy` node and token handles borrowing it, a `TreeBuilder` fed by the
 same parser events, a `typed-arena` of trees owned by the run (the file is tree 0, each

@@ -2,8 +2,8 @@
 
 use std::iter::repeat_n;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::{FindUncommented, combine_strs_with_missing_comments, rewrite_comment};
@@ -14,11 +14,11 @@ use super::expr::{
     prefer_next_line, rewrite_cond,
 };
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
+use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
     contains_skip, inner_attributes, is_repeat_array, outer_attributes,
 };
-use super::nodes::{child_range, has_token};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
@@ -27,8 +27,8 @@ use super::utils::{
 };
 
 /// A simple wrapper type against `ast::MatchArm`. Used inside `write_list()`.
-struct ArmWrapper {
-    arm: ast::MatchArm,
+struct ArmWrapper<'a> {
+    arm: ast::MatchArm<'a>,
     /// `true` if the arm is the last one in match expression. Used to decide on whether we should
     /// add trailing comma to the match arm when `config.trailing_comma() == Never`.
     is_last: bool,
@@ -40,14 +40,13 @@ struct ArmWrapper {
 /// trailing comma.
 fn arm_span(arm: &ast::MatchArm) -> Span {
     let full = arm.span();
-    // `MatchArm::expr`, of which only the end is used.
-    match child_range::<ast::Expr>(arm.syntax()) {
-        Some(body) => full.with_hi(body.end().into()),
+    match arm.expr() {
+        Some(body) => full.with_hi(body.span().hi()),
         None => full,
     }
 }
 
-impl Spanned for ArmWrapper {
+impl Spanned for ArmWrapper<'_> {
     fn span(&self) -> Span {
         let span = arm_span(&self.arm);
         if let Some(lo) = self.beginning_vert {
@@ -58,7 +57,7 @@ impl Spanned for ArmWrapper {
     }
 }
 
-impl Rewrite for ArmWrapper {
+impl Rewrite for ArmWrapper<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_match_arm(
             context,
@@ -173,10 +172,13 @@ fn is_default_block(body: &ast::Expr) -> bool {
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
-fn as_block(context: &RewriteContext<'_>, body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn as_block<'a>(
+    context: &RewriteContext<'_>,
+    body: &ast::Expr<'a>,
+) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), context.run.block_of(b)?))
+            Some((*b, context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -232,7 +234,7 @@ fn rewrite_match_arms(
         .zip(is_last_iter)
         .zip(beginning_verts)
         .map(|((arm, is_last), beginning_vert)| ArmWrapper {
-            arm: arm.clone(),
+            arm: *arm,
             is_last,
             beginning_vert,
         })
@@ -267,7 +269,7 @@ fn rewrite_match_arm(
 ) -> Option<String> {
     let attrs = outer_attributes(arm.syntax());
     let pat = child::<ast::Pat>(arm.syntax())?;
-    let body = child::<ast::Expr>(arm.syntax())?;
+    let body = arm.expr()?;
     let (missing_span, attrs_str) = if !attrs.is_empty() {
         if contains_skip(&attrs) {
             let (_, body) = flatten_arm_body(context, &body, None);
@@ -304,9 +306,7 @@ fn rewrite_match_arm(
             // Some block with a label ` => 'label: {`
             // 7 = ` => : {`
             let label_len = label.syntax().text().len();
-            shape
-                .sub_width(7 + usize::from(label_len))?
-                .offset_left(pipe_offset)?
+            shape.sub_width(7 + label_len)?.offset_left(pipe_offset)?
         }
         None => {
             // 5 = ` => {`
@@ -318,7 +318,7 @@ fn rewrite_match_arm(
     // Guard
     let block_like_pat = trimmed_last_line_width(&pats_str) <= context.config.tab_spaces();
     let new_line_guard = pats_str.contains('\n') && !block_like_pat;
-    let guard = child::<ast::MatchGuard>(arm.syntax()).and_then(|g| child::<ast::Expr>(g.syntax()));
+    let guard = arm.guard().and_then(|g| g.condition());
     let guard_str = rewrite_guard(
         context,
         guard.as_ref(),
@@ -352,7 +352,10 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
     matches!(kind, StmtKind::Expr(ast::Expr::MacroExpr(_)))
 }
 
-fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
+fn block_can_be_flattened<'a>(
+    context: &RewriteContext<'_>,
+    expr: &ast::Expr<'a>,
+) -> Option<Block<'a>> {
     let (block_expr, block) = as_block(context, expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
@@ -365,11 +368,11 @@ fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Opt
 /// (extend, body)
 /// @extend: true if the arm body can be put next to `=>`
 /// @body: flattened body, if the body is block with a single expression
-fn flatten_arm_body(
+fn flatten_arm_body<'a>(
     context: &RewriteContext<'_>,
-    body: &ast::Expr,
+    body: &ast::Expr<'a>,
     opt_shape: Option<Shape>,
-) -> (bool, ast::Expr) {
+) -> (bool, ast::Expr<'a>) {
     let can_extend = |expr: &ast::Expr| {
         !context.config.force_multiline_blocks() && can_flatten_block_around_this(expr)
     };
@@ -380,23 +383,23 @@ fn flatten_arm_body(
                 if outer_attributes(expr.syntax()).is_empty() {
                     flatten_arm_body(context, expr, None)
                 } else {
-                    (true, body.clone())
+                    (true, *body)
                 }
             } else {
                 let cond_becomes_multi_line = opt_shape
                     .and_then(|shape| rewrite_cond(context, expr, shape))
                     .is_some_and(|cond| cond.contains('\n'));
                 if cond_becomes_multi_line {
-                    (false, body.clone())
+                    (false, *body)
                 } else {
-                    (can_extend(expr), expr.clone())
+                    (can_extend(expr), *expr)
                 }
             }
         } else {
-            (false, body.clone())
+            (false, *body)
         }
     } else {
-        (can_extend(body), body.clone())
+        (can_extend(body), *body)
     }
 }
 

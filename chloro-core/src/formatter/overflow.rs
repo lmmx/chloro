@@ -7,7 +7,7 @@
 
 use std::cmp::min;
 
-use ra_ap_syntax::ast;
+use crate::cst::ast;
 
 use super::attr::MetaItemInner;
 use super::closures;
@@ -74,20 +74,20 @@ const SPECIAL_CASE_ATTR: &[(&str, usize)] = &[
 
 /// An element of a call-like list.
 #[derive(Clone, Debug)]
-pub(crate) enum OverflowableItem {
-    Expr(ast::Expr),
-    GenericParam(ast::GenericParam),
-    MacroArg(MacroArg),
+pub(crate) enum OverflowableItem<'a> {
+    Expr(ast::Expr<'a>),
+    GenericParam(ast::GenericParam<'a>),
+    MacroArg(MacroArg<'a>),
     MetaItemInner(MetaItemInner),
-    SegmentParam(SegmentParam),
-    FieldDef(ast::TupleField),
-    TuplePatField(TuplePatField),
-    Ty(ast::Type),
-    Pat(ast::Pat),
-    PreciseCapturingArg(ast::UseBoundGenericArg),
+    SegmentParam(SegmentParam<'a>),
+    FieldDef(ast::TupleField<'a>),
+    TuplePatField(TuplePatField<'a>),
+    Ty(ast::Type<'a>),
+    Pat(ast::Pat<'a>),
+    PreciseCapturingArg(ast::UseBoundGenericArg<'a>),
 }
 
-impl Rewrite for OverflowableItem {
+impl Rewrite for OverflowableItem<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             OverflowableItem::Expr(expr) => expr.rewrite(context, shape),
@@ -104,7 +104,7 @@ impl Rewrite for OverflowableItem {
     }
 }
 
-impl Spanned for OverflowableItem {
+impl Spanned for OverflowableItem<'_> {
     fn span(&self) -> Span {
         match self {
             OverflowableItem::Expr(expr) => expr.span(),
@@ -121,10 +121,10 @@ impl Spanned for OverflowableItem {
     }
 }
 
-impl OverflowableItem {
+impl OverflowableItem<'_> {
     fn has_attrs(&self) -> bool {
         use super::nodes::outer_attributes;
-        use ra_ap_syntax::AstNode;
+        use crate::cst::AstNode;
         match self {
             OverflowableItem::Expr(expr) => !outer_attributes(expr.syntax()).is_empty(),
             OverflowableItem::GenericParam(gp) => !outer_attributes(gp.syntax()).is_empty(),
@@ -167,7 +167,7 @@ impl OverflowableItem {
         }
     }
 
-    pub(crate) fn to_expr(&self) -> Option<&ast::Expr> {
+    pub(crate) fn to_expr(&self) -> Option<&ast::Expr<'_>> {
         match self {
             OverflowableItem::Expr(expr) | OverflowableItem::MacroArg(MacroArg::Expr(expr)) => {
                 Some(expr)
@@ -223,10 +223,10 @@ pub(crate) fn is_every_expr_simple(lists: &[OverflowableItem]) -> bool {
     lists.iter().all(OverflowableItem::is_simple)
 }
 
-pub(crate) fn rewrite_with_parens(
+pub(crate) fn rewrite_with_parens<'a>(
     context: &RewriteContext<'_>,
     ident: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
     item_max_width: usize,
@@ -247,10 +247,10 @@ pub(crate) fn rewrite_with_parens(
     .rewrite(shape)
 }
 
-pub(crate) fn rewrite_with_angle_brackets(
+pub(crate) fn rewrite_with_angle_brackets<'a>(
     context: &RewriteContext<'_>,
     ident: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
 ) -> Option<String> {
@@ -277,10 +277,10 @@ pub(crate) enum Delimiter {
     Bracket,
 }
 
-pub(crate) fn rewrite_with_square_brackets(
+pub(crate) fn rewrite_with_square_brackets<'a>(
     context: &RewriteContext<'_>,
     name: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
     force_separator_tactic: Option<SeparatorTactic>,
@@ -306,9 +306,9 @@ pub(crate) fn rewrite_with_square_brackets(
     .rewrite(shape)
 }
 
-struct Context<'a, 'b> {
+struct Context<'a, 'b, 'c> {
     context: &'a RewriteContext<'b>,
-    items: Vec<OverflowableItem>,
+    items: Vec<OverflowableItem<'c>>,
     ident: &'a str,
     prefix: &'static str,
     suffix: &'static str,
@@ -321,11 +321,11 @@ struct Context<'a, 'b> {
     custom_delims: Option<(&'static str, &'static str)>,
 }
 
-impl<'a, 'b> Context<'a, 'b> {
+impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
     #[allow(clippy::too_many_arguments)]
     fn new(
         context: &'a RewriteContext<'b>,
-        items: impl IntoIterator<Item = OverflowableItem>,
+        items: impl IntoIterator<Item = OverflowableItem<'c>>,
         ident: &'a str,
         shape: Shape,
         span: Span,
@@ -361,7 +361,7 @@ impl<'a, 'b> Context<'a, 'b> {
         }
     }
 
-    fn last_item(&self) -> Option<&OverflowableItem> {
+    fn last_item(&self) -> Option<&OverflowableItem<'_>> {
         self.items.last()
     }
 

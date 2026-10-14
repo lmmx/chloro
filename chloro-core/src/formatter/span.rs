@@ -1,15 +1,14 @@
 //! Byte spans into the source text, modelled on rustc's `Span`.
 //!
 //! rustfmt recovers comments, blank lines and unformatted code by slicing the original
-//! source between AST nodes. rowan gives every node an exact `TextRange`, so the same
-//! technique works here; the only adjustment is that rust-analyzer attaches leading
+//! source between AST nodes. The syntax tree gives every node an exact `TextRange`, so the
+//! same technique works here; the only adjustment is that rust-analyzer attaches leading
 //! comments to the following item, whereas rustc spans start at the first outer attribute
 //! (doc comments included). [`Spanned::span`] applies that adjustment.
 
-use ra_ap_syntax::{
-    AstNode, AstToken, NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken, ast,
-};
-use rowan::Language;
+use ra_ap_parser::SyntaxKind;
+
+use crate::cst::{AstNode, AstToken, Node, NodeOrToken, Token, ast};
 
 use super::comment::FindUncommented;
 
@@ -50,28 +49,27 @@ pub(crate) fn mk_sp(lo: BytePos, hi: BytePos) -> Span {
     Span { lo, hi: hi.max(lo) }
 }
 
-pub(crate) fn token_span(token: &SyntaxToken) -> Span {
+pub(crate) fn token_span(token: Token<'_>) -> Span {
     let r = token.text_range();
-    mk_sp(r.start().into(), r.end().into())
+    mk_sp(r.start(), r.end())
 }
 
-/// The full rowan range of a node, including attached leading comments.
-pub(crate) fn node_range_span(node: &SyntaxNode) -> Span {
+/// The full range of a node, including attached leading comments.
+pub(crate) fn node_range_span(node: Node<'_>) -> Span {
     let r = node.text_range();
-    mk_sp(r.start().into(), r.end().into())
+    mk_sp(r.start(), r.end())
 }
 
 /// Returns `true` for comments that rustc parses as doc attributes (`///`, `/** */`).
-#[cfg(test)]
-pub(crate) fn is_outer_doc_comment(token: &SyntaxToken) -> bool {
+pub(crate) fn is_outer_doc_comment(token: Token<'_>) -> bool {
     token.kind() == SyntaxKind::COMMENT
-        && ast::Comment::cast(token.clone()).is_some_and(|c| c.is_outer() && c.kind().doc.is_some())
+        && ast::Comment::cast(token).is_some_and(|c| c.is_outer() && c.kind().doc.is_some())
 }
 
 /// Returns `true` for comments that rustc parses as inner doc attributes (`//!`, `/*! */`).
-pub(crate) fn is_inner_doc_comment(token: &SyntaxToken) -> bool {
+pub(crate) fn is_inner_doc_comment(token: Token<'_>) -> bool {
     token.kind() == SyntaxKind::COMMENT
-        && ast::Comment::cast(token.clone()).is_some_and(|c| c.is_inner() && c.kind().doc.is_some())
+        && ast::Comment::cast(token).is_some_and(|c| c.is_inner() && c.kind().doc.is_some())
 }
 
 /// `true` for the text of an outer doc comment (`///`, `/** */`), with rust-analyzer's
@@ -81,25 +79,16 @@ pub(crate) fn is_outer_doc_text(text: &str) -> bool {
         || (text.starts_with("/**") && !text.starts_with("/***") && !text.starts_with("/**/"))
 }
 
-/// `true` for the text of an inner doc comment (`//!`, `/*! */`), with rust-analyzer's
-/// classification.
-pub(crate) fn is_inner_doc_text(text: &str) -> bool {
-    text.starts_with("//!") || text.starts_with("/*!")
-}
-
 /// The rustc-style span of a node: leading trivia that rust-analyzer attached to the
 /// node (plain comments and whitespace) is excluded.
-///
-/// Called for most nodes several times per rewrite, so it reads the green children
-/// directly instead of creating a cursor node per child.
-pub(crate) fn rustc_span(node: &SyntaxNode) -> Span {
+pub(crate) fn rustc_span(node: Node<'_>) -> Span {
     let full = node_range_span(node);
     let mut lo = full.lo();
-    for child in node.green().children() {
+    for child in node.children_with_tokens() {
         match child {
             NodeOrToken::Node(_) => return full.with_lo(lo),
             NodeOrToken::Token(t) => {
-                let significant = match RustLanguage::kind_from_raw(t.kind()) {
+                let significant = match t.kind() {
                     SyntaxKind::WHITESPACE => false,
                     SyntaxKind::COMMENT => is_outer_doc_text(t.text()),
                     _ => true,
@@ -107,7 +96,7 @@ pub(crate) fn rustc_span(node: &SyntaxNode) -> Span {
                 if significant {
                     return full.with_lo(lo);
                 }
-                lo += BytePos::from(t.text_len());
+                lo += t.text_range().len();
             }
         }
     }
@@ -119,7 +108,7 @@ pub(crate) trait Spanned {
     fn span(&self) -> Span;
 }
 
-impl<N: AstNode> Spanned for N {
+impl<'t, N: AstNode<'t>> Spanned for N {
     fn span(&self) -> Span {
         rustc_span(self.syntax())
     }
@@ -203,13 +192,15 @@ impl<'a> SnippetProvider<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_syntax::ast::HasModuleItem;
-    use ra_ap_syntax::{Edition, SourceFile};
+    use crate::cst::Tree;
+    use crate::cst::ast::HasModuleItem;
+    use ra_ap_parser::Edition;
 
     #[test]
     fn item_span_skips_plain_comments_but_keeps_doc_comments() {
         let src = "// plain\n/// doc\nfn f() {}\n";
-        let file = SourceFile::parse(src, Edition::CURRENT).tree();
+        let tree = Tree::parse(src, Edition::CURRENT).unwrap();
+        let file = ast::SourceFile::cast(tree.root()).unwrap();
         let item = file.items().next().unwrap();
         let span = item.span();
         assert_eq!(

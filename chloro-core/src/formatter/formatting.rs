@@ -4,16 +4,16 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 
-use ra_ap_syntax::ast::AstNode;
-use ra_ap_syntax::{Edition, RustLanguage, SourceFile, SyntaxKind, SyntaxNode};
-use rowan::{GreenNodeBuilder, Language};
+use ra_ap_parser::Edition;
+
+use crate::cst::{AstNode, Tree, TreeArena, ast};
 
 use super::comment::{CharClasses, LineClasses};
 use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
 use super::rustc_compat::rejected_by_rustc;
-use super::rustc_syntax::{build_tree, reparse};
+use super::rustc_syntax::reparse;
 use super::shape::Indent;
 use super::span::SnippetProvider;
 use super::utils::indent_next_line;
@@ -32,47 +32,22 @@ pub(crate) struct Formatted {
     pub(crate) skipped_range: Vec<(usize, usize)>,
 }
 
-/// `ra_ap_syntax::SyntaxTreeBuilder` without its `Parse`: `finish` returns the root node.
-/// Dropping a `Parse` sends its green tree to a background thread (`ParseNodeDropper`), so the
-/// tree is freed by whichever thread lets go of it last. Building the tree here keeps chloro
-/// single-threaded: no channel send or futex wake per parse, no frees from another thread,
-/// and instruction counts that do not depend on thread scheduling.
-#[derive(Default)]
-pub(crate) struct TreeBuilder(GreenNodeBuilder<'static>);
-
-impl TreeBuilder {
-    pub(crate) fn token(&mut self, kind: SyntaxKind, text: &str) {
-        self.0.token(RustLanguage::kind_to_raw(kind), text);
-    }
-
-    pub(crate) fn start_node(&mut self, kind: SyntaxKind) {
-        self.0.start_node(RustLanguage::kind_to_raw(kind));
-    }
-
-    pub(crate) fn finish_node(&mut self) {
-        self.0.finish_node();
-    }
-
-    pub(crate) fn finish(self) -> SyntaxNode {
-        SyntaxNode::new_root(self.0.finish())
-    }
-}
-
 /// Parses `source`, or returns `None` when it does not parse. rustfmt refuses to format
 /// a file with a syntax error; so does chloro.
 ///
-/// Only lexer and parser errors count. `SourceFile::parse(..).errors()` would also run
-/// rust-analyzer's semantic validation (e.g. `crate` in the middle of a path), which
-/// rustc's parser does not do, and would cost a second traversal of the tree.
-fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<SourceFile> {
-    let parsed = build_tree(source, edition)?;
-    let tree = if parsed.is_ok() {
-        parsed.tree
-    } else {
-        reparse(source, edition, rustfmt_version, parsed)?
+/// Only lexer and parser errors count (`Tree::parse`). rust-analyzer's semantic validation
+/// (e.g. `crate` in the middle of a path) is not run: rustc's parser does not do it, and it
+/// would cost a second traversal of the tree. Files rustc's parser rejects for other
+/// reasons are left alone by `rustc_compat`.
+///
+/// A file that rust-analyzer's lexer or parser rejects is parsed again by `rustc_syntax`
+/// when rustc's parser accepts it.
+fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
+    let tree = match Tree::parse(source, edition) {
+        Some(tree) => tree,
+        None => reparse(source, edition, rustfmt_version)?,
     };
-    let file = SourceFile::cast(tree)?;
-    (!rejected_by_rustc(&file, edition, rustfmt_version)).then_some(file)
+    (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse.
@@ -81,7 +56,8 @@ pub(crate) fn format_text(
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<Formatted> {
-    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
+    let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
+    let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
 
     // `#![rustfmt::skip]` on the file: echo the input.
     if contains_skip(&inner_attributes(file.syntax())) {
@@ -94,7 +70,8 @@ pub(crate) fn format_text(
         });
     }
 
-    let run = Rc::new(RunState::default());
+    let arena = TreeArena::new();
+    let run = Rc::new(RunState::new(&arena));
     let snippet_provider = SnippetProvider::new(source);
     let end_pos = snippet_provider.end_pos();
     let mut visitor = FmtVisitor::new(config, snippet_provider, run.clone());
@@ -133,7 +110,8 @@ pub(crate) fn format_text_parallel(
     config: &Settings,
     threads: usize,
 ) -> Option<Formatted> {
-    let file = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
+    let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
+    let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
     if contains_skip(&inner_attributes(file.syntax())) {
         return Some(Formatted {
             text: source.to_owned(),
@@ -381,35 +359,6 @@ pub(crate) fn format_code_block(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_parser::{LexedStr, StrStep, TopEntryPoint};
-
-    #[test]
-    fn tree_builder_builds_the_tree_syntax_tree_builder_builds() {
-        let source = "//! doc\n#[cfg(x)]\nfn f<T: ?Sized>(a: &T) -> u8 { m!(a, b); 1 }\n";
-        let lexed = LexedStr::new(Edition::Edition2024, source);
-        let input = lexed.to_input(Edition::Edition2024);
-        let output = TopEntryPoint::SourceFile.parse(&input, Edition::Edition2024);
-        let mut ours = TreeBuilder::default();
-        let mut theirs = ra_ap_syntax::SyntaxTreeBuilder::default();
-        lexed.intersperse_trivia(&output, &mut |step| match step {
-            StrStep::Token { kind, text } => {
-                ours.token(kind, text);
-                theirs.token(kind, text);
-            }
-            StrStep::Enter { kind } => {
-                ours.start_node(kind);
-                theirs.start_node(kind);
-            }
-            StrStep::Exit => {
-                ours.finish_node();
-                theirs.finish_node();
-            }
-            StrStep::Error { .. } => panic!("{source:?} does not parse"),
-        });
-        let (ours, theirs) = (ours.finish(), theirs.finish().syntax_node());
-        assert_eq!(format!("{ours:#?}"), format!("{theirs:#?}"));
-        assert_eq!(ours.green(), theirs.green());
-    }
 
     #[test]
     fn trailing_newlines_are_truncated_to_one() {

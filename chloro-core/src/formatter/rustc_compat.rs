@@ -10,43 +10,29 @@
 //! rustc 1.88.0 parser for `RustfmtVersion::V1_8_0` (classes P1, P2 and P8 of
 //! `docs/journal/2026-10-14-autoresearch/rustfmt-versions.md`).
 
+use ra_ap_parser::{Edition, SyntaxKind, T};
+
 use super::config::RustfmtVersion;
-use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{Edition, NodeOrToken, RustLanguage, SyntaxKind, SyntaxNode, T};
-use rowan::{GreenNodeData, GreenTokenData, Language};
+use crate::cst::{Element, Node, NodeOrToken};
 
-// The rules run on every file, so they read the green tree (no allocation per node) and
-// keep the path from the root as `(node, index of the child on the path)` pairs.
+// The rules run on every file, walking the tree once and keeping the path from the root as
+// `(node, index of the child on the path)` pairs.
 
-type Child<'a> = NodeOrToken<&'a GreenNodeData, &'a GreenTokenData>;
-
-fn kind(raw: rowan::SyntaxKind) -> SyntaxKind {
-    RustLanguage::kind_from_raw(raw)
+fn has_token(node: Node<'_>, token_kind: SyntaxKind) -> bool {
+    node.children_with_tokens()
+        .any(|c| matches!(c, NodeOrToken::Token(t) if t.kind() == token_kind))
 }
 
-fn child_kind(child: &Child<'_>) -> SyntaxKind {
-    match child {
-        NodeOrToken::Node(n) => kind(n.kind()),
-        NodeOrToken::Token(t) => kind(t.kind()),
-    }
-}
-
-fn has_token(node: &GreenNodeData, token_kind: SyntaxKind) -> bool {
-    node.children()
-        .any(|c| matches!(c, NodeOrToken::Token(t) if kind(t.kind()) == token_kind))
-}
-
-fn has_node(node: &GreenNodeData, node_kind: SyntaxKind) -> bool {
-    node.children()
-        .any(|c| matches!(c, NodeOrToken::Node(n) if kind(n.kind()) == node_kind))
+fn has_node(node: Node<'_>, node_kind: SyntaxKind) -> bool {
+    node.children().any(|n| n.kind() == node_kind)
 }
 
 /// An inner attribute: `#![...]`, `//! ...` or `/*! ... */`.
-fn has_inner_attr(stmt_list: &GreenNodeData) -> bool {
-    stmt_list.children().any(|c| match c {
-        NodeOrToken::Node(n) => kind(n.kind()) == SyntaxKind::ATTR && has_token(n, T![!]),
+fn has_inner_attr(stmt_list: Node<'_>) -> bool {
+    stmt_list.children_with_tokens().any(|c| match c {
+        NodeOrToken::Node(n) => n.kind() == SyntaxKind::ATTR && has_token(n, T![!]),
         NodeOrToken::Token(t) => {
-            kind(t.kind()) == SyntaxKind::COMMENT
+            t.kind() == SyntaxKind::COMMENT
                 && (t.text().starts_with("//!") || t.text().starts_with("/*!"))
         }
     })
@@ -54,10 +40,10 @@ fn has_inner_attr(stmt_list: &GreenNodeData) -> bool {
 
 /// The index of the first child node that is not an attribute or a label: the condition
 /// of an `if` or `while`.
-fn condition_index(node: &GreenNodeData) -> Option<usize> {
-    node.children().position(|c| {
+fn condition_index(node: Node<'_>) -> Option<usize> {
+    node.children_with_tokens().position(|c| {
         matches!(c, NodeOrToken::Node(n)
-            if !matches!(kind(n.kind()), SyntaxKind::ATTR | SyntaxKind::LABEL))
+            if !matches!(n.kind(), SyntaxKind::ATTR | SyntaxKind::LABEL))
     })
 }
 
@@ -73,7 +59,7 @@ struct Toolchain {
 struct Walker<'a> {
     toolchain: Toolchain,
     /// The ancestors of the current node as `(node, index of the child on the path)`.
-    path: Vec<(&'a GreenNodeData, usize)>,
+    path: Vec<(Node<'a>, usize)>,
     /// Whether the previous token was a `:` — rustc lexes `:::` as `::` followed by `:`,
     /// rust-analyzer as `:` followed by `::`.
     prev_colon: bool,
@@ -89,7 +75,7 @@ struct Walker<'a> {
 /// rustc accepts `let` only as an operand of a `&&` chain in an `if`/`while` condition or
 /// a match guard, and accepts a `let` chained with `&&` in an `if`/`while` condition only
 /// from edition 2024. `path` holds the ancestors of the `let`, innermost last.
-fn let_expr_allowed(path: &[(&GreenNodeData, usize)], toolchain: Toolchain) -> bool {
+fn let_expr_allowed(path: &[(Node<'_>, usize)], toolchain: Toolchain) -> bool {
     // P1: rustc 1.97.0 rejects a chained `let` before edition 2024 (`let chains are only
     // allowed in Rust 2024 or later`, stabilised in Rust 1.88.0 for edition 2024 only);
     // rustc 1.88.0's parser accepts the chain in every edition and leaves the gate to a
@@ -98,7 +84,7 @@ fn let_expr_allowed(path: &[(&GreenNodeData, usize)], toolchain: Toolchain) -> b
         toolchain.edition.at_least_2024() || toolchain.rustfmt_version < RustfmtVersion::V1_9_0;
     let mut chained = false;
     for &(parent, index) in path.iter().rev() {
-        match kind(parent.kind()) {
+        match parent.kind() {
             SyntaxKind::BIN_EXPR if has_token(parent, T![&&]) => chained = true,
             // A `let` in a branch block is reached through the block, not directly.
             SyntaxKind::IF_EXPR | SyntaxKind::WHILE_EXPR => {
@@ -113,15 +99,15 @@ fn let_expr_allowed(path: &[(&GreenNodeData, usize)], toolchain: Toolchain) -> b
 
 /// `a..b..c`: range operators do not chain. A prefix range (`..`, `..=b`) may be the end
 /// of another range (`..=..`), as it parses as a single operand.
-fn chained_range(range: &GreenNodeData) -> bool {
-    let is_op = |c: &Child<'_>| matches!(child_kind(c), T![..] | T![..=] | T![...]);
-    let has_start = |n: &GreenNodeData| {
-        n.children()
-            .find(|c| !child_kind(c).is_trivia())
+fn chained_range(range: Node<'_>) -> bool {
+    let is_op = |c: &Element<'_>| matches!(c.kind(), T![..] | T![..=] | T![...]);
+    let has_start = |n: Node<'_>| {
+        n.children_with_tokens()
+            .find(|c| !c.kind().is_trivia())
             .is_some_and(|c| c.as_node().is_some())
     };
     let mut before_op = true;
-    for child in range.children() {
+    for child in range.children_with_tokens() {
         if is_op(&child) {
             before_op = false;
             continue;
@@ -129,7 +115,7 @@ fn chained_range(range: &GreenNodeData) -> bool {
         let NodeOrToken::Node(n) = child else {
             continue;
         };
-        if kind(n.kind()) != SyntaxKind::RANGE_EXPR {
+        if n.kind() != SyntaxKind::RANGE_EXPR {
             continue;
         }
         if before_op || has_start(n) {
@@ -140,39 +126,33 @@ fn chained_range(range: &GreenNodeData) -> bool {
 }
 
 /// A binary expression whose operator is a comparison.
-fn is_comparison(node: &GreenNodeData) -> bool {
-    kind(node.kind()) == SyntaxKind::BIN_EXPR
-        && node.children().any(|c| {
-            matches!(
-                child_kind(&c),
-                T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]
-            )
-        })
+fn is_comparison(node: Node<'_>) -> bool {
+    node.kind() == SyntaxKind::BIN_EXPR
+        && node
+            .children_with_tokens()
+            .any(|c| matches!(c.kind(), T![==] | T![!=] | T![<] | T![>] | T![<=] | T![>=]))
 }
 
 /// `a < b > c`, `a == b == c`: comparison operators do not chain (they share one precedence
 /// level and have no associativity in rustc).
-fn chained_comparison(node: &GreenNodeData) -> bool {
-    is_comparison(node)
-        && node
-            .children()
-            .any(|c| matches!(c, NodeOrToken::Node(n) if is_comparison(n)))
+fn chained_comparison(node: Node<'_>) -> bool {
+    is_comparison(node) && node.children().any(is_comparison)
 }
 
 /// The kind of the first token under `child`, trivia included.
-fn first_token_kind(child: &Child<'_>) -> Option<SyntaxKind> {
+fn first_token_kind(child: &Element<'_>) -> Option<SyntaxKind> {
     match child {
-        NodeOrToken::Token(t) => Some(kind(t.kind())),
-        NodeOrToken::Node(n) => n.children().next().and_then(|c| first_token_kind(&c)),
+        NodeOrToken::Token(t) => Some(t.kind()),
+        NodeOrToken::Node(n) => n.first_token().map(|t| t.kind()),
     }
 }
 
 /// `a <- b`: rustc's lexer glues `<` and an adjacent `-` into one token, `<-` (`LArrow`),
 /// which is not a binary operator ("unexpected token: `<-`"); rust-analyzer reads `a < -b`.
-fn larrow(bin: &GreenNodeData) -> bool {
-    let mut children = bin.children();
+fn larrow(bin: Node<'_>) -> bool {
+    let mut children = bin.children_with_tokens();
     while let Some(c) = children.next() {
-        if child_kind(&c) == T![<] {
+        if c.kind() == T![<] {
             return children
                 .next()
                 .is_some_and(|rhs| first_token_kind(&rhs) == Some(T![-]));
@@ -181,11 +161,11 @@ fn larrow(bin: &GreenNodeData) -> bool {
     false
 }
 
-fn is_assignment(bin: &GreenNodeData) -> bool {
-    kind(bin.kind()) == SyntaxKind::BIN_EXPR
-        && bin.children().any(|c| {
+fn is_assignment(bin: Node<'_>) -> bool {
+    bin.kind() == SyntaxKind::BIN_EXPR
+        && bin.children_with_tokens().any(|c| {
             matches!(
-                child_kind(&c),
+                c.kind(),
                 T![=]
                     | T![+=]
                     | T![-=]
@@ -202,13 +182,11 @@ fn is_assignment(bin: &GreenNodeData) -> bool {
 }
 
 /// A range without a start: `..`, `..b`, `..=b`.
-fn is_prefix_range(child: &Child<'_>) -> bool {
-    let NodeOrToken::Node(n) = child else {
-        return false;
-    };
-    kind(n.kind()) == SyntaxKind::RANGE_EXPR
-        && n.children()
-            .find(|c| !child_kind(c).is_trivia())
+fn is_prefix_range(node: Node<'_>) -> bool {
+    node.kind() == SyntaxKind::RANGE_EXPR
+        && node
+            .children_with_tokens()
+            .find(|c| !c.kind().is_trivia())
             .is_some_and(|c| c.as_node().is_none())
 }
 
@@ -217,21 +195,21 @@ fn is_prefix_range(child: &Child<'_>) -> bool {
 /// operator loop takes over after the range, the `=` is that loop's: on the right of an
 /// assignment (`x = ..a = b` reads `(x = ..a) = b`), and as the operand of a closure,
 /// `return`, `break`, `yield`, `become` or `do yeet` (`|x| ..a = b` reads `(|x| ..a) = b`).
-fn prefix_range_assigned(bin: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool {
-    let lhs_is_prefix_range = bin
-        .children()
-        .find(|c| c.as_node().is_some())
-        .is_some_and(|c| is_prefix_range(&c));
+fn prefix_range_assigned(bin: Node<'_>, path: &[(Node<'_>, usize)]) -> bool {
+    let lhs_is_prefix_range = bin.children().next().is_some_and(is_prefix_range);
     if !is_assignment(bin) || !lhs_is_prefix_range {
         return false;
     }
     match path.last() {
         Some(&(parent, index)) if is_assignment(parent) => {
             // The right operand: some node precedes it in the parent.
-            !parent.children().take(index).any(|c| c.as_node().is_some())
+            !parent
+                .children_with_tokens()
+                .take(index)
+                .any(|c| c.as_node().is_some())
         }
         Some(&(parent, _)) => !matches!(
-            kind(parent.kind()),
+            parent.kind(),
             SyntaxKind::CLOSURE_EXPR
                 | SyntaxKind::RETURN_EXPR
                 | SyntaxKind::BREAK_EXPR
@@ -244,10 +222,10 @@ fn prefix_range_assigned(bin: &GreenNodeData, path: &[(&GreenNodeData, usize)]) 
 }
 
 /// `a..=`, `a...`: an inclusive range without an end (E0586), in an expression or a pattern.
-fn inclusive_without_end(range: &GreenNodeData) -> bool {
-    let mut children = range.children();
+fn inclusive_without_end(range: Node<'_>) -> bool {
+    let mut children = range.children_with_tokens();
     for c in children.by_ref() {
-        if matches!(child_kind(&c), T![..=] | T![...]) {
+        if matches!(c.kind(), T![..=] | T![...]) {
             return !children.any(|c| c.as_node().is_some());
         }
     }
@@ -258,17 +236,15 @@ fn inclusive_without_end(range: &GreenNodeData) -> bool {
 /// `Fn() -> impl A + B`: rustc parses these types with `AllowPlus::No` and reports
 /// "ambiguous `+` in a type" for a `dyn` or `impl` type with more than one bound or a
 /// trailing `+` (`maybe_report_ambiguous_plus`).
-fn ambiguous_plus(ty: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool {
-    let k = kind(ty.kind());
-    let is_multi = (k == SyntaxKind::IMPL_TRAIT_TYPE || has_token(ty, T![dyn]))
-        && ty.children().any(|c| {
-            matches!(c, NodeOrToken::Node(n)
-                if kind(n.kind()) == SyntaxKind::TYPE_BOUND_LIST && has_token(n, T![+]))
-        });
+fn ambiguous_plus(ty: Node<'_>, path: &[(Node<'_>, usize)]) -> bool {
+    let is_multi = (ty.kind() == SyntaxKind::IMPL_TRAIT_TYPE || has_token(ty, T![dyn]))
+        && ty
+            .children()
+            .any(|n| n.kind() == SyntaxKind::TYPE_BOUND_LIST && has_token(n, T![+]));
     if !is_multi {
         return false;
     }
-    let mut ancestors = path.iter().rev().map(|(p, _)| kind(p.kind()));
+    let mut ancestors = path.iter().rev().map(|(p, _)| p.kind());
     match ancestors.next() {
         Some(SyntaxKind::REF_TYPE | SyntaxKind::PTR_TYPE | SyntaxKind::CAST_EXPR) => true,
         Some(SyntaxKind::RET_TYPE) => matches!(
@@ -282,11 +258,11 @@ fn ambiguous_plus(ty: &GreenNodeData, path: &[(&GreenNodeData, usize)]) -> bool 
 /// `builtin # offset_of(T, field)`: rustc's `parse_expr_builtin` knows `offset_of` (not
 /// `asm` or `format_args`), wants dot-separated field names (no parentheses), and from
 /// edition 2021 `builtin#` without a space is a reserved prefix.
-fn offset_of_rejected(node: &GreenNodeData, edition: Edition) -> bool {
+fn offset_of_rejected(node: Node<'_>, edition: Edition) -> bool {
     let mut prev = None;
     let mut parens = 0;
-    for c in node.children() {
-        let k = child_kind(&c);
+    for c in node.children_with_tokens() {
+        let k = c.kind();
         if prev == Some(SyntaxKind::BUILTIN_KW) && k == T![#] && edition.at_least_2021() {
             return true;
         }
@@ -301,34 +277,29 @@ fn offset_of_rejected(node: &GreenNodeData, edition: Edition) -> bool {
 /// `const N: i32 = i32::MAX`: rustc's `expr_is_valid_const_arg` accepts only a block, a
 /// literal, a negated literal or a single-segment path without generic arguments as a
 /// const argument without braces.
-fn const_param_default_rejected(param: &GreenNodeData) -> bool {
-    let Some(arg) = param.children().find_map(|c| match c {
-        NodeOrToken::Node(n) if kind(n.kind()) == SyntaxKind::CONST_ARG => Some(n),
-        _ => None,
-    }) else {
+fn const_param_default_rejected(param: Node<'_>) -> bool {
+    let Some(arg) = param.children().find(|n| n.kind() == SyntaxKind::CONST_ARG) else {
         return false;
     };
-    let Some(expr) = arg.children().find_map(|c| c.into_node()) else {
+    let Some(expr) = arg.children().next() else {
         return false;
     };
-    let first_node = |n: &GreenNodeData| {
-        n.children()
-            .find_map(|c| c.into_node().map(|n| n.to_owned()))
-    };
-    match kind(expr.kind()) {
+    match expr.kind() {
         SyntaxKind::BLOCK_EXPR | SyntaxKind::LITERAL => false,
         SyntaxKind::PREFIX_EXPR => {
             !(has_token(expr, T![-])
-                && first_node(expr).is_some_and(|n| kind(n.kind()) == SyntaxKind::LITERAL))
+                && expr
+                    .children()
+                    .next()
+                    .is_some_and(|n| n.kind() == SyntaxKind::LITERAL))
         }
-        SyntaxKind::PATH_EXPR => !first_node(expr).is_some_and(|path| {
+        SyntaxKind::PATH_EXPR => !expr.children().next().is_some_and(|path| {
             // A single segment: the path has no qualifier path and its segment no
             // generic arguments.
-            !has_node(&path, SyntaxKind::PATH)
-                && path.children().all(|c| match c {
-                    NodeOrToken::Node(seg) => !has_node(seg, SyntaxKind::GENERIC_ARG_LIST),
-                    NodeOrToken::Token(_) => true,
-                })
+            !has_node(path, SyntaxKind::PATH)
+                && path
+                    .children()
+                    .all(|seg| !has_node(seg, SyntaxKind::GENERIC_ARG_LIST))
         }),
         _ => true,
     }
@@ -336,35 +307,35 @@ fn const_param_default_rejected(param: &GreenNodeData) -> bool {
 
 /// A parameter pattern that rustc's `is_named_param` accepts: an optional `&`, `&&` or
 /// `mut`, then an identifier (or `_`).
-fn is_named_param_pat(pat: &GreenNodeData) -> bool {
-    let simple_ident = |n: &GreenNodeData| match kind(n.kind()) {
+fn is_named_param_pat(pat: Node<'_>) -> bool {
+    let simple_ident = |n: Node<'_>| match n.kind() {
         SyntaxKind::WILDCARD_PAT => true,
         SyntaxKind::IDENT_PAT => {
             !has_token(n, T![ref]) && !has_token(n, T![mut]) && !has_token(n, T![@])
         }
         _ => false,
     };
-    match kind(pat.kind()) {
+    // The node right after the `&` of a reference pattern, if no trivia separates them.
+    fn after_amp(n: Node<'_>) -> Option<Element<'_>> {
+        let mut children = n.children_with_tokens().skip_while(|c| c.kind() != T![&]);
+        children.next();
+        children.next()
+    }
+    match pat.kind() {
         SyntaxKind::WILDCARD_PAT => true,
         SyntaxKind::IDENT_PAT => !has_token(pat, T![ref]) && !has_token(pat, T![@]),
-        SyntaxKind::REF_PAT if !has_token(pat, T![mut]) => {
-            let mut children = pat.children().skip_while(|c| child_kind(c) != T![&]);
-            children.next();
-            match children.next() {
-                Some(NodeOrToken::Node(inner)) if simple_ident(inner) => true,
-                // `&&x`: the two `&` are one token to rustc only when adjacent.
-                Some(NodeOrToken::Node(inner))
-                    if kind(inner.kind()) == SyntaxKind::REF_PAT
-                        && !has_token(inner, T![mut])
-                        && first_token_kind(&NodeOrToken::Node(inner)) == Some(T![&]) =>
-                {
-                    let mut rest = inner.children().skip_while(|c| child_kind(c) != T![&]);
-                    rest.next();
-                    matches!(rest.next(), Some(NodeOrToken::Node(n)) if simple_ident(n))
-                }
-                _ => false,
+        SyntaxKind::REF_PAT if !has_token(pat, T![mut]) => match after_amp(pat) {
+            Some(NodeOrToken::Node(inner)) if simple_ident(inner) => true,
+            // `&&x`: the two `&` are one token to rustc only when adjacent.
+            Some(NodeOrToken::Node(inner))
+                if inner.kind() == SyntaxKind::REF_PAT
+                    && !has_token(inner, T![mut])
+                    && inner.first_token().is_some_and(|t| t.kind() == T![&]) =>
+            {
+                matches!(after_amp(inner), Some(NodeOrToken::Node(n)) if simple_ident(n))
             }
-        }
+            _ => false,
+        },
         _ => false,
     }
 }
@@ -372,20 +343,11 @@ fn is_named_param_pat(pat: &GreenNodeData) -> bool {
 /// Edition 2015 trait methods take anonymous parameters (`fn f(u8);`), so rustc parses a
 /// parameter that does not start like `name:` as a type, and a pattern such as `(a, b): T`
 /// is a parse error (E0642).
-fn trait_param_rejected(
-    param: &GreenNodeData,
-    path: &[(&GreenNodeData, usize)],
-    edition: Edition,
-) -> bool {
+fn trait_param_rejected(param: Node<'_>, path: &[(Node<'_>, usize)], edition: Edition) -> bool {
     if edition != Edition::Edition2015 {
         return false;
     }
-    let ancestors: Vec<_> = path
-        .iter()
-        .rev()
-        .take(4)
-        .map(|(p, _)| kind(p.kind()))
-        .collect();
+    let ancestors: Vec<_> = path.iter().rev().take(4).map(|(p, _)| p.kind()).collect();
     if ancestors
         != [
             SyntaxKind::PARAM_LIST,
@@ -401,21 +363,14 @@ fn trait_param_rejected(
         return false;
     }
     // The pattern: the first node after the parameter's attributes.
-    let pat = param
-        .children()
-        .filter_map(|c| c.into_node())
-        .find(|n| kind(n.kind()) != SyntaxKind::ATTR);
+    let pat = param.children().find(|n| n.kind() != SyntaxKind::ATTR);
     pat.is_some_and(|pat| !is_named_param_pat(pat))
 }
 
-fn node_rejected(
-    node: &GreenNodeData,
-    path: &[(&GreenNodeData, usize)],
-    toolchain: Toolchain,
-) -> bool {
+fn node_rejected(node: Node<'_>, path: &[(Node<'_>, usize)], toolchain: Toolchain) -> bool {
     let rustfmt_version = toolchain.rustfmt_version;
-    let parent_kind = path.last().map(|(p, _)| kind(p.kind()));
-    match kind(node.kind()) {
+    let parent_kind = path.last().map(|(p, _)| p.kind());
+    match node.kind() {
         // `const mut X: T = ..;`
         SyntaxKind::CONST => has_token(node, T![mut]),
         // `unsafe impl Foo {}`, `default impl Foo {}`, `impl !Foo {}`: only trait impls
@@ -453,10 +408,9 @@ fn node_rejected(
         // Inner attributes in the blocks of an `if` or `else`.
         SyntaxKind::BLOCK_EXPR => {
             parent_kind == Some(SyntaxKind::IF_EXPR)
-                && node.children().any(|c| {
-                    matches!(c, NodeOrToken::Node(n)
-                        if kind(n.kind()) == SyntaxKind::STMT_LIST && has_inner_attr(n))
-                })
+                && node
+                    .children()
+                    .any(|n| n.kind() == SyntaxKind::STMT_LIST && has_inner_attr(n))
         }
         SyntaxKind::RANGE_EXPR => chained_range(node) || inclusive_without_end(node),
         SyntaxKind::RANGE_PAT => inclusive_without_end(node),
@@ -548,8 +502,8 @@ impl Walker<'_> {
 }
 
 /// Walks the tree under `node` in source order.
-fn walk<'a>(node: &'a GreenNodeData, w: &mut Walker<'a>) -> bool {
-    let node_kind = kind(node.kind());
+fn walk<'a>(node: Node<'a>, w: &mut Walker<'a>) -> bool {
+    let node_kind = node.kind();
     if node_rejected(node, &w.path, w.toolchain) {
         return true;
     }
@@ -561,16 +515,18 @@ fn walk<'a>(node: &'a GreenNodeData, w: &mut Walker<'a>) -> bool {
     }
     let inner_doc_ok = w.inner_doc_ok;
     let is_token_tree = node_kind == SyntaxKind::TOKEN_TREE;
-    for (index, child) in node.children().enumerate() {
+    let mut entered_token_tree = false;
+    for (index, child) in node.children_with_tokens().enumerate() {
         match child {
             NodeOrToken::Token(t) => {
-                if w.token(kind(t.kind()), t.text(), node_kind) {
+                if w.token(t.kind(), t.text(), node_kind) {
                     return true;
                 }
                 // The opening delimiter of a token tree is a token of the file; the rest of
                 // the tree is macro input.
                 if is_token_tree && index == 0 {
                     w.token_tree_depth += 1;
+                    entered_token_tree = true;
                 }
             }
             NodeOrToken::Node(n) => {
@@ -583,7 +539,7 @@ fn walk<'a>(node: &'a GreenNodeData, w: &mut Walker<'a>) -> bool {
             }
         }
     }
-    if is_token_tree && node.children().next().is_some() {
+    if entered_token_tree {
         w.token_tree_depth -= 1;
     }
     if inner_attr && w.token_tree_depth == 0 {
@@ -592,13 +548,14 @@ fn walk<'a>(node: &'a GreenNodeData, w: &mut Walker<'a>) -> bool {
     false
 }
 
-/// `true` if rustc's parser rejects `file`, which rust-analyzer's parser accepted.
+/// `true` if rustc's parser rejects the file whose root is `file`, which rust-analyzer's
+/// parser accepted.
 pub(crate) fn rejected_by_rustc(
-    file: &ast::SourceFile,
+    file: Node<'_>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
 ) -> bool {
-    subtree_rejected_by_rustc(file.syntax(), edition, rustfmt_version)
+    subtree_rejected_by_rustc(file, edition, rustfmt_version)
 }
 
 /// `true` if rustc's parser rejects the syntax under `root` (a file or a macro argument).
@@ -606,7 +563,7 @@ pub(crate) fn rejected_by_rustc(
 /// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
 /// `root`; for a file, that is all of them.
 pub(crate) fn subtree_rejected_by_rustc(
-    root: &SyntaxNode,
+    root: Node<'_>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
 ) -> bool {
@@ -622,34 +579,27 @@ pub(crate) fn subtree_rejected_by_rustc(
         inner_doc_ok: is_file,
         pending_outer_doc: false,
     };
-    let green = root.green();
     // A doc comment at the end of a file documents nothing.
-    walk(&green, &mut walker) || (is_file && walker.pending_outer_doc)
+    walk(root, &mut walker) || (is_file && walker.pending_outer_doc)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_syntax::SourceFile;
+    use crate::cst::Tree;
 
     fn rejected(src: &str) -> bool {
         rejected_in(src, Edition::Edition2024)
     }
 
     fn rejected_in(src: &str, edition: Edition) -> bool {
-        rejected_by_rustc(
-            &SourceFile::parse(src, edition).tree(),
-            edition,
-            RustfmtVersion::V1_9_0,
-        )
+        let tree = Tree::parse(src, edition).unwrap();
+        rejected_by_rustc(tree.root(), edition, RustfmtVersion::V1_9_0)
     }
 
     fn rejected_by_1_8_0(src: &str, edition: Edition) -> bool {
-        rejected_by_rustc(
-            &SourceFile::parse(src, edition).tree(),
-            edition,
-            RustfmtVersion::V1_8_0,
-        )
+        let tree = Tree::parse(src, edition).unwrap();
+        rejected_by_rustc(tree.root(), edition, RustfmtVersion::V1_8_0)
     }
 
     #[test]
@@ -748,14 +698,22 @@ mod tests {
 
     #[test]
     fn edition_dependent_lexing_and_params() {
+        // A file rust-analyzer's parser rejects is rejected too.
+        let chloro_rejects = |src: &str, edition| {
+            Tree::parse(src, edition)
+                .is_none_or(|tree| rejected_by_rustc(tree.root(), edition, RustfmtVersion::V1_9_0))
+        };
         // `c"x"` lexes as an identifier and a string before edition 2021.
         let c_string = "fn f() { let _ = c\"x\"; }";
-        assert!(rejected_in(c_string, Edition::Edition2018), "{c_string}");
-        assert!(!rejected_in(c_string, Edition::Edition2021), "{c_string}");
+        assert!(chloro_rejects(c_string, Edition::Edition2018), "{c_string}");
+        assert!(
+            !chloro_rejects(c_string, Edition::Edition2021),
+            "{c_string}"
+        );
         // `builtin#` is a reserved prefix from edition 2021.
         let builtin = "fn f() { builtin#offset_of(Foo, bar); }";
-        assert!(!rejected_in(builtin, Edition::Edition2018), "{builtin}");
-        assert!(rejected_in(builtin, Edition::Edition2021), "{builtin}");
+        assert!(!chloro_rejects(builtin, Edition::Edition2018), "{builtin}");
+        assert!(chloro_rejects(builtin, Edition::Edition2021), "{builtin}");
         // Edition 2015 trait methods take anonymous parameters: a pattern must look like
         // `name:`, `&name:`, `&&name:` or `mut name:`.
         for src in [
@@ -764,15 +722,15 @@ mod tests {
             "trait T { fn f(ref a: u8) {} }",
             "trait T { fn f(& &a: u8) {} }",
         ] {
-            assert!(rejected_in(src, Edition::Edition2015), "{src}");
-            assert!(!rejected_in(src, Edition::Edition2018), "{src}");
+            assert!(chloro_rejects(src, Edition::Edition2015), "{src}");
+            assert!(!chloro_rejects(src, Edition::Edition2018), "{src}");
         }
         for src in [
-            "trait T { fn f(a: u8, mut b: u8, &c: u8, &&d: u8, _: u8, &self) {} }",
+            "trait T { fn f(&self, a: u8, mut b: u8, &c: u8, &&d: u8, _: u8) {} }",
             "impl X { fn f((a, b): (u8, u8)) {} }",
             "trait T { fn f(#[a] _: u64, #[a] mut x: i32); }",
         ] {
-            assert!(!rejected_in(src, Edition::Edition2015), "{src}");
+            assert!(!chloro_rejects(src, Edition::Edition2015), "{src}");
         }
     }
 
