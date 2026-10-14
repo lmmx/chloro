@@ -20,7 +20,7 @@
 //!   rust-analyzer has no type starting with `?`; with `dyn` inserted before the `?`, it
 //!   builds a `DYN_TRAIT_TYPE`.
 //!
-//! Two constructs need no second parse, only an edit of the tree:
+//! Three constructs need no second parse, only an edit of the tree:
 //!
 //! - A float literal without `.` as a field name, `s.1e0`: rustc's `break_up_float` reads
 //!   `1e0` as a single component (`DestructuredFloat::Single`) and the field name is `1e0`.
@@ -31,6 +31,11 @@
 //!   the `const` keyword and the block (parsed as block contents) in two `ERROR` nodes; the
 //!   edit makes them a `CONST` item without a name whose body is a `BLOCK_EXPR`, which
 //!   `nodes::const_block_item` recognises.
+//! - An `impl Trait` type as the self type of an impl, `impl impl Trait {}` or
+//!   `impl Tr for impl Trait {}`: rustc's parser accepts it (AST validation rejects it
+//!   later). rust-analyzer's `impl_type` reports "expected trait or type" and ends the
+//!   impl, then parses `impl Trait {}` as a second impl; the edit merges the two, with the
+//!   second one's type in an `IMPL_TRAIT_TYPE`.
 
 use ra_ap_parser::{Edition, LexedStr, StrStep, TopEntryPoint};
 use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken, T};
@@ -93,8 +98,12 @@ pub(crate) fn reparse(source: &str, edition: Edition, parsed: Parsed) -> Option<
     if parsed.errors.is_empty() {
         return float_fields_as_names(&parsed.tree, parsed.float_fields);
     }
-    if let Some(tree) = const_block_items(&parsed.tree, &parsed.errors) {
-        return float_fields_as_names(&tree, parsed.float_fields);
+    let mut explained = vec![false; parsed.errors.len()];
+    let green = rebuild_const_blocks(&parsed.tree, &parsed.errors, &mut explained);
+    let tree = SyntaxNode::new_root(green);
+    let green = rebuild_impl_self_types(&tree, &parsed.errors, &mut explained);
+    if explained.iter().all(|&e| e) {
+        return float_fields_as_names(&SyntaxNode::new_root(green), parsed.float_fields);
     }
     // Offsets in `source` before which `DYN` is inserted, sorted.
     let mut inserts: Vec<usize> = Vec::new();
@@ -366,17 +375,6 @@ fn rebuild_field_names(node: &SyntaxNode, fixed: &mut usize) -> Option<GreenNode
     Some(GreenNode::new(node.green().kind(), children))
 }
 
-/// `tree` with each const block item of a file or module as a `CONST` node, if the parser's
-/// errors (`errors`) are all theirs.
-fn const_block_items(tree: &SyntaxNode, errors: &[usize]) -> Option<SyntaxNode> {
-    let mut explained = vec![false; errors.len()];
-    let green = rebuild_const_blocks(tree, errors, &mut explained);
-    explained
-        .iter()
-        .all(|&e| e)
-        .then(|| SyntaxNode::new_root(green))
-}
-
 fn is_error_with(element: &SyntaxElement, first: SyntaxKind) -> bool {
     matches!(element, SyntaxElement::Node(n)
         if n.kind() == SyntaxKind::ERROR
@@ -402,6 +400,8 @@ fn green_element(element: &SyntaxElement) -> NodeOrToken<GreenNode, rowan::Green
     }
 }
 
+/// A copy of `node` with each const block item of a file or module as a `CONST` node; marks
+/// in `explained` the errors (offsets in `errors`) that are theirs.
 fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bool]) -> GreenNode {
     let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
     let elements: Vec<SyntaxElement> = node.children_with_tokens().collect();
@@ -486,6 +486,115 @@ fn rebuild_const_blocks(node: &SyntaxNode, errors: &[usize], explained: &mut [bo
         }
         children.push(match &elements[i] {
             SyntaxElement::Node(n) => NodeOrToken::Node(rebuild_const_blocks(n, errors, explained)),
+            SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
+        });
+        i += 1;
+    }
+    GreenNode::new(node.green().kind(), children)
+}
+
+/// The type, the trivia after it and the remaining elements of an impl that rust-analyzer
+/// parsed from `impl Trait {}` after an impl it ended at a second `impl`: `impl`, trivia, a
+/// path type or a bare trait object, no `for`, then an optional where clause and the body.
+fn impl_trait_parts(second: &SyntaxNode) -> Option<(SyntaxNode, GreenNode, Vec<SyntaxElement>)> {
+    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
+    let elements: Vec<SyntaxElement> = second.children_with_tokens().collect();
+    let mut significant = elements.iter().filter(|e| !e.kind().is_trivia());
+    if significant.next()?.kind() != T![impl] {
+        return None;
+    }
+    let ty = significant.next()?.as_node()?.clone();
+    // The bounds of the `impl Trait` type.
+    let bounds = match ty.kind() {
+        SyntaxKind::PATH_TYPE => {
+            let bound = GreenNode::new(
+                raw(SyntaxKind::TYPE_BOUND),
+                [NodeOrToken::Node(ty.green().into_owned())],
+            );
+            GreenNode::new(raw(SyntaxKind::TYPE_BOUND_LIST), [NodeOrToken::Node(bound)])
+        }
+        SyntaxKind::DYN_TRAIT_TYPE if ty.first_token().is_some_and(|t| t.kind() != T![dyn]) => {
+            ty.children().next()?.green().into_owned()
+        }
+        _ => return None,
+    };
+    let rest: Vec<SyntaxKind> = significant.map(|e| e.kind()).collect();
+    let body_ok = matches!(
+        rest.as_slice(),
+        [SyntaxKind::ASSOC_ITEM_LIST] | [SyntaxKind::WHERE_CLAUSE, SyntaxKind::ASSOC_ITEM_LIST]
+    );
+    let position = elements.iter().position(|e| e.as_node() == Some(&ty))?;
+    body_ok.then(|| (ty, bounds, elements[position + 1..].to_vec()))
+}
+
+/// A copy of `node` with each impl whose self type is `impl Trait` merged as described in the
+/// module documentation; marks in `explained` the errors that are theirs.
+fn rebuild_impl_self_types(
+    node: &SyntaxNode,
+    errors: &[usize],
+    explained: &mut [bool],
+) -> GreenNode {
+    let raw = |kind: SyntaxKind| RustLanguage::kind_to_raw(kind);
+    let elements: Vec<SyntaxElement> = node.children_with_tokens().collect();
+    let mut children = Vec::with_capacity(elements.len());
+    let mut i = 0;
+    while i < elements.len() {
+        if let SyntaxElement::Node(first) = &elements[i]
+            && first.kind() == SyntaxKind::IMPL
+            && !first
+                .children_with_tokens()
+                .any(|c| c.kind() == SyntaxKind::ASSOC_ITEM_LIST)
+        {
+            let mut j = i + 1;
+            while j < elements.len() && elements[j].kind().is_trivia() {
+                j += 1;
+            }
+            let second = elements
+                .get(j)
+                .and_then(|e| e.as_node())
+                .filter(|n| n.kind() == SyntaxKind::IMPL);
+            // `impl impl A for B` is an error to rustc: the trait must be a path.
+            let first_ends_ok = first
+                .last_token()
+                .is_some_and(|t| matches!(t.kind(), T![impl] | T![for] | T![>]));
+            if let Some((second, (ty, bounds, rest))) =
+                second.and_then(|s| Some((s, impl_trait_parts(s)?)))
+                && first_ends_ok
+            {
+                let end = usize::from(first.text_range().end());
+                for (e, done) in errors.iter().zip(explained.iter_mut()) {
+                    if *e == end {
+                        *done = true;
+                    }
+                }
+                let mut item: Vec<_> = first
+                    .children_with_tokens()
+                    .map(|c| green_element(&c))
+                    .collect();
+                item.extend(elements[i + 1..j].iter().map(green_element));
+                let mut impl_trait: Vec<_> = second
+                    .children_with_tokens()
+                    .take_while(|c| c.as_node() != Some(&ty))
+                    .map(|c| green_element(&c))
+                    .collect();
+                impl_trait.push(NodeOrToken::Node(bounds));
+                item.push(NodeOrToken::Node(GreenNode::new(
+                    raw(SyntaxKind::IMPL_TRAIT_TYPE),
+                    impl_trait,
+                )));
+                item.extend(rest.iter().map(green_element));
+                children.push(NodeOrToken::Node(GreenNode::new(
+                    raw(SyntaxKind::IMPL),
+                    item,
+                )));
+                i = j + 1;
+                continue;
+            }
+        }
+        children.push(match &elements[i] {
+            SyntaxElement::Node(n) => {
+                NodeOrToken::Node(rebuild_impl_self_types(n, errors, explained))
+            }
             SyntaxElement::Token(t) => NodeOrToken::Token(t.green().to_owned()),
         });
         i += 1;
