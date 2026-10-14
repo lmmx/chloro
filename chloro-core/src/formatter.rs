@@ -14,7 +14,7 @@
 //! | `attr`, `comment` | attributes, doc comments, comment re-indentation and recovery |
 //! | `skip` | names listed by `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]` |
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
-//! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, parsed with inserted keywords |
+//! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, rebuilt from the parser's steps |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
 //!
 //! `nodes` and `span` adapt the syntax tree (`crate::cst`) to rustc's AST shape (doc comments as attributes,
