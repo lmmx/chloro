@@ -1435,7 +1435,7 @@ pub(crate) fn span_ends_with_comma(context: &RewriteContext<'_>, span: Span) -> 
     let mut prev_char: char = Default::default();
     let closing_delimiters = &[')', '}', ']'];
 
-    for (kind, _, c) in CharClasses::new(context.snippet(span)) {
+    for (kind, _, c) in CharClasses::new(comma_scan_tail(context.snippet(span))) {
         match c {
             _ if kind.is_comment() || c.is_whitespace() => continue,
             c if closing_delimiters.contains(&c) => {
@@ -1448,6 +1448,28 @@ pub(crate) fn span_ends_with_comma(context: &RewriteContext<'_>, span: Span) -> 
     }
 
     result
+}
+
+/// The part of `snippet` that the loop of `span_ends_with_comma` needs to read.
+///
+/// The loop's result depends only on the last two characters that are neither whitespace
+/// nor in a comment: it is `true` iff the last is `,`, or the last is a closing delimiter
+/// and the one before is `,`. Without a comment in `snippet`, those are its last two
+/// non-whitespace characters, and a scan that starts at the first of them classifies both
+/// as the full scan does, unless they are `/` directly followed by `*` or `/`, which the
+/// shorter scan reads as a comment; the result is `false` for both scans then.
+fn comma_scan_tail(snippet: &str) -> &str {
+    if contains_comment(snippet) {
+        return snippet;
+    }
+    let trimmed = snippet.trim_end();
+    let Some((last, _)) = trimmed.char_indices().next_back() else {
+        return snippet;
+    };
+    match trimmed[..last].trim_end().char_indices().next_back() {
+        Some((second_last, _)) => &snippet[second_last..],
+        None => snippet,
+    }
 }
 
 pub(crate) fn rewrite_paren(
@@ -2122,5 +2144,62 @@ mod tests {
         assert!(last_line_offsetted(2, lines));
         let lines = "one\n two      three";
         assert!(!last_line_offsetted(2, lines));
+    }
+
+    /// The loop of `span_ends_with_comma` over a whole string.
+    fn ends_with_comma(snippet: &str) -> bool {
+        let mut result = false;
+        let mut prev_char: char = Default::default();
+        let closing_delimiters = &[')', '}', ']'];
+        for (kind, _, c) in CharClasses::new(snippet) {
+            match c {
+                _ if kind.is_comment() || c.is_whitespace() => continue,
+                c if closing_delimiters.contains(&c) => {
+                    result &= !closing_delimiters.contains(&prev_char);
+                }
+                ',' => result = true,
+                _ => result = false,
+            }
+            prev_char = c;
+        }
+        result
+    }
+
+    #[test]
+    fn comma_scan_tail_gives_the_full_scan_result() {
+        const ALPHABET: [char; 12] = [',', ')', ']', ' ', '/', '*', '"', '\'', 'r', '#', '\n', 'a'];
+        let mut strings: Vec<String> = [
+            "f(a, b,)",
+            "f(a, b, /* c */)",
+            "f(a, b /* , */)",
+            "f(a, b, // c\n)",
+            "f(a, \"b,)\")",
+            "f(a, r#\"b,)\"#)",
+            "f(a, b,\r\n)",
+            "f(a, b,\u{3000})",
+            "vec![a, b,]",
+            "m!{ a, }",
+            "f(a, b),)",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        for s in &strings {
+            assert_eq!(
+                ends_with_comma(comma_scan_tail(s)),
+                ends_with_comma(s),
+                "{s:?}"
+            );
+        }
     }
 }
