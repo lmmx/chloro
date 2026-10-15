@@ -297,6 +297,8 @@ impl FmtVisitor<'_> {
     /// consecutive and reorderable.
     pub(crate) fn visit_items_with_reordering(&mut self, mut items: &[ast::Item]) {
         while !items.is_empty() {
+            // Nothing allocated in the scratch arena outlives a unit (EXP-025).
+            super::scratch::reset_scratch();
             // If the next item is a `use`, `extern crate` or `mod`, then extract it and any
             // subsequent items that have the same item kind to be reordered within
             // `walk_reorderable_items`. Otherwise, just format the next item for output.
