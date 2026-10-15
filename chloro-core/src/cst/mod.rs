@@ -323,33 +323,64 @@ impl<'s> TreeBuilder<'s> {
     ///
     /// A port of `LexedStr::intersperse_trivia` and its `Builder` (ra_ap_parser 0.0.307,
     /// `shortcuts.rs`), whose rules it must reproduce: the first `Enter` takes no trivia;
-    /// an `Exit` is deferred until the next step, so trivia after a node's last token is
-    /// never inside it; before a token, the trivia ahead is emitted at the current depth;
-    /// before an `Enter`, the trivia run ahead is split by [`n_attached_trivias`] into the
-    /// part left in the parent and the part attached inside the new node; a split float
-    /// becomes `NAME_REF`/`INT_NUMBER`, `.` and an optional second `NAME_REF`; at the end
-    /// the remaining trivia goes inside the root. The panics of the original
-    /// (`unreachable!` states, the float asserts) are kept.
+    /// trivia after a node's last token is never inside it; before a token, the trivia ahead
+    /// is emitted at the current depth; before an `Enter`, the trivia run ahead is split by
+    /// [`n_attached_trivias`] into the part left in the parent and the part attached inside
+    /// the new node; a split float becomes `NAME_REF`/`INT_NUMBER`, `.` and an optional second
+    /// `NAME_REF`; at the end the remaining trivia goes inside the root. The panics of the
+    /// original (`unreachable!` states, the float asserts) are kept.
+    ///
+    /// The original defers every `Exit` to the next step (its `PendingExit` state). Nothing
+    /// is written between an `Exit` and the next step's handling of the deferred exit, and
+    /// trivia is only written by a token, an `Enter`, a split float or the end, after the
+    /// deferred exit is taken; so a node can be finished at its own `Exit`, and so can the
+    /// unbalanced node a split float leaves open. Only the root's `Exit` (one open node) is
+    /// deferred, because the trailing trivia goes inside it. This keeps the per-step
+    /// `PendingExit` tests, data-dependent branches the simulator counted among the most
+    /// mispredicted of the build (EXP-022), out of the loop.
     pub fn steps_fused(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
         let len = |i: usize| (lexed.text_start(i + 1) - lexed.text_start(i)) as u32;
         let n = lexed.len();
         let mut pos = 0usize;
-        let mut state = BuildState::PendingEnter;
         let mut has_error = false;
-        for step in output.iter() {
+        let mut steps = output.iter();
+        // The root's `Enter`, which takes no trivia; only errors may precede it. The builder
+        // may hold open nodes of its own around the parsed tree (`parse_maybe_bound`), so the
+        // root is the node at the depth it opens at.
+        let root_depth = loop {
+            match steps.next() {
+                Some(Step::Enter { kind }) => {
+                    self.start_node(kind);
+                    break self.open.len();
+                }
+                Some(Step::Error { .. }) => {
+                    // `intersperse_trivia` reports the error at `text_start(pos)`.
+                    let _ = lexed.text_start(pos);
+                    has_error = true;
+                }
+                Some(_) | None => unreachable!(),
+            }
+        };
+        // The root's `Exit` was seen: the root stays open for the trailing trivia.
+        let mut root_exited = false;
+        for step in steps {
             match step {
                 Step::Token {
                     kind,
                     n_input_tokens,
                 } => {
-                    self.leave_pending(&mut state);
+                    if root_exited {
+                        self.leave_root(&mut root_exited);
+                    }
                     pos = self.trivias(lexed, pos, n);
                     let end = pos + n_input_tokens as usize;
                     self.token(kind, (lexed.text_start(end) - lexed.text_start(pos)) as u32);
                     pos = end;
                 }
                 Step::FloatSplit { ends_in_dot } => {
-                    self.leave_pending(&mut state);
+                    if root_exited {
+                        self.leave_root(&mut root_exited);
+                    }
                     pos = self.trivias(lexed, pos, n);
                     let text = lexed.text(pos);
                     match text.split_once('.') {
@@ -363,13 +394,14 @@ impl<'s> TreeBuilder<'s> {
                             self.token(SyntaxKind::DOT, 1);
                             if ends_in_dot {
                                 assert!(right.is_empty(), "{left}.{right}");
-                                state = BuildState::Normal;
                             } else {
                                 assert!(!right.is_empty(), "{left}.{right}");
                                 self.start_node(SyntaxKind::NAME_REF);
                                 self.token(SyntaxKind::INT_NUMBER, right.len() as u32);
                                 self.finish_node();
-                                state = BuildState::PendingExit;
+                                // The unbalanced node the parser left open, which the
+                                // original closes before the next step.
+                                self.exit(&mut root_exited, root_depth);
                             }
                         }
                         None => {
@@ -379,24 +411,16 @@ impl<'s> TreeBuilder<'s> {
                             self.token(SyntaxKind::FLOAT_NUMBER, text.len() as u32);
                             self.finish_node();
                             self.finish_node();
-                            state = if ends_in_dot {
-                                BuildState::Normal
-                            } else {
-                                BuildState::PendingExit
-                            };
+                            if !ends_in_dot {
+                                self.exit(&mut root_exited, root_depth);
+                            }
                         }
                     }
                     pos += 1;
                 }
                 Step::Enter { kind } => {
-                    match std::mem::replace(&mut state, BuildState::Normal) {
-                        BuildState::PendingEnter => {
-                            // The root: no previous node to leave trivia in.
-                            self.start_node(kind);
-                            continue;
-                        }
-                        BuildState::PendingExit => self.finish_node(),
-                        BuildState::Normal => {}
+                    if root_exited {
+                        self.leave_root(&mut root_exited);
                     }
                     let run = (pos..n).take_while(|&i| lexed.kind(i).is_trivia()).count();
                     let attached = n_attached_trivias(kind, lexed, pos, run);
@@ -409,11 +433,7 @@ impl<'s> TreeBuilder<'s> {
                     }
                     pos += run;
                 }
-                Step::Exit => match std::mem::replace(&mut state, BuildState::PendingExit) {
-                    BuildState::PendingEnter => unreachable!(),
-                    BuildState::PendingExit => self.finish_node(),
-                    BuildState::Normal => {}
-                },
+                Step::Exit => self.exit(&mut root_exited, root_depth),
                 Step::Error { .. } => {
                     // `intersperse_trivia` reports the error at `text_start(pos)`.
                     let _ = lexed.text_start(pos);
@@ -421,24 +441,36 @@ impl<'s> TreeBuilder<'s> {
                 }
             }
         }
-        match state {
-            BuildState::PendingExit => {
-                self.trivias(lexed, pos, n);
-                self.finish_node();
-            }
-            BuildState::PendingEnter | BuildState::Normal => unreachable!(),
+        if !root_exited {
+            unreachable!();
         }
+        self.trivias(lexed, pos, n);
+        self.finish_node();
         (!has_error).then_some(())
     }
 
-    /// Finishes the node whose `Exit` is pending, before a token or a split float.
+    /// An `Exit` (or the deferred exit a split float leaves): finishes the node now, or
+    /// marks the root's exit, which waits for the trailing trivia.
     #[inline]
-    fn leave_pending(&mut self, state: &mut BuildState) {
-        match std::mem::replace(state, BuildState::Normal) {
-            BuildState::PendingEnter => unreachable!(),
-            BuildState::PendingExit => self.finish_node(),
-            BuildState::Normal => {}
+    fn exit(&mut self, root_exited: &mut bool, root_depth: usize) {
+        if *root_exited {
+            // A second exit after the root's: the original finishes the pending node.
+            self.leave_root(root_exited);
         }
+        if self.open.len() > root_depth {
+            self.finish_node();
+        } else {
+            *root_exited = true;
+        }
+    }
+
+    /// A step after the root's `Exit`: the original finishes the deferred root first. Never
+    /// taken for the parser's output, whose root `Exit` is its last tree step.
+    #[cold]
+    #[inline(never)]
+    fn leave_root(&mut self, root_exited: &mut bool) {
+        *root_exited = false;
+        self.finish_node();
     }
 
     /// Emits the trivia tokens from `pos` up to the next non-trivia token; returns its index.
@@ -916,13 +948,6 @@ impl<'t, N> AstChildren<'t, N> {
             ph: PhantomData,
         }
     }
-}
-
-/// The state of [`TreeBuilder::steps_fused`], as `intersperse_trivia`'s.
-enum BuildState {
-    PendingEnter,
-    Normal,
-    PendingExit,
 }
 
 /// How many of the `run` trivia tokens at `pos..pos + run` (the run before a node of
