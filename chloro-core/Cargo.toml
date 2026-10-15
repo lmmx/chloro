@@ -13,6 +13,14 @@ version = "0.8.0"
 
 [features]
 default = []
+# Measurement only, used by `examples/bench.rs` and nothing in the library (EXP-014):
+# `alloc-timing` wraps the global allocator to count calls, bytes and `rdtsc` cycles;
+# `alloc-mimalloc`, `alloc-jemalloc` and `alloc-snmalloc` replace glibc's malloc as the
+# example's global allocator (first enabled in that order wins).
+alloc-jemalloc = ["dep:tikv-jemallocator"]
+alloc-mimalloc = ["dep:mimalloc"]
+alloc-snmalloc = ["dep:snmalloc-rs"]
+alloc-timing = []
 
 [dependencies]
 ctor = { default-features = false, version = "0.6.1" }
@@ -20,6 +28,11 @@ ctor = { default-features = false, version = "0.6.1" }
 ra_ap_parser = "0.0.307"
 typed-arena = "2.0"
 unicode-width = "0.1"
+
+# Optional, for the `alloc-*` features above (the `bench` example only).
+mimalloc = { optional = true, workspace = true }
+snmalloc-rs = { optional = true, workspace = true }
+tikv-jemallocator = { optional = true, workspace = true }
 
 [dev-dependencies]
 braces = "0.2.6"
