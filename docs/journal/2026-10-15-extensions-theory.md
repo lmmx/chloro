@@ -94,9 +94,16 @@ Cache and branch simulation of the same run (`valgrind --tool=callgrind --cache-
 
 ## Handoff (overnight run)
 
-State at 01:45 UTC, 2026-10-15 (kept current as steps land; the orchestrator session is
-`session_01MyJjiAfjdkyrd1k4ZcR6h3`; the quota window resets at 04:40 UTC and check-ins are
-scheduled for 03:15 and 04:45 UTC).
+State at 01:50 UTC, 2026-10-15 (kept current as steps land). The orchestrator session is
+`session_01MyJjiAfjdkyrd1k4ZcR6h3`; the quota window resets at 04:40 UTC. Two scheduled
+tasks wake that session (verified with `list_triggers`; both carry
+`persistent_session_id` = the orchestrator): `trig_01PPWgQpP6SucLHeqt3UJ7EE` at 03:15 UTC
+(safety check-in) and `trig_01Pmv5niPZZ3mcLPpgMzR9cf` at 04:45 UTC (quota-reset resume: verify
+the quota first, then follow this section). If the session cannot be resumed, a new session
+on this branch starts from this section and the scratch paths named here; everything not in
+the repository is in the container's scratch directory
+`/tmp/claude-0/-home-user-chloro/9623d6dc-d933-5682-9d83-7762284f5c7f/scratchpad/` and is lost
+with the container.
 
 - Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR #88, head pushed; the
   best-known-good code is `bdfb9d1` (ledger). Nothing here changes formatter code yet.
@@ -118,9 +125,14 @@ scheduled for 03:15 and 04:45 UTC).
   `nightly-2026-05-10` (`harness/toolchain`), revision `b9c283a` (2026-10-15 01:14 UTC),
   shallow clone at `/home/user/dioxuslabs/rustd` (a blob-less first clone sits unused at
   `/home/user/dioxuslabs/rustd-blobless`). Found so far: the workspace's `rust-version =
-  "1.98"` refuses the pinned nightly (rustc 1.97.0-nightly), so the release build runs with
-  `--ignore-rust-version` (log: scratch `rustd-trial/build4.log`; started 01:41 UTC; time box
-  45 min). Next: if `target/release/rustd` exists, run
+  "1.98"` refuses the pinned nightly (rustc 1.97.0-nightly); with `--ignore-rust-version`
+  the pinned nightly fails on `hir-def`'s use of the then-unstable `substr_range` (scratch
+  `rustd-trial/build4.log`): at revision `b9c283a` the harness pin and the code disagree. The
+  pin governs the toolchain whose rlibs are linked, not the compiler that builds rustd, so
+  attempt 5 builds rustd itself with stable 1.99.0 (installed) and keeps the nightly for the
+  tested crate (log: `rustd-trial/build5.log`, started 01:47 UTC, time box 45 min; a
+  background loop in the orchestrator waits for its `build exit` line). Next: if
+  `target/release/rustd` exists, run
   `python3 harness/cratetest.py /home/user/wt/rustd-trial/chloro-core --test basic --json ...`
   from `/home/user/dioxuslabs/rustd` (the worktree `/home/user/wt/rustd-trial` is chloro at
   `383fa28` with the `basic` test binary pre-built under the nightly); then `--test unit`;
@@ -128,6 +140,14 @@ scheduled for 03:15 and 04:45 UTC).
   coverage is meaningful. Stop conditions: build failure, essential functions skipped, any
   change needed in rustd. Baseline build-loop timings are in scratch `rustd-trial/baseline.txt`
   (debug lib build 9.7 s, test build 9.3 s, release 34–35 s, lib tests run 21.8 s).
+- E15 (`20261015-item-cache`, worktree `/home/user/wt/item-cache`, agent running since 01:50
+  UTC, time box 4 h): the item-level unit cache of the study's section 1, exact by
+  construction (units of `parallel.rs`, positions rebased, whole-file checks unchanged), with
+  the identity harness over both corpora (cold and warm passes against the sequential
+  formatter), the edit scenario on the five largest fixtures, and the cold-path overhead;
+  record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. On landing: reproduce
+  the identity harness and the Ir gate before any merge; the cache stays off by default in
+  the library.
 - Queued experiments, to launch when the four cores are free (one at a time): E13 PGO step in
   `.github/workflows/binaries.yml` with local validation of the same commands; E14 allocator
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
