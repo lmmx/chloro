@@ -277,9 +277,10 @@ fn a_file_that_would_change_is_never_a_hit() {
         assert_eq!(fs::read_to_string(&file).unwrap(), UNFORMATTED);
     }
     let cache_file = cache_files(cache.path()).remove(0);
+    // Magic, format version, generation and the 32-byte file key.
     assert_eq!(
         fs::read(cache_file).unwrap().len(),
-        16,
+        48,
         "header only: no digest recorded"
     );
 

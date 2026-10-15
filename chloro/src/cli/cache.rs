@@ -24,11 +24,13 @@
 //!
 //! # On-disk format
 //!
-//! `<cache-dir>/<32 hex chars>.chloro-cache`, where the hex is the first 128 bits of
-//! `BLAKE3(tool key || config key)`. The file holds a 16-byte header (`CHLOROFP`, format
-//! version `u32`, run generation `u32`, both little-endian) followed by fixed 36-byte records:
-//! a 32-byte content digest and the `u32` generation in which the digest was last seen. A
-//! file whose header or length does not fit this layout is ignored and overwritten.
+//! `<cache-dir>/<32 hex chars>.chloro-cache`, where the hex is the first 128 bits of the file
+//! key `BLAKE3(tool key || config key)`. The file holds a 48-byte header (`CHLOROFP`, format
+//! version `u32`, run generation `u32`, both little-endian, then the whole 32-byte file key)
+//! followed by fixed 36-byte records: a 32-byte content digest and the `u32` generation in
+//! which the digest was last seen. A file whose header or length does not fit this layout,
+//! or whose key is not the one its name was derived from (a file copied under another name,
+//! or a name collision), is ignored and overwritten.
 //!
 //! The set is read once at start-up and shared read-only across the worker threads. The
 //! digests to record are collected from the workers' results and written once at the end,
@@ -38,7 +40,13 @@
 //! Entries are bounded to [`MAX_ENTRIES`]; when the bound is exceeded, the entries seen
 //! least recently (lowest generation) are dropped. Cache files in the directory that have not
 //! been written for [`STALE_FILE_AGE`] (files of binaries or configurations no longer in use)
-//! are removed.
+//! are removed, and so are temporary files of that age left behind by a crash.
+//!
+//! The executable is hashed when the cache is opened, which the CLI does before it discovers
+//! files. On Linux the running image is read through `/proc/self/exe`; elsewhere
+//! `current_exe` names a path, which a `cargo install` during the run can replace, so the
+//! executable's size and modification time are recorded at open and a save whose values
+//! differ is skipped: the entries belong to the binary that produced them.
 
 use chloro_core::Config;
 use chloro_core::formatter::config::{
@@ -54,7 +62,7 @@ use std::time::Duration;
 pub type Digest = [u8; 32];
 
 /// Version of the on-disk layout. Part of the tool key, so a layout change reads a new file.
-pub const FORMAT_VERSION: u32 = 1;
+pub const FORMAT_VERSION: u32 = 2;
 
 /// Suffix of every cache file written by chloro.
 pub const FILE_SUFFIX: &str = ".chloro-cache";
@@ -66,7 +74,9 @@ pub const MAX_ENTRIES: usize = 1 << 17;
 pub const STALE_FILE_AGE: Duration = Duration::from_secs(30 * 24 * 60 * 60);
 
 const MAGIC: &[u8; 8] = b"CHLOROFP";
-const HEADER_LEN: usize = 16;
+/// Magic (8), format version (4), generation (4), file key (32).
+const HEADER_LEN: usize = 48;
+const KEY_OFFSET: usize = 16;
 const RECORD_LEN: usize = 36;
 
 /// Digest of a file's content as handed to the formatter.
@@ -192,8 +202,7 @@ pub fn config_key_bytes(config: &Config) -> Vec<u8> {
 /// Identity of the formatter: crate version, cache format version, target, and the digest
 /// of the running executable. `None` when the executable cannot be read.
 pub fn tool_key() -> Option<Digest> {
-    let exe = std::env::current_exe().ok()?;
-    let bytes = fs::read(exe).ok()?;
+    let bytes = executable_bytes()?;
     let mut hasher = blake3::Hasher::new();
     hasher.update(b"chloro fixed-point cache\0");
     hasher.update(&FORMAT_VERSION.to_le_bytes());
@@ -207,18 +216,57 @@ pub fn tool_key() -> Option<Digest> {
     Some(*hasher.finalize().as_bytes())
 }
 
-/// File name of the cache for one (tool, config) pair.
-pub fn file_name(tool: &Digest, config: &Config) -> String {
+/// The bytes of the running executable. On Linux `/proc/self/exe` is read directly: it is
+/// the running image even after the file was replaced by a rename, where `current_exe`
+/// names a path that no longer exists.
+fn executable_bytes() -> Option<Vec<u8>> {
+    if cfg!(target_os = "linux")
+        && let Ok(bytes) = fs::read("/proc/self/exe")
+    {
+        return Some(bytes);
+    }
+    fs::read(std::env::current_exe().ok()?).ok()
+}
+
+/// Size and modification time of the file `current_exe` names, taken when the cache is
+/// opened and again before it is saved.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct ExeStamp {
+    len: u64,
+    modified: Option<std::time::SystemTime>,
+}
+
+fn exe_stamp() -> Option<ExeStamp> {
+    let meta = fs::metadata(std::env::current_exe().ok()?).ok()?;
+    Some(ExeStamp {
+        len: meta.len(),
+        modified: meta.modified().ok(),
+    })
+}
+
+/// Key of the cache file for one (tool, config) pair: `BLAKE3(tool || config)`. Its first
+/// 128 bits name the file; the whole key is written into the file's header and checked when
+/// the file is read.
+pub fn file_key(tool: &Digest, config: &Config) -> Digest {
     let mut hasher = blake3::Hasher::new();
     hasher.update(tool);
     hasher.update(&config_key_bytes(config));
-    let digest = hasher.finalize();
+    *hasher.finalize().as_bytes()
+}
+
+/// File name of the cache whose key is `key`.
+pub fn file_name_of(key: &Digest) -> String {
     let mut name = String::with_capacity(32 + FILE_SUFFIX.len());
-    for byte in &digest.as_bytes()[..16] {
+    for byte in &key[..16] {
         name.push_str(&format!("{byte:02x}"));
     }
     name.push_str(FILE_SUFFIX);
     name
+}
+
+/// File name of the cache for one (tool, config) pair.
+pub fn file_name(tool: &Digest, config: &Config) -> String {
+    file_name_of(&file_key(tool, config))
 }
 
 /// The cache directory, from the first of: the `--cache-dir` option, `CHLORO_CACHE_DIR`,
@@ -250,8 +298,12 @@ pub fn resolve_dir(option: &str) -> Option<PathBuf> {
 /// The set of content digests known to be fixed points of one (tool, config) pair.
 pub struct Cache {
     path: PathBuf,
+    /// `BLAKE3(tool || config)`: written into the header, checked when the file is read.
+    key: Digest,
     generation: u32,
     entries: HashMap<Digest, u32>,
+    /// The executable's size and modification time when the cache was opened.
+    exe_stamp: Option<ExeStamp>,
 }
 
 impl Cache {
@@ -259,15 +311,18 @@ impl Cache {
     /// gives an empty cache at the same path.
     pub fn open(dir: &Path, config: &Config) -> Option<Self> {
         let tool = tool_key()?;
-        let path = dir.join(file_name(&tool, config));
+        let key = file_key(&tool, config);
+        let path = dir.join(file_name_of(&key));
         let (generation, entries) = fs::read(&path)
             .ok()
-            .and_then(|bytes| parse(&bytes))
+            .and_then(|bytes| parse(&bytes, &key))
             .unwrap_or_default();
         Some(Cache {
             path,
+            key,
             generation,
             entries,
+            exe_stamp: exe_stamp(),
         })
     }
 
@@ -296,8 +351,16 @@ impl Cache {
     /// # Errors
     ///
     /// Returns the first I/O error from creating the directory, writing the temporary file,
-    /// or renaming it over the cache file.
+    /// or renaming it over the cache file, and an error of kind `Other` when the executable
+    /// changed since the cache was opened (nothing is written then).
     pub fn save(mut self, seen: impl IntoIterator<Item = Digest>) -> io::Result<()> {
+        if exe_stamp() != self.exe_stamp {
+            // The entries were produced by the binary hashed at `open`; a binary that
+            // replaced it since must not be given them.
+            return Err(io::Error::other(
+                "the chloro executable changed during the run; the cache file was not written",
+            ));
+        }
         self.generation = self.generation.wrapping_add(1);
         for digest in seen {
             self.entries.insert(digest, self.generation);
@@ -315,6 +378,7 @@ impl Cache {
         bytes.extend_from_slice(MAGIC);
         bytes.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
         bytes.extend_from_slice(&self.generation.to_le_bytes());
+        bytes.extend_from_slice(&self.key);
         for (digest, seen) in &records {
             bytes.extend_from_slice(digest);
             bytes.extend_from_slice(&seen.to_le_bytes());
@@ -382,8 +446,10 @@ fn create_temp(dir: &Path, target: &str) -> io::Result<(PathBuf, fs::File)> {
     Err(last.unwrap_or_else(|| io::Error::from(io::ErrorKind::AlreadyExists)))
 }
 
-/// Parse a cache file into its generation and entries. `None` for any layout mismatch.
-fn parse(bytes: &[u8]) -> Option<(u32, HashMap<Digest, u32>)> {
+/// Parse a cache file into its generation and entries. `None` for any layout mismatch, and
+/// for a file whose header carries another key than `key` (a name collision, or a file
+/// copied under another name).
+fn parse(bytes: &[u8], key: &Digest) -> Option<(u32, HashMap<Digest, u32>)> {
     if bytes.len() < HEADER_LEN || &bytes[..8] != MAGIC {
         return None;
     }
@@ -392,6 +458,9 @@ fn parse(bytes: &[u8]) -> Option<(u32, HashMap<Digest, u32>)> {
         return None;
     }
     let generation = u32::from_le_bytes(bytes[12..16].try_into().ok()?);
+    if bytes[KEY_OFFSET..HEADER_LEN] != key[..] {
+        return None;
+    }
     let body = &bytes[HEADER_LEN..];
     if !body.len().is_multiple_of(RECORD_LEN) {
         return None;
@@ -405,7 +474,8 @@ fn parse(bytes: &[u8]) -> Option<(u32, HashMap<Digest, u32>)> {
     Some((generation, entries))
 }
 
-/// Remove cache files in `dir` not written for `STALE_FILE_AGE`. Errors are ignored.
+/// Remove the cache files, and the temporary files of saves that did not finish, in `dir`
+/// not written for `STALE_FILE_AGE`. Errors are ignored.
 fn remove_stale_files(dir: &Path) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -413,11 +483,12 @@ fn remove_stale_files(dir: &Path) {
     let now = std::time::SystemTime::now();
     for entry in entries.flatten() {
         let path = entry.path();
-        let is_cache_file = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .is_some_and(|n| n.ends_with(FILE_SUFFIX));
-        if !is_cache_file {
+        // `<hex>.chloro-cache`, or `.<cache file name>.<pid>.<nanos>.tmp` (`temp_name`).
+        let ours = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
+            n.ends_with(FILE_SUFFIX)
+                || (n.starts_with('.') && n.contains(FILE_SUFFIX) && n.ends_with(".tmp"))
+        });
+        if !ours {
             continue;
         }
         let stale = entry
@@ -522,28 +593,36 @@ mod tests {
     fn parse_round_trip_and_rejects_corruption() {
         let d1 = content_digest(b"a");
         let d2 = content_digest(b"b");
+        let key = [5u8; 32];
         let mut bytes = Vec::new();
         bytes.extend_from_slice(MAGIC);
         bytes.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
         bytes.extend_from_slice(&7u32.to_le_bytes());
+        bytes.extend_from_slice(&key);
         for (d, g) in [(d1, 3u32), (d2, 7u32)] {
             bytes.extend_from_slice(&d);
             bytes.extend_from_slice(&g.to_le_bytes());
         }
-        let (generation, entries) = parse(&bytes).unwrap();
+        let (generation, entries) = parse(&bytes, &key).unwrap();
         assert_eq!(generation, 7);
         assert_eq!(entries.get(&d1), Some(&3));
         assert_eq!(entries.get(&d2), Some(&7));
 
         assert!(
-            parse(&bytes[..bytes.len() - 1]).is_none(),
+            parse(&bytes[..bytes.len() - 1], &key).is_none(),
             "truncated record"
         );
-        assert!(parse(b"").is_none(), "empty");
-        assert!(parse(b"not a cache file at all").is_none(), "foreign");
+        assert!(parse(b"", &key).is_none(), "empty");
+        assert!(parse(b"not a cache file at all", &key).is_none(), "foreign");
         let mut wrong_version = bytes.clone();
         wrong_version[8] ^= 1;
-        assert!(parse(&wrong_version).is_none(), "format version");
+        assert!(parse(&wrong_version, &key).is_none(), "format version");
+        let mut other_key = key;
+        other_key[31] ^= 1;
+        assert!(
+            parse(&bytes, &other_key).is_none(),
+            "a file copied under another name, or a name collision, is not read"
+        );
     }
 
     #[test]
@@ -551,28 +630,33 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let config = Config::default();
         let tool = [9u8; 32];
-        let path = dir.path().join(file_name(&tool, &config));
+        let key = file_key(&tool, &config);
+        let path = dir.path().join(file_name_of(&key));
         let cache = Cache {
             path: path.clone(),
+            key,
             generation: 0,
             entries: HashMap::new(),
+            exe_stamp: exe_stamp(),
         };
         let many: Vec<Digest> = (0..=MAX_ENTRIES as u32)
             .map(|i| content_digest(&i.to_le_bytes()))
             .collect();
         cache.save(many.iter().copied()).unwrap();
-        let (generation, entries) = parse(&fs::read(&path).unwrap()).unwrap();
+        let (generation, entries) = parse(&fs::read(&path).unwrap(), &key).unwrap();
         assert_eq!(generation, 1);
         assert_eq!(entries.len(), MAX_ENTRIES, "the bound applies on save");
 
         let cache = Cache {
             path: path.clone(),
+            key,
             generation,
             entries,
+            exe_stamp: exe_stamp(),
         };
         let newer = content_digest(b"newer");
         cache.save([newer]).unwrap();
-        let (generation, entries) = parse(&fs::read(&path).unwrap()).unwrap();
+        let (generation, entries) = parse(&fs::read(&path).unwrap(), &key).unwrap();
         assert_eq!(generation, 2);
         assert_eq!(entries.len(), MAX_ENTRIES);
         assert!(entries.contains_key(&newer));
@@ -621,7 +705,8 @@ mod tests {
     #[test]
     fn save_leaves_another_saves_temporary_file_alone() {
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join(file_name(&[3u8; 32], &Config::default()));
+        let key = file_key(&[3u8; 32], &Config::default());
+        let path = dir.path().join(file_name_of(&key));
         let target = path.file_name().unwrap().to_str().unwrap();
         let foreign = dir
             .path()
@@ -629,13 +714,112 @@ mod tests {
         fs::write(&foreign, b"in progress").unwrap();
         let cache = Cache {
             path: path.clone(),
+            key,
             generation: 0,
             entries: HashMap::new(),
+            exe_stamp: exe_stamp(),
         };
         let d = content_digest(b"x");
         cache.save([d]).unwrap();
-        assert!(parse(&fs::read(&path).unwrap()).unwrap().1.contains_key(&d));
+        assert!(
+            parse(&fs::read(&path).unwrap(), &key)
+                .unwrap()
+                .1
+                .contains_key(&d)
+        );
         assert_eq!(fs::read(&foreign).unwrap(), b"in progress");
+    }
+
+    #[test]
+    fn open_reads_the_file_its_key_names_and_rejects_a_copy() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config::default();
+        let tool = tool_key().expect("the test binary can be read");
+        let key = file_key(&tool, &config);
+        let d = content_digest(b"fixed point");
+        Cache::open(dir.path(), &config).unwrap().save([d]).unwrap();
+        let cache = Cache::open(dir.path(), &config).unwrap();
+        assert!(cache.contains(&d));
+        assert_eq!(cache.path(), dir.path().join(file_name_of(&key)));
+
+        // The file copied under another configuration's name is not read as that
+        // configuration's cache: the header names the configuration it was written for.
+        let mut other = Config::default();
+        other.set("max_width", "80").unwrap();
+        let copy = dir.path().join(file_name(&tool, &other));
+        fs::copy(cache.path(), &copy).unwrap();
+        let cache = Cache::open(dir.path(), &other).unwrap();
+        assert_eq!(cache.path(), copy);
+        assert!(cache.is_empty(), "a copied cache file is ignored");
+    }
+
+    #[test]
+    fn save_is_skipped_when_the_executable_changed() {
+        let dir = tempfile::tempdir().unwrap();
+        let key = file_key(&[7u8; 32], &Config::default());
+        let path = dir.path().join(file_name_of(&key));
+        let cache = Cache {
+            path: path.clone(),
+            key,
+            generation: 0,
+            entries: HashMap::new(),
+            exe_stamp: Some(ExeStamp {
+                len: 0,
+                modified: None,
+            }),
+        };
+        let err = cache.save([content_digest(b"x")]).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::Other);
+        assert!(
+            !path.exists(),
+            "no cache file is written for a changed binary"
+        );
+        assert_eq!(
+            dir.path().read_dir().unwrap().count(),
+            0,
+            "no temporary file either"
+        );
+    }
+
+    #[test]
+    fn stale_cache_and_temporary_files_are_removed() {
+        let dir = tempfile::tempdir().unwrap();
+        let now = std::time::SystemTime::now();
+        let old = now - STALE_FILE_AGE - Duration::from_secs(60);
+        let aged = |name: &str, time| {
+            let p = dir.path().join(name);
+            fs::write(&p, b"x").unwrap();
+            fs::File::options()
+                .write(true)
+                .open(&p)
+                .unwrap()
+                .set_modified(time)
+                .unwrap();
+            p
+        };
+        let stale_cache = aged("00ff.chloro-cache", old);
+        let stale_tmp = aged(".00ff.chloro-cache.12.34.tmp", old);
+        let fresh_tmp = aged(".00ff.chloro-cache.56.78.tmp", now);
+        let foreign = aged(".notes.tmp", old);
+        remove_stale_files(dir.path());
+        assert!(!stale_cache.exists());
+        assert!(
+            !stale_tmp.exists(),
+            "a temporary file left by a crash is removed"
+        );
+        assert!(fresh_tmp.exists(), "a save in progress is left alone");
+        assert!(
+            foreign.exists(),
+            "a file that is not chloro's is left alone"
+        );
+    }
+
+    #[test]
+    fn tool_key_is_the_running_executable() {
+        let key = tool_key().expect("the test binary can be read");
+        assert_eq!(tool_key(), Some(key));
+        assert_eq!(executable_bytes().map(|b| b.is_empty()), Some(false));
+        assert!(exe_stamp().is_some_and(|s| s.len > 0));
     }
 
     #[test]
