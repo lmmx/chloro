@@ -321,7 +321,7 @@ with the container.
   a one-literal edit; at process level 1.2–2.0x pinned and 0.9–1.7x unpinned against
   `--no-cache` (fixed per-run costs, since removed by E12, and the 4-thread item split dilute
   it), 1.11–2.04x against today's fixed-point cache; cold pass with the cache on +10–15% wall,
-  +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:50 UTC, one hour) to
+  +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:38 UTC, one hour) to
   merge the E12/E13 head into the branch, make the unit cache opt-in (`--unit-cache`), and
   re-measure the edit scenario and the cold overhead. Landed (`8ae8a92`: merged the E12/E13 head,
   `--unit-cache` opt-in, `--no-cache` turns both caches off; re-measured pinned minima all five
@@ -355,14 +355,14 @@ with the container.
   peak RSS); decision rule: RSS within 1.2x of glibc on every workload and wall below with
   disjoint ranges on most, else measurement only; record `EXP-014-allocators.md`.
 - E16 (`20261015-scanner-paths`, worktree `/home/user/wt/scanner-paths`, agent running since
-  02:55 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
+  02:39 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
   S2, S4, S7, S8, S5, S12, S15, S10, S13, S16; bound about 12% of instructions), one commit per
   lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
   `EXP-016-scanner-paths.md`. On landing: reproduce the goldens, conform and Ir on the branch
   head before merging.
-- All six records are committed and the synthesis sections above are written (03:40 UTC).
+- All six records are committed and the synthesis sections above are written (02:58 UTC).
 - E18 (`20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates`, agent running since
-  03:35 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
+  02:57 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
   and literal widths computed once (decide-once rows 5 and 7); record `EXP-018-dead-candidates.md`.
   On landing: reproduce goldens, conform at both versions, the two `config_matrix` values and Ir.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
@@ -370,7 +370,7 @@ with the container.
   quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
   `benchmarks/compare_rustfmt.sh` and `profile.sh` when no other job runs; README and
   best-known-good from M4; PR #88 body; the morning report (the user's eight items).
-- E17 (`20261015-parse-floor`, worktree `/home/user/wt/parse-floor`, agent running since 03:05
+- E17 (`20261015-parse-floor`, worktree `/home/user/wt/parse-floor`, agent running since 02:41
   UTC, time box 3 h): the exact, fork-free parse-floor levers of `parser-and-substrate.md` (P8
   pass `in_trait` down instead of a parent search, P5 macro arguments lexed and parsed once, P1
   fused trivia interspersal and tree build gated by element equality over both corpora), one
