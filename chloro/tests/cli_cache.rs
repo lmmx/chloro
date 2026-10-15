@@ -85,16 +85,30 @@ fn tree(formatted: usize, unformatted: usize) -> TempDir {
     dir
 }
 
-/// The fixed-point cache files in `cache_dir` (the unit cache's `.chloro-units` files next
-/// to them are tested in `cli_unit_cache.rs`).
-fn cache_files(cache_dir: &Path) -> Vec<std::path::PathBuf> {
+/// Every file in the cache directory.
+fn dir_entries(cache_dir: &Path) -> Vec<std::path::PathBuf> {
     match fs::read_dir(cache_dir) {
-        Ok(entries) => entries
-            .map(|e| e.unwrap().path())
-            .filter(|p| !p.to_string_lossy().ends_with(".chloro-units"))
-            .collect(),
+        Ok(entries) => entries.map(|e| e.unwrap().path()).collect(),
         Err(_) => Vec::new(),
     }
+}
+
+/// The files of the directory whose names end in `suffix`.
+fn files_ending(cache_dir: &Path, suffix: &str) -> Vec<std::path::PathBuf> {
+    dir_entries(cache_dir)
+        .into_iter()
+        .filter(|p| p.to_str().unwrap().ends_with(suffix))
+        .collect()
+}
+
+/// The cache files (one per binary and configuration).
+fn cache_files(cache_dir: &Path) -> Vec<std::path::PathBuf> {
+    files_ending(cache_dir, ".chloro-cache")
+}
+
+/// The records of executable digests (one per executable identity).
+fn exe_records(cache_dir: &Path) -> Vec<std::path::PathBuf> {
+    files_ending(cache_dir, ".chloro-exe")
 }
 
 #[test]
@@ -114,6 +128,12 @@ fn cold_run_populates_and_warm_run_hits_with_the_same_report() {
         "one cache file for the (binary, config) pair"
     );
     assert!(files[0].to_str().unwrap().ends_with(".chloro-cache"));
+    assert_eq!(exe_records(cache.path()).len(), 1, "one executable record");
+    assert_eq!(
+        dir_entries(cache.path()).len(),
+        2,
+        "nothing else in the directory"
+    );
 
     let warm = chloro(cache.path(), &["--check", path]);
     assert_eq!(warm.code, cold.code);
@@ -207,7 +227,7 @@ fn no_cache_bypasses_reading_and_writing() {
     assert_eq!(run.code, 0);
     assert_eq!(run.cache_hits(), 0);
     assert!(run.stderr.contains("Cache: disabled (--no-cache)"));
-    assert!(cache_files(cache.path()).is_empty(), "nothing written");
+    assert!(dir_entries(cache.path()).is_empty(), "nothing written");
 
     // Populate, then bypass: still no hits.
     assert_eq!(chloro(cache.path(), &["--check", path]).code, 0);
@@ -234,7 +254,8 @@ fn cache_dir_option_overrides_the_environment() {
     );
     assert_eq!(run.code, 0);
     assert_eq!(cache_files(opt_dir.path()).len(), 1);
-    assert!(cache_files(env_dir.path()).is_empty());
+    assert_eq!(exe_records(opt_dir.path()).len(), 1);
+    assert!(dir_entries(env_dir.path()).is_empty());
 }
 
 #[test]
@@ -346,5 +367,85 @@ fn check_output_and_exit_code_are_unchanged_without_verbose() {
     assert_eq!(
         String::from_utf8_lossy(&cold.stderr).trim(),
         "Error: 1 file(s) need formatting"
+    );
+}
+
+/// Runs `exe -v <args>` with the cache under `cache_dir`, retrying while the kernel reports
+/// the binary busy (a file descriptor this test wrote it through can be held for a moment by
+/// a process another test thread is starting).
+#[cfg(unix)]
+fn run_exe(exe: &Path, cache_dir: &Path, args: &[&str]) -> Run {
+    let mut attempts = 0;
+    let output = loop {
+        match std::process::Command::new(exe)
+            .env("CHLORO_CACHE_DIR", cache_dir)
+            .arg("-v")
+            .args(args)
+            .output()
+        {
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy && attempts < 50 => {
+                attempts += 1;
+                std::thread::sleep(std::time::Duration::from_millis(20));
+            }
+            result => break result.unwrap(),
+        }
+    };
+    Run {
+        code: output.status.code().unwrap(),
+        stdout: String::from_utf8(output.stdout).unwrap(),
+        stderr: String::from_utf8(output.stderr).unwrap(),
+    }
+}
+
+/// The executable's digest is recorded, and a binary changed on disk is not given the
+/// entries of the binary it replaced: a longer file with its modification time put back,
+/// then a rewrite in place of the same size with its modification time put back, each read
+/// another cache file.
+#[cfg(unix)]
+#[test]
+fn a_changed_binary_reads_another_cache_file() {
+    let cache = tempfile::tempdir().unwrap();
+    let bin = tempfile::tempdir().unwrap();
+    let src = tree(2, 0);
+    let path = src.path().to_str().unwrap();
+    let exe = bin.path().join("chloro");
+    fs::copy(env!("CARGO_BIN_EXE_chloro"), &exe).unwrap();
+
+    let first = run_exe(&exe, cache.path(), &["--check", path]);
+    assert_eq!(first.code, 0, "{}", first.stderr);
+    assert_eq!(
+        run_exe(&exe, cache.path(), &["--check", path]).cache_hits(),
+        2
+    );
+    assert_eq!(cache_files(cache.path()).len(), 1);
+    assert_eq!(exe_records(cache.path()).len(), 1, "recorded once");
+
+    let rewrite = |bytes: &[u8]| {
+        let modified = fs::metadata(&exe).unwrap().modified().unwrap();
+        // Past the file system's timestamp granularity.
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        let file = fs::File::options().write(true).open(&exe).unwrap();
+        std::io::Write::write_all(&mut &file, bytes).unwrap();
+        file.set_modified(modified).unwrap();
+        drop(file);
+    };
+    let mut bytes = fs::read(&exe).unwrap();
+    bytes.push(0);
+    rewrite(&bytes);
+    let longer = run_exe(&exe, cache.path(), &["--check", path]);
+    assert_eq!(longer.code, 0, "{}", longer.stderr);
+    assert_eq!(longer.cache_hits(), 0, "another binary, another cache file");
+    assert_eq!(cache_files(cache.path()).len(), 2);
+
+    *bytes.last_mut().unwrap() = 1;
+    rewrite(&bytes);
+    let same_size = run_exe(&exe, cache.path(), &["--check", path]);
+    assert_eq!(same_size.code, 0, "{}", same_size.stderr);
+    assert_eq!(same_size.cache_hits(), 0, "same size and modification time");
+    assert_eq!(cache_files(cache.path()).len(), 3);
+    assert_eq!(exe_records(cache.path()).len(), 3);
+    assert_eq!(
+        run_exe(&exe, cache.path(), &["--check", path]).cache_hits(),
+        2
     );
 }
