@@ -155,9 +155,17 @@ with the container.
   construction (units of `parallel.rs`, positions rebased, whole-file checks unchanged), with
   the identity harness over both corpora (cold and warm passes against the sequential
   formatter), the edit scenario on the five largest fixtures, and the cold-path overhead;
-  record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. On landing: reproduce
-  the identity harness and the Ir gate before any merge; the cache stays off by default in
-  the library.
+  record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. First result (02:45
+  UTC, branch pushed, six commits to `b8c3882`): exact everywhere (1238 fixtures and 24,582
+  registry files, cold, warm, moved and blanked, 1 and 4 threads; goldens and conform unchanged
+  with the cache off; Ir +0.0005% off); in process 0.26–0.47 of the sequential formatter after
+  a one-literal edit; at process level 1.2–2.0x pinned and 0.9–1.7x unpinned against
+  `--no-cache` (fixed per-run costs, since removed by E12, and the 4-thread item split dilute
+  it), 1.11–2.04x against today's fixed-point cache; cold pass with the cache on +10–15% wall,
+  +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:50 UTC, one hour) to
+  merge the E12/E13 head into the branch, make the unit cache opt-in (`--unit-cache`), and
+  re-measure the edit scenario and the cold overhead. On landing: reproduce the fixture identity
+  harness and the Ir gate, then merge with the cache off by default.
 - E13 (`20261015-pgo-ci`, worktree `/home/user/wt/pgo-ci`, agent running since 02:00 UTC, time
   box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
   validated locally by running the workflow's commands (goldens, conform at both versions, Ir
