@@ -11,7 +11,8 @@ use super::context::RewriteContext;
 use super::shape::{Indent, Shape};
 use super::span::Span;
 use super::utils::{
-    first_line_width, last_line_width, trim_left_preserve_layout, trimmed_last_line_width,
+    concat, first_line_width, last_line_width, trim, trim_left_preserve_layout,
+    trimmed_last_line_width,
 };
 
 fn is_custom_comment(comment: &str) -> bool {
@@ -337,18 +338,18 @@ fn identify_comment(
         Some(rewritten_first_group)
     } else {
         identify_comment(rest.trim_start(), shape, config, is_doc_comment).map(|rest_str| {
-            format!(
-                "{}\n{}{}{}",
-                rewritten_first_group,
+            concat(&[
+                &rewritten_first_group,
+                "\n",
                 // insert back the blank line
                 if has_bare_lines && style.is_line_comment() {
                     "\n"
                 } else {
                     ""
                 },
-                shape.indent.to_string(config),
-                rest_str
-            )
+                &shape.indent.to_string(config),
+                &rest_str,
+            ])
         })
     }
 }
@@ -359,7 +360,7 @@ pub(crate) fn rewrite_missing_comment(
     context: &RewriteContext<'_>,
 ) -> Option<String> {
     let missing_snippet = context.snippet(span);
-    let trimmed_snippet = missing_snippet.trim();
+    let trimmed_snippet = trim(missing_snippet);
     // check the span starts with a comment
     let pos = trimmed_snippet.find('/');
     if !trimmed_snippet.is_empty() && pos.is_some() {
@@ -393,7 +394,7 @@ pub(crate) fn recover_missing_comment_in_span(
         } else {
             Cow::from(" ")
         };
-        Some(format!("{sep}{missing_comment}"))
+        Some(concat(&[&sep, &missing_comment]))
     }
 }
 
@@ -413,7 +414,7 @@ fn light_rewrite_comment(
     config: &Settings,
     is_doc_comment: bool,
 ) -> String {
-    let sep = format!("\n{}", offset.to_string(config));
+    let sep = concat(&["\n", &offset.to_string(config)]);
     let mut out = String::with_capacity(orig.len() + 16);
     for (i, l) in orig.lines().enumerate() {
         if i > 0 {
@@ -443,6 +444,26 @@ pub(crate) trait FindUncommented {
 
 impl FindUncommented for str {
     fn find_uncommented(&self, pat: &str) -> Option<usize> {
+        // A one-byte pattern other than `/`: `CharClasses` yields a character as a comment
+        // kind only after a `/` followed by `*` or `/`, and every other character as
+        // `Normal` or `InString`, the kinds a pattern character matches in. So a pattern
+        // byte before the first such `/` is the first match, and a text with neither has
+        // no match. Otherwise the search below runs.
+        if let [needle] = *pat.as_bytes()
+            && needle != b'/'
+        {
+            let bytes = self.as_bytes();
+            let mut pos = 0;
+            loop {
+                pos = find_any_byte(bytes, pos, [needle, b'/']);
+                match bytes.get(pos) {
+                    None => return None,
+                    Some(&b) if b == needle => return Some(pos),
+                    Some(_) if !matches!(bytes.get(pos + 1), Some(b'*' | b'/')) => pos += 1,
+                    Some(_) => break,
+                }
+            }
+        }
         let first = pat.bytes().next().filter(u8::is_ascii);
         let mut needle_iter = pat.chars();
         let mut classes = CharClasses::new(self);
@@ -764,10 +785,71 @@ impl<'a> CharClasses<'a> {
 }
 
 /// Returns the position of the first byte at or after `pos` that is one of `targets`, or
-/// `bytes.len()`, testing eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
+/// `bytes.len()`. With SSE2 (every x86-64 target) it tests sixteen bytes per step, and the
+/// last step of a slice of at least sixteen bytes reads the final sixteen and shifts out
+/// the flags of the bytes before `pos`; shorter slices, and other targets, are searched
+/// eight bytes at a time.
+#[inline(always)]
+pub(crate) fn find_any_byte<const N: usize>(
+    bytes: &[u8],
+    mut pos: usize,
+    targets: [u8; N],
+) -> usize {
+    #[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
+    {
+        let len = bytes.len();
+        if len >= 16 {
+            while pos + 16 <= len {
+                let found = sixteen_byte_flags(bytes[pos..pos + 16].try_into().unwrap(), targets);
+                if found != 0 {
+                    return pos + found.trailing_zeros() as usize;
+                }
+                pos += 16;
+            }
+            if pos >= len {
+                return pos;
+            }
+            // The final sixteen bytes start `skip` bytes before `pos`, `0 < skip < 16`.
+            let skip = pos - (len - 16);
+            let tail = bytes[len - 16..].try_into().unwrap();
+            let found = sixteen_byte_flags(tail, targets) >> skip;
+            return if found != 0 {
+                pos + found.trailing_zeros() as usize
+            } else {
+                len
+            };
+        }
+    }
+    find_any_byte_by_word(bytes, pos, targets)
+}
+
+/// Bit `i` set iff `chunk[i]` is one of `targets`.
+#[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
+#[inline(always)]
+fn sixteen_byte_flags<const N: usize>(chunk: &[u8; 16], targets: [u8; N]) -> u32 {
+    use std::arch::x86_64::{
+        _mm_cmpeq_epi8, _mm_loadu_si128, _mm_movemask_epi8, _mm_or_si128, _mm_set1_epi8,
+        _mm_setzero_si128,
+    };
+    // SAFETY: the `cfg` above compiles this only where SSE2 is enabled, so every intrinsic
+    // is available; `_mm_loadu_si128` reads 16 bytes from a pointer with no alignment
+    // requirement, and `chunk` is a reference to exactly 16 initialised bytes. The others
+    // only read their register arguments.
+    unsafe {
+        let v = _mm_loadu_si128(chunk.as_ptr().cast());
+        let mut eq = _mm_setzero_si128();
+        for t in targets {
+            eq = _mm_or_si128(eq, _mm_cmpeq_epi8(v, _mm_set1_epi8(t as i8)));
+        }
+        _mm_movemask_epi8(eq) as u32
+    }
+}
+
+/// `find_any_byte` eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
 /// flags every zero byte and possibly bytes above a zero byte, never below the first one,
 /// so the lowest flag of `y = w ^ target` marks the first byte of `w` equal to `target`.
-fn find_any_byte<const N: usize>(bytes: &[u8], mut pos: usize, targets: [u8; N]) -> usize {
+#[inline(always)]
+fn find_any_byte_by_word<const N: usize>(bytes: &[u8], mut pos: usize, targets: [u8; N]) -> usize {
     const LO: u64 = 0x0101_0101_0101_0101;
     const HI: u64 = 0x8080_8080_8080_8080;
     while let Some(chunk) = bytes.get(pos..pos + 8) {
@@ -1572,10 +1654,22 @@ mod tests {
                 .wrapping_add(1442695040888963407);
             (state >> 33) as usize
         };
-        for _ in 0..20_000 {
-            let len = next() % 40;
+        // Dense targets on 0 to 39 bytes, then sparse ones (one byte in 64 drawn from the
+        // whole alphabet) on 0 to 79 bytes, across the sixteen-byte steps and final reads.
+        for round in 0..40_000 {
+            let (len, sparse) = if round < 20_000 {
+                (next() % 40, false)
+            } else {
+                (next() % 80, true)
+            };
             let bytes: Vec<u8> = (0..len)
-                .map(|_| ALPHABET[next() % ALPHABET.len()])
+                .map(|_| {
+                    if sparse && next() % 64 != 0 {
+                        b'q'
+                    } else {
+                        ALPHABET[next() % ALPHABET.len()]
+                    }
+                })
                 .collect();
             for pos in 0..=len {
                 let expected = bytes[pos..]
@@ -1674,7 +1768,9 @@ mod tests {
                 None => Some(s.len() - pat.len()),
             }
         }
-        let patterns = ["", "a", "r", "/", "\"", "*/", "aa", "a/", "r#", "é", "aé"];
+        let patterns = [
+            "", "a", "r", "/", "\"", "*/", "aa", "a/", "r#", "é", "aé", "#", "*", "\\", "\n", "'",
+        ];
         for s in scan_strings(5) {
             for pat in patterns {
                 assert_eq!(s.find_uncommented(pat), by_char(&s, pat), "{s:?} {pat:?}");

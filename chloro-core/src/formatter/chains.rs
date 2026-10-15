@@ -34,7 +34,7 @@ use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::types::SegmentParam;
 use super::utils::{
-    first_line_width, last_line_extendable, last_line_width, unicode_str_width, wrap_str,
+    first_line_width, last_line_extendable, last_line_width, trim, unicode_str_width, wrap_str,
 };
 
 /// Provides the original input contents from the span
@@ -382,7 +382,7 @@ impl<'a> Chain<'a> {
             if is_post_comment(&trimmed_snippet) {
                 children.push(ChainItem::comment(
                     post_comment_span,
-                    trimmed_snippet.trim().to_owned(),
+                    trim(&trimmed_snippet).to_owned(),
                     CommentPosition::Back,
                 ));
                 *prev_span_end = post_comment_span.hi();
@@ -396,7 +396,7 @@ impl<'a> Chain<'a> {
         if let Some(first_chain_item) = iter.peek() {
             let comment_span = mk_sp(prev_span_end, first_chain_item.span.lo());
             let comment_snippet = context.snippet(comment_span);
-            if !is_tries(comment_snippet.trim()) {
+            if !is_tries(trim(comment_snippet)) {
                 handle_post_comment(
                     comment_span,
                     comment_snippet,
@@ -409,7 +409,7 @@ impl<'a> Chain<'a> {
             let comment_snippet = context.snippet(chain_item.span);
             // FIXME: Figure out the way to get a correct span when converting `try!` to `?`.
             let handle_comment =
-                !(context.config.use_try_shorthand() || is_tries(comment_snippet.trim()));
+                !(context.config.use_try_shorthand() || is_tries(trim(comment_snippet)));
 
             // Pre-comment
             if handle_comment {
@@ -836,7 +836,7 @@ fn trim_tries(s: &str) -> String {
     for (kind, _, c) in CharClasses::new(s) {
         match c {
             '\n' => {
-                if result.is_empty() || !line_buffer.trim().is_empty() {
+                if result.is_empty() || !trim(&line_buffer).is_empty() {
                     result.push_str(&line_buffer);
                     result.push('\n')
                 }
@@ -846,7 +846,7 @@ fn trim_tries(s: &str) -> String {
             c => line_buffer.push(c),
         }
     }
-    if !line_buffer.trim().is_empty() {
+    if !trim(&line_buffer).is_empty() {
         result.push_str(&line_buffer);
     }
     result

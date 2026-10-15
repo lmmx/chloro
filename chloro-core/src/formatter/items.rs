@@ -41,9 +41,10 @@ use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span, rustc_span, to
 use super::stmt::Stmt;
 use super::types::{Bounds, format_abi, opaque_ty};
 use super::utils::{
-    colon_spaces, first_line_contains_single_line_comment, first_line_width, format_visibility,
-    is_attributes_extendable, is_single_line, last_line_contains_single_line_comment,
-    last_line_used_width, last_line_width, starts_with_newline, trimmed_last_line_width,
+    colon_spaces, concat, count_newlines, first_line_contains_single_line_comment,
+    first_line_width, format_visibility, is_attributes_extendable, is_single_line,
+    last_line_contains_single_line_comment, last_line_used_width, last_line_width,
+    starts_with_newline, trimmed_last_line_width,
 };
 use super::visitor::FmtVisitor;
 
@@ -478,11 +479,11 @@ impl Rewrite for ast::RetType<'_> {
                     context,
                     Shape::legacy(inner_width, shape.indent + arrow_width),
                 )
-                .map(|r| format!("-> {r}"));
+                .map(|r| concat(&["-> ", &r]));
         }
 
         let shape = shape.offset_left(arrow_width)?;
-        ty.rewrite(context, shape).map(|s| format!("-> {s}"))
+        ty.rewrite(context, shape).map(|s| concat(&["-> ", &s]))
     }
 }
 
@@ -1548,6 +1549,8 @@ impl FmtVisitor<'_> {
         } else {
             abi
         };
+        // Written without `push_str`: rustfmt's `line_number` does not count these.
+        self.uncounted_newlines += count_newlines(&abi);
         self.buffer.push_str(&abi);
 
         let snippet = self.snippet(span);

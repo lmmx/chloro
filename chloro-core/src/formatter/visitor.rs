@@ -36,7 +36,10 @@ use super::shape::{Indent, Shape};
 use super::skip::{SkipContext, may_list_skip_names};
 use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span, token_span};
 use super::stmt::Stmt;
-use super::utils::{count_newlines, format_visibility, last_line_width, starts_with_newline};
+use super::utils::{
+    count_newline_bytes, count_newlines, format_visibility, last_line_width, starts_with_newline,
+    trim,
+};
 
 pub(crate) struct FmtVisitor<'a> {
     /// Receives `macro_rewrite_failure` when the visitor is dropped (rustfmt's
@@ -49,7 +52,16 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) is_if_else_block: bool,
     pub(crate) is_loop_block: bool,
     pub(crate) snippet_provider: SnippetProvider<'a>,
-    pub(crate) line_number: usize,
+    /// The `\n` bytes of `buffer` that `line_number` does not count: a worker's leading
+    /// newline (`parallel.rs`) and the newlines of text written without `push_str`.
+    pub(crate) uncounted_newlines: usize,
+    /// `(n, c)`: the first `n` bytes of `buffer` hold `c` newlines. The buffer changes
+    /// only by appending, by `pop` and by replacement; the last two leave `n` beyond the
+    /// end or keep the first `n` bytes, so the cache is valid while `n <= buffer.len()`.
+    newline_cache: (usize, usize),
+    /// Debug builds keep rustfmt's running count and check `line_number` against it.
+    #[cfg(debug_assertions)]
+    pub(crate) counted_line_number: usize,
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
     /// Macro and attribute names left as written (rustfmt's `skip_context`).
@@ -106,7 +118,10 @@ impl<'a> FmtVisitor<'a> {
             is_if_else_block: false,
             is_loop_block: false,
             snippet_provider,
-            line_number: 0,
+            uncounted_newlines: 0,
+            newline_cache: (0, 0),
+            #[cfg(debug_assertions)]
+            counted_line_number: 0,
             macro_rewrite_failure: false,
             is_macro_def: false,
             skip_context: None,
@@ -299,7 +314,7 @@ impl<'a> FmtVisitor<'a> {
         let mut extra_newline = false;
 
         let skip_normal = |s: &str| {
-            let trimmed = s.trim();
+            let trimmed = trim(s);
             trimmed.is_empty() || trimmed.chars().all(|c| c == ';')
         };
 
@@ -655,8 +670,41 @@ impl<'a> FmtVisitor<'a> {
     }
 
     pub(crate) fn push_str(&mut self, s: &str) {
-        self.line_number += count_newlines(s);
+        #[cfg(debug_assertions)]
+        {
+            self.counted_line_number += count_newlines(s);
+        }
         self.buffer.push_str(s);
+    }
+
+    /// The number of newlines written to the buffer by `push_str` (rustfmt's
+    /// `line_number`, which `push_str` maintains). Only the skip records read it, so it is
+    /// counted here, from the cached count of the buffer's prefix.
+    pub(crate) fn line_number(&mut self) -> usize {
+        let line_number = self.buffer_newlines() - self.uncounted_newlines;
+        #[cfg(debug_assertions)]
+        assert_eq!(line_number, self.counted_line_number);
+        line_number
+    }
+
+    /// The number of `\n` bytes in the buffer.
+    fn buffer_newlines(&mut self) -> usize {
+        let (counted, newlines) = self.newline_cache;
+        let newlines = match self.buffer.as_bytes().get(counted..) {
+            Some(rest) => newlines + count_newline_bytes(rest),
+            None => count_newline_bytes(self.buffer.as_bytes()),
+        };
+        self.newline_cache = (self.buffer.len(), newlines);
+        newlines
+    }
+
+    /// Sets `line_number` to 0 for the text in the buffer.
+    pub(crate) fn reset_line_number(&mut self) {
+        #[cfg(debug_assertions)]
+        {
+            self.counted_line_number = 0;
+        }
+        self.uncounted_newlines = self.buffer_newlines();
     }
 
     fn push_rewrite_inner(&mut self, span: Span, rewrite: Option<String>) {
@@ -664,7 +712,7 @@ impl<'a> FmtVisitor<'a> {
             self.push_str(s);
         } else {
             let snippet = self.snippet(span);
-            self.push_str(snippet.trim());
+            self.push_str(trim(snippet));
         }
         self.last_pos = span.hi();
     }
@@ -693,7 +741,7 @@ impl<'a> FmtVisitor<'a> {
         // So here we need to take a minimum between the two.
         let lo = std::cmp::min(attrs_end + 1, first_line);
         self.push_rewrite_inner(item_span, None);
-        let hi = self.line_number + 1;
+        let hi = self.line_number() + 1;
         let mut skipped = self.run.skipped_range.borrow_mut();
         if let Some(unit) = &mut self.unit {
             unit.output_line_ranges.push(skipped.len());
