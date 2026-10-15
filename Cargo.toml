@@ -18,6 +18,12 @@ facet-args = "0.30.0"
 insta = "1.0"
 tempfile = "3"
 
+# Alternative global allocators, off by default (EXP-014): the `alloc-*` features of
+# `chloro` (the CLI) and of `chloro-core` (its `bench` example only).
+mimalloc = "0.1.52"
+snmalloc-rs = "0.7.6"
+tikv-jemallocator = "0.7.0"
+
 # Release binaries: whole-program LTO in one codegen unit. Measured in
 # docs/journal/2026-10-14-autoresearch/experiments/EXP-002-cli-build.md.
 [profile.release]

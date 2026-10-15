@@ -4,6 +4,22 @@
 
 #![allow(clippy::multiple_crate_versions)]
 
+// The binary's global allocator: glibc's `malloc` unless an `alloc-*` feature is enabled
+// (all off by default; measured in EXP-014). The first enabled of mimalloc, jemalloc and
+// snmalloc wins, so `--all-features` builds.
+#[cfg(feature = "alloc-mimalloc")]
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+#[cfg(all(feature = "alloc-jemalloc", not(feature = "alloc-mimalloc")))]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+#[cfg(all(
+    feature = "alloc-snmalloc",
+    not(any(feature = "alloc-mimalloc", feature = "alloc-jemalloc"))
+))]
+#[global_allocator]
+static GLOBAL: snmalloc_rs::SnMalloc = snmalloc_rs::SnMalloc;
+
 /// Command-line interface for formatting Rust source files.
 #[cfg(feature = "cli")]
 pub mod cli {
