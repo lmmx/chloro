@@ -90,7 +90,102 @@ Cache and branch simulation of the same run (`valgrind --tool=callgrind --cache-
 
 ## Bounds, by record
 
-(filled from the records as they land)
+Each paragraph states what its record measured, what it bounds, and what became an experiment
+tonight (ledger rows E12–E17). Shares are of the final head's 312,733,055 instructions on the
+sample unless marked; wall-time figures are M3's or ratios within one window.
+
+**A correction to the premise** (already-formatted-fast-path.md, measured): the 49-file profile
+sample is not formatted input: 31 of its 49 files change under chloro (361 of 27,423 lines), and
+chloro's cost barely depends on it (481.0 Ir/byte as found, 472.4 on a formatted copy). The
+profile therefore describes mostly-formatted code, and every bound below holds on it.
+
+**Incremental formatting and the process**
+([incremental-and-process.md](2026-10-15-extensions-theory/incremental-and-process.md)). Two
+measured findings about the CLI's fixed costs opened the night: reading and hashing the 2 MB
+executable for the cache key cost 2.3–3.3 ms on every run, more than the 1.7–2.4 ms start-up,
+and a warm-cache run was mostly kernel time (33.7 ms system against 14.8 ms user) from one
+`canonicalize` per file (15,488 `readlink` calls) and two path sorts. Both became E12 (merged
+at `92fdef0`): warm `--check` of the 1238 fixtures 0.56–0.61 of before, the cache's per-run
+overhead 2.8–2.9 ms → 0.6–1.0 ms, `readlink` calls 8,060 → 4, output identical. The record's
+item-level cache (L1) became E15: exact on both corpora, 0.26–0.47 of the sequential formatter
+in process after a one-item edit in a large file, 1.2–2.0x at process level pinned against
+`--no-cache` and 1.11–2.04x against today's cache, at a cold-pass cost of +10–15% wall and an
+8.6 MB unit file when on (so it is opt-in). The levers not taken yet: a resident process (L2,
+removes 4.0–5.7 ms of the 4.3–6.0 ms a median-file save costs: the largest latency lever by
+ratio, 93–95%), a unit queue across files (L8, 6.6–34.6% of 4-thread wall on crates), `--check`
+early exit (L7, ≤ 0.78 of a differing file), BOLT (L12, 0–5%, hypothesis), THP, static linking,
+`mmap` (each ≤ 0.3 ms or ≤ 5.7% CPU). PGO in the release workflow (L5) became E13 (merged at
+`45e8470`). The allocator (L6, L9) is E14's measurement. Scenario bounds the record derives:
+CI cold run of the fixture tree 434 ms → about 300 ms; CI warm run 28.9 → 13–16 ms (E12 took
+most of it); editor save of a median file 4.3–6.0 ms → about 0.15 ms with the item cache in a
+resident process; one huge file cold 27.6 → about 14 ms (parse plus the largest unit is the
+critical path).
+
+**Scanning, widths and string assembly**
+([scanning-and-strings.md](2026-10-15-extensions-theory/scanning-and-strings.md)). The per-byte
+work E3 left is small; the per-call work is not (measured, per-instruction counts):
+`find_uncommented` costs 245 Ir per call and finds its needle on the first step in 94.5% of
+41,643 calls; `CharSearcher::next_match` about 80 Ir per call on 22-byte haystacks;
+`skip_comment` returns at its state test in 94.8% of calls; list-gap comment handling costs
+839 Ir per list item, 12.77 M (4.08%) in all, for 3 post-comments and 32 pre-comments in the
+sample; newline counting 7.88 M (2.52%) at 4.75 Ir/byte, mostly maintaining a `line_number`
+for nested visitors that is read in two places. Sixteen levers: local ones bound 37.8 M
+(12.1%, about 275 M), all of them 47.4 M (15.1%, about 265 M); width and line facts compose
+exactly across a join when the right part starts with an ASCII byte (unicode-width measures
+right to left), which makes a "rewritten text with its facts" type exact. The local levers
+became E16 (running). The record also found each nested visitor allocating a buffer twice the
+file size and dropping it unused (868 times on the sample).
+
+**The parse floor and the substrate**
+([parser-and-substrate.md](2026-10-15-extensions-theory/parser-and-substrate.md)). Everything
+under parsing is 119.96 M Ir, 38.4% of the total, more than the 28.0% parser-and-lexer row:
+the tree build, `rustc_compat`, 4.7% of allocator calls (the parser's vectors doubling from
+empty, 11.04 M) and the macro-argument fragments, which are lexed three times and parsed
+twice (17.9 M), sit under the same roots (measured). Peak heap on the largest files is the
+parser's 24-byte event vector, not the 16-byte-element tree (12.58 of 16.65 MB on `nodes.rs`,
+measured). Eleven levers: fusing the trivia interspersal with the tree build (P1, likely 2.5%,
+ceiling 8.9%), an own token conversion and direct parser input (P2, ≤ 5.5%), sizing the
+parser's vectors (P3, ≤ 3.1%, needs a pinned fork), a table-driven lexer (P4, ≤ 3.6%, medium
+risk), macro arguments parsed once (P5, 1.9% exact), the event replay writing the tree
+directly (P6, ≤ 4.8%, fork), `rustc_compat` during the build (P7, ≤ 1.9%), passing `in_trait`
+down instead of a parent search (P8, 0.63% on the sample but 4.55% of `hir/src/lib.rs` and
+6.62% of `config.rs`), parallel parsing of top-level items on the flat array (P9: six
+conditions read from the parser under which the concatenated tree equals the whole-file tree;
+E1's four-thread wall on the five largest files 1.17–1.61x; the corpus equality check not run),
+per-item CST or streaming (P10: memory only, peak heap −22% to −55%), an own typed parser (P11:
+1–1.6% beyond the rest, very high risk, 15 ledger cases re-opened). If every lever landed the
+parse-related part would be 33–38 M (10.6–12.1%), giving 12.7–13.0 MB/s single-threaded on
+M3's host if time follows instructions; the likely subset without an own lexer or parser gives
+about 10.7 MB/s; a parse that cost nothing would leave the formatter's own 192.8 M, 15.2 MB/s.
+79.4% of the simulated indirect mispredicts are the parser's dispatch. P8, P5 and P1 became E17
+(running).
+
+**The already-formatted fast path**
+([already-formatted-fast-path.md](2026-10-15-extensions-theory/already-formatted-fast-path.md)).
+On formatted text 75.5% of bytes are token text fixed by the token sequence; the layout lives
+in the 24.3% whitespace bytes and 1.88 M gaps (measured). Any recogniser that needs the tree
+has the parse as its floor (32.9% of the formatted sample's Ir, 27.6–45.8% on the five largest
+files); a source-guided verifier for `--check` would run at 0.40–0.42x of today's instructions
+if no decision needs a rendered alternative, up to 0.76x if every multi-line decision does
+(the line-count and next-line rules in `chains.rs`, `expr.rs`, `closures.rs`, whose cost is not
+measured), and a rewrite rustfmt gave up on is canonical whatever it contains, so such regions
+always format. Copy-through of single-line nodes inside the formatter bounds at −5.9% (measured
+rate, statements) to −13.2–17.2% (all single-line nodes, hypothesis) less the check's own 1–3%.
+Both are a second implementation of rustfmt's decisions kept in lock-step with the first; the
+record's first experiment is to measure the rendered-alternative cost before building either,
+dropping the verifier if it exceeds 0.3 of `format_source`. The proof of concept's lead came
+from not laying out about three quarters of its input (copying itself cost 73 M of its 144 M
+formatting instructions), and the head now runs at 1.046x its instructions while conforming.
+60.8% of the 24,582 registry files are already formatted, 27.8% of the bytes.
+
+**rustd** ([rustd-trial.md](2026-10-15-extensions-theory/rustd-trial.md), measured, not theory):
+100% of chloro-core's root functions compiled and 198 tests matching rustc, edit-to-binary
+1.4 s against 2.5–2.9 s for incremental cargo, 1.3 GB daemon, debug output only, a pin that
+disagrees with its own code at this revision: no-go for the programme's release-gated loop.
+
+**Decide-once formatting, exact reuse and a shared sink**
+([decide-once-and-exact-reuse.md](2026-10-15-extensions-theory/decide-once-and-exact-reuse.md)):
+being written; its paragraph follows when it lands.
 
 ## Ranked bounds and the compound picture
 
