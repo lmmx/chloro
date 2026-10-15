@@ -503,7 +503,7 @@ with the container.
   matrix) and it is **merged at `830345e`**; post-merge gates identical on both samples;
   best-known-good `830345e` at 224,591,085 (fixtures, −61.8% from the start) and 302,124,546
   (registry); the cliff on the merged head (with E28's memo gate) reads 5.62 M at depth 8 and
-  5.74 M at depth 16. Remaining: E25's soundness follow-up; then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
+  5.74 M at depth 16. E25's follow-up reported (16:10 UTC): Miri (nightly, strict provenance, Stacked and Tree Borrows) finds no undefined behaviour in the hand-written arena once its pointers are kept as pointers (`b2dd419`), and a `bumpalo` variant (`224870a`: a `RefCell<Bump>` per thread lent to a closure, reset when the outermost borrower returns and at unit boundaries; 74 lines, no `unsafe`) keeps 97–99% of the gain (per file −1.55% fixtures, −0.79% registry) with peak RSS 0.989–1.019x; the reset at unit boundaries alone read 1.22x RSS on `fx-hir-ty` and was dropped. The `bumpalo` variant is **merged at `e96b530`** after the integrator reproduced its gates on the merged tree (goldens both corpora, conform both versions, `Ir` 220,958,649 fixtures / 299,933,504 registry, fmt, clippy, 308 tests, the option matrix); best-known-good `e96b530` at 220,958,649 (fixtures, -62.4% from the start) and 299,933,504 (registry). Remaining: M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
