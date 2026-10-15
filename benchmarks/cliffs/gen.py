@@ -13,9 +13,12 @@ alone. The file of each (shape, scale) sits in a directory of its own so that
 
 `fit` reads a TSV with the columns `shape scale bytes ir [out_bytes]` (one row per file, as
 `benchmarks/cliffs/run.sh` writes it) and an optional row `shape=empty` whose `ir` is the
-fixed cost of a run (an empty file); it fits log2(ir - empty) = log2(a) + k * log2(scale)
-by least squares and prints the exponent k, the exponents against input and output bytes, and the local
-slopes between successive scales. Standard library only.
+fixed cost of a run (an empty file). It prints, per shape: k_raw, the slope of log2(ir) on
+log2(scale); k_net, the same after subtracting the empty file's ir; the k_net exponents
+against input and output bytes; p and a of the fit ir = a + b * scale^p with the constant a
+fitted (relative least squares, p on a 0.001 grid from 0.301 to 4.000), and p_out, the same
+fit against chloro's output bytes; and the local slopes between successive scales. Standard
+library only.
 """
 
 import math
@@ -283,6 +286,31 @@ def lsq(xs, ys):
     return k, my - k * mx
 
 
+def fit_offset(ns, irs):
+    """Least-squares fit of Ir = a + b * n^p, relative residuals (weights 1/Ir): for each p on
+    a grid, a and b solve a weighted linear least-squares problem; the p with the smallest
+    weighted residual wins. Returns (a, b, p)."""
+    best = None
+    for i in range(301, 4001):
+        p = i / 1000
+        xs = [n**p for n in ns]
+        w = [1 / (y * y) for y in irs]
+        sw = sum(w)
+        sx = sum(wi * x for wi, x in zip(w, xs))
+        sy = sum(wi * y for wi, y in zip(w, irs))
+        sxx = sum(wi * x * x for wi, x in zip(w, xs))
+        sxy = sum(wi * x * y for wi, x, y in zip(w, xs, irs))
+        det = sw * sxx - sx * sx
+        if det == 0:
+            continue
+        b = (sw * sxy - sx * sy) / det
+        a = (sy - b * sx) / sw
+        err = sum(wi * (a + b * x - y) ** 2 for wi, x, y in zip(w, xs, irs))
+        if best is None or err < best[0]:
+            best = (err, a, b, p)
+    return best[1:]
+
+
 def fit(path):
     rows = {}
     empty = 0
@@ -298,7 +326,10 @@ def fit(path):
                 continue
             rows.setdefault(shape, []).append((int(scale), int(nbytes), int(ir), out))
     print(f"fixed cost (empty file): {empty}")
-    print("shape\tIr by scale\tk_raw\tk_net\tk_bytes\tk_out\tlocal slopes (net)")
+    print(
+        "shape\tIr by scale\tk_raw\tk_net\tk_bytes\tk_out\tp (a+b*n^p)\ta\tp_out\t"
+        "local slopes (net)"
+    )
     for shape, rs in rows.items():
         rs.sort()
         xs = [math.log2(s) for s, _, _, _ in rs]
@@ -311,9 +342,12 @@ def fit(path):
         local = [
             math.log2(net[i + 1] / net[i]) / (xs[i + 1] - xs[i]) for i in range(len(rs) - 1)
         ]
+        a, _, p = fit_offset([s for s, _, _, _ in rs], [ir for _, _, ir, _ in rs])
+        p_out = fit_offset(outs, [ir for _, _, ir, _ in rs])[2] if all(outs) else float("nan")
         irs = " ".join(str(ir) for _, _, ir, _ in rs)
         print(
             f"{shape}\t{irs}\t{k_raw:.3f}\t{k_net:.3f}\t{k_bytes:.3f}\t{k_out:.3f}\t"
+            f"{p:.3f}\t{a:.0f}\t{p_out:.3f}\t"
             + " ".join(f"{v:.3f}" for v in local)
         )
 

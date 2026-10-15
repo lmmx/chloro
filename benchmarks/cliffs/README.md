@@ -40,6 +40,11 @@ subtracted before fitting, since a constant pulls the raw exponent towards 0.
 - `k_raw`: least-squares slope of `log2 Ir` on `log2 n`;
 - `k_net`: the same on `log2 (Ir − Ir_empty)` — the decisive figure;
 - `k_bytes`: slope of `log2 (Ir − Ir_empty)` on `log2` input bytes;
+- `p`, `a`: the fit `Ir = a + b · n^p` with the constant fitted too (relative least squares,
+  `p` on a 0.001 grid), and `p_out`, the same against output bytes. With three parameters on
+  four points it is loose; read it over a longer series (`--scales 8,16,32,64`, or every depth
+  with `--scales 1,2,3,4,5,6,7,8`) before acting on it. EXP-019 acts on `p` over the longest
+  series, against output bytes for the depth shapes;
 - local slopes: `log2` of the ratio between successive scales, which show a quadratic term
   growing in before the fitted exponent does.
 
