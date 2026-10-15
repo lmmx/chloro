@@ -255,7 +255,11 @@ pub(crate) fn concat(parts: &[&str]) -> String {
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
-    input.bytes().filter(|&b| b == b'\n').count()
+    count_newline_bytes(input.as_bytes())
+}
+
+pub(crate) fn count_newline_bytes(bytes: &[u8]) -> usize {
+    bytes.iter().filter(|&&b| b == b'\n').count()
 }
 
 /// Wraps String in an Option. Returns Some when the string adheres to the

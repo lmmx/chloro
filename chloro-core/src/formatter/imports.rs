@@ -43,10 +43,17 @@ impl FmtVisitor<'_> {
         self.format_missing(span_end);
         // We have an excessive newline from the removed import.
         if self.buffer.ends_with('\n') {
-            self.buffer.pop();
             // A worker's buffer starts as an uncounted newline (`parallel.rs`), so the
-            // count can be 0 here.
-            self.line_number = self.line_number.saturating_sub(1);
+            // count can be 0 here; it then stays 0, and the popped newline was uncounted.
+            let line_number = self.line_number();
+            self.buffer.pop();
+            if line_number == 0 {
+                self.uncounted_newlines -= 1;
+            }
+            #[cfg(debug_assertions)]
+            {
+                self.counted_line_number = self.counted_line_number.saturating_sub(1);
+            }
         }
     }
 
