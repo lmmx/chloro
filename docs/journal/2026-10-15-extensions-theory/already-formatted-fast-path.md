@@ -71,7 +71,7 @@ chloro's cost does not depend on whether its input is formatted. Every share bel
 | any statement or item whose rewrite returns `None` | source slice, trimmed | `visitor.rs:658-665` |
 | keywords and punctuation | constant strings chosen by the rewrite code | e.g. `macros.rs:250-256` |
 | whitespace, line breaks, indentation | layout decisions; blank lines from the source clamped to `[0, 1]` | `missed_spans.rs:112-139`, `shape.rs` |
-| trailing commas, braces around arm and closure bodies, nested parens, `use` order and braces, merged derives, `extern "C"` | normalisations: tokens added, removed or reordered | `lists.rs` `write_list`, `matches.rs:372`, `closures.rs:87-120`, `expr.rs:1517-1530`, `imports.rs:465-545, 570`, `attr.rs:590-595` |
+| trailing commas, braces around arm and closure bodies, nested parens, `use` order and braces, merged derives, `extern "C"` | normalisations: tokens added, removed or reordered | `lists.rs:316` `write_list`, `matches.rs:372`, `closures.rs:87-120`, `expr.rs:1517-1530`, `imports.rs:465-545, 570`, `attr.rs:590-595` |
 
 **Shares on formatted text (measured, `prov.py`; output equals input, so these are output shares).**
 
@@ -304,8 +304,10 @@ here.
   X12a (5659 registry files, `d136f89`): 90.6% of top-level items canonical, carrying 42.9% of
   `format_source` cycles. A unit-granular verifier on the as-found registry saves at most
   42.9% × (1 − v) of `format_source`, where `v` is the verifier's cost relative to formatting a
-  canonical item: 41.6% at v = 0.03, 10.7% at v = 0.75 (**derived**; the 0.03 and 0.75 are the §2
-  floor and ceiling of the non-parse part, hypothesis).
+  canonical item: 38.2% at v = 0.11, 15.4% at v = 0.64 (**derived**; v is the §2 verifier's non-parse
+  part over the formatter's non-parse 206.6 M: floor (15.5 + 6.0 + 1.7–6.9) / 206.6 = 0.11–0.14,
+  ceiling with class-C renders (that + 104.7) / 206.6 = 0.62–0.64; carrying the sample's ratio to
+  the registry is a hypothesis).
 
 ## Ranked bounds
 
@@ -316,7 +318,7 @@ Bounds are on instructions unless marked; "today" is the final head (312.7 M on 
 |---|---|---|---|---|---|---|
 | F1 | copy-through of single-line nodes inside the formatter | any run, any input; formatter work in single-line statements and expressions | −5.9% (statements, measured rate × tokens) to −13.2% (whole-line candidates) to −17.2% (all maximal single-line nodes), less 1–3% of that for the check; §3 | medium-high: for each kind it accepts, prove one-line is rustfmt's first layout at that position, every nested width heuristic holds, no normalisation fires, spacing matches — under all 31 option values | spacing table, exception list and heuristics: a second one-line formatter beside `expr.rs`, `chains.rs`, `lists.rs`, `overflow.rs` (estimate 1–2k lines, hypothesis); every conformance fix to one-line output needs the twin change | shadow mode at `format_stmt` and `format_expr`: compute the rule's verdict and the rewrite, count accepts and disagreements on both corpora (raw and formatted copies), the 31 `config_matrix` values and the perturbation set below; falsified by any accept whose rewrite differs from the source, or by accepted-node Ir under 3% of the sample |
 | V1 | source-guided verifier for `--check` and save on formatted input, first run | formatted input without cache; the 67% non-parse Ir | 0.40–0.42x if no class-C render is needed; ≤ 0.76x if every multi-line decision subtree needs one (§2) | high: soundness per decision class A–D; class D (failure) can only be UNKNOWN; source-dependent class B; all options | a second implementation of every layout decision of a 24,535-line formatter (`wc -l formatter/*.rs`), kept in lock-step with each conformance change; gated by the agreement harness on every merge | first measure R without building V1: a scratch patch counting, on the formatted corpora, the class-C sites whose chosen result equals the source span and whose alternative is not width-refutable, with their inclusive Ir; falsified (V1 not pursued) if that Ir exceeds 0.3 of `format_source` (V1 ≥ 0.7x). Then V1 in shadow: falsified by one ACCEPT where `format(x) != x` on any file of either corpus, option value or perturbation |
-| V2 | V1 at unit granularity on as-found code | registry-like input | ≤ 42.9% × (1 − v) of `format_source`: 10.7–41.6% (§5) | as V1, plus unit boundaries (E1's units) | as V1 | as V1, reported per unit |
+| V2 | V1 at unit granularity on as-found code | registry-like input | ≤ 42.9% × (1 − v) of `format_source`: 15.4–38.2% (§5) | as V1, plus unit boundaries (E1's units) | as V1 | as V1, reported per unit |
 | C1 | item cache (E15; incremental-and-process.md L1) | repeated runs, unchanged units | floor p = 0.28–0.46 per large file; 0 on a first run | medium (that record §1) | that record | that record |
 | C1+V1 | cache first, verifier on misses | first runs and canonical edited units | same floor p; adds V1's range for missed canonical units | sum of both | sum of both | as V1 on the cache-miss path |
 | E1 | unit early exit for `--check` | failing trees | 0 on formatted input; ≤ 0.78 of a differing file (incremental-and-process.md L7) | medium (that record §3) | ~60 lines | that record |
