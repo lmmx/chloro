@@ -490,16 +490,15 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
         // Replace the stub with the full overflowing last argument if the rewrite
         // succeeded and its first line fits with the other arguments.
         match (overflow_last, tactic, placeholder) {
-            (true, DefinitiveListTactic::Horizontal, Some(ref overflowed))
-                if self.items.len() == 1 =>
-            {
+            // The overflowed rewrite is moved into the list, not copied.
+            (true, DefinitiveListTactic::Horizontal, Some(overflowed)) if self.items.len() == 1 => {
                 // When we are rewriting a nested function call, we restrict the
                 // budget for the inner function to avoid them being deeply nested.
                 // However, when the inner function has a prefix or a suffix
                 // (e.g., `foo() as u32`), this budget reduction may produce poorly
                 // formatted code, where a prefix or a suffix being left on its own
                 // line. Here we explicitly check those cases.
-                if has_one_newline(overflowed) {
+                if has_one_newline(&overflowed) {
                     let rw = self
                         .items
                         .last()
@@ -508,10 +507,10 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
                     if no_newline {
                         list_items[self.items.len() - 1].item = rw;
                     } else {
-                        list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                        list_items[self.items.len() - 1].item = Some(overflowed);
                     }
                 } else {
-                    list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                    list_items[self.items.len() - 1].item = Some(overflowed);
                 }
             }
             (true, DefinitiveListTactic::Horizontal, placeholder @ Some(..)) => {
