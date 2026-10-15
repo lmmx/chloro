@@ -438,7 +438,16 @@ with the container.
   /home/user/wt/width, from `e312e39`) launched 11:58 UTC with that brief: a token-sum lower
   bound on one-line width with a per-token-class proof, a verification harness over both
   corpora, pre-checks at one-line-only attempt sites, the cliff exponent before and after;
-  record EXP-026-width-bound.md. E21 is running; E24 and E27 run from `2f00988`. Wave 4's E24 (memo side array) and E27 (harness: registry
+  record EXP-026-width-bound.md. E21 reported (12:10 UTC) and is **refuted as stated**: through
+  a fresh client process, as rust-analyzer invokes a formatter, a median-file save is 3.2 ms
+  against 4.9 ms for the plain CLI (the client process alone costs 2.1–2.3 ms); a client already
+  running against the socket gets 0.4–0.9 ms; RSS growth met the 1.2x falsifier with per-item
+  threads and was fixed by one thread per single-file request; identity 0 differences over
+  126,000 replies; gates clean. `chloro serve` stays opt-in on `20261015-resident` (head
+  `8c67777`), not merged; its record and ledger row are cherry-picked onto the integration
+  branch. The sub-millisecond save needs an in-editor client (an LSP front end or an extension
+  speaking the socket): a product decision for the owner, not an experiment. E24 and E27 run
+  from `2f00988`. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
