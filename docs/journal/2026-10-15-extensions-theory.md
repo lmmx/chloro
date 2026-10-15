@@ -259,8 +259,15 @@ with the container.
   it), 1.11–2.04x against today's fixed-point cache; cold pass with the cache on +10–15% wall,
   +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:50 UTC, one hour) to
   merge the E12/E13 head into the branch, make the unit cache opt-in (`--unit-cache`), and
-  re-measure the edit scenario and the cold overhead. On landing: reproduce the fixture identity
-  harness and the Ir gate, then merge with the cache off by default.
+  re-measure the edit scenario and the cold overhead. Landed (`8ae8a92`: merged the E12/E13 head,
+  `--unit-cache` opt-in, `--no-cache` turns both caches off; re-measured pinned minima all five
+  files 1.56–2.09x against `--no-cache`, unpinned 1.13–1.52x) and merged at `4e48bdb` after the
+  orchestrator reproduced in the worktree: identity harness `examples/unit_cache` on the fixtures
+  at 1 and 4 threads with `--shift --blank`, 0 differences (13,595 units, 13,203 found shifted;
+  13,672 checked blanked); goldens with the cache off 0 of 1238 sequential and at 4 threads;
+  `conform -i` 1220/1220 at both versions; `Ir` 312,735,284 (+0.0004%); fmt, clippy and every
+  workspace test (189 core unit tests now). The ledger row E15 is on the merge; the library
+  entry point is `format_source_with_unit_cache`, the CLI flag `--unit-cache`.
 - E13 (`20261015-pgo-ci`, worktree `/home/user/wt/pgo-ci`, agent running since 02:00 UTC, time
   box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
   validated locally by running the workflow's commands (goldens, conform at both versions, Ir
