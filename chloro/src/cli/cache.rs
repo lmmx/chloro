@@ -82,9 +82,6 @@
 //! write the cache directory can already add entries to it.
 
 use chloro_core::Config;
-use chloro_core::formatter::config::{
-    Density, Edition, Heuristics, MatchArmLeadingPipe, NewlineStyle, RustfmtVersion, StyleEdition,
-};
 use std::collections::HashMap;
 use std::fs;
 use std::io::{self, Write};
@@ -117,119 +114,11 @@ pub fn content_digest(content: &[u8]) -> Digest {
     *blake3::hash(content).as_bytes()
 }
 
-/// Deterministic serialisation of every `Config` field, in declaration order.
-///
-/// The destructuring pattern names every field without `..`, so adding a field to `Config`
-/// fails to compile here until the field is added to the key.
+/// Deterministic serialisation of every `Config` field, in declaration order
+/// ([`Config::key_bytes`], whose destructuring pattern fails to compile when a field is
+/// added to `Config`).
 pub fn config_key_bytes(config: &Config) -> Vec<u8> {
-    let Config {
-        max_width,
-        hard_tabs,
-        tab_spaces,
-        newline_style,
-        use_small_heuristics,
-        fn_call_width,
-        attr_fn_like_width,
-        struct_lit_width,
-        struct_variant_width,
-        array_width,
-        chain_width,
-        single_line_if_else_max_width,
-        single_line_let_else_max_width,
-        reorder_imports,
-        reorder_modules,
-        remove_nested_parens,
-        short_array_element_width_threshold,
-        match_arm_leading_pipes,
-        fn_params_layout,
-        match_block_trailing_comma,
-        edition,
-        style_edition,
-        merge_derives,
-        use_try_shorthand,
-        use_field_init_shorthand,
-        force_explicit_abi,
-        disable_all_formatting,
-        rustfmt_version,
-    } = config;
-
-    let mut out = Vec::with_capacity(128);
-    let usize_ = |out: &mut Vec<u8>, v: usize| out.extend_from_slice(&(v as u64).to_le_bytes());
-    let bool_ = |out: &mut Vec<u8>, v: bool| out.push(u8::from(v));
-    let opt = |out: &mut Vec<u8>, v: Option<usize>| match v {
-        None => out.push(0),
-        Some(v) => {
-            out.push(1);
-            out.extend_from_slice(&(v as u64).to_le_bytes());
-        }
-    };
-    let newline = |v: NewlineStyle| match v {
-        NewlineStyle::Auto => 0u8,
-        NewlineStyle::Native => 1,
-        NewlineStyle::Unix => 2,
-        NewlineStyle::Windows => 3,
-    };
-    let heuristics = |v: Heuristics| match v {
-        Heuristics::Default => 0u8,
-        Heuristics::Max => 1,
-        Heuristics::Off => 2,
-    };
-    let pipes = |v: MatchArmLeadingPipe| match v {
-        MatchArmLeadingPipe::Always => 0u8,
-        MatchArmLeadingPipe::Never => 1,
-        MatchArmLeadingPipe::Preserve => 2,
-    };
-    let density = |v: Density| match v {
-        Density::Compressed => 0u8,
-        Density::Tall => 1,
-        Density::Vertical => 2,
-    };
-    let edition_ = |v: Edition| match v {
-        Edition::Edition2015 => 0u8,
-        Edition::Edition2018 => 1,
-        Edition::Edition2021 => 2,
-        Edition::Edition2024 => 3,
-    };
-    let style = |v: Option<StyleEdition>| match v {
-        None => 0u8,
-        Some(StyleEdition::Edition2015) => 1,
-        Some(StyleEdition::Edition2018) => 2,
-        Some(StyleEdition::Edition2021) => 3,
-        Some(StyleEdition::Edition2024) => 4,
-    };
-
-    usize_(&mut out, *max_width);
-    bool_(&mut out, *hard_tabs);
-    usize_(&mut out, *tab_spaces);
-    out.push(newline(*newline_style));
-    out.push(heuristics(*use_small_heuristics));
-    opt(&mut out, *fn_call_width);
-    opt(&mut out, *attr_fn_like_width);
-    opt(&mut out, *struct_lit_width);
-    opt(&mut out, *struct_variant_width);
-    opt(&mut out, *array_width);
-    opt(&mut out, *chain_width);
-    opt(&mut out, *single_line_if_else_max_width);
-    opt(&mut out, *single_line_let_else_max_width);
-    bool_(&mut out, *reorder_imports);
-    bool_(&mut out, *reorder_modules);
-    bool_(&mut out, *remove_nested_parens);
-    usize_(&mut out, *short_array_element_width_threshold);
-    out.push(pipes(*match_arm_leading_pipes));
-    out.push(density(*fn_params_layout));
-    bool_(&mut out, *match_block_trailing_comma);
-    out.push(edition_(*edition));
-    out.push(style(*style_edition));
-    bool_(&mut out, *merge_derives);
-    bool_(&mut out, *use_try_shorthand);
-    bool_(&mut out, *use_field_init_shorthand);
-    bool_(&mut out, *force_explicit_abi);
-    bool_(&mut out, *disable_all_formatting);
-    out.push(match rustfmt_version {
-        RustfmtVersion::V1_8_0 => 0u8,
-        RustfmtVersion::V1_9_0 => 1,
-    });
-    out
+    config.key_bytes()
 }
 
 /// Identity of the formatter: crate version, cache format version, target, and the digest
@@ -532,6 +421,18 @@ impl Cache {
         &self.path
     }
 
+    /// `BLAKE3(tool || config)`, the key of this cache file and of the unit cache file next
+    /// to it (`units.rs`).
+    pub fn key(&self) -> &Digest {
+        &self.key
+    }
+
+    /// Whether the executable's size and modification time are those taken when the cache
+    /// was opened: entries produced by this run belong to the binary hashed then.
+    pub fn executable_unchanged(&self) -> bool {
+        exe_stamp() == self.exe_stamp
+    }
+
     /// Number of entries read from disk.
     pub fn len(&self) -> usize {
         self.entries.len()
@@ -555,7 +456,7 @@ impl Cache {
     /// or renaming it over the cache file, and an error of kind `Other` when the executable
     /// changed since the cache was opened (nothing is written then).
     pub fn save(mut self, seen: impl IntoIterator<Item = Digest>) -> io::Result<()> {
-        if exe_stamp() != self.exe_stamp {
+        if !self.executable_unchanged() {
             // The entries were produced by the binary hashed at `open`; a binary that
             // replaced it since must not be given them.
             return Err(io::Error::other(
@@ -616,7 +517,7 @@ fn open_new(path: &Path) -> io::Result<fs::File> {
 /// process with the same id saving at the same clock reading) is retried with another
 /// suffix; after [`TEMP_ATTEMPTS`] the `AlreadyExists` error is returned and the save is
 /// skipped.
-fn create_temp(dir: &Path, target: &str) -> io::Result<(PathBuf, fs::File)> {
+pub(crate) fn create_temp(dir: &Path, target: &str) -> io::Result<(PathBuf, fs::File)> {
     let pid = std::process::id();
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -661,8 +562,9 @@ fn parse(bytes: &[u8], key: &Digest) -> Option<(u32, HashMap<Digest, u32>)> {
     Some((generation, entries))
 }
 
-/// Remove the cache files, the executable digest records, and the temporary files of saves
-/// that did not finish, in `dir` not written for `STALE_FILE_AGE`. Errors are ignored.
+/// Remove the cache files, the unit cache files, the executable digest records, and the
+/// temporary files of saves that did not finish, in `dir` not written for `STALE_FILE_AGE`.
+/// Errors are ignored.
 fn remove_stale_files(dir: &Path) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -670,13 +572,15 @@ fn remove_stale_files(dir: &Path) {
     let now = std::time::SystemTime::now();
     for entry in entries.flatten() {
         let path = entry.path();
-        // `<hex>.chloro-cache`, `<hex>.chloro-exe`, or `.<either name>.<pid>.<nanos>.tmp`
-        // (`temp_name`).
+        // `<hex>.chloro-cache`, `<hex>.chloro-units` (`units.rs`), `<hex>.chloro-exe`, or
+        // `.<any of these names>.<pid>.<nanos>.tmp` (`temp_name`).
         let ours = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
-            [FILE_SUFFIX, EXE_FILE_SUFFIX].iter().any(|suffix| {
-                n.ends_with(suffix)
-                    || (n.starts_with('.') && n.contains(suffix) && n.ends_with(".tmp"))
-            })
+            [FILE_SUFFIX, super::units::FILE_SUFFIX, EXE_FILE_SUFFIX]
+                .iter()
+                .any(|suffix| {
+                    n.ends_with(suffix)
+                        || (n.starts_with('.') && n.contains(suffix) && n.ends_with(".tmp"))
+                })
         });
         if !ours {
             continue;

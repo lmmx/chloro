@@ -12,6 +12,7 @@ pub mod cli {
     pub mod logs;
     pub mod orchestrate;
     pub mod report;
+    pub mod units;
     pub mod worker;
 
     use crate::vlog;
@@ -21,6 +22,7 @@ pub mod cli {
     use report::{aggregate_results, print_summary};
     use std::io;
     use std::path::Path;
+    use units::Units;
 
     /// Open the fixed-point cache named by the arguments, or `None` when it is disabled by
     /// `--no-cache`, when no cache directory resolves, or when the running executable cannot
@@ -133,9 +135,42 @@ pub mod cli {
             eprintln!();
         }
 
+        // The unit cache lives next to the fixed-point cache and is read on the first file
+        // the fixed-point cache does not answer.
+        let units = match &cache {
+            Some(cache) if args.unit_cache => Some(Units::new(cache)),
+            Some(_) => {
+                vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
+                None
+            }
+            None => None,
+        };
+
         // Format files in parallel
-        let results = format_all(&all_files, &args, cache.as_ref());
+        let results = format_all(&all_files, &args, cache.as_ref(), units.as_ref());
         let agg = aggregate_results(results);
+
+        if let (Some(units), Some(cache)) = (units, &cache) {
+            if let Some(stats) = units.stats() {
+                vlog!(args, {
+                    "Unit cache: {} ({} entries read, {} bytes); units looked up: {}, found: {}, stored: {}; {} entries, {} record bytes held",
+                    units.path().display(),
+                    stats.entries_read,
+                    stats.file_len,
+                    stats.lookups,
+                    stats.hits,
+                    stats.stores,
+                    stats.entries,
+                    stats.record_bytes
+                });
+            }
+            let path = units.path().to_path_buf();
+            match units.save(cache) {
+                Ok(true) => vlog!(args, {"Unit cache written: {}", path.display()}),
+                Ok(false) => {}
+                Err(e) => vlog!(args, {"Unit cache not written: {}: {e}", path.display()}),
+            }
+        }
 
         if let Some(cache) = cache {
             let path = cache.path().to_path_buf();

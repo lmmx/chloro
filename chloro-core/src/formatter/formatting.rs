@@ -128,6 +128,7 @@ pub(crate) fn format_text_parallel(
     source: &str,
     config: &Settings,
     threads: usize,
+    cache: Option<super::parallel::CacheUse<'_>>,
 ) -> Option<Formatted> {
     if exceeds_offset_range(source.len()) {
         return None;
@@ -143,7 +144,7 @@ pub(crate) fn format_text_parallel(
             skipped_range: Vec::new(),
         });
     }
-    super::parallel::format_file(source, config, &file, threads)
+    super::parallel::format_file(source, config, &file, threads, cache)
 }
 
 /// rustfmt's `format_lines` (without its error reporting): a run of trailing newlines
