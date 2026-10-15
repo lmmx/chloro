@@ -889,6 +889,19 @@ impl ControlFlow<'_> {
             };
 
             let new_width = width.checked_sub(pat_expr_str.len() + fixed_cost)?;
+            // The result below is `pat_expr_str.len() + fixed_cost` plus both branches, kept
+            // only if all of it is one line within `width`: when the branches' one-line
+            // bounds (`width.rs`) exceed `new_width`, it cannot be. The source length of a
+            // statement bounds its bound from above, which spares the scan for short ones.
+            let skip = context.may_skip_dead_candidates()
+                && (if_expr.span().hi() - if_expr.span().lo()) as usize
+                    + (else_expr.span().hi() - else_expr.span().lo()) as usize
+                    > new_width
+                && if_expr.one_line_min_width() + else_expr.one_line_min_width() > new_width;
+            #[cfg(not(debug_assertions))]
+            if skip {
+                return None;
+            }
             let if_str = if_expr.rewrite(context, Shape::legacy(new_width, Indent::empty()))?;
 
             let new_width = new_width.checked_sub(if_str.len())?;
@@ -904,6 +917,10 @@ impl ControlFlow<'_> {
             );
 
             if result.len() <= width {
+                debug_assert!(
+                    !skip,
+                    "a one-line `if`/`else` skipped by its width bound fits: {result:?}"
+                );
                 return Some(result);
             }
         }
