@@ -20,6 +20,7 @@ use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
+use super::scratch::{ScratchString, ScratchVec};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp, rustc_span, token_span};
 use super::utils::{
@@ -34,8 +35,9 @@ pub(crate) enum PathContext {
 }
 
 /// The segments of a path, outermost qualifier first.
-pub(crate) fn path_segments<'a>(path: &ast::Path<'a>) -> Vec<ast::PathSegment<'a>> {
-    let mut segments = Vec::new();
+pub(crate) fn path_segments<'a>(path: &ast::Path<'a>) -> ScratchVec<ast::PathSegment<'a>> {
+    // Room for four, as `Vec` gives on its first push.
+    let mut segments = ScratchVec::with_capacity(4);
     let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
@@ -304,8 +306,8 @@ fn rewrite_segment(
     span_hi: BytePos,
     context: &RewriteContext<'_>,
     shape: Shape,
-) -> Option<String> {
-    let mut result = String::with_capacity(128);
+) -> Option<ScratchString> {
+    let mut result = ScratchString::with_capacity(128);
     result.push_str(&segment_ident(segment)?);
 
     let ident_len = result.len();
