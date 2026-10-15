@@ -605,6 +605,7 @@ on the merged tree against the previous best-known-good:
 | 2026-10-15, E17: parse floor (`in_trait` passed down, macro fragments parsed once, one-pass tree build) | 290,493,068 | −7.11% | fewer passes over the parser's output |
 | 2026-10-15, E18: the chain's dead vertical candidate skipped | 280,278,276 | −3.52% | speculation removed exactly |
 | 2026-10-15, E16: scanner, list-gap and string-assembly fast paths (eleven levers) | 248,202,094 | −11.44% | per-call work removed |
+| PGO on top (measured on `6b78728`, M4) | 206,922,054 against 248,202,137 | −16.6% | code layout; worth less on the shortened hot paths than M3's −21.7% |
 
 The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
 cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-10-15 night
@@ -616,11 +617,15 @@ the 13 files the conformance fixes target. Every step left every output on 1238 
 files they target, checked file by file against a record of the starting outputs.
 
 Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
-(M3, on the code of the best-known-good): 0.32–0.54 of its wall time per crate on one core
-and 0.105–0.203 on four, with every chloro run below every rustfmt run on all nine crates in
-both modes; 0.28–0.44 and 0.096–0.190 with PGO. In process the formatter runs at 9.39–9.54
-MB/s against 5.22–5.27 for the start (1.8x). At the start of the programme the per-core
-figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU time.
+([M4](2026-10-14-autoresearch/measurements/m4-quiet-host.md), on the code of the
+best-known-good `e640fbf`): 0.26–0.44 of its wall time per crate on one core and 0.092–0.179
+on four, with every chloro run below every rustfmt run on all nine crates in both modes;
+0.24–0.38 and 0.072–0.175 with PGO. In process the formatter runs at 11.22–11.79 MB/s
+against 4.96–5.09 for the start in the same window (2.2–2.4x; M3 measured 9.39–9.54 against
+5.22–5.27 on the code of `113367a`, 1.8x). The warm cache answers `--check` on the 1238
+formatted fixtures in 16.9 ms on four cores (M3: 28.9). At the start of the programme the
+per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
+time.
 
 Conformance moved from 1219/1220 under the default options and 31 option values with one to
 three differing files each, to 1220/1220 everywhere, at rustfmt 1.9.0 and 1.8.0, and from
