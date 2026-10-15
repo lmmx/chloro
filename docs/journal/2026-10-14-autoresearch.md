@@ -602,9 +602,16 @@ on the merged tree against the previous best-known-good:
 | R2: conformance fixes | 312,734,032 | −1.06% | a one-pass `rustc_compat` |
 | R5: review fixes | 312,732,924–312,734,679 | 0.00% | inside the spread |
 | PGO on top (measured on `4867896`, M3) | 244,712,537 against 312,734,041 | −21.7% | code layout |
+| 2026-10-15, E17: parse floor (`in_trait` passed down, macro fragments parsed once, one-pass tree build) | 290,493,068 | −7.11% | fewer passes over the parser's output |
+| 2026-10-15, E18: the chain's dead vertical candidate skipped | 280,278,276 | −3.52% | speculation removed exactly |
+| 2026-10-15, E16: scanner, list-gap and string-assembly fast paths (eleven levers) | 248,202,094 | −11.44% | per-call work removed |
 
-The gains compound multiplicatively, not additively: the per-byte cost of the formatter is
-0.532 of what it was, 0.416 with PGO. Every step left every output on 1238 fixtures and
+The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
+cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-10-15 night
+([2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md): the theory records and
+experiments E12–E18) it is 0.422 before PGO (248,202,094 against 587,988,576, −57.8%), with
+every output on both corpora still identical to the record of the starting outputs except
+the 13 files the conformance fixes target. Every step left every output on 1238 fixtures and
 20,850 registry files unchanged, except the conformance fixes, which changed exactly the 13
 files they target, checked file by file against a record of the starting outputs.
 
