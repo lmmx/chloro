@@ -84,8 +84,8 @@ pub fn file_name_of(key: &Digest) -> String {
 pub struct UnitStore {
     generation: AtomicU32,
     entries: Mutex<HashMap<Digest, (u32, CachedUnit)>>,
-    /// [`RECORD_HEADER_LEN`] plus [`CachedUnit::heap_size`] of every entry: the bytes the
-    /// entries would take in the file, the measure [`Units::trim`] bounds.
+    /// [`held_size`] of every entry: the memory the entries take, the measure
+    /// [`Units::trim`] bounds.
     held: AtomicUsize,
     /// Bytes of the records read from disk.
     file_len: usize,
@@ -143,9 +143,13 @@ pub struct UnitStats {
     pub record_bytes: usize,
 }
 
-/// The bytes an entry is counted for: its record header and its record's heap size.
+/// The bytes an entry is counted for in memory: the map's key and value and the record's
+/// heap size. A record whose unit was already formatted holds no text, so its entry is
+/// mostly the struct (EXP-021 measured about 0.7 KiB of resident memory per such entry,
+/// table growth and the fixed-point entry of the same save included); the file's
+/// [`RECORD_HEADER_LEN`] and serialised bytes would undercount it several times.
 fn held_size(unit: &CachedUnit) -> usize {
-    RECORD_HEADER_LEN + unit.heap_size()
+    std::mem::size_of::<(Digest, (u32, CachedUnit))>() + unit.heap_size()
 }
 
 impl UnitStore {
@@ -250,7 +254,8 @@ impl Units {
         }
     }
 
-    /// The bytes the entries held would take in the file (0 when it was never read).
+    /// The memory the entries held take, as [`held_size`] counts it (0 when the file was
+    /// never read).
     pub fn held_bytes(&self) -> usize {
         self.store
             .get()
@@ -260,6 +265,7 @@ impl Units {
     /// Drops the entries seen least recently while the entries held take more than
     /// `max_bytes` (as [`held_bytes`](Units::held_bytes) counts), down to three quarters of
     /// it: the bound a resident server keeps in memory, as [`MAX_BYTES`] bounds the file.
+    /// The map's spare capacity is not counted (up to as much again after a doubling).
     /// Returns the number of entries dropped.
     pub fn trim(&self, max_bytes: usize) -> usize {
         let Some((store, _)) = self.store.get() else {
@@ -458,6 +464,77 @@ mod tests {
         assert_eq!(units.store().stats(0).entries, 0);
         let out = chloro_core::format_source_with_unit_cache(SOURCE, &config, 1, units.store());
         assert_eq!(out, chloro_core::format_source_with_config(SOURCE, &config));
+    }
+
+    /// `n` one-function sources: each formats as one unit of its own.
+    fn functions(n: usize) -> Vec<String> {
+        (0..n)
+            .map(|i| format!("fn f{i}() {{\n    let x = {i};\n}}\n"))
+            .collect()
+    }
+
+    #[test]
+    fn a_resident_store_keeps_its_entries_across_requests_and_writes() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config::default();
+        let units = units_at(dir.path(), [3; 32]);
+        assert_eq!(units.held_bytes(), 0);
+        for source in functions(3) {
+            units.next_generation();
+            let out =
+                chloro_core::format_source_with_unit_cache(&source, &config, 1, units.store());
+            assert_eq!(
+                out,
+                chloro_core::format_source_with_config(&source, &config)
+            );
+        }
+        let held = units.held_bytes();
+        assert!(held >= 3 * std::mem::size_of::<(Digest, (u32, CachedUnit))>());
+        // Written, and still held: a second write has nothing new to write.
+        assert!(units.write_kept(true).unwrap());
+        assert!(!units.write_kept(true).unwrap());
+        assert_eq!(units.stats().unwrap().entries, 3);
+        // A unit seen again is found, and storing nothing leaves the count alone.
+        let source = &functions(1)[0];
+        let _ = chloro_core::format_source_with_unit_cache(source, &config, 1, units.store());
+        let stats = units.stats().unwrap();
+        assert_eq!((stats.hits, stats.stores), (1, 3));
+        assert_eq!(units.held_bytes(), held);
+        // The file holds the three units for a later process.
+        let read = units_at(dir.path(), [3; 32]);
+        assert_eq!(read.store().stats(0).entries, 3);
+    }
+
+    #[test]
+    fn trim_drops_the_units_seen_least_recently() {
+        let config = Config::default();
+        let dir = tempfile::tempdir().unwrap();
+        let units = units_at(dir.path(), [4; 32]);
+        let sources = functions(8);
+        for source in &sources {
+            units.next_generation();
+            let _ = chloro_core::format_source_with_unit_cache(source, &config, 1, units.store());
+        }
+        // The first source seen again: the most recent with the last one.
+        units.next_generation();
+        let _ = chloro_core::format_source_with_unit_cache(&sources[0], &config, 1, units.store());
+        let per_entry = units.held_bytes() / 8;
+        assert_eq!(units.trim(units.held_bytes()), 0);
+        // A bound of four entries keeps three (three quarters of it).
+        let dropped = units.trim(4 * per_entry);
+        assert_eq!(dropped, 5);
+        assert!(units.held_bytes() <= 3 * per_entry);
+        let lookups = |source: &str| {
+            let before = units.stats().unwrap();
+            let _ = chloro_core::format_source_with_unit_cache(source, &config, 1, units.store());
+            let after = units.stats().unwrap();
+            after.hits - before.hits
+        };
+        // Kept: the one seen again and the two stored last; the others are formatted again.
+        assert_eq!(lookups(&sources[0]), 1);
+        assert_eq!(lookups(&sources[7]), 1);
+        assert_eq!(lookups(&sources[6]), 1);
+        assert_eq!(lookups(&sources[1]), 0);
     }
 
     #[test]

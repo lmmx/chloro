@@ -4,6 +4,8 @@
 //! ```text
 //! serve_driver bench --file F --mode socket [--flag unit-cache] [--n 1000] [--rss 10,100,1000]
 //! serve_driver bench --file F --mode exec [--n 1000] -- chloro --check --unit-cache
+//! serve_driver rounds --file F --n 1000 --mode 'label=L;socket=PATH;flags=unit-cache' \
+//!     --mode 'label=M;cache=DIR;exec=chloro --check' ...
 //! serve_driver identity --chloro BIN [--root DIR]... [--every N] [--no-blank] [--no-paths]
 //! ```
 //!
@@ -18,6 +20,11 @@
 //! on the unedited file comes first. With `--rss`, the server's `VmRSS` and `VmHWM` are read
 //! from `/proc/<pid>/status` after the given saves. Prints one summary line (milliseconds)
 //! and, with `--tsv`, writes every latency.
+//!
+//! `rounds` measures several modes in one window: every save is timed once in each mode
+//! (`socket=` a server's socket, with `flags=`; or `exec=` a command, with `cache=` its
+//! `CHLORO_CACHE_DIR` and `pipe=1` for standard input), in an order rotating by one mode per
+//! save, so drifting load falls on every mode alike.
 //!
 //! `identity` drives the scenarios of `chloro-core/examples/unit_cache.rs` through the
 //! socket with the unit cache on and compares every reply (exit code, standard output,
@@ -218,6 +225,7 @@ mod unix {
         let mut args: Vec<String> = std::env::args().skip(1).collect();
         match args.first().map(String::as_str) {
             Some("bench") => bench(args.split_off(1)),
+            Some("rounds") => rounds(args.split_off(1)),
             Some("identity") => identity(args.split_off(1)),
             _ => {
                 eprintln!("usage: serve_driver bench|identity ...");
@@ -357,6 +365,192 @@ mod unix {
             rss.join(" ")
         );
         if failures > 0 {
+            std::process::exit(1);
+        }
+    }
+
+    /// One mode of `rounds`: a socket (with its flags) or a command (with its cache
+    /// directory), and what it measured.
+    struct Mode {
+        label: String,
+        client: Option<Client>,
+        flags: Vec<String>,
+        argv: Vec<String>,
+        cache_dir: Option<String>,
+        pipe: bool,
+        times: Vec<f64>,
+        failures: usize,
+        first: f64,
+        rss: Vec<(usize, (u64, u64))>,
+    }
+
+    impl Mode {
+        /// `label=L;socket=PATH;flags=a,b` or `label=L;cache=DIR;exec=ARGV...;pipe=1`.
+        fn parse(spec: &str) -> Mode {
+            let mut mode = Mode {
+                label: String::new(),
+                client: None,
+                flags: Vec::new(),
+                argv: Vec::new(),
+                cache_dir: None,
+                pipe: false,
+                times: Vec::new(),
+                failures: 0,
+                first: 0.0,
+                rss: Vec::new(),
+            };
+            for part in spec.split(';') {
+                let (key, value) = part.split_once('=').expect("key=value");
+                match key {
+                    "label" => mode.label = value.to_string(),
+                    "socket" => mode.client = Some(Client::connect(PathBuf::from(value))),
+                    "flags" => mode.flags = value.split(',').map(str::to_string).collect(),
+                    "cache" => mode.cache_dir = Some(value.to_string()),
+                    "exec" => mode.argv = value.split(' ').map(str::to_string).collect(),
+                    "pipe" => mode.pipe = value == "1",
+                    other => panic!("unknown key {other}"),
+                }
+            }
+            mode
+        }
+
+        /// One request on `file`, whose content is `content`.
+        fn run(&self, file: &Path, content: &[u8]) -> Result<Outcome, String> {
+            match &self.client {
+                Some(client) => {
+                    let flags: Vec<&str> = self.flags.iter().map(String::as_str).collect();
+                    let path = file.to_string_lossy().into_owned();
+                    client.request(&flags, vec![Frame::new("check", path)])
+                }
+                None => {
+                    let mut command = Command::new(&self.argv[0]);
+                    command.args(&self.argv[1..]);
+                    if !self.pipe {
+                        command.arg(file);
+                    }
+                    if let Some(dir) = &self.cache_dir {
+                        command.env("CHLORO_CACHE_DIR", dir);
+                    }
+                    command
+                        .stdin(if self.pipe {
+                            Stdio::piped()
+                        } else {
+                            Stdio::null()
+                        })
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped());
+                    let mut child = command.spawn().map_err(|e| e.to_string())?;
+                    if self.pipe {
+                        let mut pipe = child.stdin.take().unwrap();
+                        let bytes = content.to_vec();
+                        std::thread::spawn(move || {
+                            let _ = pipe.write_all(&bytes);
+                        });
+                    }
+                    let out = child.wait_with_output().map_err(|e| e.to_string())?;
+                    Ok((out.status.code().unwrap_or(-1), out.stdout, out.stderr))
+                }
+            }
+        }
+    }
+
+    /// `rounds`: every save is timed once in every mode, in an order that rotates by one
+    /// mode per save, so the modes share the host's load. `check` requests only, the
+    /// format-preserving edit only.
+    fn rounds(args: Vec<String>) {
+        let mut file = None;
+        let mut n = 1000;
+        let mut rss_at: Vec<usize> = Vec::new();
+        let mut modes: Vec<Mode> = Vec::new();
+        let mut tsv = None;
+        let mut it = args.into_iter();
+        while let Some(arg) = it.next() {
+            let mut value = || it.next().expect("option takes a value");
+            match arg.as_str() {
+                "--file" => file = Some(PathBuf::from(value())),
+                "--n" => n = value().parse().unwrap(),
+                "--rss" => rss_at = value().split(',').map(|v| v.parse().unwrap()).collect(),
+                "--mode" => modes.push(Mode::parse(&value())),
+                "--tsv" => tsv = Some(PathBuf::from(value())),
+                other => panic!("unknown option {other}"),
+            }
+        }
+        let file = fs::canonicalize(file.expect("--file")).unwrap();
+        let original = fs::read_to_string(&file).unwrap();
+        let site = edit_site(&original);
+        let load_start = loadavg();
+        for mode in &mut modes {
+            let t = Instant::now();
+            let first = mode.run(&file, original.as_bytes());
+            mode.first = t.elapsed().as_secs_f64() * 1e3;
+            if first.as_ref().map(|o| o.0) != Ok(0) {
+                eprintln!("{}: warm-up request: {first:?}", mode.label);
+                mode.failures += 1;
+            }
+        }
+        let count = modes.len();
+        for i in 1..=n {
+            let mut edited = original.clone().into_bytes();
+            let letters = code(i, &edited[site..site + 3]);
+            edited[site..site + 3].copy_from_slice(&letters);
+            fs::write(&file, &edited).unwrap();
+            for k in 0..count {
+                let mode = &mut modes[(i + k) % count];
+                let t = Instant::now();
+                let outcome = mode.run(&file, &edited);
+                mode.times.push(t.elapsed().as_secs_f64() * 1e3);
+                if !matches!(&outcome, Ok((0, out, err)) if out.is_empty() && err.is_empty()) {
+                    mode.failures += 1;
+                    if mode.failures < 5 {
+                        eprintln!("{} save {i}: {outcome:?}", mode.label);
+                    }
+                }
+            }
+            fs::write(&file, &original).unwrap();
+            if rss_at.contains(&i) {
+                for mode in &mut modes {
+                    if let Some(client) = &mode.client {
+                        mode.rss.push((i, memory(client.pid)));
+                    }
+                }
+            }
+        }
+        let load_end = loadavg();
+        let mut failed = false;
+        for mode in &modes {
+            if let Some(dir) = &tsv {
+                let lines: String = mode.times.iter().map(|t| format!("{t:.4}\n")).collect();
+                let name = format!(
+                    "{}-{}.tsv",
+                    file.file_stem().unwrap().to_string_lossy(),
+                    mode.label
+                );
+                fs::write(Path::new(dir).join(name), lines).unwrap();
+            }
+            let mut sorted = mode.times.clone();
+            sorted.sort_by(f64::total_cmp);
+            let mean = sorted.iter().sum::<f64>() / sorted.len() as f64;
+            let rss: Vec<String> = mode
+                .rss
+                .iter()
+                .map(|(i, (r, h))| format!("{i}:{r}/{h}"))
+                .collect();
+            println!(
+                "{}\t{}\tn={n}\tfirst={:.3}\tmedian={:.3}\tp90={:.3}\tp99={:.3}\tmax={:.3}\tmean={mean:.3}\tmin={:.3}\tfailures={}\tload={load_start} -> {load_end}\trss_kB(VmRSS/VmHWM)={}",
+                mode.label,
+                file.file_name().unwrap().to_string_lossy(),
+                mode.first,
+                percentile(&sorted, 0.5),
+                percentile(&sorted, 0.9),
+                percentile(&sorted, 0.99),
+                sorted[sorted.len() - 1],
+                sorted[0],
+                mode.failures,
+                rss.join(" ")
+            );
+            failed |= mode.failures > 0;
+        }
+        if failed {
             std::process::exit(1);
         }
     }
