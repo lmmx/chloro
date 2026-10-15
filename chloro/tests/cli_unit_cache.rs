@@ -1,7 +1,8 @@
 //! End-to-end tests of the CLI's unit cache: a large file edited in one item is formatted
 //! from the cached units of the others, with the output of the sequential formatter.
 //!
-//! Every test points `CHLORO_CACHE_DIR` at its own temporary directory.
+//! The unit cache is opt-in (`--unit-cache`). Every test points `CHLORO_CACHE_DIR` at its own
+//! temporary directory.
 #![cfg(feature = "cli")]
 
 use assert_cmd::cargo::cargo_bin_cmd;
@@ -89,7 +90,7 @@ fn an_edit_to_one_item_formats_only_that_item() {
 
     // Cold: every unit formatted and stored.
     let file = write(work.path(), "config.rs", &original);
-    let cold = chloro(cache.path(), &["--check"], &file);
+    let cold = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     let (units, found, stored) = cold.units();
     assert!(units > 100, "{units} units");
     assert_eq!((found, stored), (0, units));
@@ -100,7 +101,7 @@ fn an_edit_to_one_item_formats_only_that_item() {
     let edited = flip_literal(&original);
     assert_ne!(edited, original);
     write(work.path(), "config.rs", &edited);
-    let warm = chloro(cache.path(), &["--check"], &file);
+    let warm = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(warm.units(), (units, units - 1, 1));
     let expected_code =
         i32::from(chloro_core::format_source_with_config(&edited, &config) != edited);
@@ -118,10 +119,10 @@ fn an_edit_to_one_item_formats_only_that_item() {
         text
     };
     write(work.path(), "config.rs", &unformatted);
-    let check = chloro(cache.path(), &["--check"], &file);
+    let check = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(check.code, 1);
     assert_eq!(check.units(), (units, units - 1, 1));
-    let written = chloro(cache.path(), &["--write"], &file);
+    let written = chloro(cache.path(), &["--write", "--unit-cache"], &file);
     assert_eq!(written.code, 0);
     // The check run stored the edited unit: the write run finds every unit.
     assert_eq!(written.units(), (units, units, 0));
@@ -132,13 +133,14 @@ fn an_edit_to_one_item_formats_only_that_item() {
 }
 
 #[test]
-fn no_unit_cache_and_no_cache_leave_the_unit_cache_alone() {
+fn the_unit_cache_is_opt_in_and_no_cache_turns_it_off() {
     let cache = tempfile::tempdir().unwrap();
     let work = tempfile::tempdir().unwrap();
     let file = write(work.path(), "a.rs", "fn a(){}\n\nfn b() {}\n");
     for flags in [
-        &["--check", "--no-unit-cache"][..],
+        &["--check"][..],
         &["--check", "--no-cache"],
+        &["--check", "--no-cache", "--unit-cache"],
     ] {
         let run = chloro(cache.path(), flags, &file);
         assert_eq!(run.code, 1);
@@ -153,14 +155,17 @@ fn no_unit_cache_and_no_cache_leave_the_unit_cache_alone() {
         })
     };
     assert_eq!(units_files(cache.path()), 0);
-    let run = chloro(cache.path(), &["--check"], &file);
+    let run = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(run.code, 1);
     assert_eq!(run.units(), (2, 0, 2));
     assert_eq!(units_files(cache.path()), 1);
     // A second run finds both units; nothing new to write.
-    let run = chloro(cache.path(), &["--check"], &file);
+    let run = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(run.units(), (2, 2, 0));
     assert!(!run.stderr.contains("Unit cache written"), "{}", run.stderr);
+    // Without the flag the file is neither read nor written.
+    let run = chloro(cache.path(), &["--check"], &file);
+    assert!(!run.stderr.contains("units looked up"), "{}", run.stderr);
 }
 
 #[test]
@@ -168,10 +173,10 @@ fn an_unchanged_tree_never_reads_the_unit_cache() {
     let cache = tempfile::tempdir().unwrap();
     let work = tempfile::tempdir().unwrap();
     let file = write(work.path(), "a.rs", "fn a() {}\n");
-    let first = chloro(cache.path(), &["--check"], &file);
+    let first = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(first.code, 0);
     // The second run answers the file from the fixed-point cache: no unit is looked up.
-    let second = chloro(cache.path(), &["--check"], &file);
+    let second = chloro(cache.path(), &["--check", "--unit-cache"], &file);
     assert_eq!(second.code, 0);
     assert!(
         !second.stderr.contains("units looked up"),
