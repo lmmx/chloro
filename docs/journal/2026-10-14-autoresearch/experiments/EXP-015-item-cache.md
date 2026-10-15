@@ -95,11 +95,14 @@ it), written (temporary file, rename) only when a unit was stored and the execut
 and modification time are those taken at open, bounded to 64 MiB of records (least recently
 seen dropped), and swept with the other stale cache files after 30 days.
 
-Flags: the unit cache rides the existing cache, so `--no-cache` turns both off; the new
-`--no-unit-cache` turns off the unit cache only. Reason: the unit cache has the fixed-point
-cache's exactness argument and the same key of binary and configuration, so one switch for "no
-persistent state" is what a user expects; the separate switch exists for the measurement below
-and as an escape hatch. `-v` prints the units looked up, found and stored, the file read and
+Flags (as of `cafc1e8`): the unit cache is **opt-in**. `--unit-cache` turns it on; `--no-cache`
+turns both caches off and overrides `--unit-cache`. Reason: a run that finds nothing in it pays
+for hashing and storing every unit and writing the file, +10–15% wall time and +4.6%
+instructions on a cold `--check` of the fixture tree (gate 4 below, and again on the merged
+branch in the follow-up section), which is not acceptable as a default for cold CI runs until a
+resident process or a cheaper cold path amortises it. The first measurements below were taken
+at `c000c66`, where the unit cache rode the fixed-point cache by default and `--no-unit-cache`
+turned it off; that flag is gone. `-v` prints the units looked up, found and stored, the file read and
 the record bytes held.
 
 ## Changes
@@ -323,15 +326,85 @@ What the branch holds is exact and is faster than today's default (the base bina
 fixed-point cache) in every edit cell (1.11x–2.04x on minima) and 3.3x on a repeated `--check`
 of an unformatted tree, at +4–7% on a cold run against the fixed-point cache alone (+10–15%
 against `--no-cache`) and an 8.6 MB cache file for the fixture tree. It stays on its branch for
-the integrator, with the unit cache enabled by the CLI's cache (`--no-unit-cache` to turn it
-off); whether that default is worth the cold-run cost is the integrator's call on these numbers.
+the integrator. Following the review of this record, the CLI's unit cache is opt-in
+(`--unit-cache`, `cafc1e8`), and the branch carries the integration head with E12 (the
+executable's digest recorded under its identity instead of hashed every run); the re-measured
+numbers are in the next section.
+
+## Follow-up on the merged branch (`cafc1e8`: integration head `7b53917` with E12 and E13 merged, unit cache opt-in)
+
+Gates: `cargo fmt --all --check` clean; `cargo clippy --workspace --all-targets --all-features
+-- -D warnings` clean; `cargo test --workspace --all-features` all pass (chloro 24 unit,
+`cli_cache` 11, `cli_files` 5, `cli_unit_cache` 3, doc 1; chloro-core as before); identity
+harness on the fixtures at 1 and 4 threads: 13,644 units, 13,644 found warm, 13,203 of 13,595
+used moved, 0 differences (cold, warm, moved); `bench -n 1 --check fixtures-e8d87c2.tsv` with
+the cache off 0 of 1238 changed; `profile.sh --core 3` 312,735,603 `Ir` (+0.0005% against
+312,734,032).
+
+The cached run's floor (hyperfine, pinned, under load 4.9–7.9): a fixed-point hit on
+`hover/tests.rs` 3.8 ms min (5.1 before E12), the no-cache process floor 2.9 ms (3.0).
+
+Edit scenario, the same five edited files and snapshots warmed by the merged binary, three
+variants (`--no-cache`; fixed-point cache only, now the default; `--unit-cache` warm). The
+interleaved runner (20 rounds; load 4.4–6.2), minima in ms, then `--no-cache` / unit cache on
+minima and means, with the same ratios before the merge (interleaved, first window) beside
+them:
+
+| file | pin | no-cache | fixed-point only | `--unit-cache` warm | no-cache / unit, min | mean | before the merge (min, mean) | fixed-point / unit, min |
+|---|---|---|---|---|---|---|---|---|
+| lints | pinned | 38.2 | 39.0 | 18.3 | 2.09x | 2.10x | 1.87x, 2.03x | 2.14x |
+| lints | unpinned | 25.4 | 26.7 | 16.8 | 1.52x | 1.60x | 1.34x, 1.44x | 1.59x |
+| nodes | pinned | 48.7 | 49.3 | 30.2 | 1.61x | 1.50x | 1.49x, 1.36x | 1.63x |
+| nodes | unpinned | 38.8 | 39.8 | 32.0 | 1.21x | 1.23x | 1.20x, 1.29x | 1.24x |
+| hir_lib | pinned | 44.5 | 44.9 | 25.1 | 1.77x | 1.55x | 1.71x, 1.58x | 1.79x |
+| hir_lib | unpinned | 27.1 | 27.3 | 24.0 | 1.13x | 1.12x | 1.07x, 1.08x | 1.14x |
+| hover_tests | pinned | 12.1 | 12.4 | 7.7 | 1.56x | 1.62x | 1.37x, 1.19x | 1.61x |
+| hover_tests | unpinned | 8.7 | 8.8 | 6.6 | 1.31x | 1.33x | 1.09x, 1.21x | 1.34x |
+| config | pinned | 19.0 | 19.3 | 11.2 | 1.70x | 1.65x | 1.55x, 1.47x | 1.72x |
+| config | unpinned | 12.0 | 13.0 | 9.9 | 1.21x | 1.34x | 1.10x, 1.20x | 1.31x |
+
+hyperfine in the same window (`-N -i -w 2 -r 20`, the three variants per invocation; cells min /
+mean ± σ / peak RSS MiB; noisier, load 7.0–7.9):
+
+| file | pin | no-cache | fixed-point only | `--unit-cache` warm | no-cache / unit (min, mean) |
+|---|---|---|---|---|---|
+| lints | pinned | 35.5 / 44.6 ± 13.2 / 10.0 | 38.9 / 41.5 ± 3.8 / 10.0 | 17.8 / 20.6 ± 2.6 / 9.0 | 1.99x, 2.17x |
+| lints | unpinned | 28.8 / 33.5 ± 4.4 / 15.1 | 26.1 / 32.8 ± 5.6 / 15.0 | 16.9 / 18.7 ± 2.6 / 9.0 | 1.70x, 1.79x |
+| nodes | pinned | 48.8 / 53.2 ± 7.0 / 14.1 | 50.2 / 52.2 ± 2.8 / 14.1 | 31.7 / 34.1 ± 3.7 / 14.9 | 1.54x, 1.56x |
+| nodes | unpinned | 43.3 / 50.2 ± 6.6 / 14.1 | 39.4 / 49.3 ± 6.8 / 14.1 | 29.1 / 32.0 ± 4.1 / 14.9 | 1.49x, 1.57x |
+| hir_lib | pinned | 42.4 / 46.0 ± 6.0 / 9.0 | 41.9 / 47.8 ± 9.1 / 9.0 | 22.4 / 24.9 ± 4.9 / 9.3 | 1.89x, 1.85x |
+| hir_lib | unpinned | 28.3 / 42.1 ± 12.1 / 9.0 | 31.4 / 44.9 ± 10.9 / 9.0 | 22.4 / 28.0 ± 12.0 / 9.3 | 1.26x, 1.50x |
+| hover_tests | pinned | 11.6 / 13.4 ± 5.8 / 4.8 | 12.2 / 17.4 ± 6.0 / 4.9 | 7.7 / 12.2 ± 5.8 / 4.8 | 1.52x, 1.10x |
+| hover_tests | unpinned | 9.4 / 14.3 ± 3.5 / 5.4 | 10.3 / 14.1 ± 2.8 / 5.3 | 6.5 / 8.0 ± 3.3 / 4.8 | 1.46x, 1.79x |
+| config | pinned | 18.5 / 19.3 ± 0.8 / 5.4 | 18.9 / 20.3 ± 1.6 / 5.4 | 10.6 / 11.5 ± 1.5 / 5.6 | 1.74x, 1.69x |
+| config | unpinned | 13.9 / 21.0 ± 6.0 / 6.1 | 13.1 / 18.9 ± 3.9 / 6.2 | 9.5 / 9.8 ± 0.2 / 5.5 | 1.47x, 2.14x |
+
+Cold and warm `--check` of the 1238 fixtures (interleaved, 6 rounds; min / mean ms, peak RSS
+MiB), against the same comparison before the merge:
+
+| run | pinned | unpinned (load 4.9–5.9, means not usable) |
+|---|---|---|
+| `--no-cache` | 1498 / 1589 (23.1) | 843 / 1245 (42.5) |
+| cold, fixed-point only | 1592 / 1674 (24.5) | 891 / 1244 (45.5) |
+| cold, `--unit-cache` | 1705 / 1783 (36.1) | 932 / 1182 (68.3) |
+| warm, fixed-point only | 1475 / 1528 (23.5) | 811 / 1108 (45.3) |
+| warm, `--unit-cache` | 432 / 445 (29.9) | 263 / 418 (45.8) |
+| cold `--unit-cache` against `--no-cache` | +13.8% min, +12.3% mean (before: +10.1%, +15.0%) | +10.6% min (before +11.7%) |
+| cold `--unit-cache` against the fixed-point cache alone | +7.1% min, +6.5% mean (before: +4.3%, +7.1%) | +4.7% min (before +18.2% min, a noisy window) |
+
+Reading: E12 lowered every cached run by about 1 ms, which moves the pinned edit ratios up by
+0.06–0.27; pinned, all five files now clear 1.5x on minima and four of five on means
+(`nodes.rs` 1.50x). Unpinned against the four-thread `--no-cache`, only `lints.rs` clears it
+(1.52x, 1.60x); the others stay at 1.12–1.34x, bounded by the single-threaded parse. The cold
+pass with `--unit-cache` still costs +10–14% against `--no-cache` and +5–7% against the
+fixed-point cache alone, so the opt-in stands. The decision is unchanged: refuted as stated at
+process level (the falsifier asks for 1.5x on every file over 128 KiB, and the unpinned cells
+miss it), confirmed in process, exact.
 
 ## What is left
 
-- The cached run's floor: the tool key hashes the whole executable on every run (2–3 ms of a
-  5–6 ms floor). Keying it by the executable's path, size, modification time and inode, with
-  the hash recomputed when they change, would lower every cached run, the fixed-point hits
-  included; it weakens finding 2 of the review on platforms without `/proc/self/exe`.
+- The cached run's floor: done by E12 (the executable's digest recorded under its identity),
+  merged here; a fixed-point hit is now about 1 ms above the process floor.
 - The cold-run cost: each missed unit is hashed twice (lookup and store); a store that takes
   the lookup's digest would remove about 125 M of the 436 M extra instructions. Storing text
   only for `--write` and print mode (a `--check` run needs one bit per unit, the study's
