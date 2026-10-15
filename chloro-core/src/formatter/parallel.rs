@@ -137,7 +137,7 @@ pub(crate) fn format_file(
                     GapOp::WithoutIndent(end) => main.format_missing_no_indent(end),
                     GapOp::RemovedImport(lo) => main.format_missing_before_removed_import(lo),
                 }
-                let line_base = main.line_number;
+                let line_base = main.line_number();
                 main.push_str(&out.text);
                 main.last_pos = out.last_pos;
                 main.macro_rewrite_failure |= out.macro_failure;
@@ -258,7 +258,7 @@ fn format_unit<'a>(
     visitor.block_indent = Indent::empty();
     visitor.is_if_else_block = false;
     visitor.is_loop_block = false;
-    visitor.line_number = 0;
+    visitor.reset_line_number();
     visitor.macro_rewrite_failure = false;
     visitor.unit = Some(UnitRecord::default());
     run.lost_comment.set(false);
