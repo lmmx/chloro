@@ -19,7 +19,7 @@ the per-file figure and the registry sample are [EXP-027](EXP-027-harness.md)'s.
 |---|---|
 | branch | `20261015-arena` from `4f1b9d9` (integration branch; its code is the BKG `05ab7b4`, the commits above it are documentation) with `origin/20261015-harness` merged (`21042dc`: E27's `profile.sh --per-file`, `--sample-list`, `bench --phase parse`), worktree `/home/user/wt/arena` |
 | base | `21042dc`: the BKG's formatter with E27's `bench`; `bench-base` (sha256 `0be68d2cb0d7a9f2`) and `chloro-base` (`4ddf33f7a0b1aa33`) copied before the first change; the head's are `c15b5ab3259cf7cf` and `8123fab448c1448f` |
-| commits | `368add0` (the arena, `formatter/scratch.rs`, and chains' lists and strings in it), `a61d975` (overflow's list items), `6a3df77` (types), then this file and the ledger row |
+| commits | `368add0` (the arena, `formatter/scratch.rs`, and chains' lists and strings in it), `a61d975` (overflow's list items), `6a3df77` (types), `eaab530` (this file and the ledger row); the follow-up: `b2dd419` (the arena keeps pointers; a formatting test sized for Miri), `224870a` (the arena on `bumpalo`), then the section *Soundness and the safe variant* |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, hyperfine 2.0.0, glibc 2.39; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz; other agents built and ran callgrind throughout (load average 6.1–24.5 during this experiment). `Ir` is unaffected; wall-clock figures are **measured, provisional** (protocol § 6) |
 | `Ir` commands | `benchmarks/profile.sh --core 3 --bench <bin> --runs 3 --per-file` (fixture sample) and the same with `--sample-list benchmarks/samples/registry49.txt`; `--sim` for the co-metric (on core 2, alongside; the counts do not depend on the core) |
@@ -426,6 +426,148 @@ is not resolved by wall clock on this host. A quiet-host run is owed (binaries:
 Overflow measured first (−951,027) and second (−917,747) agree within 4%; the first form's
 −1,281,327 for the same step is the collect loop's inlining, not the arena.
 
+## Soundness and the safe variant (follow-up, measured)
+
+The integrator held the merge: `scratch.rs` was a hand-written arena-backed `Vec` and `String`
+with thirteen `unsafe` blocks (596 lines with its tests), which meets protocol § 1.4 in letter
+(a safety argument, six tests) but is a large surface for −1.60% / −0.80%. Two questions:
+does Miri find anything, and does a safe arena (`bumpalo`, whose `'bump` lifetime proves at
+compile time that no scratch value outlives its scope) keep the gain.
+
+### Miri
+
+- Installed with `rustup component add miri rust-src --toolchain nightly-2026-05-10` (through
+  the proxy, under two minutes) and `cargo +nightly-2026-05-10 miri setup` (sysroot built in
+  1 min 31 s).
+- **Run 1**, `6a3df77`'s `scratch.rs`, Miri's defaults (Stacked Borrows, permissive
+  provenance), `cargo +nightly-2026-05-10 miri test -p chloro-core --lib scratch`:
+  `test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in
+  173.32s`. No undefined behaviour reported. Two warnings, verbatim heads:
+  `warning: integer-to-pointer cast --> chloro-core/src/formatter/scratch.rs:157:21` (in
+  `Arena::free_chunks`, `base as *mut u8`, reached from `Arena::release`) and the same at
+  `scratch.rs:182:25` (`Arena::drop`). The arena kept its pointers as `usize` addresses and
+  cast them back; under permissive provenance Miri gives such pointers wildcard provenance and
+  cannot check their accesses precisely, so run 1 was weak evidence.
+- **Fix, `b2dd419`:** the arena's current pointer, chunk start and end, and its chunk list are
+  `*mut u8` derived from each chunk's allocation (`with_addr` for the aligned bump, `add`
+  elsewhere); no integer-to-pointer cast is left. The bump arithmetic is the same: per-file
+  `Ir` +26,688 (+0.012%) on the fixture sample and +20,157 (+0.007%) on the registry sample
+  against `6a3df77` (226,472,961 and 302,009,059).
+- The snapshot test chosen first (`tests::formatter::method_chains::struct_literal_receiver_in_call_arg`,
+  a chain, an overflowed call and a two-segment path) cannot run under Miri: `error:
+  unsupported operation: 'open' not available when isolation is enabled`, from `insta`'s
+  `env.rs`, which spawns `cargo metadata` before comparing. `b2dd419` adds
+  `scratch::tests::formatting_through_the_arena_users`: one input through all three users
+  (a broken chain with generic method calls, an overflowed argument list, multi-segment paths
+  with generic arguments), compared with rustfmt's output by `assert_eq!`, and checks that the
+  arena was used and is empty afterwards.
+- **Final runs on `b2dd419`**, the seven `scratch` tests:
+  - `MIRIFLAGS=-Zmiri-strict-provenance` (Stacked Borrows): `test result: ok. 7 passed; 0
+    failed; 0 ignored; 0 measured; 203 filtered out; finished in 178.23s`;
+  - `MIRIFLAGS="-Zmiri-strict-provenance -Zmiri-tree-borrows"`: `test result: ok. 7 passed; 0
+    failed; 0 ignored; 0 measured; 203 filtered out; finished in 178.23s`.
+  No undefined behaviour, no warning, no leak report in either.
+- What this shows: the executions the tests make (interleaved growth in place and by move,
+  give-back of the newest, resets, chunk release above 1 MiB, element drops, two threads, and
+  one real formatting input through chains, overflow and types) are free of undefined
+  behaviour under both aliasing models with strict provenance. What it does not show: that the
+  dynamic invariant (no reset while a value holds storage) holds for every input; that rests on
+  the `live` count and on the review argument in the module documentation.
+
+### The safe variant: `bumpalo`
+
+`224870a` replaces the hand-written arena by `bumpalo` 3.20.3 (feature `collections`, no
+default features, no transitive dependency; it was already in the registry):
+
+- `scratch.rs` (74 lines, no `unsafe`): a `RefCell<Bump>` per thread; `with_scratch(|bump| ..)`
+  lends `&Bump` to a closure whose result cannot borrow it, so every scratch value is proved at
+  compile time not to outlive the closure; `reset_scratch()` takes the bump mutably through
+  `try_borrow_mut` and so can only reset when no closure holds it.
+- The sites use `bumpalo::collections::{Vec, String}` (`with_capacity_in`, `from_iter_in`,
+  `new_in`, `.bump()`), the same allocations as `6a3df77`. Entry points: `rewrite_chain_from`,
+  `overflow::Context::rewrite`, `types::rewrite_path` (and the two `path_segments` readers in
+  `types.rs` and `patterns.rs`). The `'bump` lifetime is the existing `'a` of `ChainItemKind`,
+  `Chain` and `ChainFormatterShared` (the syntax handles are covariant, so they shorten to the
+  bump's borrow); `rewrite_path_segments` gains a parameter (`#[allow(clippy::too_many_arguments)]`).
+- **Variant A, as specified:** reset at every unit boundary of `visit_items_with_reordering`
+  only. **Variant B, committed:** A plus a reset when the outermost `with_scratch` returns (the
+  point at which the hand-written arena's `live` count reached zero).
+
+`Ir` (per-file net; whole in brackets), three runs each, `--core 3`, 15:50–16:02 UTC at load 1–4:
+
+| build | fixture sample | against base | against `6a3df77` | registry sample | against base | against `6a3df77` |
+|---|---|---|---|---|---|---|
+| base `21042dc` | 230,136,129 (232,051,557) | | | 304,433,417 (305,873,581) | | |
+| hand-written, `6a3df77` | 226,446,273 (228,741,632) | −1.603% | | 301,988,902 (302,919,449) | −0.803% | |
+| hand-written, pointers, `b2dd419` | 226,472,961 (228,767,736) | −1.592% | +0.012% | 302,009,059 (302,943,310) | −0.796% | +0.007% |
+| `bumpalo` A (reset at unit boundaries) | 226,509,274 (227,605,075) | −1.576% | +0.028% | 301,985,671 (305,880,171) | −0.804% | −0.001% |
+| **`bumpalo` B, `224870a`** | **226,560,329** (227,577,469) | **−1.554%** | +0.050% | **302,021,415** (304,929,947) | **−0.792%** | +0.011% |
+
+B keeps 97% of the hand-written arena's per-file gain on the fixture sample (3.58 M of 3.69 M)
+and 99% on the registry sample (2.41 M of 2.44 M). The whole-sample figures move with the
+heap-layout term in both directions (cross-file terms of 0.70 M and 2.59 M for B against
+1.98 M and 0.61 M for `6a3df77`): `bumpalo`'s retained chunk is another size than the
+hand-written arena's, and the parser's vectors of the next file meet another heap. On the
+registry sample A's whole figure reads +6,590 over the base while its per-file figure reads
+−0.80%; by E27's rule the per-file figure is the lever's own effect.
+
+Peak RSS (`rss.sh`, the same harness as above, maximum over ten runs, MiB; 15:50 and 15:56 UTC,
+load 1.0–3.8). The base column is A's invocation; B's ratios are against the base of its own
+invocation, which read within 1.6% of these):
+
+| workload | base | A | A / base | B | B / base |
+|---|---|---|---|---|---|
+| `stdin-lints` | 9.95 | 10.09 | 1.014 | 9.95 | 1.001 |
+| `lints`, `--threads 4` | 14.52 | 14.80 | 1.019 | 14.49 | 0.989 |
+| `nodes.rs` | 14.00 | 14.01 | 1.001 | 13.95 | 1.001 |
+| `hir/src/lib.rs` | 8.94 | 9.02 | 1.009 | 8.95 | 0.995 |
+| `hover/tests.rs` | 4.70 | 4.68 | 0.997 | 4.77 | 1.019 |
+| `config.rs` | 5.38 | 5.69 | 1.059 | 5.41 | 1.003 |
+| **`fx-hir-ty`** | 8.08 | **9.89** | **1.224** | 8.16 | 1.010 |
+
+A fails the 1.2x rule on `fx-hir-ty`; a repeat gave the same (median 9.78 against 8.03 MiB,
+maximum 9.84 against 8.08; the hand-written arena in the same invocation 7.78 and 7.83). A top-level
+unit can hold thousands of rewrites (an `impl` block is one unit), and `bumpalo` reclaims only
+the very last allocation on drop, so with resets at unit boundaries alone the scratch of a whole
+`impl` stays until its end. B resets as often as the hand-written arena did and stays within
+0.989–1.019x.
+
+Gates on `224870a`: `cargo fmt --check`; clippy `-D warnings`; `cargo test --workspace
+--all-features` 298 passed, 0 failed, 1 ignored (the six tests of the hand-written types go with
+them, the formatting test stays); 0 of 1238 fixtures changed, sequential and `--threads 4`, 0
+differ between the two; 0 of the registry hashes changed (25,077 files present); `conform -i`
+1220/1220 at 1.9.0 and 1.8.0, 0 not idempotent. Miri, `-Zmiri-strict-provenance`, on B's
+formatting test: `test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out;
+finished in 6.37s`, no warning. The CLI's text section: base 1,886,122 bytes, hand-written
+1,898,362, B 1,898,546.
+
+Wall clock (`pairs.sh`, measured, provisional; load 0.9–1.4, the quietest window of the day):
+
+| pair | base or `b2dd419` MB/s | other MB/s | ratio per pair | ranges |
+|---|---|---|---|---|
+| base, `b2dd419` (three, then six pairs) | 7.79, 9.51, 8.01; 8.57, 9.39, 8.89, 10.16, 9.37, 9.84 | 9.22, 9.25, 9.30; 9.11, 9.50, 9.07, 8.96, 10.56, 9.79 | 1.184, 0.973, 1.161; 1.063, 1.012, 1.020, 0.882, 1.127, 0.995 | overlap |
+| base, B (three, then six pairs) | 9.86, 9.57, 9.04; 8.28, 8.10, 8.64, 9.92, 8.42, 9.99 | 9.23, 10.01, 8.77; 9.57, 9.39, 9.32, 10.44, 8.95, 9.44 | 0.936, 1.046, 0.970; 1.156, 1.159, 1.079, 1.052, 1.063, 0.945 | overlap |
+| `b2dd419`, B | 8.98, 9.01, 8.96 | 9.01, 8.92, 9.38 | 1.003, 0.990, 1.047 | overlap |
+
+Neither arena's wall-clock effect is resolved on this host; the two are indistinguishable from
+each other.
+
+### Recommendation
+
+**`bumpalo`, variant B (`224870a`, the branch head).** It keeps 97–99% of the gain (per-file
+−1.55% and −0.79% against −1.60% and −0.80%), has no `unsafe` of chloro's own, turns the
+hand-written arena's dynamic `live`-count invariant into a compile-time one (no scratch value
+outlives `with_scratch`'s closure) plus a `RefCell` check on reset that cannot fire wrongly,
+and passes the RSS rule. Its costs: a dependency (`bumpalo`, no transitive dependency; a
+measured reason in the table above), `with_scratch` closures at three entry points, a
+`&Bump` parameter through the chain and path helpers, and resets at two places (a unit boundary
+and the outermost return) that must stay together: A shows that the unit boundary alone is not
+enough. The hand-written arena (`b2dd419`) is the fallback if the dependency is refused: it is
+Miri-clean under strict provenance with both aliasing models on its tests, 0.05% faster on the
+fixture sample, and keeps its sixteen `unsafe` blocks. Neither is the answer if a 1.6% / 0.8%
+instruction lever with no resolved wall-clock gain does not justify touching `chains.rs` while
+E26 works there; the measurement does not decide that.
+
 ## Interpretation
 
 - The arena does what it was built for: on the paths converted, 79% of the measured allocator
@@ -460,6 +602,12 @@ the registry sample falls at every step; peak RSS 0.967–1.043x; no output chan
 −2,444,515 (−0.80%) on the registry sample, with one new module of `unsafe` code (its argument and
 tests in `scratch.rs`). Whether that is worth the module is the integrator's call; the wall-clock
 pairs above do not settle it on this host.
+
+Follow-up (*Soundness and the safe variant*): the branch head is now `224870a`, the same three
+paths on `bumpalo` with a reset when the outermost borrower returns: per-file −1.55% and
+−0.79%, peak RSS within 1.02x, no `unsafe` of chloro's own; recommended over the hand-written
+arena, which stays reachable at `b2dd419` (Miri-clean under strict provenance with both aliasing
+models on its tests).
 
 Merge notes: E26 edits `chains.rs`, `overflow.rs` and `expr.rs` (width pre-checks): the arena
 touches `chains.rs` (types of `ChainItemKind::MethodCall`, `Chain::children`,
