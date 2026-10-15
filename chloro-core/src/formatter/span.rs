@@ -81,7 +81,26 @@ pub(crate) fn is_outer_doc_text(text: &str) -> bool {
 
 /// The rustc-style span of a node: leading trivia that rust-analyzer attached to the
 /// node (plain comments and whitespace) is excluded.
+///
+/// Inline for the common case, a node whose first child is a node or a token other than
+/// whitespace and comments (69,987 of 70,312 calls on the 49-file sample, EXP-019): the
+/// loop of [`rustc_span_scan`] would return the full span at that child.
+#[inline]
 pub(crate) fn rustc_span(node: Node<'_>) -> Span {
+    match node.children_with_tokens().next() {
+        Some(NodeOrToken::Node(_)) => node_range_span(node),
+        Some(NodeOrToken::Token(t))
+            if !matches!(t.kind(), SyntaxKind::WHITESPACE | SyntaxKind::COMMENT) =>
+        {
+            node_range_span(node)
+        }
+        _ => rustc_span_scan(node),
+    }
+}
+
+/// [`rustc_span`] for any node: skips the leading whitespace and plain comments.
+#[inline(never)]
+pub(crate) fn rustc_span_scan(node: Node<'_>) -> Span {
     let full = node_range_span(node);
     let mut lo = full.lo();
     for child in node.children_with_tokens() {
