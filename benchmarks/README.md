@@ -32,6 +32,7 @@ benchmarks/compare_rustfmt.sh --input raw fx-hir              # inputs as found 
 benchmarks/compare_rustfmt.sh --baseline /path/to/other/target/release --groups b,e
 python3 benchmarks/report.py benchmarks/results/<stamp>       # tables again (also written to report.md)
 benchmarks/profile.sh --core 3                                # Ir on the sample
+benchmarks/profile.sh --core 3 --runs 2 --sim                 # Ir plus branch and cache simulation
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -210,6 +211,22 @@ bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
   about 2K instructions, pinned or not, from any working directory.
 - `--annotate N` prints the top of `callgrind_annotate` for the first run; the profile
   files stay in `--out`.
+- `--sim` runs callgrind with `--cache-sim=yes --branch-sim=yes` (same `env -i`, `setarch -R`
+  and pinning) and prints, for each run, the simulator's totals: `Bc` and `Bcm` (conditional
+  branches executed and mispredicted), `Bi` and `Bim` (indirect branches), `I1mr` (L1
+  instruction-cache read misses), `D1mr` and `D1mw` (L1 data read and write misses) and the
+  last-level misses, then the ten functions with the most `I1mr` and the ten with the most
+  `Bcm` (exclusive counts, from `callgrind_annotate --sort`). This is the co-metric of
+  EXP-022 for code-layout and dispatch changes, which the instruction count does not see.
+  `Ir` is the same with and without `--sim`. The simulator models a 32 KB 8-way L1 and a
+  2004-era predictor: conditional branches from a table of 16,384 two-bit counters indexed by
+  address and recent global history, indirect branches from a 512-entry table of last
+  targets indexed by address alone (no history; current x86 cores predict indirect branches
+  from history too, so `Bim` overstates their cost on real hardware). A run takes about two
+  and a half times as long as one without `--sim` (14 s against 5.6 s for the head of
+  2026-10-15). The counts are as repeatable as `Ir`: three runs of one binary gave the same
+  `I1mr`, `Bim`, `D1mr` and `D1mw`, `Bcm` within 4 and `Ir` within 220
+  (`docs/journal/2026-10-14-autoresearch/experiments/EXP-022-layout.md`).
 
 ## pgo.sh
 

@@ -333,6 +333,68 @@ where
     I: IntoIterator<Item = T> + Clone,
     T: AsRef<ListItem>,
 {
+    // At least rustfmt's 128 bytes.
+    let mut result = String::with_capacity(128.max(write_list_capacity(items.clone(), formatting)));
+    write_list_into(items, formatting, &mut result).then_some(result)
+}
+
+/// Room for every item with its comments, a separator, a newline and an indent: what
+/// [`write_list_into`] writes for these items, or more, so a buffer reserved with it rarely
+/// grows while the list is written.
+#[inline(always)]
+pub(crate) fn write_list_capacity<I, T>(items: I, formatting: &ListFormatting<'_>) -> usize
+where
+    I: IntoIterator<Item = T>,
+    T: AsRef<ListItem>,
+{
+    let indent_len = formatting.shape.indent.to_string(formatting.config).len();
+    let per_item = formatting.separator.len() + 1 + indent_len;
+    items
+        .into_iter()
+        .map(|item| {
+            let item = item.as_ref();
+            let len = |s: &Option<String>| s.as_deref().map_or(0, str::len);
+            len(&item.item) + len(&item.pre_comment) + len(&item.post_comment) + per_item
+        })
+        .sum()
+}
+
+/// [`write_list`] writing at the end of `out`: appends the list and returns `true`, or
+/// returns `false` with `out` as it was (the list's text is truncated away) where
+/// `write_list` returns `None`. Reads of the list's own text (`is_empty`, the width of its
+/// last line) read only what this call appended.
+pub(crate) fn write_list_into<I, T>(
+    items: I,
+    formatting: &ListFormatting<'_>,
+    out: &mut String,
+) -> bool
+where
+    I: IntoIterator<Item = T> + Clone,
+    T: AsRef<ListItem>,
+{
+    // The buffer is moved into a local while the list is written, as `write_list`'s own
+    // `result` was: through `&mut String` its length and pointer stay in memory.
+    let mut result = std::mem::take(out);
+    let start = result.len();
+    let written = write_list_at(items, formatting, &mut result, start).is_some();
+    if !written {
+        result.truncate(start);
+    }
+    *out = result;
+    written
+}
+
+#[inline(always)]
+fn write_list_at<I, T>(
+    items: I,
+    formatting: &ListFormatting<'_>,
+    result: &mut String,
+    start: usize,
+) -> Option<()>
+where
+    I: IntoIterator<Item = T> + Clone,
+    T: AsRef<ListItem>,
+{
     let tactic = formatting.tactic;
     let sep_len = formatting.separator.len();
 
@@ -349,23 +411,6 @@ where
 
     let mut line_len = 0;
     let indent_str = &formatting.shape.indent.to_string(formatting.config);
-    // Room for every item with its comments, a separator, a newline and an indent, so the
-    // loop rarely grows the buffer; at least rustfmt's 128 bytes.
-    let estimate: usize = cloned_items
-        .clone()
-        .into_iter()
-        .map(|item| {
-            let item = item.as_ref();
-            let len = |s: &Option<String>| s.as_deref().map_or(0, str::len);
-            len(&item.item)
-                + len(&item.pre_comment)
-                + len(&item.post_comment)
-                + sep_len
-                + 1
-                + indent_str.len()
-        })
-        .sum();
-    let mut result = String::with_capacity(128.max(estimate));
     while let Some((i, item)) = iter.next() {
         let item = item.as_ref();
         let inner_item = item.item.as_deref()?;
@@ -398,7 +443,7 @@ where
                 }
             }
             DefinitiveListTactic::Vertical
-                if !first && !inner_item.is_empty() && !result.is_empty() =>
+                if !first && !inner_item.is_empty() && result.len() > start =>
             {
                 result.push('\n');
                 result.push_str(indent_str);
@@ -499,9 +544,11 @@ where
         if tactic != DefinitiveListTactic::Horizontal
             && let Some(comment) = item.post_comment.as_ref()
         {
+            let overhead = last_line_width(&result[start..]) + first_line_width(comment.trim());
+
             // Item string may be multi-line. Its length (used for block comment alignment)
-            // should be only the length of the last line. (rustfmt computes it for every
-            // item; only a post-comment reads it, and it reads nothing that changes above.)
+            // should be only the length of the last line. rustfmt measures it for every
+            // item; it is read only here, for a post-comment, and is measured here.
             let item_last_line = if item.is_multiline() {
                 inner_item.lines().last().unwrap_or("")
             } else {
@@ -511,8 +558,6 @@ where
             if item_last_line.starts_with(&**indent_str) {
                 item_last_line_width -= unicode_str_width(indent_str);
             }
-
-            let overhead = last_line_width(&result) + first_line_width(comment.trim());
 
             let rewrite_post_comment = |item_max_width: &mut Option<usize>| {
                 if item_max_width.is_none() && !last && !inner_item.contains('\n') {
@@ -558,7 +603,7 @@ where
                     let mut comment_alignment =
                         post_comment_alignment(item_max_width, unicode_str_width(inner_item));
                     if first_line_width(&formatted_comment)
-                        + last_line_width(&result)
+                        + last_line_width(&result[start..])
                         + comment_alignment
                         + 1
                         > formatting.config.max_width()
@@ -604,12 +649,13 @@ where
         }
 
         prev_item_had_post_comment = item.post_comment.is_some();
-        // `contains(':')` is a `memchr`; most items have no `:` and skip the substring
-        // search.
-        prev_item_is_nested_import = inner_item.contains(':') && inner_item.contains("::");
+        // Read only for nested (import) lists. `contains(':')` is a `memchr`; most items
+        // have no `:` and skip the substring search.
+        prev_item_is_nested_import =
+            formatting.nested && inner_item.contains(':') && inner_item.contains("::");
     }
 
-    Some(result)
+    Some(())
 }
 
 fn max_width_of_item_with_post_comment<I, T>(
@@ -1210,6 +1256,118 @@ mod tests {
                 }
             }
         }
+    }
+
+    fn item(
+        pre: Option<&str>,
+        text: Option<&str>,
+        post: Option<&str>,
+        new_lines: bool,
+    ) -> ListItem {
+        ListItem {
+            pre_comment: pre.map(str::to_owned),
+            pre_comment_style: if pre.is_some_and(|c| c.starts_with("//")) {
+                ListItemCommentStyle::DifferentLine
+            } else if pre.is_some() {
+                ListItemCommentStyle::SameLine
+            } else {
+                ListItemCommentStyle::None
+            },
+            item: text.map(str::to_owned),
+            post_comment: post.map(str::to_owned),
+            new_lines,
+        }
+    }
+
+    /// `write_list_into` appends exactly `write_list`'s text after any prefix (the list's
+    /// own emptiness and last-line width are read from what it appended), and leaves the
+    /// buffer as it was where `write_list` fails.
+    #[test]
+    fn write_list_into_appends_write_list_or_leaves_the_buffer() {
+        let config = Settings::default();
+        let lists: Vec<Vec<ListItem>> = vec![
+            vec![
+                item(None, Some("a"), None, false),
+                item(None, Some("bb"), None, false),
+            ],
+            vec![
+                item(None, Some(""), None, false),
+                item(None, Some("a"), None, false),
+            ],
+            vec![
+                item(None, Some("first"), Some("// one"), false),
+                item(None, Some("second_item"), Some("/* two */"), true),
+                item(Some("// before"), Some("third"), Some("// three"), false),
+                item(Some("/* pre */"), Some("x"), None, false),
+            ],
+            vec![
+                item(None, Some("foo::bar"), None, false),
+                item(None, Some("multi\n    line"), Some("// after"), false),
+                item(None, Some("baz"), None, false),
+            ],
+            vec![
+                item(None, Some("aaaa"), Some("// c1"), false),
+                item(None, Some("b"), Some("// c2"), false),
+            ],
+            vec![
+                item(None, Some("a"), None, false),
+                item(None, None, None, false),
+            ],
+        ];
+        let tactics = [
+            DefinitiveListTactic::Horizontal,
+            DefinitiveListTactic::Vertical,
+            DefinitiveListTactic::Mixed,
+            DefinitiveListTactic::SpecialMacro(1),
+            DefinitiveListTactic::SpecialMacro(2),
+        ];
+        let prefixes = ["", "f(", "line\n    g(", &"p".repeat(120)];
+        let mut compared = 0;
+        for items in &lists {
+            for tactic in tactics {
+                for trailing in [
+                    SeparatorTactic::Always,
+                    SeparatorTactic::Never,
+                    SeparatorTactic::Vertical,
+                ] {
+                    for (separator, place) in
+                        [(",", SeparatorPlace::Back), (" |", SeparatorPlace::Front)]
+                    {
+                        for width in [8, 40, 100] {
+                            for flag in [false, true] {
+                                let shape = Shape::legacy(width, Indent::new(4, 0));
+                                let fmt = ListFormatting::new(shape, &config)
+                                    .tactic(tactic)
+                                    .separator(separator)
+                                    .separator_place(place)
+                                    .trailing_separator(trailing)
+                                    .ends_with_newline(flag)
+                                    .preserve_newline(flag)
+                                    .nested(flag)
+                                    .align_comments(!flag);
+                                let alone = write_list(items, &fmt);
+                                for prefix in prefixes {
+                                    let mut out = prefix.to_owned();
+                                    let written = write_list_into(items, &fmt, &mut out);
+                                    match &alone {
+                                        Some(list) => {
+                                            assert!(written);
+                                            assert_eq!(out, format!("{prefix}{list}"));
+                                        }
+                                        None => {
+                                            assert!(!written);
+                                            assert_eq!(out, prefix);
+                                        }
+                                    }
+                                    compared += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(compared, 6 * 5 * 3 * 2 * 3 * 2 * 4);
     }
 
     /// Every string of up to five characters over the bytes that drive the list-gap

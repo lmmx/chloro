@@ -404,6 +404,31 @@ with the container.
   figure per binary (`agreement()` in `compare_rustfmt.sh`, the commit after the record). README,
   ledger, the autoresearch entry and this entry carry M4; the overnight report is
   `2026-10-15-overnight-report.md`.
+- Wave 3 (launched 09:25 UTC from `8ebd3bb`; the brief and ranking are in
+  `2026-10-15-unmined-tricks.md` §7): four agents on worktrees, each with a 4–5 h time box,
+  a record under `2026-10-14-autoresearch/experiments/`, and the branch to push:
+  E19 `20261015-cliffs` (/home/user/wt/cliffs; EXP-019-cliffs.md), E20 `20261015-sink`
+  (/home/user/wt/sink; EXP-020-sink.md), E21 `20261015-resident` (/home/user/wt/resident;
+  EXP-021-resident.md), E22 `20261015-layout` (/home/user/wt/layout; EXP-022-layout.md). On
+  each report: reproduce gates 1–5 in the worktree (goldens sequential and 4 threads, conform
+  at both versions, Ir, fmt, clippy, tests; for E22 also the `--sim` co-metric), merge one
+  experiment per merge, re-run gates on the merged head, ledger row, best-known-good only on
+  reproduced gates; then wave 4 (E23–E27 of the same table) and a quiet-host M5. If this
+  session is not resumed, a new session starts from this bullet and the four branches.
+- Wave 3 progress (11:15 UTC): E20 reported and **merged at `60de639`** after the integrator
+  reproduced its gates in the worktree (goldens 0 of 1238 sequential and 4 threads, 0 of
+  25,024 registry; conform 1220/1220 at both versions; `Ir` 238,032,982 against the agent's
+  238,033,138; fmt, clippy, 291 tests) and re-ran gates 1–3 on the merged head (identical
+  goldens and conform; `Ir` 238,033,298 at the default sample path). Best-known-good is
+  `60de639`, −4.10% from `e640fbf`. E22 reported (co-metric `profile.sh --sim` kept;
+  `steps_fused` kept, −0.105% `Ir`, −3% `Bcm`; hot/cold splits, flag tables and BOLT rejected;
+  the layout lever closed under the plateau rule) and its gates are being reproduced in
+  `/home/user/wt/layout` before the merge (its ledger row will conflict with E20's; keep both).
+  E19 is finishing its own background work; E21 is running. The external research brief and
+  report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
+  additions (a registry validation sample, rollback as state, generation-stamped side arrays,
+  the additive term in cliff fits, imbalance diagnostics first, a parse-only phase, the daemon
+  client's own latency) that change the wave-4 briefs and the protocol.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
   (Ir, goldens sequential and 4 threads, conform both versions; for E14 the RSS rule); then the
   quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
