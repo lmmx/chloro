@@ -25,6 +25,10 @@ The records, one per area, are under [2026-10-15-extensions-theory/](2026-10-15-
   and string assembly, the `core`/`std` share.
 - [already-formatted-fast-path.md](2026-10-15-extensions-theory/already-formatted-fast-path.md):
   whether canonical text can be recognised more cheaply than it is produced; a verify mode.
+- [rustd-trial.md](2026-10-15-extensions-theory/rustd-trial.md): a bounded feasibility trial of
+  the `rustd` build daemon on chloro-core's tests (measured, not theory): 100% of root functions
+  compiled and 198 tests matching rustc, edit-to-binary 1.4 s against 2.5–2.9 s for incremental
+  cargo, 1.3 GB daemon; no-go for the programme's loop, which is release builds.
 
 ## Lineage
 
@@ -161,11 +165,9 @@ with the container.
   `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. On landing: reproduce the Ir
   and conform gates on its PGO build before merging; the workflow itself is confirmed only by
   the next release run.
-- rustd trial, results so far (01:49–01:55 UTC): `basic` test binary MATCH, `chloro_core`
-  3004 of 3004 root functions and 15,212 generic instances compiled by rustd, 0 skipped, 33.5 s
-  and 1.34 GiB peak for the cold compile; the `unit` (183 tests), `parallel_equivalence` and
-  `rustfmt_version` binaries are running (`rustd-trial/trial-unit.log`); the edit-loop bench
-  (`harness/bench.py chloro`, entry added to the rustd checkout's `benches.json`) follows.
+- rustd trial: done, recorded in `rustd-trial.md` (verdict: no-go for adoption now, watch list).
+  The rustd checkout and build at `/home/user/dioxuslabs/rustd` and the worktree
+  `/home/user/wt/rustd-trial` can be removed; the record has the reproduction commands.
 - Queued: E14 allocator
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
