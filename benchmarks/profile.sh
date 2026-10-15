@@ -6,7 +6,7 @@
 # below wall-clock noise.
 #
 #   benchmarks/profile.sh [--bench BIN] [--runs N] [--core N] [--out DIR] [--annotate N] [--sim]
-#                         [--per-file]
+#                         [--per-file] [--sample-list FILE [--sample-root DIR]]
 #
 # --sim adds callgrind's cache and branch simulation (--cache-sim=yes --branch-sim=yes) and
 # prints, per run, Ir, Bc, Bcm, Bi, Bim, I1mr, D1mr, D1mw and the ten functions with the
@@ -19,7 +19,12 @@
 # difference is the cross-file term (the heap layout one file leaves the next; EXP-019,
 # EXP-020). With --runs N each file's figure is its minimum over the N runs.
 #
-# The sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
+# --sample-list FILE builds the sample from a list of paths, one per line ('#' lines are
+# comments), relative to the root the list names in a '# root: cargo-registry' line
+# (${CARGO_HOME:-~/.cargo}/registry/src) or '# root: fixtures', or to --sample-root DIR.
+# benchmarks/samples/registry49.txt is the registry validation sample (protocol.md section 3).
+#
+# The default sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
 # sorted bytewise (`LC_ALL=C sort`), every 25th file (lines 25, 50, ..., 1225): 49 files.
 # The journals record "every 25th file of the sorted fixture list" but not the command;
 # this construction is the one of five tried whose count (588.0M at 884f9c9) lies near the
@@ -35,7 +40,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
 FIXTURES=$REPO/chloro-core/tests/conformance/fixtures
 BENCH=$REPO/target/release/examples/bench
-RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0
+RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0 LIST= LIST_ROOT=
 
 die() { echo "profile.sh: error: $*" >&2; exit 2; }
 while [ $# -gt 0 ]; do
@@ -48,7 +53,9 @@ while [ $# -gt 0 ]; do
     --annotate) ANNOTATE=$2; shift ;;
     --sim) SIM=1; shift; continue ;;
     --per-file) PERFILE=1; shift; continue ;;
-    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
+    --sample-list) LIST=$2; shift ;;
+    --sample-root) LIST_ROOT=$2; shift ;;
+    -h|--help) sed -n '2,36p' "$0"; exit 0 ;;
     *) die "unknown argument $1" ;;
   esac
   shift
@@ -82,16 +89,35 @@ ROOT=$STAGE/s ONE=$STAGE/f
 [ ${#EXE} = 47 ] && [ ${#ROOT} = 26 ] || die "staging paths $EXE, $ROOT are not 47 and 26 bytes long"
 cp "$BENCH" "$EXE"
 
-# Build the sample.
-SRC=$FIXTURES
+# Build the sample: OUT/sample.txt lists its files relative to SRC.
+if [ -n "$LIST" ]; then
+  [ -f "$LIST" ] || die "$LIST not found"
+  if [ -z "$LIST_ROOT" ]; then
+    case $(sed -n 's/^# root: *//p' "$LIST" | head -1) in
+      cargo-registry) LIST_ROOT=${CARGO_HOME:-$HOME/.cargo}/registry/src ;;
+      fixtures) LIST_ROOT=$FIXTURES ;;
+      '') die "$LIST names no root ('# root: cargo-registry' or '# root: fixtures'); give --sample-root" ;;
+      *) die "$LIST: unknown root '$(sed -n 's/^# root: *//p' "$LIST" | head -1)'" ;;
+    esac
+  fi
+  [ -d "$LIST_ROOT" ] || die "$LIST_ROOT not found"
+  SRC=$(cd "$LIST_ROOT" && pwd)
+  grep -v '^#' "$LIST" | sed '/^[[:space:]]*$/d' > "$OUT/sample.txt"
+  while read -r f; do
+    case $f in /* | *..*) die "$LIST: '$f' is not a relative path below the root" ;; esac
+    [ -f "$SRC/$f" ] || die "$SRC/$f not found (listed in $LIST)"
+  done < "$OUT/sample.txt"
+else
+  SRC=$FIXTURES
+  (cd "$FIXTURES" && find . -name '*.rs' | sed 's|^\./||' | LC_ALL=C sort | awk 'NR % 25 == 0') > "$OUT/sample.txt"
+  total=$(cd "$FIXTURES" && find . -name '*.rs' | wc -l)
+  [ "$total" = 1238 ] || echo "warning: fixture list has $total files, not 1238; the sample differs from the journals'" >&2
+fi
 mkdir -p "$ROOT"
-(cd "$FIXTURES" && find . -name '*.rs' | sed 's|^\./||' | LC_ALL=C sort | awk 'NR % 25 == 0') > "$OUT/sample.txt"
-total=$(cd "$FIXTURES" && find . -name '*.rs' | wc -l)
-[ "$total" = 1238 ] || echo "warning: fixture list has $total files, not 1238; the sample differs from the journals'" >&2
-(cd "$FIXTURES" && xargs -a "$OUT/sample.txt" cp --parents -t "$ROOT")
+(cd "$SRC" && xargs -d '\n' -a "$OUT/sample.txt" cp --parents -t "$ROOT")
 n=$(wc -l < "$OUT/sample.txt")
-bytes=$(cd "$ROOT" && xargs -a "$OUT/sample.txt" cat | wc -c)
-echo "sample: $n files, $bytes bytes (list in $OUT/sample.txt)"
+bytes=$(cd "$ROOT" && xargs -d '\n' -a "$OUT/sample.txt" cat | wc -c)
+echo "sample: $n files, $bytes bytes from $SRC (list in $OUT/sample.txt)"
 echo "bench: $BENCH sha256=$(sha256sum "$BENCH" | cut -c1-16)"
 
 # The simulator's totals of one profile, then the top ten functions by I1mr and by Bcm.
@@ -179,7 +205,7 @@ if [ "$PERFILE" = 1 ]; then
     END {
       n = 0; for (k in m) if (k + 0 > n) n = k + 0
       e = m[0]
-      printf "per-file (minimum of %d run%s per file; Ir, Ir net of the empty sample, bytes, file):\n", runs, runs > 1 ? "s" : ""
+      printf "per-file (minimum of %d run%s per file; Ir, Ir net of the empty sample, bytes, file):\n", runs, (runs > 1 ? "s" : "")
       for (k = 1; k <= n; k++) {
         printf "  %3d %12d %12d %8d  %s\n", k, m[k], m[k] - e, b[k], p[k]
         s += m[k]
