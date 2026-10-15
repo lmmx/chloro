@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 use crate::cst::{AstNode, Node, Tree, TreeArena, ast};
 
+use super::comment::find_any_byte;
 use super::config::Settings;
 use super::macro_args::ParsedMacroArgs;
 use super::nodes::{Block, CachedBlock};
@@ -166,10 +167,15 @@ impl<'a> RunState<'a> {
         // needs the source scanned only up to `pos`.
         let end = (pos as usize).min(src.len());
         if *scanned < end {
-            for (i, &b) in src.as_bytes()[*scanned..end].iter().enumerate() {
-                if b == b'\n' {
-                    starts.push((*scanned + i) as BytePos + 1);
+            let bytes = &src.as_bytes()[..end];
+            let mut i = *scanned;
+            loop {
+                i = find_any_byte(bytes, i, *b"\n");
+                if i == end {
+                    break;
                 }
+                starts.push(i as BytePos + 1);
+                i += 1;
             }
             *scanned = end;
         }
