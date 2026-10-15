@@ -6,6 +6,12 @@
 //! that did not change (`chloro_core::format_source_with_unit_cache`), so only the edited
 //! units are formatted. The output is the same with and without it.
 //!
+//! It is opt-in (`--unit-cache`); `--no-cache` turns it off with the fixed-point cache. A run
+//! that finds nothing in it pays for hashing and storing every unit and writing the file:
+//! +10-15% wall time and +4.6% instructions on a cold `--check` of the 1238 conformance
+//! fixtures (`docs/journal/2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`), too
+//! much for a default that cold CI runs would pay.
+//!
 //! # Key
 //!
 //! An entry's digest is `BLAKE3(len(context) || context || text)` of the library's

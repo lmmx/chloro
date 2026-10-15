@@ -138,9 +138,9 @@ pub mod cli {
         // The unit cache lives next to the fixed-point cache and is read on the first file
         // the fixed-point cache does not answer.
         let units = match &cache {
-            Some(cache) if !args.no_unit_cache => Some(Units::new(cache)),
+            Some(cache) if args.unit_cache => Some(Units::new(cache)),
             Some(_) => {
-                vlog!(args, { "Unit cache: disabled (--no-unit-cache)" });
+                vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
                 None
             }
             None => None,
