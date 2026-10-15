@@ -353,7 +353,16 @@ with the container.
   allocator behind an off-by-default feature; glibc against `mimalloc` (default and
   memory-bounded options), `tikv-jemallocator`, `snmalloc` on the M3 harness rows (wall, CPU,
   peak RSS); decision rule: RSS within 1.2x of glibc on every workload and wall below with
-  disjoint ranges on most, else measurement only; record `EXP-014-allocators.md`.
+  disjoint ranges on most, else measurement only; record `EXP-014-allocators.md`. Landed
+  (`8e6e36c`) and merged at `3fd39b4` (features off by default; Ir and goldens unchanged, reproduced).
+  Result: no allocator meets the rule. glibc's own time share measured directly with a wrapping
+  allocator and `rdtsc`: 13–16% of the formatter's time on one thread (13.7–16.3% on the sample,
+  12.7–13.9% on the full tree), against its 15.1% instruction share; jemalloc 10.8% and snmalloc
+  9.9% inside their calls, mimalloc 22.3% at defaults (realloc 911 against 305 ticks) and 10.9%
+  with huge pages off. Peak RSS: mimalloc defaults 9.7–10.2x glibc on the warm `--check`
+  (`madvise(MADV_HUGEPAGE)`, this host's THP is `madvise`), 3.5x with THP and eager commit off,
+  1.05x with purge delay 0 but then slower; jemalloc 1.3–1.7x; snmalloc 1.7–3.1x. Wall ranges
+  overlapped glibc's on all seven workloads for every setting. glibc stays.
 - E16 (`20261015-scanner-paths`, worktree `/home/user/wt/scanner-paths`, agent running since
   02:39 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
   S2, S4, S7, S8, S5, S12, S15, S10, S13, S16; bound about 12% of instructions), one commit per
