@@ -322,6 +322,124 @@ impl WidthHeuristics {
 }
 
 impl Config {
+    /// Deterministic serialisation of every field, in declaration order: equal configurations
+    /// (however they were spelled) give equal bytes, and any two configurations that can
+    /// format differently give different bytes. The key of the CLI's caches and of the
+    /// unit cache ([`crate::UnitCache`]).
+    ///
+    /// The destructuring pattern names every field without `..`, so adding a field to `Config`
+    /// fails to compile here until the field is added to the key.
+    pub fn key_bytes(&self) -> Vec<u8> {
+        let Config {
+            max_width,
+            hard_tabs,
+            tab_spaces,
+            newline_style,
+            use_small_heuristics,
+            fn_call_width,
+            attr_fn_like_width,
+            struct_lit_width,
+            struct_variant_width,
+            array_width,
+            chain_width,
+            single_line_if_else_max_width,
+            single_line_let_else_max_width,
+            reorder_imports,
+            reorder_modules,
+            remove_nested_parens,
+            short_array_element_width_threshold,
+            match_arm_leading_pipes,
+            fn_params_layout,
+            match_block_trailing_comma,
+            edition,
+            style_edition,
+            merge_derives,
+            use_try_shorthand,
+            use_field_init_shorthand,
+            force_explicit_abi,
+            disable_all_formatting,
+            rustfmt_version,
+        } = self;
+
+        let mut out = Vec::with_capacity(128);
+        let usize_ = |out: &mut Vec<u8>, v: usize| out.extend_from_slice(&(v as u64).to_le_bytes());
+        let bool_ = |out: &mut Vec<u8>, v: bool| out.push(u8::from(v));
+        let opt = |out: &mut Vec<u8>, v: Option<usize>| match v {
+            None => out.push(0),
+            Some(v) => {
+                out.push(1);
+                out.extend_from_slice(&(v as u64).to_le_bytes());
+            }
+        };
+        let newline = |v: NewlineStyle| match v {
+            NewlineStyle::Auto => 0u8,
+            NewlineStyle::Native => 1,
+            NewlineStyle::Unix => 2,
+            NewlineStyle::Windows => 3,
+        };
+        let heuristics = |v: Heuristics| match v {
+            Heuristics::Default => 0u8,
+            Heuristics::Max => 1,
+            Heuristics::Off => 2,
+        };
+        let pipes = |v: MatchArmLeadingPipe| match v {
+            MatchArmLeadingPipe::Always => 0u8,
+            MatchArmLeadingPipe::Never => 1,
+            MatchArmLeadingPipe::Preserve => 2,
+        };
+        let density = |v: Density| match v {
+            Density::Compressed => 0u8,
+            Density::Tall => 1,
+            Density::Vertical => 2,
+        };
+        let edition_ = |v: Edition| match v {
+            Edition::Edition2015 => 0u8,
+            Edition::Edition2018 => 1,
+            Edition::Edition2021 => 2,
+            Edition::Edition2024 => 3,
+        };
+        let style = |v: Option<StyleEdition>| match v {
+            None => 0u8,
+            Some(StyleEdition::Edition2015) => 1,
+            Some(StyleEdition::Edition2018) => 2,
+            Some(StyleEdition::Edition2021) => 3,
+            Some(StyleEdition::Edition2024) => 4,
+        };
+
+        usize_(&mut out, *max_width);
+        bool_(&mut out, *hard_tabs);
+        usize_(&mut out, *tab_spaces);
+        out.push(newline(*newline_style));
+        out.push(heuristics(*use_small_heuristics));
+        opt(&mut out, *fn_call_width);
+        opt(&mut out, *attr_fn_like_width);
+        opt(&mut out, *struct_lit_width);
+        opt(&mut out, *struct_variant_width);
+        opt(&mut out, *array_width);
+        opt(&mut out, *chain_width);
+        opt(&mut out, *single_line_if_else_max_width);
+        opt(&mut out, *single_line_let_else_max_width);
+        bool_(&mut out, *reorder_imports);
+        bool_(&mut out, *reorder_modules);
+        bool_(&mut out, *remove_nested_parens);
+        usize_(&mut out, *short_array_element_width_threshold);
+        out.push(pipes(*match_arm_leading_pipes));
+        out.push(density(*fn_params_layout));
+        bool_(&mut out, *match_block_trailing_comma);
+        out.push(edition_(*edition));
+        out.push(style(*style_edition));
+        bool_(&mut out, *merge_derives);
+        bool_(&mut out, *use_try_shorthand);
+        bool_(&mut out, *use_field_init_shorthand);
+        bool_(&mut out, *force_explicit_abi);
+        bool_(&mut out, *disable_all_formatting);
+        out.push(match rustfmt_version {
+            RustfmtVersion::V1_8_0 => 0u8,
+            RustfmtVersion::V1_9_0 => 1,
+        });
+        out
+    }
+
     /// Resolve the width heuristics against `max_width` and `use_small_heuristics`.
     pub(crate) fn width_heuristics(&self) -> WidthHeuristics {
         let base = match self.use_small_heuristics {
