@@ -429,8 +429,12 @@ with the container.
   real cliff in nested closures with exponent 3.6 that no small exact change fixes, rustfmt
   itself exponential there; a per-file co-metric isolating the heap-layout term) and was asked
   to merge the integration head into `20261015-cliffs` first, because its `f18dac3` is the same
-  lever as E20's `c40a441` in lists.rs; it re-gates on the merged branch and reports the
-  default-path `Ir`. E21 is running. Wave 4's E24 (memo side array) and E27 (harness: registry
+  lever as E20's `c40a441` in lists.rs; it re-gated on the merged branch (232,050,509 at the default path, −2.41%; per-file sum
+  −3.08%), the integrator reproduced every gate in the worktree (goldens, conform, `Ir`
+  232,050,590, co-metric, fmt, clippy, 296 tests) and **merged it at `05ab7b4`** (post-merge
+  gates identical; `Ir` 232,047,700). Best-known-good is `05ab7b4`, −60.5% from the start. The
+  unfixed cliff (nested closures, exponent 3.6; rustfmt itself exponential there) goes to E26's
+  brief: an exact fix needs a lower bound on one-line width. E21 is running. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
