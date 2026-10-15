@@ -43,6 +43,7 @@ use super::formatting::Formatted;
 use super::nodes::{AttrStyle, Attribute, inner_attributes};
 use super::shape::Indent;
 use super::span::{BytePos, SnippetProvider, Spanned};
+use super::unit_cache::{CachedUnit, UnitCache, UnitKey};
 use super::visitor::FmtVisitor;
 
 /// The first `format_missing*` call a unit makes, which writes the text between the
@@ -74,27 +75,39 @@ pub(crate) struct UnitRecord {
 }
 
 /// The output of one unit.
-struct UnitOutput {
-    gap: Option<GapOp>,
-    text: String,
+pub(crate) struct UnitOutput {
+    pub(crate) gap: Option<GapOp>,
+    pub(crate) text: String,
     /// The visitor's `last_pos` after the unit.
-    last_pos: BytePos,
-    macro_failure: bool,
-    lost_comment: bool,
-    format_failure: bool,
-    skipped_range: Vec<(usize, usize)>,
-    output_line_ranges: Vec<usize>,
-    broken: bool,
+    pub(crate) last_pos: BytePos,
+    pub(crate) macro_failure: bool,
+    pub(crate) lost_comment: bool,
+    pub(crate) format_failure: bool,
+    pub(crate) skipped_range: Vec<(usize, usize)>,
+    pub(crate) output_line_ranges: Vec<usize>,
+    pub(crate) broken: bool,
+}
+
+/// A unit cache and the context bytes of the file's keys (`unit_cache.rs`).
+pub(crate) struct CacheUse<'c> {
+    pub(crate) cache: &'c dyn UnitCache,
+    /// `unit_cache::key_context` of the configuration; the file's skip names are appended.
+    pub(crate) context: Vec<u8>,
 }
 
 /// Formats `file` (parsed from `source`) with its top-level items spread over `threads`
 /// threads. Equivalent to `format_separate_mod` followed by the trailing-newline fix-up
 /// of `format_text`.
+///
+/// With a unit cache, every file takes the units path (whatever `threads` is): each unit is
+/// looked up first, only the units not found are formatted (on the calling thread when
+/// `threads <= 1` or a single unit is missing), and each one formatted is stored.
 pub(crate) fn format_file(
     source: &str,
     config: &Settings,
     file: &ast::SourceFile<'_>,
     threads: usize,
+    cache: Option<CacheUse<'_>>,
 ) -> Option<Formatted> {
     let arena = TreeArena::new();
     let run = Rc::new(RunState::new(&arena));
@@ -112,52 +125,59 @@ pub(crate) fn format_file(
     let items: Vec<ast::Item<'_>> = file.items().collect();
     let units = main.unit_ranges(&items);
 
-    if threads <= 1 || units.len() < 2 {
-        main.visit_items_with_reordering(&items);
-    } else {
-        let outputs = format_units(source, config, &file_attrs, &items, &units, threads);
-        // Every record is checked before anything is written to `main`: a unit that
-        // wrote text before its first gap call cannot be replayed in order, so the file
-        // is then formatted by the sequential walk, which gives the same output (`main`
-        // holds only what `format_separate_mod` writes before the items). No input tried
-        // reaches this; debug builds stop here so that one would be found.
-        let ok = stitchable(&items, &units, &outputs);
-        debug_assert!(ok, "a unit's output cannot be stitched");
-        if ok {
-            for out in &outputs {
-                let Some(gap) = out.gap else {
-                    // The unit wrote nothing and consumed nothing (a skipped `mod x;`,
-                    // checked by `stitchable`): its text is copied with the gap before the
-                    // next unit.
-                    continue;
-                };
-                match gap {
-                    GapOp::WithIndent(end) => main.format_missing_with_indent(end),
-                    GapOp::NoIndent(end) => main.format_missing(end),
-                    GapOp::WithoutIndent(end) => main.format_missing_no_indent(end),
-                    GapOp::RemovedImport(lo) => main.format_missing_before_removed_import(lo),
-                }
-                let line_base = main.line_number;
-                main.push_str(&out.text);
-                main.last_pos = out.last_pos;
-                main.macro_rewrite_failure |= out.macro_failure;
-                if out.lost_comment {
-                    run.lost_comment.set(true);
-                }
-                if out.format_failure {
-                    run.format_failure.set(true);
-                }
-                let mut skipped = run.skipped_range.borrow_mut();
-                for (i, &(lo, hi)) in out.skipped_range.iter().enumerate() {
-                    if out.output_line_ranges.contains(&i) {
-                        skipped.push((lo, hi + line_base));
-                    } else {
-                        skipped.push((lo, hi));
-                    }
-                }
+    let outputs = match cache {
+        Some(cache) if !units.is_empty() => {
+            let mut context = cache.context;
+            // The file's skip names, as every worker starts with them
+            // (`update_skip_context(file_attrs)` in `format_units`).
+            match main.skip_context.as_deref() {
+                Some(skip) => skip.write_key(&mut context),
+                None => super::skip::SkipContext::default().write_key(&mut context),
             }
-        } else {
-            main.visit_items_with_reordering(&items);
+            Some(format_units_cached(
+                source,
+                config,
+                &file_attrs,
+                &items,
+                &units,
+                threads,
+                cache.cache,
+                &context,
+                &|pos| main.line_of(pos),
+            ))
+        }
+        _ if threads <= 1 || units.len() < 2 => None,
+        _ => {
+            let all: Vec<usize> = (0..units.len()).collect();
+            let mut outputs: Vec<Option<UnitOutput>> = (0..units.len()).map(|_| None).collect();
+            for (u, out) in format_units(source, config, &file_attrs, &items, &units, &all, threads)
+            {
+                outputs[u] = Some(out);
+            }
+            Some(
+                outputs
+                    .into_iter()
+                    .map(|o| o.expect("every unit is formatted"))
+                    .collect(),
+            )
+        }
+    };
+
+    match outputs {
+        None => main.visit_items_with_reordering(&items),
+        Some(outputs) => {
+            // Every record is checked before anything is written to `main`: a unit that
+            // wrote text before its first gap call cannot be replayed in order, so the file
+            // is then formatted by the sequential walk, which gives the same output (`main`
+            // holds only what `format_separate_mod` writes before the items). No input
+            // tried reaches this; debug builds stop here so that one would be found.
+            let ok = stitchable(&items, &units, &outputs);
+            debug_assert!(ok, "a unit's output cannot be stitched");
+            if ok {
+                stitch(&mut main, &run, &outputs);
+            } else {
+                main.visit_items_with_reordering(&items);
+            }
         }
     }
     main.format_missing_with_indent(end_pos);
@@ -180,70 +200,150 @@ pub(crate) fn format_file(
     })
 }
 
-/// Formats every unit on `threads` threads; the outputs are in unit order.
-fn format_units(
+/// Writes the unit outputs onto `main`'s buffer in order: each unit's gap call replayed,
+/// then its text, as the sequential walk writes them.
+fn stitch(main: &mut FmtVisitor<'_>, run: &RunState<'_>, outputs: &[UnitOutput]) {
+    for out in outputs {
+        let Some(gap) = out.gap else {
+            // The unit wrote nothing and consumed nothing (a skipped `mod x;`, checked by
+            // `stitchable`): its text is copied with the gap before the next unit.
+            continue;
+        };
+        match gap {
+            GapOp::WithIndent(end) => main.format_missing_with_indent(end),
+            GapOp::NoIndent(end) => main.format_missing(end),
+            GapOp::WithoutIndent(end) => main.format_missing_no_indent(end),
+            GapOp::RemovedImport(lo) => main.format_missing_before_removed_import(lo),
+        }
+        let line_base = main.line_number;
+        main.push_str(&out.text);
+        main.last_pos = out.last_pos;
+        main.macro_rewrite_failure |= out.macro_failure;
+        if out.lost_comment {
+            run.lost_comment.set(true);
+        }
+        if out.format_failure {
+            run.format_failure.set(true);
+        }
+        let mut skipped = run.skipped_range.borrow_mut();
+        for (i, &(lo, hi)) in out.skipped_range.iter().enumerate() {
+            if out.output_line_ranges.contains(&i) {
+                skipped.push((lo, hi + line_base));
+            } else {
+                skipped.push((lo, hi));
+            }
+        }
+    }
+}
+
+/// The source range of a unit: from its first item's start (outer attributes included)
+/// to its last item's end.
+fn unit_span(items: &[ast::Item<'_>], (first, len): (usize, usize)) -> (BytePos, BytePos) {
+    (items[first].span().lo(), items[first + len - 1].span().hi())
+}
+
+/// Every unit's output, in unit order: from `cache` where it holds the unit, formatted
+/// (and stored) otherwise.
+#[allow(clippy::too_many_arguments)]
+fn format_units_cached(
     source: &str,
     config: &Settings,
     file_attrs: &[Attribute<'_>],
     items: &[ast::Item<'_>],
     units: &[(usize, usize)],
     threads: usize,
+    cache: &dyn UnitCache,
+    context: &[u8],
+    line_of: &dyn Fn(BytePos) -> usize,
 ) -> Vec<UnitOutput> {
+    let mut outputs: Vec<Option<UnitOutput>> = (0..units.len()).map(|_| None).collect();
+    let mut missing = Vec::new();
+    for (u, &unit) in units.iter().enumerate() {
+        let (lo, hi) = unit_span(items, unit);
+        let hit = source.get(lo as usize..hi as usize).and_then(|text| {
+            cache
+                .get(&UnitKey::new(context, text))
+                .and_then(|cached| cached.to_output(source, lo, hi, || line_of(lo)))
+        });
+        match hit {
+            Some(out) => outputs[u] = Some(out),
+            None => missing.push(u),
+        }
+    }
+    for (u, out) in format_units(source, config, file_attrs, items, units, &missing, threads) {
+        let (lo, hi) = unit_span(items, units[u]);
+        if let Some(text) = source.get(lo as usize..hi as usize)
+            && let Some(cached) = CachedUnit::from_output(&out, source, lo, hi, || line_of(lo))
+        {
+            cache.insert(&UnitKey::new(context, text), cached);
+        }
+        outputs[u] = Some(out);
+    }
+    outputs
+        .into_iter()
+        .map(|o| o.expect("every unit is looked up or formatted"))
+        .collect()
+}
+
+/// Formats the units `todo` (indices into `units`) on up to `threads` threads; on the
+/// calling thread when `threads <= 1` or there is at most one unit. The outputs are
+/// paired with their unit's index, in no particular order.
+fn format_units(
+    source: &str,
+    config: &Settings,
+    file_attrs: &[Attribute<'_>],
+    items: &[ast::Item<'_>],
+    units: &[(usize, usize)],
+    todo: &[usize],
+    threads: usize,
+) -> Vec<(usize, UnitOutput)> {
     // Longest units first, so that the end of the run is not one thread on the largest
     // item while the others idle.
-    let mut order: Vec<usize> = (0..units.len()).collect();
+    let mut order: Vec<usize> = todo.to_vec();
     let unit_len = |&(first, len): &(usize, usize)| {
         items[first + len - 1].span().hi() - items[first].span().lo()
     };
     order.sort_by_key(|&u| std::cmp::Reverse(unit_len(&units[u])));
     let next = AtomicUsize::new(0);
 
-    let threads = threads.min(units.len());
-    let mut per_thread: Vec<Vec<(usize, UnitOutput)>> = std::thread::scope(|s| {
-        let handles: Vec<_> = (0..threads)
-            .map(|_| {
-                s.spawn(|| {
-                    let arena = TreeArena::new();
-                    let run = Rc::new(RunState::new(&arena));
-                    let mut visitor =
-                        FmtVisitor::new(config, SnippetProvider::new(source), run.clone());
-                    // The file's `rustfmt::skip::macros`/`attributes` names, as the
-                    // sequential visitor has them at a top-level item.
-                    visitor.update_skip_context(file_attrs);
-                    // The buffer starts with one newline, as the sequential buffer does
-                    // after the gap before an item: the unit's text is what follows it.
-                    visitor.buffer = String::from("\n");
-                    let mut done = Vec::new();
-                    loop {
-                        let i = next.fetch_add(1, Ordering::Relaxed);
-                        let Some(&u) = order.get(i) else { break };
-                        let (first, len) = units[u];
-                        let out = format_unit(&mut visitor, &run, &items[first..first + len]);
-                        done.push((u, out));
-                    }
-                    done
-                })
-            })
-            .collect();
+    // One worker: a visitor of its own and a `RunState` for all the units it takes.
+    let work = || {
+        let arena = TreeArena::new();
+        let run = Rc::new(RunState::new(&arena));
+        let mut visitor = FmtVisitor::new(config, SnippetProvider::new(source), run.clone());
+        // The file's `rustfmt::skip::macros`/`attributes` names, as the sequential
+        // visitor has them at a top-level item.
+        visitor.update_skip_context(file_attrs);
+        // The buffer starts with one newline, as the sequential buffer does after the gap
+        // before an item: the unit's text is what follows it.
+        visitor.buffer = String::from("\n");
+        let mut done = Vec::new();
+        loop {
+            let i = next.fetch_add(1, Ordering::Relaxed);
+            let Some(&u) = order.get(i) else { break };
+            let (first, len) = units[u];
+            let out = format_unit(&mut visitor, &run, &items[first..first + len]);
+            done.push((u, out));
+        }
+        done
+    };
+
+    let threads = threads.min(order.len());
+    if threads <= 1 {
+        return work();
+    }
+    std::thread::scope(|s| {
+        let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();
         handles
             .into_iter()
             // A worker's panic is re-raised with its own payload, so the message the
             // sequential path would give is the one reported.
-            .map(|h| {
+            .flat_map(|h| {
                 h.join()
                     .unwrap_or_else(|payload| std::panic::resume_unwind(payload))
             })
             .collect()
-    });
-
-    let mut outputs: Vec<Option<UnitOutput>> = (0..units.len()).map(|_| None).collect();
-    for (u, out) in per_thread.iter_mut().flat_map(std::mem::take) {
-        outputs[u] = Some(out);
-    }
-    outputs
-        .into_iter()
-        .map(|o| o.expect("every unit is formatted"))
-        .collect()
+    })
 }
 
 /// Formats one unit with `visitor`, in the state the sequential visitor has at a

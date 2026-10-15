@@ -50,10 +50,12 @@ mod sort;
 mod span;
 mod stmt;
 mod types;
+mod unit_cache;
 mod utils;
 mod visitor;
 
 use config::{Config, Settings};
+pub use unit_cache::{CachedUnit, UnitCache, UnitKey};
 
 /// Format Rust source code with rustfmt's default style (`rustfmt --edition 2024`).
 ///
@@ -106,7 +108,51 @@ pub fn format_source_with_config_parallel(source: &str, config: &Config, threads
         return source.to_owned();
     }
     let normalized = formatting::normalize_src(source);
-    match formatting::format_text_parallel(&normalized, &settings, threads) {
+    match formatting::format_text_parallel(&normalized, &settings, threads, None) {
+        Some(formatted) if formatted.echoed => source.to_owned(),
+        Some(formatted) => {
+            let mut text = formatted.text;
+            formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
+            text
+        }
+        None => source.to_owned(),
+    }
+}
+
+/// [`format_source_with_config_parallel`] with a cache of formatted top-level units. The
+/// output is identical; only the units `cache` does not hold are formatted (on up to
+/// `threads` threads, or on the calling thread when `threads <= 1`), and each one formatted
+/// is stored in `cache`.
+///
+/// A unit is one top-level item, or one group of `use`, `mod x;` or `extern crate` items
+/// sorted together. It is looked up by its source text, the whole configuration and the
+/// file's `#![rustfmt::skip::macros(..)]`/`#![rustfmt::skip::attributes(..)]` names
+/// ([`UnitKey`]); its record holds positions relative to its start, so it applies wherever
+/// the unit has moved in the file. Everything else is computed afresh on every call: the
+/// parse and the whole-file checks (a syntax error, a construct rustc rejects,
+/// `#![rustfmt::skip]`, `disable_all_formatting` return the source unchanged before any
+/// lookup), the text between units, and the trailing-newline and line-ending fix-ups. A
+/// re-format after an edit to one item therefore costs the parse, a lookup per unit and
+/// the edited unit.
+///
+/// The key does not identify the build of chloro-core: a cache kept across builds must be
+/// keyed by the build as well.
+pub fn format_source_with_unit_cache(
+    source: &str,
+    config: &Config,
+    threads: usize,
+    cache: &dyn UnitCache,
+) -> String {
+    let settings = Settings::new(config);
+    if settings.disable_all_formatting() {
+        return source.to_owned();
+    }
+    let normalized = formatting::normalize_src(source);
+    let cache = parallel::CacheUse {
+        cache,
+        context: unit_cache::key_context(config),
+    };
+    match formatting::format_text_parallel(&normalized, &settings, threads, Some(cache)) {
         Some(formatted) if formatted.echoed => source.to_owned(),
         Some(formatted) => {
             let mut text = formatted.text;
