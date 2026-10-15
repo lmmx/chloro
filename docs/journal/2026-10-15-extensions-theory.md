@@ -450,7 +450,23 @@ with the container.
   complete (E19, E20, E22 merged; E21 refuted and kept on its branch). Wave 4 running: E24 and
   E27 from `2f00988`, E26 from `e312e39`, E23 (`20261015-unit-queue`, /home/user/wt/queue, from
   `9135c62`, launched 12:14 UTC: the imbalance diagnostic first, with a stop rule, then the unit
-  queue; record EXP-023-unit-queue.md). E25 (arena) waits for E24. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
+  queue; record EXP-023-unit-queue.md). E24 reported (12:30 UTC) and is **rejected**: the
+  node-indexed side array recovers 17% of the memo container's 0.98%, because the memo's cost is
+  storing results read again 3.2% of the time (315 hits in 9,766 lookups on the fixture sample,
+  0.6% on the registry sample), not hashing; record and ledger row cherry-picked (`4f1b9d9`),
+  branch `20261015-memo-array` kept, no code. That measurement became E28 (`20261015-memo-policy`,
+  /home/user/wt/memopol, launched 12:45 UTC: store-on-second-miss or kind-selective memo, with
+  the cliff falsifier). E27 reported (12:40 UTC): all five harness deliverables on
+  `20261015-harness` (path-independent count, `--per-file`, the committed registry sample
+  `benchmarks/samples/registry49.txt` and `--sample-list`, `parse_only` and `--phase parse`,
+  `--shuffle N`; protocol §3/§4 amended); finding: the parser is 36.3% of the fixture sample's
+  instructions and 43.3% of the registry sample's net of process start-up, above T9's 40%
+  trigger on the registry sample; its gates are being reproduced before the merge, after which
+  the best-known-good figure is re-recorded with the new script (its `bench` reads about 3 K
+  lower from `.rodata` alignment). E25 (`20261015-arena`, /home/user/wt/arena, launched 12:45
+  UTC: allocation attribution by lifetime first, stop rule, then a per-item arena or string pool
+  on the hottest paths) runs with E23, E26 and E28; both E25 and E28 merged E27's harness into
+  their branches for the per-file and registry figures. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
