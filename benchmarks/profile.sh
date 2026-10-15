@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Instruction count (callgrind total Ir) of examples/bench formatting the fixed 49-file
-# sample once. Deterministic to within about 400 instructions since D1 (fc90e53) (about one
+# sample once. Deterministic to within about 450 instructions since D1 (fc90e53) (about one
 # run in five reads 1.8K more, from bench's own timing report; see benchmarks/README.md) and
 # independent of where the sample and the binary live (below), so it resolves changes far
 # below wall-clock noise.
 #
 #   benchmarks/profile.sh [--bench BIN] [--runs N] [--core N] [--out DIR] [--annotate N] [--sim]
 #                         [--per-file] [--sample-list FILE [--sample-root DIR]] [--phase parse]
+#                         [--shuffle N]
 #
 # --sim adds callgrind's cache and branch simulation (--cache-sim=yes --branch-sim=yes) and
 # prints, per run, Ir, Bc, Bcm, Bi, Bim, I1mr, D1mr, D1mw and the ten functions with the
@@ -27,6 +28,13 @@
 # --phase parse runs `bench --phase parse`: every file parsed as formatting parses it
 # (chloro_core::parse_only) and not formatted; with --per-file, per file too.
 #
+# --shuffle N builds this checkout's bench with -C save-temps (cargo rustc, into
+# target/shuffle), relinks its LTO object with lld's --shuffle-sections='.text*=SEED' for
+# seeds 1..N, and runs the sample once on each order under the simulator (as --sim), and
+# once on the unshuffled relink (cargo's order, byte-identical to cargo's binary); it prints
+# each order's Ir, Bcm, Bim, I1mr, D1mr, D1mw and their mean and standard deviation over the
+# N orders, so a layout candidate is judged against the spread of random orders (EXP-022).
+#
 # The default sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
 # sorted bytewise (`LC_ALL=C sort`), every 25th file (lines 25, 50, ..., 1225): 49 files.
 # The journals record "every 25th file of the sorted fixture list" but not the command;
@@ -43,7 +51,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
 FIXTURES=$REPO/chloro-core/tests/conformance/fixtures
 BENCH=$REPO/target/release/examples/bench
-RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0 LIST= LIST_ROOT= PHASE=format
+RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0 LIST= LIST_ROOT= PHASE=format SHUFFLE=0
 
 die() { echo "profile.sh: error: $*" >&2; exit 2; }
 while [ $# -gt 0 ]; do
@@ -59,13 +67,18 @@ while [ $# -gt 0 ]; do
     --sample-list) LIST=$2; shift ;;
     --sample-root) LIST_ROOT=$2; shift ;;
     --phase) PHASE=$2; shift ;;
-    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
+    --shuffle) SHUFFLE=$2; shift ;;
+    -h|--help) sed -n '2,47p' "$0"; exit 0 ;;
     *) die "unknown argument $1" ;;
   esac
   shift
 done
 
 case $PHASE in format | parse) ;; *) die "--phase takes format or parse, not '$PHASE'" ;; esac
+case $SHUFFLE in '' | *[!0-9]*) die "--shuffle takes a number of orders, not '$SHUFFLE'" ;; esac
+if [ "$SHUFFLE" != 0 ]; then
+  for t in cargo python3 callgrind_annotate; do command -v "$t" >/dev/null || die "--shuffle needs '$t'"; done
+fi
 for t in valgrind setarch; do command -v "$t" >/dev/null || die "required tool '$t' not found"; done
 [ "$ANNOTATE" = 0 ] && [ "$SIM" = 0 ] || command -v callgrind_annotate >/dev/null || die "callgrind_annotate not found"
 [ -z "$CORE" ] || command -v taskset >/dev/null || die "taskset not found"
@@ -228,4 +241,68 @@ if [ "$PERFILE" = 1 ]; then
 fi
 if [ "$ANNOTATE" != 0 ]; then
   callgrind_annotate --threshold=100 "$OUT/callgrind.1.out" 2>/dev/null | sed -n '1,/^--.*$/!p' | head -n "$((ANNOTATE + 25))"
+fi
+
+# --shuffle: the same LTO object linked in N random function orders (EXP-022's method).
+if [ "$SHUFFLE" != 0 ]; then
+  SHUF=$REPO/target/shuffle
+  echo "shuffle: building this checkout's bench with -C save-temps in $SHUF (log in $OUT/shuffle-build.log)"
+  # A fresh example is not linked again and prints no link line: remove its outputs first.
+  rm -rf "$SHUF"/release/examples/bench* "$SHUF"/release/examples/rustc* "$SHUF"/release/examples/rmeta*
+  (cd "$REPO" && cargo rustc --release -p chloro-core --example bench --target-dir "$SHUF" \
+    -- -C save-temps --print link-args) > "$OUT/link-args.txt" 2> "$OUT/shuffle-build.log" ||
+    { tail -20 "$OUT/shuffle-build.log" >&2; die "the save-temps build failed"; }
+  grep -q '"-o"' "$OUT/link-args.txt" || die "no link line in $OUT/link-args.txt"
+  # relink SEED OUTPUT: cargo's link line with another output, and the order shuffled unless
+  # SEED is 0. The line is parsed with shlex (no shell expansion).
+  relink() {
+    python3 -I - "$OUT/link-args.txt" "$2" "$1" <<'PY'
+import os, shlex, subprocess, sys
+line = [l for l in open(sys.argv[1]).read().splitlines() if '"-o"' in l][-1]
+words = shlex.split(line)
+env = dict(os.environ)
+while words and '=' in words[0] and not words[0].startswith('-'):
+    key, value = words.pop(0).split('=', 1)
+    env[key] = value
+o = words.index('-o')
+words[o + 1] = sys.argv[2]
+if sys.argv[3] != '0':
+    words.append('-Wl,--shuffle-sections=.text*=' + sys.argv[3])
+subprocess.run(words, env=env, check=True)
+PY
+  }
+  mkdir -p "$OUT/shuffle"
+  relink 0 "$OUT/shuffle/bench.0"
+  cmp -s "$OUT/shuffle/bench.0" "$SHUF/release/examples/bench" ||
+    die "the unshuffled relink differs from cargo's binary"
+  cmp -s "$OUT/shuffle/bench.0" "$BENCH" ||
+    echo "note: $BENCH is not this checkout's build; the orders below are this checkout's" >&2
+  # Ir Bc Bcm Bi Bim I1mr D1mr D1mw of a profile, tab-separated.
+  totals() {
+    awk '/^events:/ { for (i = 2; i <= NF; i++) ev[i] = $i }
+         /^(totals|summary):/ { for (i = 2; i <= NF; i++) v[ev[i]] = $i }
+         END { printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", v["Ir"], v["Bc"], v["Bcm"], v["Bi"], v["Bim"],
+               v["I1mr"], v["D1mr"], v["D1mw"] }' "$1"
+  }
+  : > "$OUT/shuffle.tsv"
+  for ((seed = 0; seed <= SHUFFLE; seed++)); do
+    [ "$seed" = 0 ] || relink "$seed" "$OUT/shuffle/bench.$seed"
+    cp "$OUT/shuffle/bench.$seed" "$EXE"
+    cg=$OUT/shuffle/callgrind.$seed.out
+    count_ir "$ROOT" "$cg" "$OUT/shuffle/bench.$seed.txt" "$OUT/shuffle/callgrind.$seed.log" "$n" \
+      --cache-sim=yes --branch-sim=yes > /dev/null
+    printf '%s\t%s\n' "$seed" "$(totals "$cg")" >> "$OUT/shuffle.tsv"
+  done
+  awk -F'\t' -v n="$SHUFFLE" '
+    BEGIN { split("Ir Bc Bcm Bi Bim I1mr D1mr D1mw", name, " ")
+            printf "%-14s", "order"; for (j = 1; j <= 8; j++) printf " %12s", name[j]; printf "\n" }
+    { printf "%-14s", ($1 == 0 ? "cargo" : "seed " $1)
+      for (j = 2; j <= 9; j++) { printf " %12d", $j; if ($1 > 0) { s[j] += $j; q[j] += $j * $j } }
+      printf "\n" }
+    END {
+      printf "%-14s", "mean of " n; for (j = 2; j <= 9; j++) printf " %12.0f", s[j] / n; printf "\n"
+      printf "%-14s", "s.d. of " n
+      for (j = 2; j <= 9; j++) { v = n > 1 ? (q[j] - s[j] * s[j] / n) / (n - 1) : 0; printf " %12.0f", (v > 0 ? sqrt(v) : 0) }
+      printf "\n" }' "$OUT/shuffle.tsv"
+  echo "(seeds 1-$SHUFFLE are lld --shuffle-sections='.text*=SEED' orders; binaries and profiles in $OUT/shuffle)"
 fi
