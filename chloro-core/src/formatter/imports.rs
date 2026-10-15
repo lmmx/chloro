@@ -26,7 +26,7 @@ use super::parallel::GapOp;
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span};
-use super::utils::format_visibility;
+use super::utils::{concat, format_visibility};
 use super::visitor::FmtVisitor;
 
 impl FmtVisitor<'_> {
@@ -170,7 +170,7 @@ impl<'a> UseSegment<'a> {
             "crate" => UseSegmentKind::Crate(None),
             _ => {
                 let mod_sep = if modsep { "::" } else { "" };
-                UseSegmentKind::Ident(format!("{mod_sep}{name}"), None)
+                UseSegmentKind::Ident(concat(&[mod_sep, name]), None)
             }
         };
 
@@ -286,7 +286,7 @@ impl<'a> UseTree<'a> {
                 if s.is_empty() {
                     s
                 } else {
-                    format!("{vis}use {s};")
+                    concat(&[&vis, "use ", &s, ";"])
                 }
             })?;
         match self.attrs {
@@ -766,14 +766,16 @@ fn rewrite_nested_use_tree(
         || list_str.len() > remaining_width
         || tactic == DefinitiveListTactic::Vertical
     {
-        format!(
-            "{{\n{}{}\n{}}}",
-            nested_shape.indent.to_string(context.config),
-            list_str,
-            shape.indent.to_string(context.config)
-        )
+        concat(&[
+            "{\n",
+            &nested_shape.indent.to_string(context.config),
+            &list_str,
+            "\n",
+            &shape.indent.to_string(context.config),
+            "}",
+        ])
     } else {
-        format!("{{{list_str}}}")
+        concat(&["{", &list_str, "}"])
     };
 
     Some(result)
@@ -782,15 +784,13 @@ fn rewrite_nested_use_tree(
 impl Rewrite for UseSegment<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         Some(match self.kind {
-            UseSegmentKind::Ident(ref ident, Some(ref rename)) => {
-                format!("{ident} as {rename}")
-            }
+            UseSegmentKind::Ident(ref ident, Some(ref rename)) => concat(&[ident, " as ", rename]),
             UseSegmentKind::Ident(ref ident, None) => ident.clone(),
-            UseSegmentKind::Slf(Some(ref rename)) => format!("self as {rename}"),
+            UseSegmentKind::Slf(Some(ref rename)) => concat(&["self as ", rename]),
             UseSegmentKind::Slf(None) => "self".to_owned(),
-            UseSegmentKind::Super(Some(ref rename)) => format!("super as {rename}"),
+            UseSegmentKind::Super(Some(ref rename)) => concat(&["super as ", rename]),
             UseSegmentKind::Super(None) => "super".to_owned(),
-            UseSegmentKind::Crate(Some(ref rename)) => format!("crate as {rename}"),
+            UseSegmentKind::Crate(Some(ref rename)) => concat(&["crate as ", rename]),
             UseSegmentKind::Crate(None) => "crate".to_owned(),
             UseSegmentKind::Glob => "*".to_owned(),
             UseSegmentKind::List(ref use_tree_list) => rewrite_nested_use_tree(

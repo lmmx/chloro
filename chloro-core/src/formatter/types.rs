@@ -23,7 +23,7 @@ use super::pairs::{PairParts, rewrite_pair};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp, rustc_span, token_span};
 use super::utils::{
-    colon_spaces, extra_offset, first_line_width, last_line_extendable, last_line_width,
+    colon_spaces, concat, extra_offset, first_line_width, last_line_extendable, last_line_width,
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -644,8 +644,13 @@ impl Rewrite for ast::TypeBound<'_> {
                 } else {
                     shape
                 };
-                rewrite_poly_trait_ref(self, context, shape)
-                    .map(|s| if has_paren { format!("({s})") } else { s })
+                rewrite_poly_trait_ref(self, context, shape).map(|s| {
+                    if has_paren {
+                        concat(&["(", &s, ")"])
+                    } else {
+                        s
+                    }
+                })
             }
         }
     }
@@ -686,7 +691,7 @@ fn rewrite_poly_trait_ref(
             // 6 is "for<> ".len()
             let extra_offset = lifetime_str.len() + 6;
             let shape = shape.offset_left(extra_offset)?;
-            (format!("for<{lifetime_str}> "), shape)
+            (concat(&["for<", &lifetime_str, "> "]), shape)
         } else if bound.for_binder().is_some() {
             ("for<> ".to_owned(), shape.offset_left(6)?)
         } else {

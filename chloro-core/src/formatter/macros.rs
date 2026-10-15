@@ -27,7 +27,7 @@ use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
 use super::utils::{
-    filtered_str_fits, format_visibility, indent_next_line, is_empty_line,
+    concat, filtered_str_fits, format_visibility, indent_next_line, is_empty_line,
     remove_trailing_white_spaces, trim_left_preserve_layout,
 };
 use super::visitor::FmtVisitor;
@@ -247,12 +247,12 @@ fn rewrite_macro_inner(
     if tt_is_empty(&tt) && !has_comment {
         return Some(match style {
             Delimiter::Parenthesis if position == MacroPosition::Item => {
-                format!("{macro_name}();")
+                concat(&[&macro_name, "();"])
             }
-            Delimiter::Bracket if position == MacroPosition::Item => format!("{macro_name}[];"),
-            Delimiter::Parenthesis => format!("{macro_name}()"),
-            Delimiter::Bracket => format!("{macro_name}[]"),
-            Delimiter::Brace => format!("{macro_name} {{}}"),
+            Delimiter::Bracket if position == MacroPosition::Item => concat(&[&macro_name, "[];"]),
+            Delimiter::Parenthesis => concat(&[&macro_name, "()"]),
+            Delimiter::Bracket => concat(&[&macro_name, "[]"]),
+            Delimiter::Brace => concat(&[&macro_name, " {}"]),
         });
     }
     // Format well-known macros which cannot be parsed as a valid AST.
@@ -320,7 +320,7 @@ fn rewrite_macro_inner(
                     separator_tactic,
                 )
                 .map(|rw| match position {
-                    MacroPosition::Item => format!("{rw};"),
+                    MacroPosition::Item => concat(&[&rw, ";"]),
                     _ => rw,
                 })
             }

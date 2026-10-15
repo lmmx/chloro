@@ -11,7 +11,7 @@ use super::context::RewriteContext;
 use super::shape::{Indent, Shape};
 use super::span::Span;
 use super::utils::{
-    first_line_width, last_line_width, trim_left_preserve_layout, trimmed_last_line_width,
+    concat, first_line_width, last_line_width, trim_left_preserve_layout, trimmed_last_line_width,
 };
 
 fn is_custom_comment(comment: &str) -> bool {
@@ -337,18 +337,18 @@ fn identify_comment(
         Some(rewritten_first_group)
     } else {
         identify_comment(rest.trim_start(), shape, config, is_doc_comment).map(|rest_str| {
-            format!(
-                "{}\n{}{}{}",
-                rewritten_first_group,
+            concat(&[
+                &rewritten_first_group,
+                "\n",
                 // insert back the blank line
                 if has_bare_lines && style.is_line_comment() {
                     "\n"
                 } else {
                     ""
                 },
-                shape.indent.to_string(config),
-                rest_str
-            )
+                &shape.indent.to_string(config),
+                &rest_str,
+            ])
         })
     }
 }
@@ -393,7 +393,7 @@ pub(crate) fn recover_missing_comment_in_span(
         } else {
             Cow::from(" ")
         };
-        Some(format!("{sep}{missing_comment}"))
+        Some(concat(&[&sep, &missing_comment]))
     }
 }
 
@@ -413,7 +413,7 @@ fn light_rewrite_comment(
     config: &Settings,
     is_doc_comment: bool,
 ) -> String {
-    let sep = format!("\n{}", offset.to_string(config));
+    let sep = concat(&["\n", &offset.to_string(config)]);
     let mut out = String::with_capacity(orig.len() + 16);
     for (i, l) in orig.lines().enumerate() {
         if i > 0 {
