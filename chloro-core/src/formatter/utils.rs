@@ -270,6 +270,82 @@ pub(crate) fn wrap_str(s: String, max_width: usize, shape: Shape) -> Option<Stri
 
 pub(crate) fn filtered_str_fits(snippet: &str, max_width: usize, shape: Shape) -> bool {
     let snippet = &*filter_normal_code(snippet);
+    match lines_fit(snippet, max_width, shape) {
+        Some(fits) => fits,
+        None => str_fits_by_lines(snippet, max_width, shape),
+    }
+}
+
+/// `str_fits_by_lines` in one pass for a text without `\r`, or `None` when it has one.
+/// Without `\r`, `lines()` yields exactly the pieces between `\n` bytes (an empty piece
+/// after a final `\n` is not yielded, and its width 0 passes both of its tests), and
+/// `first_line_width`, `last_line_width` and `unicode_str_width` give each piece the width
+/// it has alone: its length when it is ASCII, its `unicode_str_width` otherwise. The tests
+/// are conjunctions without side effects, so the first piece that fails one decides the
+/// result, whatever comes after it.
+fn lines_fit(snippet: &str, max_width: usize, shape: Shape) -> Option<bool> {
+    let bytes = snippet.as_bytes();
+    let mut start = 0;
+    let mut pos = 0;
+    let mut ascii = true;
+    let mut first = true;
+    loop {
+        pos = first_newline_return_or_non_ascii(bytes, pos);
+        let end = match bytes.get(pos) {
+            Some(b'\n') => pos,
+            Some(b'\r') => return None,
+            Some(_) => {
+                ascii = false;
+                pos += 1;
+                continue;
+            }
+            None => bytes.len(),
+        };
+        let width = if ascii {
+            end - start
+        } else {
+            unicode_str_width(&snippet[start..end])
+        };
+        if end == bytes.len() {
+            return Some(if first {
+                width <= shape.width
+            } else {
+                width <= max_width && width <= shape.used_width() + shape.width
+            });
+        }
+        if width > if first { shape.width } else { max_width } {
+            return Some(false);
+        }
+        first = false;
+        ascii = true;
+        pos += 1;
+        start = pos;
+    }
+}
+
+/// The position of the first byte at or after `pos` that is `\n`, `\r` or non-ASCII, or
+/// `bytes.len()`, eight bytes at a time. `newline_or_non_ascii(w ^ 0x07..)` flags `\r`
+/// (`0x0d ^ 0x07 = 0x0a`) and the non-ASCII bytes, exactly per byte.
+fn first_newline_return_or_non_ascii(bytes: &[u8], mut pos: usize) -> usize {
+    while let Some(chunk) = bytes.get(pos..pos + 8) {
+        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+        let found = newline_or_non_ascii(w) | newline_or_non_ascii(w ^ 0x0707_0707_0707_0707);
+        if found != 0 {
+            return pos + (found.trailing_zeros() / 8) as usize;
+        }
+        pos += 8;
+    }
+    while let Some(&b) = bytes.get(pos) {
+        if b == b'\n' || b == b'\r' || !b.is_ascii() {
+            break;
+        }
+        pos += 1;
+    }
+    pos
+}
+
+/// `filtered_str_fits` after the comment filter, line by line (rustfmt's form).
+fn str_fits_by_lines(snippet: &str, max_width: usize, shape: Shape) -> bool {
     if !snippet.is_empty() {
         // First line must fits with `shape.width`.
         if first_line_width(snippet) > shape.width {
@@ -540,6 +616,53 @@ mod tests {
                     let mut s = plain.clone();
                     s.insert_str(at, special);
                     assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn one_pass_fit_matches_the_line_by_line_fit() {
+        // Every string of up to five characters over `a`, space, `\n`, `\r`, a two-column
+        // character, a combining mark, a variation selector and `/`, and a few longer ones
+        // around the eight-byte words, against every small shape.
+        const ALPHABET: [char; 8] = ['a', ' ', '\n', '\r', '\u{3000}', '\u{301}', '\u{fe0f}', '/'];
+        let mut strings: Vec<String> = [
+            "abcdefghijklmnop\nabcdefgh",
+            "abcdefgh\nabcdefghijklmnopq\n",
+            "abcdefg\u{3000}\nabcdefghij\rk\nabc",
+            "a // b\nc",
+            "\u{2764}\u{fe0f}\nab",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        for s in &strings {
+            let filtered = filter_normal_code(s);
+            for width in 0..=4 {
+                for max_width in 0..=4 {
+                    for offset in [0, 1] {
+                        let shape = Shape {
+                            width,
+                            indent: Indent::new(0, 0),
+                            offset,
+                        };
+                        assert_eq!(
+                            filtered_str_fits(s, max_width, shape),
+                            str_fits_by_lines(&filtered, max_width, shape),
+                            "{s:?} {width} {max_width} {offset}"
+                        );
+                    }
                 }
             }
         }
