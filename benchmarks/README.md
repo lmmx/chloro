@@ -15,7 +15,8 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 | `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`
-(standard library only) for the report, `valgrind` and `setarch` for `profile.sh`, the
+(standard library only) for the report and `profile.sh --shuffle`, `valgrind` and `setarch`
+for `profile.sh`, the
 release binaries (`cargo build --release -p chloro --features cli` and `cargo build
 --release -p chloro-core --examples`). The scripts exit with status 2 and a message when a
 tool, binary or workload source is missing.
@@ -37,6 +38,7 @@ benchmarks/profile.sh --core 3 --runs 3 --per-file            # Ir, and each fil
 benchmarks/profile.sh --core 3 --sample-list benchmarks/samples/registry49.txt   # the registry sample
 benchmarks/profile.sh --core 3 --runs 3 --per-file --phase parse   # the parser's share, both ways
 target/release/examples/bench -n 5 --phase parse              # the parse phase's MB/s
+benchmarks/profile.sh --core 3 --sim --shuffle 4              # the co-metric over 4 random function orders
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -214,9 +216,9 @@ does not depend on where the binary, the fixtures or `--out` are.
   `/tmp/chloro-bench/sample49`, `env -i`); 588,096,020 with the caller's environment;
   587,211,777 in `profile-baseline.md` (files copied flat as `NN_<basename>.rs`). Counts are
   compared only between runs of `profile.sh` itself.
-- **Run-to-run spread.** Repeated runs of one binary agree to within about 400 instructions,
-  except that about one run in five reads about 1.8K more (2 of 10 runs of `9d78713`:
-  237,768,233–237,768,557 and 237,770,183–237,770,270). Both come from `bench`'s own report,
+- **Run-to-run spread.** Repeated runs of one binary agree to within about 450 instructions,
+  except that about one run in five reads about 1.8K more (53 runs of `9d78713` in
+  EXP-027: 43 in 237,768,233–237,768,687, 10 in 237,770,0xx–237,770,2xx). Both come from `bench`'s own report,
   not from the formatter: the order in which it sorts the files by their measured time (the
   smaller spread) and the decimal printing of the timings, which takes `core`'s exact
   big-number path for some values (`float_to_decimal_common_exact` +1,239 and
@@ -359,6 +361,36 @@ does not depend on where the binary, the fixtures or `--out` are.
   needles' `.rodata` addresses moved with the new string literals, and the AVX2 `memcmp`'s
   cost depends on its operands' alignment; `bench::main` −0.6K and `Timespec::now` +1.7K
   are `bench`'s own timing code.
+
+- `--shuffle N` (EXP-022's follow-up) measures the co-metric over N random function orders of
+  the same code. It builds this checkout's `bench` with `cargo rustc --release -p chloro-core
+  --example bench --target-dir target/shuffle -- -C save-temps --print link-args` (the
+  example's outputs are removed first, since a fresh example is not linked again and prints
+  no link line; about 30 s when the dependencies are built, 140 MB), keeps the fat-LTO
+  object, and replays rustc's link line (parsed with Python's `shlex`, no shell expansion)
+  once unchanged, which the script checks is byte-identical to cargo's binary, and once per
+  seed 1..N with `-Wl,--shuffle-sections=.text*=<seed>` appended. Each binary runs the sample
+  once under the simulator (as `--sim`), staged like every other run; the script prints each
+  order's `Ir`, `Bc`, `Bcm`, `Bi`, `Bim`, `I1mr`, `D1mr` and `D1mw`, then their mean and
+  standard deviation over the N shuffled orders, beside cargo's order. A seed gives the same
+  order for the same object (seeds 1 and 2 read the same counts in two invocations), and
+  unrelated orders for different objects, so a candidate and its base are compared as two
+  sets of N draws. `--bench` does not apply to the orders: they are this checkout's code
+  (the script notes when `--bench` is another build). For `f0ce72e` (`--sim --shuffle 4`,
+  2 min 4 s on the fixture sample, 2 min 22 s on the registry sample):
+
+  | sample | order | `Ir` | `Bcm` | `Bim` | `I1mr` | `D1mr` | `D1mw` |
+  |---|---|---|---|---|---|---|---|
+  | fixtures | cargo | 237,765,263 | 2,984,285 | 685,184 | 4,710,936 | 655,491 | 505,829 |
+  | fixtures | mean of 4 (s.d.) | 237,768,700 (62) | 2,966,001 (23,167) | 696,849 (15,257) | 4,740,756 (53,352) | 658,253 (622) | 507,551 (175) |
+  | registry | cargo | 322,843,783 | 3,438,200 | 1,155,697 | 3,950,802 | 803,527 | 545,806 |
+  | registry | mean of 4 (s.d.) | 322,840,538 (51) | 3,432,636 (46,120) | 1,162,050 (14,925) | 4,062,006 (56,857) | 805,860 (348) | 546,359 (142) |
+
+  The spread matches EXP-022's on `8ebd3bb` (`I1mr` s.d. 51K, `Bcm` 11–22K): a change to
+  `I1mr` or `Bcm` within one standard deviation of the orders is not resolved by one
+  cargo-order build. Compare the means of N orders of each build: the standard error of a
+  difference of two 4-order means is about 0.7 standard deviations (`I1mr` ≈ 38K, `Bcm`
+  ≈ 16–33K here). Function order alone moves `Ir` by about 3K (EXP-022 saw 5K).
 
 ## pgo.sh
 
