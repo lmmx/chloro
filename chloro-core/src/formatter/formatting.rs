@@ -12,7 +12,7 @@ use super::comment::{CharClasses, LineClasses};
 use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
-use super::rustc_compat::{CompatHook, rejected_by_rustc};
+use super::rustc_compat::rejected_by_rustc;
 use super::rustc_syntax::reparse;
 use super::shape::Indent;
 use super::span::SnippetProvider;
@@ -47,18 +47,8 @@ fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Opt
     let lexed = LexedStr::new(edition, source);
     let tree = if lexed.errors().next().is_none() {
         let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
-        // `rejected_by_rustc` runs inside the build (`CompatHook`).
-        let mut compat = CompatHook::new(edition, rustfmt_version);
-        match Tree::from_steps_with(source, &lexed, &output, 0, 0, &mut compat) {
-            Some(tree) => {
-                let rejected = compat.rejected(&tree);
-                debug_assert_eq!(
-                    rejected,
-                    rejected_by_rustc(tree.root(), edition, rustfmt_version),
-                    "the fused rustc_compat check disagrees with the walk"
-                );
-                return (!rejected).then_some(tree);
-            }
+        match Tree::from_steps_at(source, &lexed, &output, 0, 0) {
+            Some(tree) => tree,
             None => reparse(source, &lexed, Some(&output), edition, rustfmt_version)?,
         }
     } else {
