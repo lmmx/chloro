@@ -400,7 +400,8 @@ with the container.
   the way: the harness's `identical outputs` figure is computed when a copy is made and
   stored in its `meta`, so a reused copy reports a stale count (raw `tiny-test-data` showed
   M2's 288/289 for a head that produces 289/289); every workload's agreement was recomputed
-  with the final binaries (all identical, both inputs) and the harness fix is owed. README,
+  with the final binaries (all identical, both inputs); the harness now recomputes the
+  figure per binary (`agreement()` in `compare_rustfmt.sh`, the commit after the record). README,
   ledger, the autoresearch entry and this entry carry M4; the overnight report is
   `2026-10-15-overnight-report.md`.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each

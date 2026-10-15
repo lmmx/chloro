@@ -195,7 +195,7 @@ rustfmt_touched() { "${RF[@]}" --check -v --color never "$@" 2>/dev/null | sed -
 prepare() {
   local name=$1 kind=$2 source=$3 root=$4
   local W=$WORK/$INPUT/$name
-  if [ "$FRESH" = 0 ] && [ -f "$W/meta" ]; then echo "$W"; return; fi
+  if [ "$FRESH" = 0 ] && [ -f "$W/meta" ]; then agreement "$W" "$kind" "$root"; echo "$W"; return; fi
   rm -rf "$W"; mkdir -p "$W/tree"
   case $kind in
     crate)
@@ -271,7 +271,28 @@ prepare() {
     sort "$W/files.txt" | cmp -s - "$W/check.txt" || die "$name: rustfmt's file set differs from files.txt (see $W)"
     cmp -s "$W/check.txt" "$W/present.txt" || die "$name: tree holds files rustfmt does not format (see $W)"
   fi
-  # Output agreement, recorded for the reader: files whose formatted text is identical.
+  local bytes; bytes=$(cd "$W/tree" && xargs -a "$W/files.txt" cat | wc -c)
+  {
+    echo "name=$name"; echo "kind=$kind"; echo "source=$source"; echo "root=$root"
+    echo "input=$INPUT"; echo "files=$(wc -l < "$W/files.txt")"; echo "bytes=$bytes"
+  } > "$W/meta"
+  agreement "$W" "$kind" "$root"
+  echo "$W"
+}
+
+# agreement W KIND ROOT: output agreement, recorded for the reader: files whose formatted
+# text is identical between rustfmt and the chloro build under test. Written into $W/meta
+# with the hash of the chloro binary that produced it, and recomputed whenever a copy is
+# reused with another binary (before this, a reused copy reported the figure of the binary
+# that made the copy).
+agreement_key() {
+  local kind=$1
+  if [ "$kind" = stdin ]; then sha256sum "$FMT_STDIN" | cut -c1-16; else sha256sum "$CHLORO" | cut -c1-16; fi
+}
+agreement() {
+  local W=$1 kind=$2 root=$3
+  local key; key=$(agreement_key "$kind")
+  if [ "$(sed -n 's/^agreement_chloro=//p' "$W/meta")" = "$key" ]; then return; fi
   local agree=-
   if [ "$kind" = stdin ]; then
     "${RF[@]}" < "$W/tree/input.rs" > "$W/out.rustfmt" 2>/dev/null || true
@@ -291,13 +312,8 @@ prepare() {
     agree=$((n - differ))/$n
     rm -rf "$W/agree_r" "$W/agree_c"
   fi
-  local bytes; bytes=$(cd "$W/tree" && xargs -a "$W/files.txt" cat | wc -c)
-  {
-    echo "name=$name"; echo "kind=$kind"; echo "source=$source"; echo "root=$root"
-    echo "input=$INPUT"; echo "files=$(wc -l < "$W/files.txt")"; echo "bytes=$bytes"
-    echo "identical_outputs=$agree"
-  } > "$W/meta"
-  echo "$W"
+  sed -i '/^identical_outputs=/d; /^agreement_chloro=/d' "$W/meta"
+  { echo "identical_outputs=$agree"; echo "agreement_chloro=$key"; } >> "$W/meta"
 }
 
 # --- running -------------------------------------------------------------------------------

@@ -650,9 +650,12 @@ binary (same sha256) in both:
   raw `tiny-test-data` row reports 288/289 (M2's figure, before R2) for a head that produces
   289 of 289. The agreement counts of this record were recomputed with this record's binaries
   (`scratchpad/m4/agree.sh`: rustfmt and `--write --no-cache` on fresh copies of every
-  workload, `diff -rq`) and are in the table below. A harness fix (recompute the agreement at
-  run time, or record the binary's hash with it) is owed; it was not made while the chain was
-  running, since bash reads a running script incrementally.
+  workload, `diff -rq`) and are in the table below. The harness is fixed in the commit after this
+  record (not while the chain ran: bash reads a running script incrementally): `prepare()`
+  now writes the agreement through `agreement()`, which stores the hash of the binary that
+  produced it (`agreement_chloro=` in `meta`) and recomputes when a reused copy meets another
+  binary. Verified on the raw `tiny-test-data` copy: head 289/289, base 288/289, head again
+  289/289, and the stdin kind keyed by `fmt_stdin`.
 - The chain's first start (04:28 UTC) was stopped after one minute: the five stdin copies
   predated the harness's stdin preparation and two were not fixed points. They were rebuilt
   with `--groups c -r 1` (rustfmt through stdin, as the harness does since M3) and verified
@@ -745,8 +748,8 @@ binary (same sha256) in both:
 - No raw-input row for `head-pgo` (measurement A's raw sweep is head only, as in M1–M3).
 - The by-hand `conform -i` runs have no peak RSS of their own (no `/usr/bin/time` in the
   container).
-- The harness still reports a copy's stored agreement figure; the fix (recompute at run time,
-  or store the binary hash with it) is owed and is not in this record's head.
+- The harness of this record's head reports a copy's stored agreement figure; the fix is in
+  the commit after the record (Harness notes), so the appendix tables carry the stale counts.
 - The unit cache (`--unit-cache`, E15) is not measured here; its figures are in EXP-015.
 
 ## Appendix: `report.py` tables as written

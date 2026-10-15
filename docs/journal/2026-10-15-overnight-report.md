@@ -175,7 +175,7 @@ Risks in the shipped tree:
 - README badges for dependency count and binary size are stale until `just emblazon` runs.
 - Six conformance cases stay open (conformance-ledger.md cases 19–24).
 
-Unfinished: the harness fix for the stored agreement figure (compute it at run time; the M4 record's Harness notes); the release run that validates the PGO workflow step; `just emblazon` for the README badges; the resident process and shared sink have no experiment.
+Unfinished: the release run that validates the PGO workflow step; `just emblazon` for the README badges; the resident process and shared sink have no experiment.
 
 To resume: the handoff section of
 [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md) has every experiment's
