@@ -637,23 +637,39 @@ reusing rewrites across indentation (not exact, from the earlier entries).
 
 ## What is left, with its ceiling
 
-From [profile-flat.md](2026-10-14-autoresearch/profile-flat.md) and the E3 record, on the
-final build:
+Written at the end of the first session from [profile-flat.md](2026-10-14-autoresearch/profile-flat.md)
+and the E3 record; revised after the overnight run of 2026-10-15 (the theory records and
+ranked bounds are in [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md), the
+report in [2026-10-15-overnight-report.md](2026-10-15-overnight-report.md)). Against the final
+head, `e640fbf`, 248,202,094 instructions on the sample:
 
-- The allocator in the CLI: glibc is about 12% of instructions; `mimalloc` trades it for
-  memory; another allocator or glibc tunables are untested.
-- Intermediate `String`s per rewrite: the remaining `String` creation and growth is about
-  8% of instructions after E3; the rest needs rustfmt's `Option<String>` control flow to
-  write into a shared buffer, a change across every module.
-- The parser's output decoded twice (`event::process`, then `intersperse_trivia`): about
-  7%, reachable only with a change to `ra_ap_parser`.
-- Lexing and parsing: 22% of instructions, in `ra_ap_parser`, now the largest single
-  component; the tree build on top of it is 2.8%.
-- Profile-guided optimisation in the release workflow: −21.7% of instructions on the sample
-  (M3: 244,712,537 against 312,734,041) and 0.86–0.91 of the wall time on the crates,
-  measured, waiting on the `binaries.yml` step proposed in EXP-002.
+- The allocator in the CLI: glibc's own time share is now **measured** directly (E14): 13–16%
+  of the formatter's time on one thread. No replacement met the rule set in advance (peak RSS
+  within 1.2x of glibc on every workload and wall below with disjoint ranges): mimalloc
+  9.7–10.2x RSS at defaults, jemalloc 1.3–1.7x, snmalloc 1.7–3.1x, every wall range
+  overlapping glibc's. The lever left is fewer allocations (the shared sink below), not another
+  allocator; glibc tunables were closed by EXP-009.
+- Intermediate `String`s per rewrite: E16 took the local string-assembly levers (eleven kept,
+  −11.14% on its base); the rest needs rustfmt's `Option<String>` control flow to write into
+  a shared buffer (the shared sink, decide-once row 1: ≤ 8.8–10.5% of instructions, exact by
+  construction, `write_list` first), a change across every module.
+- The parser's output decoded twice: **done** (E17 P1 fused the trivia interspersal with the
+  tree build, gated by element equality over both corpora); with P5 and P8, −7.11% on its base.
+  Lexing and parsing remain the largest single component, about 28% of the final head's
+  instructions, with a parse floor of 33–38 M that no formatter lever reaches; the
+  remaining exact parser levers (P2, P7) are bounded at ≤ 5.5% and ≤ 1.9%.
+- Speculation at decision points: E18 took the dead vertical candidate (−3.40%) and rejected
+  the literal-width cache (+1.75%); the width-model levers (decide-once rows 2–4, up to
+  15.6–18.1%) rest on an exactness proof that does not exist.
+- Profile-guided optimisation: **merged** (E13) into `binaries.yml` for the natively built
+  targets; validated locally, not yet by a release run. On the final head the profile-guided
+  build's figures are in M4.
+- Latency rather than throughput: a resident process holding the item cache (E15, exact,
+  opt-in in the CLI) bounds an editor save at about 0.15 ms against 4.3–6.0 ms today; not
+  started, ranked first in the theory entry.
 - Sub-item parallel units for files dominated by one `const` table or one `impl`, where E1's
-  ceiling is about 2x (`lints.rs`: two arrays hold 49% of the item work).
+  ceiling is about 2x (`lints.rs`: two arrays hold 49% of the item work); a unit queue across
+  files (6.6–34.6% of four-thread wall on crates, derived).
 - The six open conformance cases.
 
 ## Handoff for the next session
