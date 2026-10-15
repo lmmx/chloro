@@ -570,13 +570,17 @@ impl<'a> FmtVisitor<'a> {
         self.push_rewrite(span, rewrite);
     }
 
-    /// An associated item of a trait or impl.
-    pub(crate) fn visit_assoc_item(&mut self, ai: &ast::AssocItem) {
-        let in_trait = ai
-            .syntax()
-            .parent()
-            .and_then(|list| list.parent())
-            .is_some_and(|p| p.kind() == SyntaxKind::TRAIT);
+    /// An associated item of a trait (`in_trait`) or impl. The caller iterates the item
+    /// list of the trait or impl, so it knows which; rustfmt's visitor takes the same fact
+    /// as its `ItemVisitorKind`.
+    pub(crate) fn visit_assoc_item(&mut self, ai: &ast::AssocItem, in_trait: bool) {
+        debug_assert_eq!(
+            in_trait,
+            ai.syntax()
+                .parent()
+                .and_then(|list| list.parent())
+                .is_some_and(|p| p.kind() == SyntaxKind::TRAIT)
+        );
         let visitor_kind = if in_trait {
             ItemVisitorKind::AssocTraitItem
         } else {
