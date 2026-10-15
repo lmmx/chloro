@@ -467,7 +467,16 @@ with the container.
   (registry; −5.26% against the code before E19), parse-only 86,534,335 (37.3%). E25 (`20261015-arena`, /home/user/wt/arena, launched 12:45
   UTC: allocation attribution by lifetime first, stop rule, then a per-item arena or string pool
   on the hottest paths) runs with E23, E26 and E28; both E25 and E28 merged E27's harness into
-  their branches for the per-file and registry figures. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
+  their branches for the per-file and registry figures. E23 reported (14:00 UTC) and is
+  **refuted as stated**: the stop rule fired; the idle tail is 0.05–12.9% of the four-thread
+  makespan on the nine crates (above 10% only on `fx-ide-db`, where a unit queue would recover
+  about 6%), and M4's gap between wall and CPU/4 is process start-up and exit plus run-to-run
+  spread (32–83% of it), not scheduling; the unit queue was not built. Its tooling (the
+  `CHLORO_TRACE` timeline, zero cost when off, and `benchmarks/schedule/`) was reproduced
+  (goldens, conform, `Ir` 232,047,936, fmt, clippy, 299 tests) and **merged at `6fd4c9d`**
+  (post-merge gates identical on both samples). Follow-ups for M5: run the timeline 30 times
+  per crate; test whether split files oversubscribing the cores cause the spread; the
+  process's fixed cost (L11, L4). Running: E25, E26, E28. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
