@@ -11,6 +11,7 @@ builds below), **read** (from source), **derived** (arithmetic on measured numbe
 |---|---|
 | branch | `20261014-flat-cst`, from `4cd6336` (head of `claude/chloro-perf-research-swarm-nrscj8`; formatter code of BKG `884f9c9`) |
 | formatter code changed | none; `format_source` does not call anything added here |
+| lineage | the design is option 2 of [../../2026-10-10-change-of-direction.md](../../2026-10-10-change-of-direction.md) (flat-array CST with a typed accessor layer and an arena for macro fragments), measured as a substrate without a typed layer in [../../2026-10-10-representations.md](../../2026-10-10-representations.md) (X3/X4) and deferred in [../../2026-10-11-phase-2-close.md](../../2026-10-11-phase-2-close.md); this record supplies the typed layer and the formatter-level bound those entries named as missing |
 | additions | `chloro-core/examples/flat_cst/` (`cst.rs` substrate, `ast.rs` generated typed layer, `gen_ast.py` generator, `ext.rs` hand-written accessors, `workload.rs`, `main.rs` harness); this file |
 | toolchain | `rustc 1.97.0`, `cargo 1.97.0`, valgrind 3.22.0, Python 3 |
 | host | 4 vCPU Xeon @ 2.80GHz, the host of the baseline; sibling experiments ran on other cores during the wall-clock runs (labelled) |

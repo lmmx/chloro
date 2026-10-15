@@ -140,6 +140,49 @@ formatted before. A persistent cache keyed by the content hash, the configuratio
 chloro version turns that case into hashing. This is a CLI feature with no effect on
 `format_source`; the risk is in the key, not in the formatter.
 
+### Lineage of the flat syntax array
+
+The substrate E7b built is the design the earlier entries proposed, measured and costed;
+this programme's part was the audit, the generator, the ownership design and the
+end-to-end measurement. In order:
+
+- [2026-10-10-change-of-direction.md](2026-10-10-change-of-direction.md), option 2,
+  "Flat-array CST, whole file or per top-level item": removes green interning, `Arc` nodes,
+  red nodes and the copy of token text (offsets into the kept source suffice); adds a typed
+  accessor layer over the arrays and an arena splice for re-parsed macro fragments;
+  construction measured at 31.4 MB/s on the fixtures against rowan's 14.3; ranked second in
+  the provisional ordering, with the caution that the 27–31 MB/s figure was "a construction
+  benchmark without typed accessors, traversal or formatting" and the end-to-end effect
+  unmeasured.
+- [2026-10-10-representations.md](2026-10-10-representations.md) (X3/X4): red, green and
+  flat substrates doing identical passes over both corpora; red nodes cost 5.8–9.5x the
+  green walk; flat and green traverse at about the same cost; flat's advantage is
+  construction (0.24 s of 0.56 s on the fixtures); limits named there: no typed layer, and
+  the formatter-level effect of a non-red substrate not measured; the next measurement it
+  pointed to, porting one hot formatter path to green-only access, is what E4 did.
+- [2026-10-11-phase-2-close.md](2026-10-11-phase-2-close.md) deferred "Representation: a
+  flat tree or another substrate in place of rowan" to a later phase, with
+  `examples/parse_floor.rs` (two arrays, parent and sibling links, no `end` column) as the
+  measurement tool; EXP-007 measured that layout at 31.1 M instructions on the sample against
+  the `end`-column layout it chose.
+- What this programme added on top: E4 took the cheaper green-read route first (−6.36%),
+  which gave a cost per red node (about 263 instructions) from which EXP-007 estimated the
+  full port at 24.9% before any of it was written; EXP-007 type-resolved the 2,140 rowan and
+  `ra_ap_syntax` use sites by deprecating every public item and generated the 501-accessor
+  typed layer from `rust.ungram` (the "typed layer over every accessor" the
+  change-of-direction entry costed as high); EXP-007b laid fragment trees out at their file
+  offset in a run-lifetime arena instead of splicing them, keyed the memo by (tree id, node
+  index) and dropped the parent column. The port measured −24.62% of instructions (−24.7%
+  reproduced), −43% heap allocations and 1.40x in process, not the 27–31 MB/s the
+  construction benchmark suggested, as that entry cautioned.
+- The earlier entries' other options and their state at the end of this programme: a
+  per-item flat CST (not built; peak RSS of 4–31 MiB against rustfmt's 43–85 leaves its
+  memory motivation small), the decide-once formatter (option 7, ranked first there; not
+  attempted; the X9 bound of 17–18.5% for repeated rewrites stands), streaming (option 4)
+  and an own typed parser (option 5) (not attempted), the fused tree build (EXP-010: about
+  2%, not run). [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md)
+  investigates these and the levers beyond them on paper.
+
 ## Plan
 
 Wave 1, running in parallel on this host (one core each, pinned):
