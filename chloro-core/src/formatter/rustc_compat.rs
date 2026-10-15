@@ -14,7 +14,7 @@ use ra_ap_parser::{Edition, SyntaxKind, T};
 
 use super::config::RustfmtVersion;
 use crate::cst::ast::is_assign_op;
-use crate::cst::{Elem, Element, Node, NodeOrToken, Tree};
+use crate::cst::{BuildHook, Elem, Element, Node, NodeOrToken, Tree};
 
 // The rules run on every file, in one pass over the preorder elements of the tree. A node
 // costs a dispatch on its kind, and a token a few comparisons unless it is a comment, a `{`,
@@ -393,8 +393,43 @@ fn trait_param_rejected(param: Node<'_>, first: u32, edition: Edition) -> bool {
     pat.is_some_and(|pat| !is_named_param_pat(pat))
 }
 
+/// The kinds [`node_rejected`] has a rule for: it answers `false` for every other kind.
+#[inline]
+fn has_node_rule(kind: SyntaxKind) -> bool {
+    matches!(
+        kind,
+        SyntaxKind::CONST
+            | SyntaxKind::IMPL
+            | SyntaxKind::LET_EXPR
+            | SyntaxKind::CLOSURE_EXPR
+            | SyntaxKind::REF_EXPR
+            | SyntaxKind::CONST_BLOCK_PAT
+            | SyntaxKind::TYPE_BOUND
+            | SyntaxKind::REST_PAT
+            | SyntaxKind::RANGE_EXPR
+            | SyntaxKind::RANGE_PAT
+            | SyntaxKind::BIN_EXPR
+            | SyntaxKind::DYN_TRAIT_TYPE
+            | SyntaxKind::IMPL_TRAIT_TYPE
+            | SyntaxKind::ASM_EXPR
+            | SyntaxKind::FORMAT_ARGS_EXPR
+            | SyntaxKind::OFFSET_OF_EXPR
+            | SyntaxKind::CONST_PARAM
+            | SyntaxKind::PARAM
+    )
+}
+
 /// The node rules; `first` is the index of the walked subtree's root.
 fn node_rejected(node: Node<'_>, kind: SyntaxKind, first: u32, toolchain: Toolchain) -> bool {
+    let rejected = node_rule(node, kind, first, toolchain);
+    debug_assert!(
+        !rejected || has_node_rule(kind),
+        "{kind:?} needs a node rule"
+    );
+    rejected
+}
+
+fn node_rule(node: Node<'_>, kind: SyntaxKind, first: u32, toolchain: Toolchain) -> bool {
     let rustfmt_version = toolchain.rustfmt_version;
     match kind {
         // `const mut X: T = ..;`
@@ -482,10 +517,9 @@ impl Walker {
         false
     }
 
-    /// `true` if rustc rejects token `e`, at index `i` outside macro input.
+    /// `true` if rustc rejects the token of kind `k` at `at`, outside macro input.
     #[inline]
-    fn token(&mut self, tree: &Tree<'_>, i: u32, e: Elem, first: u32) -> bool {
-        let k = e.kind;
+    fn token<T: TokenAt>(&mut self, k: SyntaxKind, at: &T) -> bool {
         if k == SyntaxKind::WHITESPACE {
             self.prev_colon = false;
             return false;
@@ -499,7 +533,7 @@ impl Walker {
                 SyntaxKind::COMMENT | SyntaxKind::C_STRING | SyntaxKind::SHEBANG | T!['{']
             )
         {
-            return self.doc_token(tree, i, e, first);
+            return self.doc_token(k, at);
         }
         // What `doc_token` answers for any other token when no outer doc comment is
         // pending.
@@ -508,19 +542,15 @@ impl Walker {
     }
 
     /// The doc comment and C string rules for a token that is not whitespace.
-    fn doc_token(&mut self, tree: &Tree<'_>, i: u32, e: Elem, first: u32) -> bool {
-        let k = e.kind;
+    fn doc_token<T: TokenAt>(&mut self, k: SyntaxKind, at: &T) -> bool {
         if k == SyntaxKind::SHEBANG {
             return false;
         }
         if k == SyntaxKind::COMMENT {
-            let text = &tree.source()[e.start as usize..(e.start + e.len) as usize];
-            match doc_comment_style(text) {
+            match doc_comment_style(at.text()) {
                 // "expected outer doc comment"
                 Some(DocStyle::Inner) => {
-                    return !self.inner_doc_ok
-                        || self.pending_outer_doc
-                        || inner_attr_in_if_block(tree, i, first);
+                    return !self.inner_doc_ok || self.pending_outer_doc || at.in_if_block();
                 }
                 Some(DocStyle::Outer) => {
                     self.pending_outer_doc = true;
@@ -547,9 +577,9 @@ impl Walker {
         }
         self.pending_outer_doc = false;
         self.inner_doc_ok = k == T!['{']
-            && Ancestors::of(tree, i, first).next().is_some_and(|(p, _)| {
+            && at.parent_kind().is_some_and(|p| {
                 matches!(
-                    p.kind(),
+                    p,
                     SyntaxKind::ITEM_LIST
                         | SyntaxKind::STMT_LIST
                         | SyntaxKind::ASSOC_ITEM_LIST
@@ -558,6 +588,40 @@ impl Walker {
                 )
             });
         false
+    }
+}
+
+/// Where a token sits, as the token rules read it: its text and its ancestors.
+trait TokenAt {
+    fn text(&self) -> &str;
+    /// The token's parent kind.
+    fn parent_kind(&self) -> Option<SyntaxKind>;
+    /// Whether the token is in the block of an `if` or `else` ([`inner_attr_in_if_block`]).
+    fn in_if_block(&self) -> bool;
+}
+
+/// A token of a built tree, at index `i` of the subtree walked from `first`.
+struct InTree<'a> {
+    tree: &'a Tree<'a>,
+    i: u32,
+    e: Elem,
+    first: u32,
+}
+
+impl TokenAt for InTree<'_> {
+    fn text(&self) -> &str {
+        let e = self.e;
+        &self.tree.source()[e.start as usize..(e.start + e.len) as usize]
+    }
+
+    fn parent_kind(&self) -> Option<SyntaxKind> {
+        Ancestors::of(self.tree, self.i, self.first)
+            .next()
+            .map(|(p, _)| p.kind())
+    }
+
+    fn in_if_block(&self) -> bool {
+        inner_attr_in_if_block(self.tree, self.i, self.first)
     }
 }
 
@@ -578,7 +642,7 @@ fn walk(root: Node<'_>, w: &mut Walker) -> bool {
         }
         let e = tree.elem(i);
         if !e.is_node {
-            if w.token(tree, i, e, first) {
+            if w.token(e.kind, &InTree { tree, i, e, first }) {
                 return true;
             }
             i += 1;
@@ -603,7 +667,13 @@ fn walk(root: Node<'_>, w: &mut Walker) -> bool {
                 // the tree is macro input, which rustc does not parse as part of the file.
                 let mut j = i + 1;
                 if j < e.end && !tree.elem(j).is_node {
-                    if w.token(tree, j, tree.elem(j), first) {
+                    let at = InTree {
+                        tree,
+                        i: j,
+                        e: tree.elem(j),
+                        first,
+                    };
+                    if w.token(at.e.kind, &at) {
                         return true;
                     }
                     j += 1;
@@ -657,6 +727,244 @@ pub(crate) fn subtree_rejected_by_rustc(
     walk(root, &mut walker) || (is_file && walker.pending_outer_doc)
 }
 
+/// [`rejected_by_rustc`] run inside the build of a file's tree (EXP-031): a [`BuildHook`]
+/// for `TreeBuilder::steps_with` that applies the token rules as the tokens are laid out,
+/// keeps the inner-attribute and token-tree states of [`walk`] from the build's `Enter` and
+/// `Exit`, and collects the nodes that have a node rule; [`Self::rejected`] then runs the
+/// node rules on them in the finished tree.
+///
+/// Why this is the walk's answer: the build lays out elements in preorder, the order the
+/// walk visits them; the open nodes at a token or an `Enter` are its ancestors, which the
+/// walk finds by searching backwards ([`Ancestors`]), and the file's walk starts at the
+/// root, so every ancestor is the walk's. The walk skips the interior of a token tree
+/// except its first element (the opening delimiter) and applies only the `:::` rule to
+/// the tokens inside; the hook counts the open token trees. The walk restores the
+/// inner-doc-comment state at the first element after an inner attribute, unless an inner
+/// attribute inside it moved that point to its own end; the hook restores it at the
+/// attribute's `Exit`, which comes before any later element, and skips the restore of an
+/// attribute that holds an inner attribute. Node rules read only the finished tree, so
+/// running them after the build changes nothing but the order, and the answer is an `or`.
+/// Debug builds compare the answer with the walk's on every file.
+pub(crate) struct CompatHook {
+    walker: Walker,
+    rejected: bool,
+    /// Open token trees (the walk's skipped interiors).
+    tt_depth: u32,
+    /// The next element is the first one of a token tree outside any other.
+    tt_first: bool,
+    /// The open attributes outside token trees, outermost first.
+    attrs: Vec<AttrEnter>,
+    /// Nodes outside token trees whose kind has a node rule.
+    candidates: Vec<u32>,
+}
+
+/// The walk's state at an attribute's `Enter`.
+struct AttrEnter {
+    pending_outer_doc: bool,
+    in_if_block: bool,
+    inner_doc_ok: bool,
+    /// An inner attribute inside this one ended: the walk restores its state, not this one's.
+    nested_inner: bool,
+}
+
+/// A token as the build lays it out: its ancestors are the open nodes.
+struct InBuild<'a> {
+    src: &'a str,
+    elems: &'a [Elem],
+    open: &'a [u32],
+    start: u32,
+    len: u32,
+}
+
+/// [`inner_attr_in_if_block`] over the open nodes of a build: the innermost three.
+#[inline]
+fn open_in_if_block(elems: &[Elem], open: &[u32]) -> bool {
+    let kind = |n: usize| {
+        open.len()
+            .checked_sub(n + 1)
+            .map(|k| elems[open[k] as usize].kind)
+    };
+    kind(0) == Some(SyntaxKind::STMT_LIST)
+        && kind(1) == Some(SyntaxKind::BLOCK_EXPR)
+        && kind(2) == Some(SyntaxKind::IF_EXPR)
+}
+
+impl TokenAt for InBuild<'_> {
+    fn text(&self) -> &str {
+        &self.src[self.start as usize..(self.start + self.len) as usize]
+    }
+
+    fn parent_kind(&self) -> Option<SyntaxKind> {
+        self.open.last().map(|&p| self.elems[p as usize].kind)
+    }
+
+    fn in_if_block(&self) -> bool {
+        open_in_if_block(self.elems, self.open)
+    }
+}
+
+impl CompatHook {
+    pub(crate) fn new(edition: Edition, rustfmt_version: RustfmtVersion) -> CompatHook {
+        CompatHook {
+            walker: Walker {
+                toolchain: Toolchain {
+                    edition,
+                    rustfmt_version,
+                },
+                prev_colon: false,
+                inner_doc_ok: true,
+                pending_outer_doc: false,
+            },
+            rejected: false,
+            tt_depth: 0,
+            tt_first: false,
+            attrs: Vec::new(),
+            candidates: Vec::new(),
+        }
+    }
+
+    /// [`rejected_by_rustc`] of the file whose tree the hook watched being built.
+    pub(crate) fn rejected(&self, tree: &Tree<'_>) -> bool {
+        debug_assert_eq!(self.tt_depth, 0);
+        debug_assert!(self.attrs.is_empty());
+        self.rejected
+            || self.candidates.iter().any(|&i| {
+                node_rejected(tree.node_at(i), tree.elem(i).kind, 0, self.walker.toolchain)
+            })
+            // A doc comment at the end of a file documents nothing.
+            || self.walker.pending_outer_doc
+    }
+}
+
+impl BuildHook for CompatHook {
+    // The common cases run inline in the build loop: whitespace, a token inside a token
+    // tree, a token no rule looks at, a node without a rule. The rest is out of line.
+    #[inline(always)]
+    fn token(
+        &mut self,
+        src: &str,
+        elems: &[Elem],
+        open: &[u32],
+        kind: SyntaxKind,
+        start: u32,
+        len: u32,
+    ) {
+        if kind == SyntaxKind::WHITESPACE {
+            // What both the full rules and the `:::` rule do for whitespace.
+            self.walker.prev_colon = false;
+            self.tt_first = false;
+            return;
+        }
+        let first_of_tree = std::mem::take(&mut self.tt_first);
+        if self.tt_depth > 0 && !first_of_tree {
+            self.rejected |= self.walker.colon(kind);
+            return;
+        }
+        // `Walker::token` for a token that is not whitespace.
+        if self.walker.colon(kind) {
+            self.rejected = true;
+            return;
+        }
+        if self.walker.pending_outer_doc
+            || matches!(
+                kind,
+                SyntaxKind::COMMENT | SyntaxKind::C_STRING | SyntaxKind::SHEBANG | T!['{']
+            )
+        {
+            self.doc_token(src, elems, open, kind, start, len);
+            return;
+        }
+        self.walker.inner_doc_ok = false;
+    }
+
+    #[inline(always)]
+    fn enter(&mut self, elems: &[Elem], open: &[u32], kind: SyntaxKind) {
+        self.tt_first = false;
+        if self.tt_depth > 0 {
+            self.tt_depth += u32::from(kind == SyntaxKind::TOKEN_TREE);
+            return;
+        }
+        if has_node_rule(kind) {
+            self.candidates.push(elems.len() as u32);
+        } else if kind == SyntaxKind::TOKEN_TREE {
+            self.tt_depth = 1;
+            self.tt_first = true;
+        } else if kind == SyntaxKind::ATTR {
+            self.enter_attr(elems, open);
+        }
+    }
+
+    #[inline(always)]
+    fn exit(&mut self, elems: &[Elem], idx: u32) {
+        self.tt_first = false;
+        let kind = elems[idx as usize].kind;
+        if self.tt_depth > 0 {
+            self.tt_depth -= u32::from(kind == SyntaxKind::TOKEN_TREE);
+        } else if kind == SyntaxKind::ATTR {
+            self.exit_attr(elems, idx);
+        }
+    }
+}
+
+impl CompatHook {
+    #[inline(never)]
+    fn doc_token(
+        &mut self,
+        src: &str,
+        elems: &[Elem],
+        open: &[u32],
+        kind: SyntaxKind,
+        start: u32,
+        len: u32,
+    ) {
+        let at = InBuild {
+            src,
+            elems,
+            open,
+            start,
+            len,
+        };
+        self.rejected |= self.walker.doc_token(kind, &at);
+    }
+
+    #[inline(never)]
+    fn enter_attr(&mut self, elems: &[Elem], open: &[u32]) {
+        self.attrs.push(AttrEnter {
+            pending_outer_doc: self.walker.pending_outer_doc,
+            in_if_block: open_in_if_block(elems, open),
+            inner_doc_ok: self.walker.inner_doc_ok,
+            nested_inner: false,
+        });
+    }
+
+    #[inline(never)]
+    fn exit_attr(&mut self, elems: &[Elem], idx: u32) {
+        let e = elems[idx as usize];
+        let attr = self.attrs.pop().expect("an attribute was entered");
+        // `has_token(node, T![!])`: a child token `!` makes the attribute inner.
+        let mut c = idx + 1;
+        let mut inner = false;
+        while c < e.end {
+            let child = elems[c as usize];
+            if !child.is_node && child.kind == T![!] {
+                inner = true;
+                break;
+            }
+            c = child.end;
+        }
+        if inner {
+            // After an outer doc comment, an inner attribute is an error.
+            self.rejected |= attr.pending_outer_doc || attr.in_if_block;
+            if !attr.nested_inner {
+                self.walker.inner_doc_ok = attr.inner_doc_ok;
+            }
+            for outer in &mut self.attrs {
+                outer.nested_inner = true;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -667,13 +975,68 @@ mod tests {
     }
 
     fn rejected_in(src: &str, edition: Edition) -> bool {
-        let tree = Tree::parse(src, edition).unwrap();
-        rejected_by_rustc(tree.root(), edition, RustfmtVersion::V1_9_0)
+        rejected_with(src, edition, RustfmtVersion::V1_9_0)
     }
 
     fn rejected_by_1_8_0(src: &str, edition: Edition) -> bool {
+        rejected_with(src, edition, RustfmtVersion::V1_8_0)
+    }
+
+    /// The walk's answer, asserted equal to the answer of the check run inside the build.
+    fn rejected_with(src: &str, edition: Edition, version: RustfmtVersion) -> bool {
         let tree = Tree::parse(src, edition).unwrap();
-        rejected_by_rustc(tree.root(), edition, RustfmtVersion::V1_8_0)
+        let walked = rejected_by_rustc(tree.root(), edition, version);
+        assert_eq!(fused(src, edition, version), walked, "{src:?}");
+        walked
+    }
+
+    fn fused(src: &str, edition: Edition, version: RustfmtVersion) -> bool {
+        let lexed = ra_ap_parser::LexedStr::new(edition, src);
+        let output =
+            ra_ap_parser::TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
+        let mut hook = CompatHook::new(edition, version);
+        let tree = Tree::from_steps_with(src, &lexed, &output, 0, 0, &mut hook).unwrap();
+        hook.rejected(&tree)
+    }
+
+    /// The check inside the build answers as the walk on inner attributes and doc comments
+    /// around token trees, nested attributes and `if` blocks.
+    #[test]
+    fn fused_check_equals_the_walk() {
+        for src in [
+            "#![a]\n//! b\nfn f() {}",
+            "#![a = { #![b] 1 }]\n//! c\nfn f() {}",
+            "#![a = { #![b] 1 }] //! c\n",
+            "#[a = { #![b] 1 }]\nfn f() {}",
+            "fn f() { if x { #![a] } }",
+            "fn f() { if x { //! a\n } }",
+            "fn f() { if x {} else { #![a] } }",
+            "fn f() { m!(a ::: b); m!{ /// x\n } }",
+            "fn f() { m!(/// a\n); x }",
+            "/// a\n#![b]\nfn f() {}",
+            "/// a\n",
+            "fn f() { x::<:::y>(); }",
+            "m! { //! a\n }\n//! b\n",
+            "mod m { #![a] //! b\n fn f() {} }",
+            "impl X { #![a] //! b\n }",
+            "fn f() { match x { #![a] //! b\n _ => {} } }",
+            "#[cfg(a)] #![b] fn f() {}",
+            "fn f() { let x = c\"a\"; }",
+            "#!/usr/bin/env x\nfn f() {}",
+        ] {
+            for edition in [
+                Edition::Edition2015,
+                Edition::Edition2021,
+                Edition::Edition2024,
+            ] {
+                if Tree::parse(src, edition).is_none() {
+                    continue;
+                }
+                for version in [RustfmtVersion::V1_8_0, RustfmtVersion::V1_9_0] {
+                    rejected_with(src, edition, version);
+                }
+            }
+        }
     }
 
     #[test]
