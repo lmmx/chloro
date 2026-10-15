@@ -50,6 +50,11 @@ struct Exact {
     /// The texts stored since the last `take_inserted`.
     inserted: RefCell<Vec<String>>,
     bytes: Cell<usize>,
+    /// Records stored with a tail (the unit consumed source past its end), with a gap
+    /// position other than the unit's start, and with one before it.
+    tails: Cell<usize>,
+    gap_moved: Cell<usize>,
+    gap_before: Cell<usize>,
 }
 
 impl UnitCache for Exact {
@@ -71,6 +76,20 @@ impl UnitCache for Exact {
         self.bytes
             .set(self.bytes.get() + key.text().len() + key.context().len() + unit.heap_size());
         self.inserted.borrow_mut().push(key.text().to_owned());
+        // `CachedUnit::to_bytes`: flags, gap tag, gap offset (i64), `last_pos` (u32), tail
+        // length (u32), ...
+        let bytes = unit.to_bytes();
+        let delta = i64::from_le_bytes(bytes[2..10].try_into().unwrap());
+        let tail = u32::from_le_bytes(bytes[14..18].try_into().unwrap());
+        if tail > 0 {
+            self.tails.set(self.tails.get() + 1);
+        }
+        if delta != 0 {
+            self.gap_moved.set(self.gap_moved.get() + 1);
+        }
+        if delta < 0 {
+            self.gap_before.set(self.gap_before.get() + 1);
+        }
         self.map
             .borrow_mut()
             .insert((key.context().to_vec(), key.text().to_owned()), unit);
@@ -319,6 +338,13 @@ fn main() {
         cache.rejected.get(),
         peak_bytes as f64 / 1e6,
         started.elapsed().as_secs_f64()
+    );
+    println!(
+        "records stored with a tail: {}; with a gap position other than the unit's start: {} \
+         ({} before it)",
+        cache.tails.get(),
+        cache.gap_moved.get(),
+        cache.gap_before.get()
     );
     if shift {
         println!("shift: {shift_files} files, {shift_units} units, {shift_hits} found");
