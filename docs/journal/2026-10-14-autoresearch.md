@@ -495,6 +495,54 @@ input, the cache disabled through the harness.
   copies through stdin. M2's stdin rows for those two files timed a full format in every
   build, so the ratios stand.
 
+## Milestone 3, measured on a quiet host (M3)
+
+[measurements/m3-quiet-host.md](2026-10-14-autoresearch/measurements/m3-quiet-host.md):
+`884f9c9` (base), `4867896` (head: the code of the best-known-good `113367a`, that is M2's
+head with E3 and R2 on top) and its profile-guided build against rustfmt 1.9.0, in a
+sibling session's idle container of the same 2.80GHz host class as M2, same method (30 runs
+per cell, formatted input, the cache disabled through the harness); steal on the pinned
+core 0.60–0.85% per sweep. The base and rustfmt binaries are M2's byte for byte.
+
+| crates (9), `--check`, formatted input | head/base | head-pgo/base | head/rustfmt | head-pgo/rustfmt |
+|---|---|---|---|---|
+| all four cores (chloro 4 threads, rustfmt 1) | 0.30–0.58 | 0.26–0.50 | 0.105–0.203 | 0.096–0.190 |
+| one core (both pinned), wall; CPU within 0.01 | 0.46–0.60 | 0.40–0.51 | 0.32–0.54 | 0.28–0.44 |
+
+- Ranges: pinned, every head and head-pgo run is below every base run and every rustfmt run
+  on all nine crates (M2: head below base on 7 of 9); unpinned, below every rustfmt run on
+  all nine and below every base run on seven (`parser` and `tokio` overlap). Peak RSS on one
+  core: head 4–14 MiB, base 6–29, rustfmt 43–85; on four cores head 5–31.
+- In process, one core: base 5.22–5.27 MB/s, head 9.39–9.54, head-pgo 11.28–11.59, three
+  disjoint ranges over three interleaved triples (head/base 1.79x–1.81x; M2 1.44x–1.56x).
+  `conform -i` 3052 ± 60 ms against 5492 ± 104 for base (0.556). Instructions on the
+  sample: base 587,989,199; head 312,734,041 (−46.81%; 9 above the ledger's figure);
+  head-pgo 244,712,537 (−58.38%; 0.7825x head).
+- The cache: warm 28.9 ms against 434.3 ms with `--no-cache` (15.0x) and 838.8 ms for base
+  (29.0x) on four cores; 37.1 against 1563.5 and 2916.9 ms on one core (42.1x, 78.6x); peak
+  RSS 5 MiB against 46. The record notes `(1226 entries)` for 1238 files against 1230
+  distinct contents; traced here on the final head: after `--write` the 1238 copies hold
+  1226 distinct contents by sha256, and the cache holds one entry per distinct content.
+- Parallel items, one file at a time on four cores: head/base 0.292 (`lints.rs`) to 0.465
+  (`config.rs`), every head run below every base run on all five (M2: four); against `head
+  --threads 1` the split is 1.41x–1.80x faster in mean (27.6 against 39.0 ms on `lints.rs`,
+  26.0 against 46.7 on `hir/src/lib.rs`) at 1.03x–1.19x the CPU; exit 0 on every file
+  (M2's two exit-1 copies were the harness's and are fixed).
+- Start-up on a 13-byte file: head 2.4 ms against rustfmt's 11.1 unpinned, 1.7 against 9.8
+  pinned; against base inside the spread. 287 small files in one invocation: 0.155 of
+  rustfmt's time unpinned, 0.306 pinned.
+- Regressions: none in mean wall time, minimum wall time or CPU against base or rustfmt in
+  any cell; peak RSS of split files up to 1.44x base (`lints.rs` 15.0 against 10.4 MiB) and
+  head-pgo +0.5–0.6 MiB on the smallest workloads.
+- Against M2, ratios only (same host class): crates on four cores head/base 0.48–0.62 →
+  0.30–0.58, on one core 0.53–0.67 → 0.46–0.60; head/rustfmt on one core 0.44–0.61 →
+  0.32–0.54; in process head/base 1.44–1.56x → 1.79–1.81x; the difference is the E3 and R2
+  work between the two heads.
+- Not measured on a quiet host: the R5 merge `bdfb9d1` itself. Its changes are to the
+  CLI's file list and cache and to the parallel replay's checks, none on the sequential
+  formatting path; its instruction count on the sample is inside the spread of `113367a`'s
+  and its outputs are identical on both corpora (EXP-011).
+
 ## What the programme established
 
 Instruction counts on the 49-file sample under `benchmarks/profile.sh`, each step measured
@@ -509,19 +557,20 @@ on the merged tree against the previous best-known-good:
 | E7b: flat syntax array | 390,690,264 | −24.7% | no red nodes, cheap tree build |
 | E3: hot paths | 316,076,716 | −19.1% | scans and copies removed |
 | R2: conformance fixes | 312,734,032 | −1.06% | a one-pass `rustc_compat` |
-| PGO on top (measured on `8d418ee`) | 306,889,893 against 390,689,247 | −21.4% | code layout |
+| R5: review fixes | 312,732,924–312,734,679 | 0.00% | inside the spread |
+| PGO on top (measured on `4867896`, M3) | 244,712,537 against 312,734,041 | −21.7% | code layout |
 
 The gains compound multiplicatively, not additively: the per-byte cost of the formatter is
-0.532 of what it was, 0.42 with PGO. Every step left every output on 1238 fixtures and
+0.532 of what it was, 0.416 with PGO. Every step left every output on 1238 fixtures and
 20,850 registry files unchanged, except the conformance fixes, which changed exactly the 13
 files they target, checked file by file against a record of the starting outputs.
 
 Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
-(M2, before E3 and the conformance fixes; M3 on the final head is pending): 0.44–0.61 of
-its wall time per crate on one core and 0.13–0.20 on four, with every chloro run below
-every rustfmt run; 0.37–0.51 and 0.10–0.19 with PGO. At the start of the programme the
-per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
-time.
+(M3, on the code of the best-known-good): 0.32–0.54 of its wall time per crate on one core
+and 0.105–0.203 on four, with every chloro run below every rustfmt run on all nine crates in
+both modes; 0.28–0.44 and 0.096–0.190 with PGO. In process the formatter runs at 9.39–9.54
+MB/s against 5.22–5.27 for the start (1.8x). At the start of the programme the per-core
+figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU time.
 
 Conformance moved from 1219/1220 under the default options and 31 option values with one to
 three differing files each, to 1220/1220 everywhere, at rustfmt 1.9.0 and 1.8.0, and from
@@ -550,7 +599,8 @@ final build:
   7%, reachable only with a change to `ra_ap_parser`.
 - Lexing and parsing: 22% of instructions, in `ra_ap_parser`, now the largest single
   component; the tree build on top of it is 2.8%.
-- Profile-guided optimisation in the release workflow: −21% of instructions on the sample,
+- Profile-guided optimisation in the release workflow: −21.7% of instructions on the sample
+  (M3: 244,712,537 against 312,734,041) and 0.86–0.91 of the wall time on the crates,
   measured, waiting on the `binaries.yml` step proposed in EXP-002.
 - Sub-item parallel units for files dominated by one `const` table or one `impl`, where E1's
   ceiling is about 2x (`lints.rs`: two arrays hold 49% of the item work).
@@ -566,11 +616,10 @@ State at the end of this session (2026-10-15, about 00:30 UTC):
   spread; conform 1220/1220 at both versions; goldens `fixtures-e8d87c2.tsv`,
   `registry-e8d87c2.tsv` in this container's scratch directory, re-recordable with
   `bench --record` at that commit).
-- M3, the quiet-host measurement of the final head, runs in a sibling session and pushes
-  `20261014-measure-m3` with `measurements/m3-quiet-host.md` when done; the first step of
-  the next session is to merge that branch and copy its headline numbers into the README's
-  performance section (which carries M2's numbers for `8d418ee`, before E3 and R2) and
-  into "What the programme established" above.
+- M3 landed: `20261014-measure-m3` (`2fc1640`), merged at `6802902`; the README's
+  performance section, the best-known-good row and "What the programme established" carry
+  its numbers. It measured `4867896`, the code of `113367a`; the R5 merge is not separately
+  measured (see the M3 section).
 - Three bounded investigations ran in the last minutes of the session; all three landed
   and are committed: EXP-009 (glibc malloc tunables: nothing outside the spread, lever
   closed), EXP-010 (fusing the trivia interspersal with the tree build: about 2% likely,
@@ -592,8 +641,7 @@ Next actions, in the order of value per effort:
    between process start and the cache open (now the first thing after argument parsing)
    is still hashed by path; the cache key still does not record which of the two formatting
    paths observed a fixed point (guarded by `tests/parallel_equivalence.rs`, not removed).
-1. Merge `20261014-measure-m3`; update the README's performance table from it; move the
-   best-known-good row's in-process figure to M3's.
+1. Done: M3 merged; the README's performance section and the best-known-good row carry it.
 2. Add the profile-guided build to `.github/workflows/binaries.yml` as proposed in
    EXP-002 (−21% instructions on the sample, measured; the script is `benchmarks/pgo.sh`).
 3. Done with 0.
@@ -616,10 +664,11 @@ Next actions, in the order of value per effort:
   `113367a`, and 312,732,924–312,734,679 (inside the spread) at the R5 tree `72bd4b1` =
   `bdfb9d1`, against 587,988,576 at `884f9c9` (−46.8%); 306,889,893 for the profile-guided
   build of `8d418ee` (measurements/m2-quiet-host.md)
-- In process on one core of the 2.80GHz host class: 7.25–7.73 MB/s on the 1238 fixtures
-  against 4.94–5.03 for `884f9c9`; against rustfmt 1.9.0 on nine crates, formatted input,
-  `--check`: 0.438–0.611 of its wall time on one core and 0.130–0.201 on four, with every
-  chloro run below every rustfmt run (measurements/m2-quiet-host.md)
+- In process on one core of the 2.80GHz host class: 9.39–9.54 MB/s on the 1238 fixtures
+  against 5.22–5.27 for `884f9c9` (11.28–11.59 profile-guided); against rustfmt 1.9.0 on
+  nine crates, formatted input, `--check`: 0.32–0.54 of its wall time on one core and
+  0.105–0.203 on four, with every chloro run below every rustfmt run in both modes
+  (measurements/m3-quiet-host.md, on the code of `113367a`)
 - Conformance is 1220/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
   1.9.0 and 1.8.0, and all 31 option values are fully identical (`conform -i`,
   `config_matrix -n 1220` at `113367a`); 20540/20540 registry files identical in the live
@@ -659,7 +708,9 @@ Next actions, in the order of value per effort:
   parameters, rustfmt's internal error on one rustyline file, rustfmt's run time on one
   pest_meta file, non-idempotent outputs that are rustfmt's own, and a trailing comma in
   `builtin # offset_of`
-- No quiet-host measurement of the final head (milestone 3)
+- No quiet-host measurement of the R5 merge `bdfb9d1` itself; M3 measured the code of
+  `113367a`, and R5 touches no sequential formatting path (instruction count inside the
+  spread, outputs identical)
 - No profile-guided build in the release workflow; `.github/workflows/binaries.yml` is
   unchanged and the proposed step is in experiments/EXP-002-cli-build.md
 
