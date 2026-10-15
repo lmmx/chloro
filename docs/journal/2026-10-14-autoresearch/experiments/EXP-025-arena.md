@@ -616,6 +616,15 @@ function of `overflow.rs` (`rewrite_items` and its two callers' arguments); E28 
 `context.rs`, which this branch does not touch. Not to be measured together with the sink
 (E20's remaining sites are the same allocations).
 
+Merged at `e96b530` (the `bumpalo` variant) after the integrator reproduced the gates on the
+merged tree (E26 and E28 merged above this branch's base): 0 of 1238 fixture hashes changed,
+sequential and at 4 threads, 0 of 25,077 registry hashes; `conform -i` 1220/1220 at 1.9.0 and
+1.8.0; `Ir` 220,958,649 on the fixture sample (-1.62% against the E26 merge's
+224,591,085; per file 220,755,045 net of the empty process) and 299,933,504 on the
+registry sample (-0.73% against 302,124,546; per file 298,833,058 net); fmt,
+clippy, 308 tests, `config_matrix -n 1220` identical on every value shown (1022/1022; editions 844/844, 843/843, 838/838). The conflicts were the module table of `formatter.rs` (both
+rows kept), the ledger (both rows) and `benchmarks/README.md` (the integration side's table).
+
 ## Follow-up
 
 - The arena's ceiling is a protocol question: 11.7% (fixture) and 11.1% (registry) if
