@@ -391,6 +391,18 @@ with the container.
   head itself: goldens 0 of 1238 and 0 of 25,024 registry files, sequential and 4 threads;
   `conform -i` 1220/1220 at both versions; Ir 280,278,276–280,279,614 (−52.3% from the start,
   −10.4% tonight); fmt, clippy and every workspace test. The best-known-good is `387d723`.
+- M4 (05:03 UTC): the quiet-host chain ran on the idle host from 04:30:43 to 05:02:54 UTC as
+  one script (`scratchpad/m4/chain.sh`; identity, a1/a2/a3 harness sweeps, in-process harness,
+  cache, bench triples with `profile.sh` and `conform -i`, parallel items, three noise runs;
+  every sweep exit 0). Record: `2026-10-14-autoresearch/measurements/m4-quiet-host.md`. The
+  first start was stopped after a minute because the stdin copies on disk predated the
+  harness's stdin preparation; rebuilt and verified as fixed points, then restarted. Found on
+  the way: the harness's `identical outputs` figure is computed when a copy is made and
+  stored in its `meta`, so a reused copy reports a stale count (raw `tiny-test-data` showed
+  M2's 288/289 for a head that produces 289/289); every workload's agreement was recomputed
+  with the final binaries (all identical, both inputs) and the harness fix is owed. README,
+  ledger, the autoresearch entry and this entry carry M4; the overnight report is
+  `2026-10-15-overnight-report.md`.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
   (Ir, goldens sequential and 4 threads, conform both versions; for E14 the RSS rule); then the
   quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
@@ -421,14 +433,23 @@ with the container.
   above merges their tables (docs/journal/2026-10-15-extensions-theory/)
 - The final head's component shares and cache/branch simulation are recorded above
   (measured at `31ce20e`, the code of the best-known-good)
-- Experiments the records led to and their state: E12 merged (`92fdef0`), E13 merged
-  (`45e8470`), E15 merged (`4e48bdb`, opt-in), E14, E16, E17, E18 running on their branches
-  (ledger rows in 2026-10-14-autoresearch/experiments.md as they land)
+- Experiments the records led to, all merged with their gates reproduced on the integration
+  host: E12 (`92fdef0`), E13 (`45e8470`), E15 (`4e48bdb`, opt-in), E17 (`a3a60bd`), E18
+  (`387d723`), E14 (`3fd39b4`, measurement only), E16 (`e640fbf`, the best-known-good); ledger
+  rows in 2026-10-14-autoresearch/experiments.md
+- M4, the quiet-host measurement of the final head
+  ([measurements/m4-quiet-host.md](2026-10-14-autoresearch/measurements/m4-quiet-host.md)):
+  0.26–0.44 of rustfmt's wall time per crate on one core and 0.092–0.179 on four, every run
+  below; 248,202,137 `Ir` (0.4221 of the start), 206,922,054 profile-guided; warm cache 16.9
+  ms; the README carries it
+- The morning report of the overnight run:
+  [2026-10-15-overnight-report.md](2026-10-15-overnight-report.md)
 
 ## Missing
 
-- No quiet-host measurement of the head after E12–E15 (M4); the README's performance figures
-  are M3's, taken on the code of `113367a`
+- The resident process and the shared sink are the two ranked levers with no experiment; the
+  M4 record lists what it did not measure (no PGO build of `fmt_stdin` or `conform`, no pinned
+  cold-cache row, the harness's stored agreement figure)
 - The resident process (rank 1) and the shared sink (rank 2) have no experiment yet
 - Every bound in the tables above is a bound until its experiment runs; the width-model levers
   rest on an exactness proof that does not exist

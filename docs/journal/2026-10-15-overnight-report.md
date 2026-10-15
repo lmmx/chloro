@@ -49,7 +49,7 @@ earlier merge; protocol.md):
 
 Each experiment also passed the same gates on its own branch before the merge (its record);
 E16 additionally ran the full `config_matrix -n 1220` (31 option values, identical on every
-file). M4 (item 3) re-ran `conform -i` on the measured binaries: M4-TODO-CONFORM.
+file). M4 (item 3) re-ran `conform -i` on the measured binaries: 1220 of 1220 identical at rustfmt 1.9.0 and at 1.8.0, 0 not idempotent, on the measured `head` binary; the instruction count 248,202,137 and 248,203,822 (two runs), 206,922,054 profile-guided; output agreement with rustfmt on every file of every harness workload, formatted and raw, recomputed with the final binaries.
 
 ## 3. Performance, before and after
 
@@ -63,7 +63,7 @@ within a few thousand), the programme's gate metric:
 | `a3a60bd` (+ E12, E13, E15, E17) | 290,493,068 | 0.494 | ledger |
 | `387d723` (+ E18) | 280,278,276 | 0.477 | ledger |
 | `e640fbf` (+ E14, E16), the final head | 248,202,094 | 0.422 | ledger, M4 |
-| the final head, profile-guided | M4-TODO-PGO-IR | M4-TODO | M4 |
+| the final head, profile-guided | 206,922,054 | 0.352 | M4 |
 
 Tonight's merges took the count from 312,734,032 to 248,202,094 (−20.6%); the programme as a
 whole from 587,988,576 (−57.8%).
@@ -75,19 +75,19 @@ windows (protocol §3: ratios within a window, not absolute times across windows
 
 | quantity | M3 (`4867896`) | M4 (final head) | M4, profile-guided |
 |---|---|---|---|
-| nine crates, one core, chloro / rustfmt wall (range of means) | 0.32–0.54, every run below on all nine | M4-TODO | M4-TODO |
-| nine crates, four cores (chloro one thread per core) | 0.105–0.203, every run below | M4-TODO | M4-TODO |
-| nine crates, one core, chloro / `884f9c9` wall | 0.46–0.60 | M4-TODO | M4-TODO |
-| nine crates, four cores, chloro / `884f9c9` | 0.30–0.58 | M4-TODO | M4-TODO |
-| in-process throughput, one core, 1238 fixtures (13.9 MB), best of 5, three interleaved triples | 9.39–9.54 MB/s (base 5.22–5.27) | M4-TODO | M4-TODO |
-| `--check` on the unchanged 1238-file tree, warm cache, four cores | 28.9 ms (434 ms `--no-cache`, 839 ms base) | M4-TODO | M4-TODO |
-| the same, one core | 37.1 ms (1564 ms `--no-cache`, 2917 ms base) | M4-TODO | – |
-| one 13-byte file (process start-up), one core | 1.7 ms (rustfmt 9.8) | M4-TODO | M4-TODO |
-| a 640 KB file, four threads against one | 0.71 (1.41x) | M4-TODO | – |
-| `conform -i`, one core, wall | 2.96 s (base 5.42) | M4-TODO | – |
+| nine crates, one core, chloro / rustfmt wall (range of means) | 0.32–0.54, every run below on all nine | 0.26–0.44, every run below on all nine | 0.24–0.38, every run below on all nine |
+| nine crates, four cores (chloro one thread per core) | 0.105–0.203, every run below | 0.092–0.179, every run below on all nine | 0.072–0.175, every run below on all nine |
+| nine crates, one core, chloro / `884f9c9` wall | 0.46–0.60 | 0.38–0.60 (0.38–0.50 without one noisy `reg-tokio` cell), every run below | 0.36–0.43, every run below |
+| nine crates, four cores, chloro / `884f9c9` | 0.30–0.58 | 0.25–0.52, below on 8 of 9 | 0.22–0.45, below on 9 of 9 |
+| in-process throughput, one core, 1238 fixtures (13.9 MB), best of 5, three interleaved triples | 9.39–9.54 MB/s (base 5.22–5.27) | 11.22–11.79 MB/s (base 4.96–5.09 in this window) | 13.03–13.24 MB/s |
+| `--check` on the unchanged 1238-file tree, warm cache, four cores | 28.9 ms (434 ms `--no-cache`, 839 ms base) | 16.9 ms (372.7 ms `--no-cache`, 909.4 ms base) | 13.9 ms (316.9 ms `--no-cache`) |
+| the same, one core | 37.1 ms (1564 ms `--no-cache`, 2917 ms base) | 24.4 ms (1305.9 ms `--no-cache`, 3069.7 ms base) | – |
+| one 13-byte file (process start-up), one core | 1.7 ms (rustfmt 9.8) | 1.8 ms (rustfmt 11.9) | 2.2 ms (rustfmt 13.4), one slow run in 30 |
+| a 640 KB file, four threads against one | 0.71 (1.41x) | 0.87 (1.15x; 0.60–0.87 over the five largest files, 1.15x–1.66x) | – |
+| `conform -i`, one core, wall | 2.96 s (base 5.42) | 2.64 s (base 5.51); harness means 2.59 against 5.70 s, every head run below | – |
 
 PGO: the release workflow now trains and applies a profile on the natively built targets
-(E13). On this host the profile-guided final head is M4-TODO-PGO-SENTENCE.
+(E13). On this host the profile-guided final head is 0.8337x the plain head's instruction count on the sample (M3's profile was worth 0.7825x on M3's head: the E16–E18 levers shortened the paths the profile used to lay out), 0.24–0.38 of rustfmt's wall time on one core against 0.26–0.44 plain, 13.03–13.24 MB/s in process against 11.22–11.79.
 
 ## 4. rustd: verdict and evidence
 
@@ -133,7 +133,7 @@ replaced the earlier instruction-share inference with direct measurement, as ask
   `alloc-jemalloc`, `alloc-snmalloc`) are in the tree, off by default, for anyone who wants to
   re-measure.
 - Peak RSS of the shipped configuration against rustfmt (hyperfine, max of 30 runs, M3 and
-  M4): M4-TODO-RSS.
+  M4): head 4–14 MiB on one core and 5–31 MiB on four cores across the nine crates, against 6–29 and 6–37 MiB for the start and 43–85 MiB for rustfmt (M4; M3 read the same ranges for head). The one cell where head's peak RSS exceeds the start's by more than 0.4 MiB is the parallel-items split on the 640 KB `lints.rs` (14.7 vs 10.4 MiB, four threads).
 
 ## 6. Experiments that failed or were rejected, with numbers
 
@@ -175,7 +175,7 @@ Risks in the shipped tree:
 - README badges for dependency count and binary size are stale until `just emblazon` runs.
 - Six conformance cases stay open (conformance-ledger.md cases 19–24).
 
-Unfinished: M4-TODO-UNFINISHED.
+Unfinished: the harness fix for the stored agreement figure (compute it at run time; the M4 record's Harness notes); the release run that validates the PGO workflow step; `just emblazon` for the README badges; the resident process and shared sink have no experiment.
 
 To resume: the handoff section of
 [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md) has every experiment's

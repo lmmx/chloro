@@ -13,7 +13,7 @@ compiler: a port of rustfmt 1.9.0's formatting logic onto the syntax trees of
 rust-analyzer's parser. Its output is rustfmt's, byte for byte, across the tested
 compatibility matrix below (two rustfmt releases, four editions, 31 option values, 1220
 rust-analyzer files and 20,540 files from 577 registry crates), and it formats the same
-files in 0.32–0.54 of rustfmt's wall time on one core and 0.11–0.20 on four. Both claims
+files in 0.26–0.44 of rustfmt's wall time on one core and 0.09–0.18 on four. Both claims
 are measured, with the method and the commands to reproduce them in the two sections that
 follow; neither is a claim of equivalence beyond that matrix.
 
@@ -105,33 +105,34 @@ Measured against rustfmt 1.9.0 on identical file sets, rustfmt-formatted input, 
 in an idle 4-core KVM guest (2.80 GHz host class), with `benchmarks/compare_rustfmt.sh`:
 hyperfine 2.0, 15 runs per command per round, 2 rounds with the command order reversed
 (n = 30 per cell), 2 warm-up runs, wall time, CPU time and peak RSS recorded per run. The
-record is [measurements/m3-quiet-host.md][m3], taken on `4867896`, whose formatter code is
-the current one (the commits since change the CLI's file list, the cache file's header and
-the parallel replay's checks, with the instruction count on the profile sample inside the
-run-to-run spread and every output identical). Ratios are of means; "every run below"
-means the slowest chloro run was faster than the fastest rustfmt run.
+record is [measurements/m4-quiet-host.md][m4], taken on the current head (`6b78728`, the
+code of `e640fbf`); the earlier records [m3][m3], [m2][m2] and [m1][m1] measured the
+intermediate heads with the same method. Ratios are of means; "every run below" means the
+slowest chloro run was faster than the fastest rustfmt run.
 
 | workload | chloro / rustfmt wall time, one core (both pinned) | four cores (chloro one thread per core, rustfmt one) |
 |---|---|---|
-| nine crates of 215 KB to 2.9 MB (rust-analyzer `hir`, `hir-ty`, `ide-db`, `syntax`, `parser`; tokio, regex-syntax, clap_builder, winnow) | 0.32–0.54, every run below on all nine | 0.11–0.20, every run below on all nine |
-| the same, profile-guided build (`benchmarks/pgo.sh`) | 0.28–0.44 | 0.10–0.19 |
-| 287 small files as one invocation (`parser/test_data`) | 0.31 | 0.16 |
-| one 13-byte file (process start-up) | 1.7 ms against 9.8 ms | 2.4 ms against 11.1 ms |
+| nine crates of 215 KB to 2.9 MB (rust-analyzer `hir`, `hir-ty`, `ide-db`, `syntax`, `parser`; tokio, regex-syntax, clap_builder, winnow) | 0.26–0.44, every run below on all nine | 0.09–0.18, every run below on all nine |
+| the same, profile-guided build (`benchmarks/pgo.sh`) | 0.24–0.38, every run below | 0.07–0.18, every run below |
+| 287 small files as one invocation (`parser/test_data`) | 0.24 | 0.13 |
+| one 13-byte file (process start-up) | 1.8 ms against 11.9 ms | 2.4 ms against 14.4 ms |
 
 Other measured quantities from the same record:
 
 | quantity | chloro | rustfmt 1.9.0 |
 |---|---|---|
-| in-process throughput, one core, 1238 files (13.9 MB), best of 5 | 9.4–9.5 MB/s (11.3–11.6 profile-guided) | not measured in process |
+| in-process throughput, one core, 1238 files (13.9 MB), best of 5 | 11.2–11.8 MB/s (13.0–13.2 profile-guided); the release before this work 5.0–5.1 in the same window | not measured in process |
 | peak RSS on the nine crates (`memory_peak_resident`, max of 30 runs) | 5–31 MiB on four cores, 4–14 MiB on one | 43–85 MiB |
-| `--check` of an unchanged 1238-file tree, warm cache | 28.9 ms on four cores, 37.1 ms on one | no cache |
-| the same, cache directory removed before each run (cold) | 446 ms | — |
-| the same, `--no-cache` | 434 ms on four cores, 1564 ms on one | — |
-| a single file of 128 KiB or more, four threads against one | 1.4x–1.8x faster on the five largest fixture files (means of 30 runs), at 1.03x–1.19x the CPU | single-threaded |
+| `--check` of an unchanged 1238-file tree, warm cache | 16.9 ms on four cores, 24.4 ms on one | no cache |
+| the same, cache directory removed before each run (cold) | 389 ms | — |
+| the same, `--no-cache` | 373 ms on four cores, 1306 ms on one | — |
+| a single file of 128 KiB or more, four threads against one | 1.1x–1.7x faster on the five largest fixture files (means of 30 runs), at 1.09x–1.32x the CPU | single-threaded |
 
-Not measured, and not claimed: the share of process time spent in the allocator (only its
-share of instructions on the profile sample, about 12%); memory bandwidth; any figure on
-macOS or Windows; rustfmt's in-process throughput. Absolute times are this host's; the
+The allocator's share of the formatter's time is measured directly ([EXP-014][exp14]: glibc
+malloc takes 13–16% of one thread's time; no replacement met the memory rule set in advance,
+mimalloc at its defaults using up to 10x the peak RSS, so glibc stays). Not measured, and
+not claimed: memory bandwidth; any figure on macOS or Windows; rustfmt's in-process
+throughput. Absolute times are this host's; the
 ratios hold within one measurement window, and chloro and rustfmt are always timed in the
 same window, interleaved.
 
@@ -151,9 +152,9 @@ fits, and chloro does the same work rustfmt does. It memoizes rewrites so nested
 not multiply that work, reads syntax from a flat array whose handles are a reference and an
 index (a query allocates nothing), formats the top-level items of large files on all cores
 with the text between items kept sequential, and hands files to one worker per core from a
-largest-first queue. On the 49-file profile sample the formatter executes 47% fewer
-instructions than the release before this work (587.99 M to 312.73 M, callgrind,
-`benchmarks/profile.sh`; 244.71 M profile-guided).
+largest-first queue. On the 49-file profile sample the formatter executes 58% fewer
+instructions than the release before this work (587.99 M to 248.20 M, callgrind,
+`benchmarks/profile.sh`; 206.92 M profile-guided).
 
 The cache: the CLI records the BLAKE3 digest of each file it found already formatted, in a
 file named by the digest of the chloro binary and of the `--config` options, under
@@ -176,7 +177,11 @@ cargo run --release -p chloro-core --example bench -- -n 5       # in-process MB
 and the known confounders (rustfmt's `--check` builds a diff of every changed file, which is
 why the inputs are rustfmt-formatted copies; rustfmt loads `librustc_driver` at start-up).
 
+[m4]: docs/journal/2026-10-14-autoresearch/measurements/m4-quiet-host.md
 [m3]: docs/journal/2026-10-14-autoresearch/measurements/m3-quiet-host.md
+[m2]: docs/journal/2026-10-14-autoresearch/measurements/m2-quiet-host.md
+[m1]: docs/journal/2026-10-14-autoresearch/measurements/m1-quiet-host.md
+[exp14]: docs/journal/2026-10-14-autoresearch/experiments/EXP-014-allocators.md
 
 ## Usage
 
