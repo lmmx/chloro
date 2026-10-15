@@ -65,6 +65,17 @@ pub(crate) fn exceeds_offset_range(len: usize) -> bool {
     len > u32::MAX as usize
 }
 
+/// The parse [`format_text`] starts with, and nothing after it: the number of elements
+/// (nodes and tokens) of the file's tree, or `None` where `format_text` returns `None`
+/// before formatting (a text longer than `u32::MAX` bytes, a syntax error, syntax rustc
+/// rejects). The tree is dropped before returning.
+pub(crate) fn parse_text(source: &str, config: &Settings) -> Option<usize> {
+    if exceeds_offset_range(source.len()) {
+        return None;
+    }
+    parse(source, config.edition().to_ra(), config.rustfmt_version()).map(|tree| tree.len())
+}
+
 /// Formats a parsed source text. Returns `None` when the text does not parse or is longer
 /// than `u32::MAX` bytes. `whole_file` is false for a snippet (`format_snippet`), whose
 /// caller reads the run's flags ([`RunState::whole_file`]).
