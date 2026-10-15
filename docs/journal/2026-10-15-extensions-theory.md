@@ -404,7 +404,7 @@ with the container.
   figure per binary (`agreement()` in `compare_rustfmt.sh`, the commit after the record). README,
   ledger, the autoresearch entry and this entry carry M4; the overnight report is
   `2026-10-15-overnight-report.md`.
-- Wave 3 (launched 05:30 UTC from `8ebd3bb`; the brief and ranking are in
+- Wave 3 (launched 09:25 UTC from `8ebd3bb`; the brief and ranking are in
   `2026-10-15-unmined-tricks.md` §7): four agents on worktrees, each with a 4–5 h time box,
   a record under `2026-10-14-autoresearch/experiments/`, and the branch to push:
   E19 `20261015-cliffs` (/home/user/wt/cliffs; EXP-019-cliffs.md), E20 `20261015-sink`
