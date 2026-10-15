@@ -6,11 +6,18 @@
 # below wall-clock noise.
 #
 #   benchmarks/profile.sh [--bench BIN] [--runs N] [--core N] [--out DIR] [--annotate N] [--sim]
+#                         [--per-file]
 #
 # --sim adds callgrind's cache and branch simulation (--cache-sim=yes --branch-sim=yes) and
 # prints, per run, Ir, Bc, Bcm, Bi, Bim, I1mr, D1mr, D1mw and the ten functions with the
 # most I1mr and the most Bcm (exclusive). Ir is the same with and without it (within the
 # run-to-run spread).
+#
+# --per-file also formats each file of the sample in a bench process of its own (a fresh heap
+# per file) and an empty sample (the fixed cost of a process), and prints each file's Ir,
+# their sum and both figures net of the fixed cost beside the whole sample's; the
+# difference is the cross-file term (the heap layout one file leaves the next; EXP-019,
+# EXP-020). With --runs N each file's figure is its minimum over the N runs.
 #
 # The sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
 # sorted bytewise (`LC_ALL=C sort`), every 25th file (lines 25, 50, ..., 1225): 49 files.
@@ -28,7 +35,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
 FIXTURES=$REPO/chloro-core/tests/conformance/fixtures
 BENCH=$REPO/target/release/examples/bench
-RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0
+RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0
 
 die() { echo "profile.sh: error: $*" >&2; exit 2; }
 while [ $# -gt 0 ]; do
@@ -40,7 +47,8 @@ while [ $# -gt 0 ]; do
     --sample) echo "profile.sh: note: --sample is ignored: the sample is staged under a path of fixed length (EXP-027)" >&2; shift ;;
     --annotate) ANNOTATE=$2; shift ;;
     --sim) SIM=1; shift; continue ;;
-    -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
+    --per-file) PERFILE=1; shift; continue ;;
+    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
     *) die "unknown argument $1" ;;
   esac
   shift
@@ -65,15 +73,17 @@ OUT=$(cd "$OUT" && pwd)
 # of fixed length (24 bytes) in /tmp: the binary as STAGE/bench_..., 47 bytes, as
 # /home/user/chloro/target/release/examples/bench was, and the sample as STAGE/s, 26
 # bytes, as /tmp/chloro-bench/sample49 was. The count at the old default is unchanged.
+# --per-file stages each file in turn, and the empty sample, at STAGE/f (26 bytes too).
 STAGE=$(mktemp -d /tmp/chloro-prof.XXXXXXX)
 trap 'rm -rf "$STAGE"' EXIT
 fixed() { local s=$1; while [ ${#s} -lt "$2" ]; do s+=_; done; printf '%s' "$s"; }
 EXE=$STAGE/$(fixed bench $((47 - ${#STAGE} - 1)))
-ROOT=$STAGE/s
+ROOT=$STAGE/s ONE=$STAGE/f
 [ ${#EXE} = 47 ] && [ ${#ROOT} = 26 ] || die "staging paths $EXE, $ROOT are not 47 and 26 bytes long"
 cp "$BENCH" "$EXE"
 
 # Build the sample.
+SRC=$FIXTURES
 mkdir -p "$ROOT"
 (cd "$FIXTURES" && find . -name '*.rs' | sed 's|^\./||' | LC_ALL=C sort | awk 'NR % 25 == 0') > "$OUT/sample.txt"
 total=$(cd "$FIXTURES" && find . -name '*.rs' | wc -l)
@@ -107,30 +117,78 @@ sim_report() {
 
 pin=()
 [ -n "$CORE" ] && pin=(taskset -c "$CORE")
+# One callgrind run of bench on a staged root; prints the total Ir.
+#   count_ir ROOT PROFILE BENCH_OUTPUT LOG FILES [VALGRIND_OPTION...]
+# Fixed environment (env -i), address space (setarch -R) and path lengths (EXE, ROOT): the
+# count moves by up to 1% with the size of the environment and the paths' lengths (stack and
+# heap layout), not with the code.
+count_ir() {
+  local root=$1 cg=$2 txt=$3 log=$4 files=$5 seen ir
+  shift 5
+  (cd "$STAGE" && "${pin[@]}" env -i "$SETARCH" "$(uname -m)" -R "$VALGRIND" --tool=callgrind "$@" \
+    --callgrind-out-file="$cg" "$EXE" -n 1 --root "$root") < /dev/null > "$txt" 2> "$log" ||
+    { cat "$log" >&2; die "valgrind failed (log in $log)"; }
+  seen=$(sed -n 's/^\([0-9]*\) files,.*/\1/p' "$txt")
+  [ "$seen" = "$files" ] || die "bench formatted ${seen:-no} files, not $files (output in $txt)"
+  # Ir is the first of the collected events, with or without --sim.
+  ir=$(sed -n 's/.*Collected : *//p' "$log" | tr -d ',' | head -1 | awk '{print $1}')
+  [ -n "$ir" ] || { cat "$log" >&2; die "no 'Collected' line in $log"; }
+  printf '%s' "$ir"
+}
+
+# --per-file, run I: the empty sample, then each file of the sample alone, each in its own
+# process, staged at ONE; writes OUT/perfile.I.tsv (index, Ir, bytes, path; index 0 is the
+# empty sample) and keeps the profiles in OUT/perfile.I/.
+per_file_run() {
+  local d=$OUT/perfile.$1 k=0 f ir
+  mkdir -p "$d"
+  rm -rf "$ONE"; mkdir -p "$ONE"
+  ir=$(count_ir "$ONE" "$d/0.out" "$d/0.txt" "$d/0.log" 0)
+  printf '0\t%s\t0\t(empty sample)\n' "$ir" > "$OUT/perfile.$1.tsv"
+  while read -r f; do
+    k=$((k + 1))
+    rm -rf "$ONE"; mkdir -p "$ONE"
+    (cd "$SRC" && cp --parents "$f" "$ONE")
+    ir=$(count_ir "$ONE" "$d/$k.out" "$d/$k.txt" "$d/$k.log" 1)
+    printf '%s\t%s\t%s\t%s\n' "$k" "$ir" "$(wc -c < "$SRC/$f")" "$f" >> "$OUT/perfile.$1.tsv"
+  done < "$OUT/sample.txt"
+}
+
 sim=()
 [ "$SIM" = 1 ] && sim=(--cache-sim=yes --branch-sim=yes)
 irs=()
 for ((i = 1; i <= RUNS; i++)); do
   cg=$OUT/callgrind.$i.out
-  log=$OUT/callgrind.$i.log
-  # Fixed environment (env -i), address space (setarch -R) and path lengths (EXE, ROOT): the
-  # count moves by up to 1% with the size of the environment and the paths' lengths (stack
-  # and heap layout), not with the code.
-  (cd "$STAGE" && "${pin[@]}" env -i "$SETARCH" "$(uname -m)" -R "$VALGRIND" --tool=callgrind ${sim[@]+"${sim[@]}"} \
-    --callgrind-out-file="$cg" "$EXE" -n 1 --root "$ROOT") > "$OUT/bench.$i.txt" 2> "$log" ||
-    { cat "$log" >&2; die "valgrind failed"; }
-  seen=$(sed -n 's/^\([0-9]*\) files,.*/\1/p' "$OUT/bench.$i.txt")
-  [ "$seen" = "$n" ] || die "bench formatted ${seen:-no} files, not $n (output in $OUT/bench.$i.txt)"
-  # Ir is the first of the collected events, with or without --sim.
-  ir=$(sed -n 's/.*Collected : *//p' "$log" | tr -d ',' | head -1 | awk '{print $1}')
-  [ -n "$ir" ] || { cat "$log" >&2; die "no 'Collected' line in $log"; }
+  ir=$(count_ir "$ROOT" "$cg" "$OUT/bench.$i.txt" "$OUT/callgrind.$i.log" "$n" ${sim[@]+"${sim[@]}"})
   irs+=("$ir")
   printf 'run %d: Ir %s\n' "$i" "$ir"
   [ "$SIM" = 1 ] && sim_report "$cg"
+  if [ "$PERFILE" = 1 ]; then
+    per_file_run "$i"
+    awk -F'\t' -v i="$i" '$1 > 0 { s += $2 } $1 == 0 { e = $2 } END {
+      printf "run %d: per-file sum %d over %d processes, empty sample %d\n", i, s, NR - 1, e }' "$OUT/perfile.$i.tsv"
+  fi
 done
 min=$(printf '%s\n' "${irs[@]}" | sort -n | head -1)
 max=$(printf '%s\n' "${irs[@]}" | sort -n | tail -1)
 printf 'Ir min %s  max %s  (%d runs; profiles in %s)\n' "$min" "$max" "$RUNS" "$OUT"
+if [ "$PERFILE" = 1 ]; then
+  # Each file's minimum over the runs (a run reads about 1.8K high now and then; README).
+  cat "$OUT"/perfile.*.tsv | awk -F'\t' -v whole="$min" -v runs="$RUNS" '
+    !($1 in m) || $2 < m[$1] { m[$1] = $2; b[$1] = $3; p[$1] = $4 }
+    END {
+      n = 0; for (k in m) if (k + 0 > n) n = k + 0
+      e = m[0]
+      printf "per-file (minimum of %d run%s per file; Ir, Ir net of the empty sample, bytes, file):\n", runs, runs > 1 ? "s" : ""
+      for (k = 1; k <= n; k++) {
+        printf "  %3d %12d %12d %8d  %s\n", k, m[k], m[k] - e, b[k], p[k]
+        s += m[k]
+      }
+      printf "per-file sum %d over %d processes; empty sample %d; sum net of it %d\n", s, n, e, s - n * e
+      printf "whole sample %d (min); net of the empty sample %d\n", whole, whole - e
+      printf "cross-file term (whole net - per-file net) %d\n", (whole - e) - (s - n * e)
+    }'
+fi
 if [ "$ANNOTATE" != 0 ]; then
   callgrind_annotate --threshold=100 "$OUT/callgrind.1.out" 2>/dev/null | sed -n '1,/^--.*$/!p' | head -n "$((ANNOTATE + 25))"
 fi

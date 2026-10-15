@@ -32,6 +32,7 @@ benchmarks/compare_rustfmt.sh --baseline /path/to/other/target/release --groups 
 python3 benchmarks/report.py benchmarks/results/<stamp>       # tables again (also written to report.md)
 benchmarks/profile.sh --core 3                                # Ir on the sample
 benchmarks/profile.sh --core 3 --runs 2 --sim                 # Ir plus branch and cache simulation
+benchmarks/profile.sh --core 3 --runs 3 --per-file            # Ir, and each file in a process of its own
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -273,6 +274,34 @@ does not depend on where the binary, the fixtures or `--out` are.
   2026-10-15). The counts are as repeatable as `Ir`: three runs of one binary gave the same
   `I1mr`, `Bim`, `D1mr` and `D1mw`, `Bcm` within 4 and `Ir` within 220
   (`docs/journal/2026-10-14-autoresearch/experiments/EXP-022-layout.md`).
+
+- `--per-file` adds, for each run, the per-file figure (EXP-019's co-metric): every file of
+  the sample formatted by a `bench` process of its own, so each starts on a fresh heap, and
+  one process on an empty sample, the fixed cost of a process (start-up, arguments, an
+  empty walk). Each file is staged alone at a path of the same length as the whole sample's
+  and keeps its relative path, so it sees the strings it sees in the whole run. The script
+  prints each file's `Ir` (its minimum over `--runs`, since a run reads about 1.8K high now
+  and then), the sum, the empty sample's `Ir`, and both totals net of the fixed cost:
+
+  ```text
+  per-file sum S over n processes; empty sample E; sum net of it S - n·E
+  whole sample W (min); net of the empty sample W - E
+  cross-file term (whole net - per-file net) (W - E) - (S - n·E)
+  ```
+
+  The two net totals count the same formatting work; they differ by what one file's run
+  leaves the next in a shared process: the heap layout (whether the parser's vectors grow
+  in place, EXP-020's term), the allocator's warm free lists, and the directory walk shared
+  by files under one directory. Reading them together: a lever that changes the code's own
+  work moves `W` and `S` by about the same amount; a difference between the two changes is
+  a change in the cross-file term, which is layout, not work (EXP-019's first two levers
+  read +0.19% and +0.24% on `W` and −0.0007% and −0.30% on `S`). For `9d78713`: `W`
+  237,768,646, `S` 253,356,154 over 49 processes, `E` 315,812, net 237,452,834 against
+  237,881,366, cross-file term −428,532 (one run; the record has three). The 50 processes
+  of a per-file run took 1 min 51 s on a loaded host, against about 6 s for the whole
+  sample. Profiles are kept in `OUT/perfile.<run>/<index>.out`
+  (index 0 is the empty sample) and the figures in `OUT/perfile.<run>.tsv`. Per-file runs
+  use plain callgrind (no `--sim`).
 
 ## pgo.sh
 
