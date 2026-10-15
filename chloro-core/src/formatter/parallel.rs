@@ -111,6 +111,7 @@ pub(crate) fn format_file(
 ) -> Option<Formatted> {
     let arena = TreeArena::new();
     let run = Rc::new(RunState::new(&arena));
+    run.whole_file.set(true);
     let snippet_provider = SnippetProvider::new(source);
     let end_pos = snippet_provider.end_pos();
     let mut main = FmtVisitor::new(config, snippet_provider, run.clone());
@@ -310,6 +311,7 @@ fn format_units(
     let work = || {
         let arena = TreeArena::new();
         let run = Rc::new(RunState::new(&arena));
+        run.whole_file.set(true);
         let mut visitor = FmtVisitor::new(config, SnippetProvider::new(source), run.clone());
         // The file's `rustfmt::skip::macros`/`attributes` names, as the sequential
         // visitor has them at a top-level item.

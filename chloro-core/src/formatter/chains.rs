@@ -667,6 +667,19 @@ impl<'a> ChainFormatterShared<'a> {
                     // better.
                     let last_shape =
                         child_shape.sub_width(shape.rhs_overhead(context.config) + last.tries)?;
+                    // When `rw` fits and has at most one line, every arm of the `match` below
+                    // keeps `rw`: a child's rewrite is never empty (it starts with `.`, ` .`
+                    // or a comment), so `new_rw` has at least one line, and a `None` keeps
+                    // `rw` as well. `new_rw` is then a dead candidate; it is not rendered
+                    // where its effects on the run cannot reach the output.
+                    if could_fit_single_line
+                        && line_count <= 1
+                        && context.may_skip_dead_candidates()
+                    {
+                        self.fits_single_line = all_in_one_line;
+                        self.rewrites.push(rw);
+                        return Some(());
+                    }
                     match last.rewrite(context, last_shape) {
                         Some(ref new_rw) if !could_fit_single_line => {
                             last_subexpr_str = Some(new_rw.clone());

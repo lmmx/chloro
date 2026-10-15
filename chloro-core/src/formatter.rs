@@ -79,7 +79,7 @@ pub fn format_source_with_config(source: &str, config: &Config) -> String {
         return source.to_owned();
     }
     let normalized = formatting::normalize_src(source);
-    match formatting::format_text(&normalized, &settings, false) {
+    match formatting::format_text(&normalized, &settings, false, true) {
         Some(formatted) if formatted.echoed => source.to_owned(),
         Some(formatted) => {
             let mut text = formatted.text;
