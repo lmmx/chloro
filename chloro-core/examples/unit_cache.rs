@@ -22,6 +22,7 @@
 //!   outside the unit replaced by a space (newlines kept, so positions and lines are
 //!   unchanged), with the warm cache (the unit hits) and without (the reference): a unit
 //!   whose output read the source outside its own text would differ.
+//! - `--blank-max-bytes B`: `--blank` only on files of at most `B` bytes.
 //! - `--every N`: only every `N`th file of the sorted list.
 //! - `--edit ORIG EDITED`: warms a cache on ORIG, then times EDITED (best of `-n`) with a
 //!   fresh copy of that cache per round against `format_source_with_config`, and checks
@@ -144,6 +145,7 @@ fn main() {
     let mut rounds = 10;
     let mut times_over = 128 * 1024;
     let mut every = 1;
+    let mut blank_max = usize::MAX;
     while let Some(arg) = args.next() {
         let mut value = || args.next().expect("option takes a value");
         match arg.as_str() {
@@ -153,6 +155,7 @@ fn main() {
             "--blank" => blank = true,
             "--max-mb" => max_mb = value().parse().expect("--max-mb takes a number"),
             "--times-over" => times_over = value().parse().expect("--times-over takes bytes"),
+            "--blank-max-bytes" => blank_max = value().parse().expect("bytes"),
             "--every" => every = value().parse().expect("--every takes a number"),
             "-n" => rounds = value().parse().expect("-n takes a number"),
             "--edit" => edit = Some((PathBuf::from(value()), PathBuf::from(value()))),
@@ -170,6 +173,7 @@ fn main() {
         let reference = chloro_core::format_source_with_config(&edited, &config);
         let (mut best_ref, mut best_cached, mut best_parallel) = (f64::MAX, f64::MAX, f64::MAX);
         let mut hits = 0;
+        let mut missed: Vec<usize> = Vec::new();
         for _ in 0..rounds {
             let t = Instant::now();
             std::hint::black_box(chloro_core::format_source_with_config(&edited, &config));
@@ -185,10 +189,11 @@ fn main() {
             best_cached = best_cached.min(t.elapsed().as_secs_f64());
             assert!(out == reference, "cached output differs from the reference");
             hits = cache.take_counts().1;
+            missed = cache.inserted.borrow().iter().map(String::len).collect();
         }
         println!(
-            "edit: {} bytes, {units} units, {hits} hits; best of {rounds}: \
-             format_source_with_config {:.2} ms, parallel({threads}) {:.2} ms, \
+            "edit: {} bytes, {units} units, {hits} found, formatted units of {missed:?} bytes; \
+             best of {rounds}: format_source_with_config {:.2} ms, parallel({threads}) {:.2} ms, \
              unit cache {:.2} ms ({:.3}x)",
             edited.len(),
             best_ref * 1e3,
@@ -280,7 +285,7 @@ fn main() {
                 println!("shifted file differs: {}", path.display());
             }
         }
-        if blank {
+        if blank && src.len() <= blank_max {
             let inserted = std::mem::take(&mut *cache.inserted.borrow_mut());
             for text in inserted {
                 // The normalised source is what the units index; a file with `\r\n` or a
