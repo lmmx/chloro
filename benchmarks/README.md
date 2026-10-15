@@ -2,7 +2,9 @@
 
 Measurement harness for chloro against `rustfmt 1.9.0 --edition 2024`, and for one chloro
 build against another. Every speed figure the research programme states comes from these
-scripts (see `docs/journal/2026-10-14-autoresearch/protocol.md` §3).
+scripts (see `docs/journal/2026-10-14-autoresearch/protocol.md` §3); the quiet-host runs
+the README quotes are `docs/journal/2026-10-14-autoresearch/measurements/m1-quiet-host.md`
+and `m2-quiet-host.md` (M3, the final head, follows the same method).
 
 | file | measures |
 |---|---|
