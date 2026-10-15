@@ -16,6 +16,7 @@
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
 //! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, rebuilt from the parser's steps |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
+//! | `width` | chloro only: a lower bound on a node's one-line width, from its tokens, which lets an attempt that needs one line be skipped when no one-line rendering can fit |
 //!
 //! `nodes` and `span` adapt the syntax tree (`crate::cst`) to rustc's AST shape (doc comments as attributes,
 //! rustc's spans), which lets the ported modules keep rustfmt's control flow.
@@ -53,6 +54,7 @@ mod types;
 mod unit_cache;
 mod utils;
 mod visitor;
+mod width;
 
 use config::{Config, Settings};
 pub use unit_cache::{CachedUnit, UnitCache, UnitKey};
