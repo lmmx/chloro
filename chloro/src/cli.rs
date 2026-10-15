@@ -28,6 +28,7 @@ pub mod cli {
     pub mod logs;
     pub mod orchestrate;
     pub mod report;
+    pub mod trace;
     pub mod units;
     pub mod worker;
 
@@ -80,6 +81,7 @@ pub mod cli {
     ///
     /// The process will also exit with a non-zero status if migration fails.
     pub fn main() -> io::Result<()> {
+        trace::init();
         let args: Args = facet_args::from_std_args()
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{e}")))?;
 
@@ -113,7 +115,9 @@ pub mod cli {
 
         // Opened before the files are discovered: the executable is hashed as soon after
         // start-up as possible (`cache::tool_key`).
+        trace::mark("args");
         let cache = open_cache(&args, &config);
+        trace::mark("cache");
 
         // Collect all files from all source paths
         let mut all_files = Vec::new();
@@ -135,8 +139,10 @@ pub mod cli {
         // discovered) is processed once: every entry is canonical, so equal files compare
         // equal. Two workers writing one path could otherwise read a truncated file. The one
         // sort of the list: discovery yields each tree in this order already.
+        trace::mark("walk");
         all_files.sort_by(|a, b| a.path.cmp(&b.path));
         all_files.dedup_by(|a, b| a.path == b.path);
+        trace::mark("sort");
 
         if all_files.is_empty() {
             if args.verbose {
@@ -164,6 +170,7 @@ pub mod cli {
 
         // Format files in parallel
         let results = format_all(&all_files, &args, cache.as_ref(), units.as_ref());
+        trace::mark("formatted");
         let agg = aggregate_results(results);
 
         if let (Some(units), Some(cache)) = (units, &cache) {
@@ -196,8 +203,10 @@ pub mod cli {
             }
         }
 
+        trace::mark("saved");
         // Print summary
         print_summary(&agg, &args);
+        trace::finish();
 
         // Exit with error if in check mode and files need formatting
         if args.check && agg.files_changed > 0 {
