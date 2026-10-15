@@ -423,7 +423,7 @@ the next, EXP-020). The registry sample is `benchmarks/samples/registry49.txt` (
 
 ### The parse-only phase (`--phase parse`, head and head-pgo; `base`'s `bench` has no phase option)
 
-| sample | binary | whole, run 1 | run 2 | per file (net) | parse net of the empty process / whole net | 
+| sample | binary | whole, run 1 | run 2 | per file (net) | parse net of the empty process / whole net |
 |---|---|---|---|---|---|
 | fixtures | head | 86,532,466 | 86,533,457 | 87,406,979 | 86,215,096 / 220,641,010 = **39.1%** |
 | fixtures | head-pgo | 72,731,413 | 72,733,154 | 73,597,422 | 72,411,855 / 182,284,477 = 39.7% |
@@ -1208,4 +1208,3 @@ Wall time in ms: mean ± sd (min–max); RSS: peak resident MiB, max over runs; 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | fx-hir-ty | 1c (3) | 122 | 2876 | 30 | 1327.4 ± 132.7 (1169.9–1577.5) | 332.5 ± 39.2 (291.7–447.2) | 984.8 ± 157.9 (803.2–1349.7) | 0.338 | below | 0.250 | 0.249 | below | 86 | 8 | 1309.9 | 327.9 | 0.250 | 122/122 | r[0] c[0] |
 | fx-hir-ty | mc (none) | 122 | 2876 | 30 | 1266.2 ± 90.9 (1114.6–1488.8) | 111.7 ± 12.1 (90.3–140.2) | 301.3 ± 28.9 (261.4–373.4) | 0.371 | below | 0.088 | 0.081 | below | 86 | 16 | 1245.7 | 408.0 | 0.328 | 122/122 | r[0] c[0] |
-
