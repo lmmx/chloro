@@ -364,7 +364,13 @@ with the container.
 - E18 (`20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates`, agent running since
   02:57 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
   and literal widths computed once (decide-once rows 5 and 7); record `EXP-018-dead-candidates.md`.
-  On landing: reproduce goldens, conform at both versions, the two `config_matrix` values and Ir.
+  Landed (`a02cec5`: the chain skip kept at −3.40% Ir with a run-level guard, firing 2,024 times
+  on the sample; the literal-width cache rejected at +1.75%, 1,448 misses against 58 hits) and
+  merged at `387d723` after the orchestrator reproduced on the branch (goldens, conform at both
+  versions, Ir 302,372,347 on its base, fmt, clippy, tests) and then ran the gates on the merged
+  head itself: goldens 0 of 1238 and 0 of 25,024 registry files, sequential and 4 threads;
+  `conform -i` 1220/1220 at both versions; Ir 280,278,276–280,279,614 (−52.3% from the start,
+  −10.4% tonight); fmt, clippy and every workspace test. The best-known-good is `387d723`.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
   (Ir, goldens sequential and 4 threads, conform both versions; for E14 the RSS rule); then the
   quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
