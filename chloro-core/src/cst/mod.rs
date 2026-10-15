@@ -138,20 +138,8 @@ impl<'s> Tree<'s> {
         base: u32,
         id: u32,
     ) -> Option<Tree<'s>> {
-        Self::from_steps_with(src, lexed, output, base, id, &mut NoHook)
-    }
-
-    /// [`Self::from_steps_at`], reporting every element to `h` as it is laid out.
-    pub fn from_steps_with<H: BuildHook>(
-        src: &'s str,
-        lexed: &LexedStr<'_>,
-        output: &ra_ap_parser::Output,
-        base: u32,
-        id: u32,
-        h: &mut H,
-    ) -> Option<Tree<'s>> {
         let mut builder = TreeBuilder::new(src, base, id, lexed.len() * 2 + 8);
-        builder.steps_with(lexed, output, h)?;
+        builder.steps(lexed, output)?;
         Some(builder.finish())
     }
 
@@ -234,39 +222,6 @@ pub struct TreeBuilder<'s> {
     id: u32,
 }
 
-/// Observes a build element by element (`rustc_compat`'s checks run inside the build of a
-/// file's tree, EXP-031). `open` holds the indices of the open nodes, innermost last, and
-/// `elems` the elements laid out so far; at a token or an `Enter` they are the element's
-/// ancestors, and at an `Exit` the node's subtree is complete.
-pub trait BuildHook {
-    /// A token of `kind`, `len` bytes at `start`, about to be laid out at index `elems.len()`.
-    fn token(
-        &mut self,
-        src: &str,
-        elems: &[Elem],
-        open: &[u32],
-        kind: SyntaxKind,
-        start: u32,
-        len: u32,
-    );
-    /// A node of `kind`, about to be opened at index `elems.len()`.
-    fn enter(&mut self, elems: &[Elem], open: &[u32], kind: SyntaxKind);
-    /// The node at `idx` was finished.
-    fn exit(&mut self, elems: &[Elem], idx: u32);
-}
-
-/// The hook of a plain build: does nothing, and compiles to nothing.
-pub struct NoHook;
-
-impl BuildHook for NoHook {
-    #[inline(always)]
-    fn token(&mut self, _: &str, _: &[Elem], _: &[u32], _: SyntaxKind, _: u32, _: u32) {}
-    #[inline(always)]
-    fn enter(&mut self, _: &[Elem], _: &[u32], _: SyntaxKind) {}
-    #[inline(always)]
-    fn exit(&mut self, _: &[Elem], _: u32) {}
-}
-
 impl<'s> TreeBuilder<'s> {
     pub fn new(src: &'s str, base: u32, id: u32, capacity: usize) -> TreeBuilder<'s> {
         TreeBuilder {
@@ -317,46 +272,17 @@ impl<'s> TreeBuilder<'s> {
         self.elems[i].len = self.at - self.elems[i].start;
     }
 
-    #[inline(always)]
-    fn token_h<H: BuildHook>(&mut self, h: &mut H, kind: SyntaxKind, len: u32) {
-        h.token(self.src, &self.elems, &self.open, kind, self.at, len);
-        self.token(kind, len);
-    }
-
-    #[inline(always)]
-    fn start_node_h<H: BuildHook>(&mut self, h: &mut H, kind: SyntaxKind) {
-        h.enter(&self.elems, &self.open, kind);
-        self.start_node(kind);
-    }
-
-    #[inline(always)]
-    fn finish_node_h<H: BuildHook>(&mut self, h: &mut H) {
-        let i = *self.open.last().expect("balanced enter/exit");
-        self.finish_node();
-        h.exit(&self.elems, i);
-    }
-
     /// Lays out the tree `output` describes over `lexed`, which describe the source from the
     /// current offset, with trivia attached as `intersperse_trivia` attaches it (see
     /// [`Self::steps_fused`]). `None` when the parser reported an error (the builder is
     /// then unusable). Debug builds also run [`Self::steps_interspersed`] on a copy of the
     /// builder and assert that both give the same elements.
     pub fn steps(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
-        self.steps_with(lexed, output, &mut NoHook)
-    }
-
-    /// [`Self::steps`], reporting every element to `h` as it is laid out.
-    pub fn steps_with<H: BuildHook>(
-        &mut self,
-        lexed: &LexedStr<'_>,
-        output: &Output,
-        h: &mut H,
-    ) -> Option<()> {
         #[cfg(debug_assertions)]
         let mut reference = self.clone();
         #[cfg(debug_assertions)]
         let expected = reference.steps_interspersed(lexed, output);
-        let result = self.steps_fused_with(lexed, output, h);
+        let result = self.steps_fused(lexed, output);
         #[cfg(debug_assertions)]
         {
             assert_eq!(
@@ -419,16 +345,6 @@ impl<'s> TreeBuilder<'s> {
     /// `PendingExit` tests, data-dependent branches the simulator counted among the most
     /// mispredicted of the build (EXP-022), out of the loop.
     pub fn steps_fused(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
-        self.steps_fused_with(lexed, output, &mut NoHook)
-    }
-
-    /// [`Self::steps_fused`], reporting every element to `h` as it is laid out.
-    pub fn steps_fused_with<H: BuildHook>(
-        &mut self,
-        lexed: &LexedStr<'_>,
-        output: &Output,
-        h: &mut H,
-    ) -> Option<()> {
         let len = |i: usize| (lexed.text_start(i + 1) - lexed.text_start(i)) as u32;
         let n = lexed.len();
         let mut pos = 0usize;
@@ -440,7 +356,7 @@ impl<'s> TreeBuilder<'s> {
         let root_depth = loop {
             match steps.next() {
                 Some(Step::Enter { kind }) => {
-                    self.start_node_h(h, kind);
+                    self.start_node(kind);
                     break self.open.len();
                 }
                 Some(Step::Error { .. }) => {
@@ -460,53 +376,49 @@ impl<'s> TreeBuilder<'s> {
                     n_input_tokens,
                 } => {
                     if root_exited {
-                        self.leave_root(h, &mut root_exited);
+                        self.leave_root(&mut root_exited);
                     }
-                    pos = self.trivias(h, lexed, pos, n);
+                    pos = self.trivias(lexed, pos, n);
                     let end = pos + n_input_tokens as usize;
-                    self.token_h(
-                        h,
-                        kind,
-                        (lexed.text_start(end) - lexed.text_start(pos)) as u32,
-                    );
+                    self.token(kind, (lexed.text_start(end) - lexed.text_start(pos)) as u32);
                     pos = end;
                 }
                 Step::FloatSplit { ends_in_dot } => {
                     if root_exited {
-                        self.leave_root(h, &mut root_exited);
+                        self.leave_root(&mut root_exited);
                     }
-                    pos = self.trivias(h, lexed, pos, n);
+                    pos = self.trivias(lexed, pos, n);
                     let text = lexed.text(pos);
                     match text.split_once('.') {
                         Some((left, right)) => {
                             assert!(!left.is_empty());
-                            self.start_node_h(h, SyntaxKind::NAME_REF);
-                            self.token_h(h, SyntaxKind::INT_NUMBER, left.len() as u32);
-                            self.finish_node_h(h);
+                            self.start_node(SyntaxKind::NAME_REF);
+                            self.token(SyntaxKind::INT_NUMBER, left.len() as u32);
+                            self.finish_node();
                             // The parser's own `Exit` of the field expression, moved up.
-                            self.finish_node_h(h);
-                            self.token_h(h, SyntaxKind::DOT, 1);
+                            self.finish_node();
+                            self.token(SyntaxKind::DOT, 1);
                             if ends_in_dot {
                                 assert!(right.is_empty(), "{left}.{right}");
                             } else {
                                 assert!(!right.is_empty(), "{left}.{right}");
-                                self.start_node_h(h, SyntaxKind::NAME_REF);
-                                self.token_h(h, SyntaxKind::INT_NUMBER, right.len() as u32);
-                                self.finish_node_h(h);
+                                self.start_node(SyntaxKind::NAME_REF);
+                                self.token(SyntaxKind::INT_NUMBER, right.len() as u32);
+                                self.finish_node();
                                 // The unbalanced node the parser left open, which the
                                 // original closes before the next step.
-                                self.exit(h, &mut root_exited, root_depth);
+                                self.exit(&mut root_exited, root_depth);
                             }
                         }
                         None => {
                             // A float without a dot (`1e0`): an error and an `ERROR` node.
                             has_error = true;
-                            self.start_node_h(h, SyntaxKind::ERROR);
-                            self.token_h(h, SyntaxKind::FLOAT_NUMBER, text.len() as u32);
-                            self.finish_node_h(h);
-                            self.finish_node_h(h);
+                            self.start_node(SyntaxKind::ERROR);
+                            self.token(SyntaxKind::FLOAT_NUMBER, text.len() as u32);
+                            self.finish_node();
+                            self.finish_node();
                             if !ends_in_dot {
-                                self.exit(h, &mut root_exited, root_depth);
+                                self.exit(&mut root_exited, root_depth);
                             }
                         }
                     }
@@ -514,20 +426,20 @@ impl<'s> TreeBuilder<'s> {
                 }
                 Step::Enter { kind } => {
                     if root_exited {
-                        self.leave_root(h, &mut root_exited);
+                        self.leave_root(&mut root_exited);
                     }
                     let run = (pos..n).take_while(|&i| lexed.kind(i).is_trivia()).count();
                     let attached = n_attached_trivias(kind, lexed, pos, run);
                     for i in pos..pos + run - attached {
-                        self.token_h(h, lexed.kind(i), len(i));
+                        self.token(lexed.kind(i), len(i));
                     }
-                    self.start_node_h(h, kind);
+                    self.start_node(kind);
                     for i in pos + run - attached..pos + run {
-                        self.token_h(h, lexed.kind(i), len(i));
+                        self.token(lexed.kind(i), len(i));
                     }
                     pos += run;
                 }
-                Step::Exit => self.exit(h, &mut root_exited, root_depth),
+                Step::Exit => self.exit(&mut root_exited, root_depth),
                 Step::Error { .. } => {
                     // `intersperse_trivia` reports the error at `text_start(pos)`.
                     let _ = lexed.text_start(pos);
@@ -538,21 +450,21 @@ impl<'s> TreeBuilder<'s> {
         if !root_exited {
             unreachable!();
         }
-        self.trivias(h, lexed, pos, n);
-        self.finish_node_h(h);
+        self.trivias(lexed, pos, n);
+        self.finish_node();
         (!has_error).then_some(())
     }
 
     /// An `Exit` (or the deferred exit a split float leaves): finishes the node now, or
     /// marks the root's exit, which waits for the trailing trivia.
     #[inline]
-    fn exit<H: BuildHook>(&mut self, h: &mut H, root_exited: &mut bool, root_depth: usize) {
+    fn exit(&mut self, root_exited: &mut bool, root_depth: usize) {
         if *root_exited {
             // A second exit after the root's: the original finishes the pending node.
-            self.leave_root(h, root_exited);
+            self.leave_root(root_exited);
         }
         if self.open.len() > root_depth {
-            self.finish_node_h(h);
+            self.finish_node();
         } else {
             *root_exited = true;
         }
@@ -562,27 +474,20 @@ impl<'s> TreeBuilder<'s> {
     /// taken for the parser's output, whose root `Exit` is its last tree step.
     #[cold]
     #[inline(never)]
-    fn leave_root<H: BuildHook>(&mut self, h: &mut H, root_exited: &mut bool) {
+    fn leave_root(&mut self, root_exited: &mut bool) {
         *root_exited = false;
-        self.finish_node_h(h);
+        self.finish_node();
     }
 
     /// Emits the trivia tokens from `pos` up to the next non-trivia token; returns its index.
-    #[inline(always)]
-    fn trivias<H: BuildHook>(
-        &mut self,
-        h: &mut H,
-        lexed: &LexedStr<'_>,
-        mut pos: usize,
-        n: usize,
-    ) -> usize {
+    #[inline]
+    fn trivias(&mut self, lexed: &LexedStr<'_>, mut pos: usize, n: usize) -> usize {
         while pos < n {
             let kind = lexed.kind(pos);
             if !kind.is_trivia() {
                 break;
             }
-            self.token_h(
-                h,
+            self.token(
                 kind,
                 (lexed.text_start(pos + 1) - lexed.text_start(pos)) as u32,
             );
@@ -1056,7 +961,6 @@ impl<'t, N> AstChildren<'t, N> {
 /// backwards from the node. Only items and fields take trivia. A blank line stops the walk
 /// unless an outer doc comment precedes it; an inner doc comment stops it; any other
 /// comment extends the attached part to include it.
-#[inline(always)]
 fn n_attached_trivias(kind: SyntaxKind, lexed: &LexedStr<'_>, pos: usize, run: usize) -> usize {
     use SyntaxKind::*;
     match kind {
