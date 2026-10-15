@@ -22,6 +22,7 @@ use super::lists::{
 };
 use super::macros::MacroArg;
 use super::patterns::{TuplePatField, can_be_overflowed_pat};
+use super::scratch::ScratchVec;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{SegmentParam, can_be_overflowed_type};
@@ -576,7 +577,7 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
     /// rustfmt's `rewrite_items` up to its `write_list`: the list items, their formatting
     /// and whether the list is horizontal (extendable). The list itself is written by
     /// [`Context::rewrite`], into the buffer that `wrap_items` returns in rustfmt.
-    fn rewrite_items(&self) -> (Vec<ListItem>, ListFormatting<'_>, bool) {
+    fn rewrite_items(&self) -> (ScratchVec<ListItem>, ListFormatting<'_>, bool) {
         let span = self.items_span();
         let items = itemize_list(
             self.context.snippet_provider,
@@ -590,7 +591,8 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
             span.hi(),
             true,
         );
-        let mut list_items: Vec<_> = items.collect();
+        // Made and dropped in this module: in the scratch arena (EXP-025).
+        let mut list_items: ScratchVec<_> = items.collect();
 
         // Try letting the last argument overflow to the next line with block
         // indentation. If its first line fits on one line with the other arguments,
@@ -683,7 +685,7 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
         let mut result = String::with_capacity(
             self.ident.len()
                 + prefix.len()
-                + write_list_capacity(&list_items, &fmt)
+                + write_list_capacity(&list_items[..], &fmt)
                 + nested_indent_str.len()
                 + indent_str.len()
                 + suffix.len(),
@@ -691,7 +693,7 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
         result.push_str(self.ident);
         result.push_str(prefix);
         let items_start = result.len();
-        if !write_list_into(&list_items, &fmt, &mut result) {
+        if !write_list_into(&list_items[..], &fmt, &mut result) {
             return None;
         }
         self.wrap_items(
