@@ -1,5 +1,6 @@
 use super::args::Args;
 use super::cache::{Cache, Digest, content_digest};
+use super::trace;
 use super::units::Units;
 use crate::vlog;
 use chloro_core::{
@@ -56,10 +57,14 @@ pub fn format_file(
             return ProcessResult::Error(format!("Failed to read {}: {}", file_path.display(), e));
         }
     };
+    trace::stamp_read();
 
     // A cache hit means the content was observed, under this binary and configuration, to
     // come out of the formatter unchanged: the file is already formatted.
     let digest = cache.map(|_| content_digest(original.as_bytes()));
+    if digest.is_some() {
+        trace::stamp_hashed();
+    }
     if let (Some(cache), Some(digest)) = (cache, digest)
         && cache.contains(&digest)
     {
@@ -85,13 +90,15 @@ pub fn format_file(
         Ok(config) => config,
         Err(e) => return ProcessResult::Error(format!("Invalid --config: {e}")),
     };
+    let split = threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES;
     let formatted = if let Some(units) = units {
         format_source_with_unit_cache(&original, &config, threads, units.store())
-    } else if threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES {
+    } else if split {
         format_source_with_config_parallel(&original, &config, threads)
     } else {
         format_source_with_config(&original, &config)
     };
+    trace::stamp_formatted(split);
 
     let changed = original != formatted;
     let original_len = original.len();

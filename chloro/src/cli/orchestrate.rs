@@ -1,5 +1,6 @@
 use super::args::Args;
 use super::cache::Cache;
+use super::trace;
 use super::units::Units;
 use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
 use std::ffi::OsStr;
@@ -167,21 +168,41 @@ pub fn format_all(
     };
 
     let mut results: Vec<Option<ProcessResult>> = (0..files.len()).map(|_| None).collect();
+    trace::mark("spawn");
     let done: Vec<Vec<(usize, ProcessResult)>> = scope(|s| {
         let handles: Vec<_> = (0..num_threads.min(files.len().max(1)))
-            .map(|_| {
-                s.spawn(|| {
+            .map(|w| {
+                let next = &next;
+                let order = &order;
+                s.spawn(move || {
+                    let traced = trace::enabled();
+                    let w_start = trace::now();
                     let mut done = Vec::new();
                     loop {
                         let k = next.fetch_add(1, Ordering::Relaxed);
                         let Some(&(size, i)) = order.get(k) else {
                             break;
                         };
+                        let start = trace::now();
                         done.push((
                             i,
                             format_file(&files[i].path, args, cache, units, item_threads(size)),
                         ));
+                        if traced {
+                            let (read, hashed, formatted, split) = trace::take_stamps();
+                            trace::file(&trace::FileSpan {
+                                worker: w,
+                                bytes: size,
+                                split,
+                                start,
+                                read,
+                                hashed,
+                                formatted,
+                                end: trace::now(),
+                            });
+                        }
                     }
+                    trace::worker(w, w_start, trace::now());
                     done
                 })
             })
@@ -191,6 +212,7 @@ pub fn format_all(
             .map(|h| h.join().unwrap_or_default())
             .collect()
     });
+    trace::mark("joined");
     for (i, result) in done.into_iter().flatten() {
         results[i] = Some(result);
     }
