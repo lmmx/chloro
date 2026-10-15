@@ -57,12 +57,24 @@ fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Opt
     (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
 }
 
-/// Formats a parsed source text. Returns `None` when the text does not parse.
+/// Whether a text of `len` bytes is too long for the tree: its offsets, lengths and
+/// element indices (`cst`), the lexer's and `BytePos` are `u32`, and a longer text would wrap
+/// them and produce garbage. Such a text is returned unchanged, as rustfmt returns a file it
+/// cannot format.
+pub(crate) fn exceeds_offset_range(len: usize) -> bool {
+    len > u32::MAX as usize
+}
+
+/// Formats a parsed source text. Returns `None` when the text does not parse or is longer
+/// than `u32::MAX` bytes.
 pub(crate) fn format_text(
     source: &str,
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<Formatted> {
+    if exceeds_offset_range(source.len()) {
+        return None;
+    }
     let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
     let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
 
@@ -117,6 +129,9 @@ pub(crate) fn format_text_parallel(
     config: &Settings,
     threads: usize,
 ) -> Option<Formatted> {
+    if exceeds_offset_range(source.len()) {
+        return None;
+    }
     let tree = parse(source, config.edition().to_ra(), config.rustfmt_version())?;
     let file = ast::SourceFile::cast(tree.root()).expect("the root is a source file");
     if contains_skip(&inner_attributes(file.syntax())) {
@@ -366,6 +381,17 @@ pub(crate) fn format_code_block(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn texts_longer_than_u32_offsets_are_refused() {
+        assert!(!exceeds_offset_range(0));
+        assert!(!exceeds_offset_range(u32::MAX as usize));
+        #[cfg(target_pointer_width = "64")]
+        {
+            assert!(exceeds_offset_range(u32::MAX as usize + 1));
+            assert!(exceeds_offset_range(usize::MAX));
+        }
+    }
 
     #[test]
     fn trailing_newlines_are_truncated_to_one() {
