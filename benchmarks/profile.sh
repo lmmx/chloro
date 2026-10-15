@@ -6,7 +6,7 @@
 # below wall-clock noise.
 #
 #   benchmarks/profile.sh [--bench BIN] [--runs N] [--core N] [--out DIR] [--annotate N] [--sim]
-#                         [--per-file] [--sample-list FILE [--sample-root DIR]]
+#                         [--per-file] [--sample-list FILE [--sample-root DIR]] [--phase parse]
 #
 # --sim adds callgrind's cache and branch simulation (--cache-sim=yes --branch-sim=yes) and
 # prints, per run, Ir, Bc, Bcm, Bi, Bim, I1mr, D1mr, D1mw and the ten functions with the
@@ -24,6 +24,9 @@
 # (${CARGO_HOME:-~/.cargo}/registry/src) or '# root: fixtures', or to --sample-root DIR.
 # benchmarks/samples/registry49.txt is the registry validation sample (protocol.md section 3).
 #
+# --phase parse runs `bench --phase parse`: every file parsed as formatting parses it
+# (chloro_core::parse_only) and not formatted; with --per-file, per file too.
+#
 # The default sample: the 1238 `.rs` files under chloro-core/tests/conformance/fixtures, paths
 # sorted bytewise (`LC_ALL=C sort`), every 25th file (lines 25, 50, ..., 1225): 49 files.
 # The journals record "every 25th file of the sorted fixture list" but not the command;
@@ -40,7 +43,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/.." && pwd)
 FIXTURES=$REPO/chloro-core/tests/conformance/fixtures
 BENCH=$REPO/target/release/examples/bench
-RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0 LIST= LIST_ROOT=
+RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0 PERFILE=0 LIST= LIST_ROOT= PHASE=format
 
 die() { echo "profile.sh: error: $*" >&2; exit 2; }
 while [ $# -gt 0 ]; do
@@ -55,12 +58,14 @@ while [ $# -gt 0 ]; do
     --per-file) PERFILE=1; shift; continue ;;
     --sample-list) LIST=$2; shift ;;
     --sample-root) LIST_ROOT=$2; shift ;;
-    -h|--help) sed -n '2,36p' "$0"; exit 0 ;;
+    --phase) PHASE=$2; shift ;;
+    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
     *) die "unknown argument $1" ;;
   esac
   shift
 done
 
+case $PHASE in format | parse) ;; *) die "--phase takes format or parse, not '$PHASE'" ;; esac
 for t in valgrind setarch; do command -v "$t" >/dev/null || die "required tool '$t' not found"; done
 [ "$ANNOTATE" = 0 ] && [ "$SIM" = 0 ] || command -v callgrind_annotate >/dev/null || die "callgrind_annotate not found"
 [ -z "$CORE" ] || command -v taskset >/dev/null || die "taskset not found"
@@ -119,6 +124,12 @@ n=$(wc -l < "$OUT/sample.txt")
 bytes=$(cd "$ROOT" && xargs -d '\n' -a "$OUT/sample.txt" cat | wc -c)
 echo "sample: $n files, $bytes bytes from $SRC (list in $OUT/sample.txt)"
 echo "bench: $BENCH sha256=$(sha256sum "$BENCH" | cut -c1-16)"
+# The format phase passes no option, so its count is the one recorded before --phase existed.
+phase=()
+if [ "$PHASE" = parse ]; then
+  phase=(--phase parse)
+  echo "phase: parse only (bench --phase parse)"
+fi
 
 # The simulator's totals of one profile, then the top ten functions by I1mr and by Bcm.
 sim_report() {
@@ -152,7 +163,7 @@ count_ir() {
   local root=$1 cg=$2 txt=$3 log=$4 files=$5 seen ir
   shift 5
   (cd "$STAGE" && "${pin[@]}" env -i "$SETARCH" "$(uname -m)" -R "$VALGRIND" --tool=callgrind "$@" \
-    --callgrind-out-file="$cg" "$EXE" -n 1 --root "$root") < /dev/null > "$txt" 2> "$log" ||
+    --callgrind-out-file="$cg" "$EXE" -n 1 --root "$root" ${phase[@]+"${phase[@]}"}) < /dev/null > "$txt" 2> "$log" ||
     { cat "$log" >&2; die "valgrind failed (log in $log)"; }
   seen=$(sed -n 's/^\([0-9]*\) files,.*/\1/p' "$txt")
   [ "$seen" = "$files" ] || die "bench formatted ${seen:-no} files, not $files (output in $txt)"

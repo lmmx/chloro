@@ -35,6 +35,8 @@ benchmarks/profile.sh --core 3                                # Ir on the sample
 benchmarks/profile.sh --core 3 --runs 2 --sim                 # Ir plus branch and cache simulation
 benchmarks/profile.sh --core 3 --runs 3 --per-file            # Ir, and each file in a process of its own
 benchmarks/profile.sh --core 3 --sample-list benchmarks/samples/registry49.txt   # the registry sample
+benchmarks/profile.sh --core 3 --runs 3 --per-file --phase parse   # the parser's share, both ways
+target/release/examples/bench -n 5 --phase parse              # the parse phase's MB/s
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -329,6 +331,34 @@ does not depend on where the binary, the fixtures or `--out` are.
   against 320,642,781, cross-file term +1,893,074 (the fixture sample's is −402,241: the
   layout term has either sign). One file, `windows-sys-0.48.0/src/Windows/Win32/System/Rpc/
   mod.rs` (280,688 bytes), carries 119.4 M of the per-file sum; the rule keeps it.
+
+- `--phase parse` runs `bench --phase parse`: each file is parsed as formatting parses it
+  (`chloro_core::parse_only`: normalisation, lexing, parsing, the flat tree, the rustc
+  syntax checks) and not formatted, under the same invocation, so the count is the parse
+  phase's own and, with `--per-file`, its per-file and net figures too. `bench --phase
+  parse -n 5` gives the parse phase's MB/s the same way. The parser's share of the count is
+  (parse − E) / (format − E), E being each phase's empty sample. For `9d78713` (three runs,
+  this branch's binary):
+
+  | sample | phase | whole `Ir` (min) | per-file sum | empty sample | whole net | per-file net | cross-file term |
+  |---|---|---|---|---|---|---|---|
+  | fixtures | format | 237,765,227 | 253,335,086 | 315,845 | 237,449,382 | 237,858,681 | −409,299 |
+  | fixtures | parse | 86,529,639 | 102,938,260 | 317,136 | 86,212,503 | 87,398,596 | −1,186,093 |
+  | registry | format | 322,841,609 | 336,111,149 | 315,845 | 322,525,764 | 320,634,744 | +1,891,020 |
+  | registry | parse | 139,886,738 | 155,798,944 | 317,136 | 139,569,602 | 140,259,280 | −689,678 |
+
+  The parse phase is 36.3% of the fixture sample's count (36.7% per file) and 43.3% of the
+  registry sample's (43.7% per file; 43.1% without its largest file). In wall time
+  (`taskset -c 3 bench -n 5`, three interleaved pairs, load average 5.8–7.4, provisional):
+  parse 25.3–28.8 MB/s against format 7.1–8.8 on the 1238 fixtures, 24.2–28.6 against
+  9.5–12.6 on the registry sample's 49 files. Adding `parse_only` and the option moved the
+  format phase's count by −3.2K on the fixture sample and −10K on the registry sample
+  against the binary before it (237,768,390 and 322,851,667) with no formatter function
+  changed: `memcmp` called from `str::contains` (`is_contained_in`) costs −4.5K and
+  −11.1K at unchanged call counts (42,554 `memcmp` calls on the fixture sample in both): the
+  needles' `.rodata` addresses moved with the new string literals, and the AVX2 `memcmp`'s
+  cost depends on its operands' alignment; `bench::main` −0.6K and `Timespec::now` +1.7K
+  are `bench`'s own timing code.
 
 ## pgo.sh
 
