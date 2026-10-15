@@ -66,11 +66,13 @@ pub(crate) fn exceeds_offset_range(len: usize) -> bool {
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse or is longer
-/// than `u32::MAX` bytes.
+/// than `u32::MAX` bytes. `whole_file` is false for a snippet (`format_snippet`), whose
+/// caller reads the run's flags ([`RunState::whole_file`]).
 pub(crate) fn format_text(
     source: &str,
     config: &Settings,
     is_macro_def: bool,
+    whole_file: bool,
 ) -> Option<Formatted> {
     if exceeds_offset_range(source.len()) {
         return None;
@@ -91,6 +93,7 @@ pub(crate) fn format_text(
 
     let arena = TreeArena::new();
     let run = Rc::new(RunState::new(&arena));
+    run.whole_file.set(whole_file);
     let snippet_provider = SnippetProvider::new(source);
     let end_pos = snippet_provider.end_pos();
     let mut visitor = FmtVisitor::new(config, snippet_provider, run.clone());
@@ -272,7 +275,7 @@ pub(crate) fn format_snippet(
     config: &Settings,
     is_macro_def: bool,
 ) -> Option<FormattedSnippet> {
-    let formatted = format_text(snippet, config, is_macro_def)?;
+    let formatted = format_text(snippet, config, is_macro_def, false)?;
     if formatted.macro_failure
         || (is_macro_def
             && (formatted.lost_comment
