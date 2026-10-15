@@ -22,7 +22,7 @@ use super::nodes::{
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
-    concat, extra_offset, first_line_width, last_line_extendable, semicolon_for_expr,
+    concat, extra_offset, first_line_width, last_line_extendable, semicolon_for_expr, trim,
     trimmed_last_line_width, unicode_str_width,
 };
 
@@ -448,7 +448,7 @@ fn rewrite_match_body(
 
     // Look for comments between `=>` and the start of the body.
     let arrow_comment = {
-        let arrow_snippet = context.snippet(arrow_span).trim();
+        let arrow_snippet = trim(context.snippet(arrow_span));
         // search for the arrow starting from the end of the snippet since there may be a match
         // expression within the guard
         let arrow_index = if context.config.style_edition() <= StyleEdition::Edition2021 {
@@ -457,7 +457,7 @@ fn rewrite_match_body(
             arrow_snippet.find_last_uncommented("=>")
         }?;
         // 2 = `=>`
-        let comment_str = arrow_snippet[arrow_index + 2..].trim();
+        let comment_str = trim(&arrow_snippet[arrow_index + 2..]);
         if comment_str.is_empty() {
             String::new()
         } else {

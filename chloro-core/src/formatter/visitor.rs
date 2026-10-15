@@ -38,6 +38,7 @@ use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_spa
 use super::stmt::Stmt;
 use super::utils::{
     count_newline_bytes, count_newlines, format_visibility, last_line_width, starts_with_newline,
+    trim,
 };
 
 pub(crate) struct FmtVisitor<'a> {
@@ -313,7 +314,7 @@ impl<'a> FmtVisitor<'a> {
         let mut extra_newline = false;
 
         let skip_normal = |s: &str| {
-            let trimmed = s.trim();
+            let trimmed = trim(s);
             trimmed.is_empty() || trimmed.chars().all(|c| c == ';')
         };
 
@@ -707,7 +708,7 @@ impl<'a> FmtVisitor<'a> {
             self.push_str(s);
         } else {
             let snippet = self.snippet(span);
-            self.push_str(snippet.trim());
+            self.push_str(trim(snippet));
         }
         self.last_pos = span.hi();
     }
