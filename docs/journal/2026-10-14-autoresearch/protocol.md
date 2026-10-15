@@ -46,7 +46,9 @@ Exit status is not compared (chloro's CLI and rustfmt's differ in reporting).
 
 | metric | tool | noise | use |
 |---|---|---|---|
-| instructions (`Ir`) on the 49-file sample (every 25th file of the sorted fixture list) | `benchmarks/profile.sh` (callgrind) | 0.0006% between runs since D1 (`fc90e53`) | primary metric for any change that does not add threads |
+| instructions (`Ir`) on the 49-file sample (every 25th file of the sorted fixture list) | `benchmarks/profile.sh` (callgrind) | 0.0006% between runs since D1 (`fc90e53`); independent of where the sample and binary live since EXP-027 | primary metric for any change that does not add threads |
+| `Ir` on the 49-file registry validation sample ([`benchmarks/samples/registry49.txt`](../../../benchmarks/samples/registry49.txt), EXP-027) | `benchmarks/profile.sh --sample-list benchmarks/samples/registry49.txt` | as above | validation: a lever selected on the fixture sample must not regress it |
+| per-file `Ir`: each sample file in a process of its own, summed, net of an empty process (EXP-019, EXP-027) | `benchmarks/profile.sh --per-file` | a few K over 49 processes (minimum per file over `--runs 3`) | separates a lever's own work from the cross-file heap-layout term (EXP-020) |
 | in-process throughput, 1238 fixtures, best of 5 | `target/release/examples/bench -n 5` | about ±4% between runs on this host | secondary; always run interleaved with the baseline binary |
 | process-level wall time and peak RSS, per workload | `benchmarks/compare_rustfmt.sh` (hyperfine) | reported per run (min, mean, σ) | the numbers claimed against rustfmt |
 
@@ -59,6 +61,17 @@ A speedup claim needs:
 - the same binaries measured in the same window on the same host. Numbers from different
   hosts or different windows are not compared (this container has moved hosts before and
   wall time moved 25%).
+
+**Two samples (from E23 on).** Every record reports `Ir` on both samples, the fixture sample
+(`benchmarks/profile.sh`) and the registry validation sample (`benchmarks/profile.sh
+--sample-list benchmarks/samples/registry49.txt`), for the base and the candidate built
+alike. A kept lever regresses neither: a candidate whose `Ir` rises on either sample by more
+than the run-to-run spread (minimum of `--runs 3`) is not kept, whatever it gains on the
+other. Levers were selected on the fixture sample alone up to E22, so a gain that does not
+carry to the registry sample is fitted to the fixture sample's syntax mix, not a speedup
+(the external research brief, §1.1). The registry sample's list is committed; a lever that
+needs another sample adds one under `benchmarks/samples/` with its rule, it does not edit
+an existing list.
 
 ## 4. Experiment procedure
 
@@ -74,7 +87,8 @@ A speedup claim needs:
    2. `bench --check <golden.tsv>` — 0 of 1238 changed (or exactly the listed files for a
       conformance fix, after which the golden is re-recorded);
    3. `conform -i` — identical count not below the best-known-good, 0 not idempotent;
-   4. `benchmarks/profile.sh` — `Ir` against the best-known-good;
+   4. `benchmarks/profile.sh` — `Ir` against the best-known-good, on both samples of §3
+      from E23 on;
    5. `bench -n 5` interleaved with the best-known-good binary, 3 pairs;
    6. `config_matrix -n 1220` — no option value loses a file;
    7. registry corpus `config_matrix ... default` — identical count not below the
@@ -84,7 +98,17 @@ A speedup claim needs:
    failing gate.
 5. Record the result in the ledger: kept, rejected or inconclusive, with the numbers and the
    commit. Negative results are recorded with the same detail as positive ones.
-6. Merge kept changes into the integration branch
+6. **Confirmation run, then merge.** Before merging, the integrator re-measures the branch
+   head's instruction counts from a clean build (a fresh target directory, `cargo build
+   --release -p chloro-core --examples`), on both samples of §3, with the base built the
+   same way in the same window; the record's figures are claims until this run reproduces
+   them within the run-to-run spread. A change of under about 2 M instructions on either
+   sample is reported with the per-file figure beside the whole-sample one (`profile.sh
+   --per-file --runs 3`): the cross-file heap-layout term moves the whole-sample count by
+   −0.4 to +4.7 M with no change to the code it measures (EXP-019, EXP-020), so below that
+   size a whole-sample difference alone does not separate a lever from a layout shift; where
+   the two disagree, the per-file figure is the lever's own effect and the difference is
+   recorded as layout. Then merge kept changes into the integration branch
    (`claude/chloro-perf-research-swarm-nrscj8`), one experiment per merge, re-run gates 1–3
    on the merged tree, then re-record the golden hashes and the `Ir` figure as the new
    best-known-good.
