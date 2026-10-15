@@ -360,11 +360,16 @@ with the container.
   lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
   `EXP-016-scanner-paths.md`. On landing: reproduce the goldens, conform and Ir on the branch
   head before merging.
-- Theory records landed and committed: `incremental-and-process.md`, `scanning-and-strings.md`,
-  `parser-and-substrate.md`, `already-formatted-fast-path.md`, `rustd-trial.md`; still being
-  written: `decide-once-and-exact-reuse.md` (relaunched 02:16 UTC after the 01:31 interrupt
-  cancelled the first set). When it lands: commit it, then fill "Bounds, by record" and "Ranked
-  bounds and the compound picture" above from the five records' tables.
+- All six records are committed and the synthesis sections above are written (03:40 UTC).
+- E18 (`20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates`, agent running since
+  03:35 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
+  and literal widths computed once (decide-once rows 5 and 7); record `EXP-018-dead-candidates.md`.
+  On landing: reproduce goldens, conform at both versions, the two `config_matrix` values and Ir.
+- Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
+  (Ir, goldens sequential and 4 threads, conform both versions; for E14 the RSS rule); then the
+  quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
+  `benchmarks/compare_rustfmt.sh` and `profile.sh` when no other job runs; README and
+  best-known-good from M4; PR #88 body; the morning report (the user's eight items).
 - E17 (`20261015-parse-floor`, worktree `/home/user/wt/parse-floor`, agent running since 03:05
   UTC, time box 3 h): the exact, fork-free parse-floor levers of `parser-and-substrate.md` (P8
   pass `in_trait` down instead of a parent search, P5 macro arguments lexed and parsed once, P1
