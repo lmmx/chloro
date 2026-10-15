@@ -69,15 +69,29 @@ impl Indent {
         self.block_indent + self.alignment
     }
 
+    #[inline]
     pub(crate) fn to_string(self, config: &Settings) -> Cow<'static, str> {
         self.to_string_inner(config, 1)
     }
 
+    #[inline]
     pub(crate) fn to_string_with_newline(self, config: &Settings) -> Cow<'static, str> {
         self.to_string_inner(config, 0)
     }
 
+    /// The slice case of `to_string_general` inline: without hard tabs, an indent of up to
+    /// `INDENT_BUFFER_LEN - offset` spaces is a slice of `INDENT_BUFFER`.
+    #[inline]
     fn to_string_inner(self, config: &Settings, offset: usize) -> Cow<'static, str> {
+        let num_chars = self.width();
+        if !config.hard_tabs() && num_chars + offset <= INDENT_BUFFER_LEN {
+            return Cow::from(&INDENT_BUFFER[offset..=num_chars]);
+        }
+        self.to_string_general(config, offset)
+    }
+
+    #[inline(never)]
+    fn to_string_general(self, config: &Settings, offset: usize) -> Cow<'static, str> {
         let (num_tabs, num_spaces) = if config.hard_tabs() {
             (self.block_indent / config.tab_spaces(), self.alignment)
         } else {

@@ -25,7 +25,7 @@ use super::patterns::{TuplePatField, can_be_overflowed_pat};
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{SegmentParam, can_be_overflowed_type};
-use super::utils::{count_newlines, extra_offset, first_line_width, last_line_width};
+use super::utils::{extra_offset, first_line_width, has_one_newline, last_line_width};
 
 /// A list of `format!`-like macros, that take a long format string and a list of arguments to
 /// format.
@@ -499,7 +499,7 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
                 // (e.g., `foo() as u32`), this budget reduction may produce poorly
                 // formatted code, where a prefix or a suffix being left on its own
                 // line. Here we explicitly check those cases.
-                if count_newlines(overflowed) == 1 {
+                if has_one_newline(overflowed) {
                     let rw = self
                         .items
                         .last()

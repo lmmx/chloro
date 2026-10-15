@@ -5,7 +5,9 @@ use std::borrow::Cow;
 use crate::cst::ast::{self, AstNode};
 use unicode_width::UnicodeWidthStr;
 
-use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
+use super::comment::{
+    CharClasses, FullCodeCharKind, LineClasses, filter_normal_code, find_any_byte,
+};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
 use super::nodes::{is_repeat_array, node_text};
@@ -96,8 +98,8 @@ pub(crate) fn last_line_used_width(s: &str, offset: usize) -> usize {
 #[inline]
 pub(crate) fn trimmed_last_line_width(s: &str) -> usize {
     unicode_str_width(match s.rfind('\n') {
-        Some(n) => s[(n + 1)..].trim(),
-        None => s.trim(),
+        Some(n) => trim(&s[(n + 1)..]),
+        None => trim(s),
     })
 }
 
@@ -254,8 +256,70 @@ pub(crate) fn concat(parts: &[&str]) -> String {
     parts.concat()
 }
 
+/// `str::trim` on bytes while the ends are ASCII. `char::is_whitespace` is true on exactly
+/// these ASCII characters: tab, `\n`, `\x0B`, `\x0C`, `\r` and space (`u8::is_ascii_whitespace`
+/// leaves out `\x0B`, so `trim_ascii` is not equivalent). A first or last kept byte that is
+/// not ASCII starts a character that may be Unicode whitespace: `str::trim` decides then.
+/// An all-whitespace text gives the empty slice at its start, as `str::trim` does.
+pub(crate) fn trim(s: &str) -> &str {
+    let bytes = s.as_bytes();
+    let Some(start) = bytes.iter().position(|&b| !is_whitespace_byte(b)) else {
+        return &s[..0];
+    };
+    let end = bytes
+        .iter()
+        .rposition(|&b| !is_whitespace_byte(b))
+        .unwrap_or(start)
+        + 1;
+    if !bytes[start].is_ascii() || !bytes[end - 1].is_ascii() {
+        return s.trim();
+    }
+    &s[start..end]
+}
+
+#[inline]
+fn is_whitespace_byte(b: u8) -> bool {
+    matches!(b, b'\t' | b'\n' | b'\x0B' | b'\x0C' | b'\r' | b' ')
+}
+
 pub(crate) fn count_newlines(input: &str) -> usize {
-    input.bytes().filter(|&b| b == b'\n').count()
+    count_newline_bytes(input.as_bytes())
+}
+
+/// The number of `\n` bytes, eight at a time: `newline_flags(w) >> 7` holds 1 in each
+/// byte of `w` that is `\n` and 0 in the others, so the byte lanes of the sum over at most
+/// 255 words hold at most 255; they are then added in pairs into 16-bit lanes (at most
+/// 510) and the four 16-bit lanes into the top one by a multiplication (at most 2040).
+pub(crate) fn count_newline_bytes(bytes: &[u8]) -> usize {
+    const BYTE_LANES: u64 = 0x00ff_00ff_00ff_00ff;
+    const WORD_ONES: u64 = 0x0001_0001_0001_0001;
+    let mut count = 0;
+    for block in bytes.chunks(8 * 255) {
+        let mut words = block.chunks_exact(8);
+        let mut lanes = 0;
+        for word in &mut words {
+            lanes += newline_flags(u64::from_le_bytes(word.try_into().unwrap())) >> 7;
+        }
+        let pairs = (lanes & BYTE_LANES) + ((lanes >> 8) & BYTE_LANES);
+        count += (pairs.wrapping_mul(WORD_ONES) >> 48) as usize;
+        count += words.remainder().iter().filter(|&&b| b == b'\n').count();
+    }
+    count
+}
+
+/// Bit 7 of a byte of the result is set iff that byte of `w` is `\n` (see
+/// `newline_or_non_ascii`); the other bits are clear.
+fn newline_flags(w: u64) -> u64 {
+    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
+    let y = w ^ 0x0a0a_0a0a_0a0a_0a0a;
+    !(((y & LOW7) + LOW7) | y) & !LOW7
+}
+
+/// `count_newlines(s) == 1`, stopping at a second `\n`.
+pub(crate) fn has_one_newline(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    let first = find_any_byte(bytes, 0, *b"\n");
+    first < bytes.len() && find_any_byte(bytes, first + 1, *b"\n") == bytes.len()
 }
 
 /// Wraps String in an Option. Returns Some when the string adheres to the
@@ -270,6 +334,82 @@ pub(crate) fn wrap_str(s: String, max_width: usize, shape: Shape) -> Option<Stri
 
 pub(crate) fn filtered_str_fits(snippet: &str, max_width: usize, shape: Shape) -> bool {
     let snippet = &*filter_normal_code(snippet);
+    match lines_fit(snippet, max_width, shape) {
+        Some(fits) => fits,
+        None => str_fits_by_lines(snippet, max_width, shape),
+    }
+}
+
+/// `str_fits_by_lines` in one pass for a text without `\r`, or `None` when it has one.
+/// Without `\r`, `lines()` yields exactly the pieces between `\n` bytes (an empty piece
+/// after a final `\n` is not yielded, and its width 0 passes both of its tests), and
+/// `first_line_width`, `last_line_width` and `unicode_str_width` give each piece the width
+/// it has alone: its length when it is ASCII, its `unicode_str_width` otherwise. The tests
+/// are conjunctions without side effects, so the first piece that fails one decides the
+/// result, whatever comes after it.
+fn lines_fit(snippet: &str, max_width: usize, shape: Shape) -> Option<bool> {
+    let bytes = snippet.as_bytes();
+    let mut start = 0;
+    let mut pos = 0;
+    let mut ascii = true;
+    let mut first = true;
+    loop {
+        pos = first_newline_return_or_non_ascii(bytes, pos);
+        let end = match bytes.get(pos) {
+            Some(b'\n') => pos,
+            Some(b'\r') => return None,
+            Some(_) => {
+                ascii = false;
+                pos += 1;
+                continue;
+            }
+            None => bytes.len(),
+        };
+        let width = if ascii {
+            end - start
+        } else {
+            unicode_str_width(&snippet[start..end])
+        };
+        if end == bytes.len() {
+            return Some(if first {
+                width <= shape.width
+            } else {
+                width <= max_width && width <= shape.used_width() + shape.width
+            });
+        }
+        if width > if first { shape.width } else { max_width } {
+            return Some(false);
+        }
+        first = false;
+        ascii = true;
+        pos += 1;
+        start = pos;
+    }
+}
+
+/// The position of the first byte at or after `pos` that is `\n`, `\r` or non-ASCII, or
+/// `bytes.len()`, eight bytes at a time. `newline_or_non_ascii(w ^ 0x07..)` flags `\r`
+/// (`0x0d ^ 0x07 = 0x0a`) and the non-ASCII bytes, exactly per byte.
+fn first_newline_return_or_non_ascii(bytes: &[u8], mut pos: usize) -> usize {
+    while let Some(chunk) = bytes.get(pos..pos + 8) {
+        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+        let found = newline_or_non_ascii(w) | newline_or_non_ascii(w ^ 0x0707_0707_0707_0707);
+        if found != 0 {
+            return pos + (found.trailing_zeros() / 8) as usize;
+        }
+        pos += 8;
+    }
+    while let Some(&b) = bytes.get(pos) {
+        if b == b'\n' || b == b'\r' || !b.is_ascii() {
+            break;
+        }
+        pos += 1;
+    }
+    pos
+}
+
+/// `filtered_str_fits` after the comment filter, line by line (rustfmt's form).
+fn str_fits_by_lines(snippet: &str, max_width: usize, shape: Shape) -> bool {
     if !snippet.is_empty() {
         // First line must fits with `shape.width`.
         if first_line_width(snippet) > shape.width {
@@ -540,6 +680,112 @@ mod tests {
                     let mut s = plain.clone();
                     s.insert_str(at, special);
                     assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn ascii_first_trim_matches_str_trim() {
+        // Every string of up to five characters over the ASCII whitespace of
+        // `char::is_whitespace` (with `\x0B` and `\x0C`), a letter, and non-ASCII
+        // characters that are (U+0085, U+00A0, U+3000) and are not (`é`) whitespace; the
+        // result must be the same slice of the input, not only equal text.
+        const ALPHABET: [char; 11] = [
+            ' ', '\t', '\n', '\r', '\x0B', '\x0C', 'a', '\u{85}', '\u{a0}', '\u{3000}', 'é',
+        ];
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                let (fast, full) = (trim(&s), s.trim());
+                assert_eq!(fast, full, "{s:?}");
+                assert_eq!(fast.as_ptr(), full.as_ptr(), "{s:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn newline_counts_match_the_byte_filter() {
+        // Lengths across the eight-byte words and the 255-word blocks, with `\n` at a
+        // stride, next to bytes one bit away from it (`\x0B`, `\x08`, `\x8a`).
+        for len in (0..40).chain([2039, 2040, 2041, 4100, 20_000]) {
+            for stride in [1, 2, 3, 7, 8, 9, 1000] {
+                let bytes: Vec<u8> = (0..len)
+                    .map(|i| match i % stride {
+                        0 => b'\n',
+                        1 => b'\x0B',
+                        2 => b'\x08',
+                        3 => 0x8a,
+                        _ => b'a',
+                    })
+                    .collect();
+                let expected = bytes.iter().filter(|&&b| b == b'\n').count();
+                assert_eq!(count_newline_bytes(&bytes), expected, "{len} {stride}");
+                if let Ok(s) = std::str::from_utf8(&bytes) {
+                    assert_eq!(has_one_newline(s), expected == 1, "{len} {stride}");
+                }
+            }
+        }
+        for s in [
+            "",
+            "a",
+            "\n",
+            "a\nb",
+            "\n\n",
+            "a\nb\nc",
+            "abcdefgh\n",
+            "abcdefghi\nj\n",
+        ] {
+            assert_eq!(has_one_newline(s), count_newlines(s) == 1, "{s:?}");
+        }
+    }
+
+    #[test]
+    fn one_pass_fit_matches_the_line_by_line_fit() {
+        // Every string of up to five characters over `a`, space, `\n`, `\r`, a two-column
+        // character, a combining mark, a variation selector and `/`, and a few longer ones
+        // around the eight-byte words, against every small shape.
+        const ALPHABET: [char; 8] = ['a', ' ', '\n', '\r', '\u{3000}', '\u{301}', '\u{fe0f}', '/'];
+        let mut strings: Vec<String> = [
+            "abcdefghijklmnop\nabcdefgh",
+            "abcdefgh\nabcdefghijklmnopq\n",
+            "abcdefg\u{3000}\nabcdefghij\rk\nabc",
+            "a // b\nc",
+            "\u{2764}\u{fe0f}\nab",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        for s in &strings {
+            let filtered = filter_normal_code(s);
+            for width in 0..=4 {
+                for max_width in 0..=4 {
+                    for offset in [0, 1] {
+                        let shape = Shape {
+                            width,
+                            indent: Indent::new(0, 0),
+                            offset,
+                        };
+                        assert_eq!(
+                            filtered_str_fits(s, max_width, shape),
+                            str_fits_by_lines(&filtered, max_width, shape),
+                            "{s:?} {width} {max_width} {offset}"
+                        );
+                    }
                 }
             }
         }
