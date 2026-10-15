@@ -37,25 +37,26 @@ const KEEP_LIMIT: usize = 1 << 20;
 const CHUNK_ALIGN: usize = 16;
 
 struct Arena {
-    /// The next free byte of the current chunk, its start and its end (all 0 before the
-    /// first chunk).
-    ptr: Cell<usize>,
-    start: Cell<usize>,
-    end: Cell<usize>,
+    /// The next free byte of the current chunk, its start and its end (all null before the
+    /// first chunk). Pointers, not addresses, so that every pointer handed out keeps its
+    /// chunk's provenance.
+    ptr: Cell<*mut u8>,
+    start: Cell<*mut u8>,
+    end: Cell<*mut u8>,
     /// Scratch values that hold storage.
     live: Cell<usize>,
     /// Chunks other than the current one, which a reset frees.
     older: Cell<bool>,
-    /// Every chunk as (address, size), the current one last.
-    chunks: RefCell<Vec<(usize, usize)>>,
+    /// Every chunk as (start, size), the current one last.
+    chunks: RefCell<Vec<(*mut u8, usize)>>,
 }
 
 thread_local! {
     static ARENA: Arena = const {
         Arena {
-            ptr: Cell::new(0),
-            start: Cell::new(0),
-            end: Cell::new(0),
+            ptr: Cell::new(ptr::null_mut()),
+            start: Cell::new(ptr::null_mut()),
+            end: Cell::new(ptr::null_mut()),
             live: Cell::new(0),
             older: Cell::new(false),
             chunks: RefCell::new(Vec::new()),
@@ -67,11 +68,15 @@ impl Arena {
     /// `size` bytes at `align` (a power of two, at most `CHUNK_ALIGN`); `size > 0`.
     #[inline(always)]
     fn alloc(&self, size: usize, align: usize) -> *mut u8 {
-        let p = (self.ptr.get() + (align - 1)) & !(align - 1);
-        let end = self.end.get();
+        let top = self.ptr.get();
+        let p = (top.addr() + (align - 1)) & !(align - 1);
+        let end = self.end.get().addr();
+        // Before the first chunk `top` and `end` are null and the test fails (`size > 0`).
         if p <= end && size <= end - p {
-            self.ptr.set(p + size);
-            return p as *mut u8;
+            // The current chunk's provenance at an address inside it (`p + size <= end`).
+            let p = top.with_addr(p);
+            self.ptr.set(p.wrapping_add(size));
+            return p;
         }
         self.alloc_in_new_chunk(size, align)
     }
@@ -91,14 +96,16 @@ impl Arena {
         if base.is_null() {
             handle_alloc_error(layout);
         }
-        let base = base as usize;
         self.older.set(!chunks.is_empty());
         chunks.push((base, chunk));
-        self.start.set(base);
-        self.end.set(base + chunk);
-        let p = (base + (align - 1)) & !(align - 1);
-        self.ptr.set(p + size);
-        p as *mut u8
+        // SAFETY: `base` starts an allocation of `chunk >= size + align` bytes aligned to
+        // `CHUNK_ALIGN >= align`, so `base` is aligned and `base + size` is inside it.
+        unsafe {
+            self.start.set(base);
+            self.end.set(base.add(chunk));
+            self.ptr.set(base.add(size));
+        }
+        base
     }
 
     /// Grows the allocation at `p` of `old` bytes to `new > old` bytes: in place when it is
@@ -106,10 +113,14 @@ impl Arena {
     /// allocation and a copy of the `old` bytes (the old space is reused after the next reset).
     #[inline]
     fn grow(&self, p: *mut u8, old: usize, new: usize, align: usize) -> *mut u8 {
-        let a = p as usize;
         let top = self.ptr.get();
-        if a + old == top && a >= self.start.get() && new - old <= self.end.get() - top {
-            self.ptr.set(a + new);
+        if p.addr() + old == top.addr()
+            && p.addr() >= self.start.get().addr()
+            && new - old <= self.end.get().addr() - top.addr()
+        {
+            // SAFETY: `p` is the newest allocation of the current chunk (it ends at `top`)
+            // and the chunk has `new - old` bytes after `top`.
+            self.ptr.set(unsafe { top.add(new - old) });
             return p;
         }
         let q = self.alloc(new, align);
@@ -123,14 +134,13 @@ impl Arena {
     /// the arena resets when no value holds storage any more.
     #[inline(always)]
     fn release(&self, p: *mut u8, size: usize) {
-        let a = p as usize;
-        if a + size == self.ptr.get() && a >= self.start.get() {
-            self.ptr.set(a);
+        if p.addr() + size == self.ptr.get().addr() && p.addr() >= self.start.get().addr() {
+            self.ptr.set(p);
         }
         let live = self.live.get() - 1;
         self.live.set(live);
         if live == 0 {
-            if self.older.get() || self.end.get() - self.start.get() > KEEP_LIMIT {
+            if self.older.get() || self.end.get().addr() - self.start.get().addr() > KEEP_LIMIT {
                 self.free_chunks();
             } else {
                 self.ptr.set(self.start.get());
@@ -152,21 +162,20 @@ impl Arena {
         for (base, size) in chunks.drain(..) {
             // SAFETY: allocated in `alloc_in_new_chunk` with this layout; no value holds
             // storage in it (`live` is zero).
-            unsafe {
-                dealloc(
-                    base as *mut u8,
-                    Layout::from_size_align_unchecked(size, CHUNK_ALIGN),
-                )
-            };
+            unsafe { dealloc(base, Layout::from_size_align_unchecked(size, CHUNK_ALIGN)) };
         }
-        let (base, size) = keep.unwrap_or((0, 0));
+        let (base, end) = match keep {
+            // SAFETY: `base + size` is the end of the kept chunk.
+            Some((base, size)) => (base, unsafe { base.add(size) }),
+            None => (ptr::null_mut(), ptr::null_mut()),
+        };
         if let Some(k) = keep {
             chunks.push(k);
         }
         self.older.set(false);
         self.start.set(base);
         self.ptr.set(base);
-        self.end.set(base + size);
+        self.end.set(end);
     }
 }
 
@@ -177,12 +186,7 @@ impl Drop for Arena {
         if self.live.get() == 0 {
             for &(base, size) in self.chunks.get_mut().iter() {
                 // SAFETY: as in `free_chunks`.
-                unsafe {
-                    dealloc(
-                        base as *mut u8,
-                        Layout::from_size_align_unchecked(size, CHUNK_ALIGN),
-                    )
-                };
+                unsafe { dealloc(base, Layout::from_size_align_unchecked(size, CHUNK_ALIGN)) };
             }
         }
     }
@@ -442,8 +446,8 @@ mod tests {
     fn arena_state() -> (usize, usize, usize, usize) {
         ARENA.with(|a| {
             (
-                a.ptr.get(),
-                a.start.get(),
+                a.ptr.get().addr(),
+                a.start.get().addr(),
                 a.live.get(),
                 a.chunks.borrow().len(),
             )
@@ -577,6 +581,35 @@ mod tests {
         assert_eq!(ours.as_str(), std);
         assert_eq!(format!("{ours}"), std);
         assert_eq!(format!("{ours:?}"), format!("{std:?}"));
+    }
+
+    /// The three users of the arena (chains, overflow's list items, types' path segments) on
+    /// one input, formatted as rustfmt formats it; small enough for Miri
+    /// (`cargo +nightly miri test -p chloro-core --lib scratch`).
+    #[test]
+    fn formatting_through_the_arena_users() {
+        let src = "fn f() {\n    let result = some_receiver.method_one::<Vec<u8>>(first_argument, \
+                   second_argument).method_two(std::collections::HashMap::<String, usize>::new(), \
+                   InFile::new(file_id, decl))?.method_three();\n    acc.push(Foo { a: 1 }.into());\n}\n";
+        let expected = "fn f() {
+    let result = some_receiver
+        .method_one::<Vec<u8>>(first_argument, second_argument)
+        .method_two(
+            std::collections::HashMap::<String, usize>::new(),
+            InFile::new(file_id, decl),
+        )?
+        .method_three();
+    acc.push(Foo { a: 1 }.into());
+}
+";
+        assert_eq!(arena_state().3, 0, "a fresh thread has no chunk");
+        assert_eq!(crate::format_source(src), expected);
+        let (_, _, live, chunks) = arena_state();
+        assert_eq!(
+            (live, chunks),
+            (0, 1),
+            "the arena was used, and is empty with its chunk kept"
+        );
     }
 
     #[test]
