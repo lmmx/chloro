@@ -11,6 +11,7 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 | `compare_rustfmt.sh` | process wall time, CPU time and peak RSS of rustfmt and chloro on named workloads, with hyperfine (`--export-json`) |
 | `report.py` | turns a results directory into markdown tables with chloro/rustfmt ratios |
 | `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample |
+| `cliffs/` | the cliff hunt (EXP-019): scaling fixtures by input shape, callgrind `Ir` per file and the power-law exponent per shape; see `cliffs/README.md` |
 | `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`

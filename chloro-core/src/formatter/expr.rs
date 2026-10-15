@@ -1127,11 +1127,35 @@ pub(crate) fn rewrite_else_kw_with_comments(
 
 impl Rewrite for ControlFlow<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
+        let mut result = String::new();
+        self.rewrite_into(context, shape, &mut result)?;
+        Some(result)
+    }
+}
+
+impl ControlFlow<'_> {
+    /// rustfmt's `ControlFlow::rewrite`, appending the text to `result`. rustfmt rewrites
+    /// the `else if` of a chain recursively and appends the whole rest of the chain to each
+    /// link's result, which copies it once per link (quadratic in the length of the chain);
+    /// here every link appends to the same buffer. The `else` keyword and its comments are
+    /// written before the rest of the chain is rewritten: they depend only on the source
+    /// and the shape, and `rewrite_else_kw_with_comments` has no effect on the run.
+    fn rewrite_into(
+        &self,
+        context: &RewriteContext<'_>,
+        shape: Shape,
+        result: &mut String,
+    ) -> Option<()> {
         let alt_block_sep = &shape.indent.to_string_with_newline(context.config);
         let (cond_str, used_width) = self.rewrite_cond(context, shape, alt_block_sep)?;
         // If `used_width` is 0, it indicates that whole control flow is written in a single line.
         if used_width == 0 {
-            return Some(cond_str);
+            if result.is_empty() {
+                *result = cond_str;
+            } else {
+                result.push_str(&cond_str);
+            }
+            return Some(());
         }
 
         let block_width = shape.width.saturating_sub(used_width);
@@ -1156,19 +1180,23 @@ impl Rewrite for ControlFlow<'_> {
             result?
         };
 
-        let mut result = concat(&[&cond_str, &block_str]);
+        if result.is_empty() {
+            result.reserve_exact(cond_str.len() + block_str.len());
+        }
+        result.push_str(&cond_str);
+        result.push_str(&block_str);
 
         if let Some(else_block) = &self.else_block {
             let shape = Shape::indented(shape.indent, context.config);
-            let mut last_in_chain = false;
-            let rewrite = match else_block {
+            let else_kw_span = mk_sp(self.block.span.hi(), else_block.span().lo());
+            match else_block {
                 // If the else expression is another if-else expression, prevent it
                 // from being formatted on a single line.
                 // Note how we're passing the original shape, as the
                 // cost of "else" should not cascade.
                 ast::Expr::IfExpr(i) => {
                     let (pats, cond) = extract_pats_and_cond(i.condition()?);
-                    ControlFlow::new_if(
+                    let next = ControlFlow::new_if(
                         cond?,
                         pats,
                         context.run.block_of(&i.then_branch()?)?,
@@ -1176,33 +1204,37 @@ impl Rewrite for ControlFlow<'_> {
                         false,
                         true,
                         mk_sp(expr_span(else_block).lo(), self.span.hi()),
-                    )
-                    .rewrite(context, shape)
+                    );
+                    result.push_str(&rewrite_else_kw_with_comments(
+                        false,
+                        false,
+                        context,
+                        else_kw_span,
+                        shape,
+                    ));
+                    next.rewrite_into(context, shape, result)?;
                 }
                 _ => {
-                    last_in_chain = true;
                     // When rewriting a block, the width is only used for single line
                     // blocks, passing 1 lets us avoid that.
                     let else_shape = Shape {
                         width: min(1, shape.width),
                         ..shape
                     };
-                    format_expr(else_block, ExprType::Statement, context, else_shape)
+                    let rewrite = format_expr(else_block, ExprType::Statement, context, else_shape);
+                    result.push_str(&rewrite_else_kw_with_comments(
+                        false,
+                        true,
+                        context,
+                        else_kw_span,
+                        shape,
+                    ));
+                    result.push_str(&rewrite?);
                 }
-            };
-
-            let else_kw = rewrite_else_kw_with_comments(
-                false,
-                last_in_chain,
-                context,
-                mk_sp(self.block.span.hi(), else_block.span().lo()),
-                shape,
-            );
-            result.push_str(&else_kw);
-            result.push_str(&rewrite?);
+            }
         }
 
-        Some(result)
+        Some(())
     }
 }
 

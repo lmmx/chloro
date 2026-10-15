@@ -150,7 +150,27 @@ pub(crate) fn non_trivia_text(node: Node<'_>) -> String {
 }
 
 /// `true` if `node` starts with an attribute or an outer doc comment.
+///
+/// Inline for the common case, a first child that is a node or a token other than
+/// whitespace and comments (86,960 of 87,614 calls on the 49-file sample, EXP-019): the
+/// loop of [`has_leading_attrs_scan`] would answer at that child.
+#[inline]
 fn has_leading_attrs(node: Node<'_>) -> bool {
+    match node.children_with_tokens().next() {
+        None => false,
+        Some(NodeOrToken::Node(n)) => n.kind() == SyntaxKind::ATTR,
+        Some(NodeOrToken::Token(t))
+            if !matches!(t.kind(), SyntaxKind::WHITESPACE | SyntaxKind::COMMENT) =>
+        {
+            false
+        }
+        Some(NodeOrToken::Token(_)) => has_leading_attrs_scan(node),
+    }
+}
+
+/// [`has_leading_attrs`] for any node.
+#[inline(never)]
+fn has_leading_attrs_scan(node: Node<'_>) -> bool {
     for child in node.children_with_tokens() {
         match child {
             NodeOrToken::Node(n) => return n.kind() == SyntaxKind::ATTR,
@@ -166,10 +186,20 @@ fn has_leading_attrs(node: Node<'_>) -> bool {
 }
 
 /// Outer attributes (including sugared doc comments) at the start of `node`, in source order.
+///
+/// Inline for the test that most nodes stop at (no leading attribute: an empty `Vec`, which
+/// does not allocate).
+#[inline]
 pub(crate) fn outer_attributes<'t>(node: Node<'t>) -> Vec<Attribute<'t>> {
     if !has_leading_attrs(node) {
         return Vec::new();
     }
+    collect_outer_attributes(node)
+}
+
+/// The attributes of a node that [`has_leading_attrs`].
+#[inline(never)]
+fn collect_outer_attributes<'t>(node: Node<'t>) -> Vec<Attribute<'t>> {
     let mut attrs = Vec::new();
     for child in node.children_with_tokens() {
         match child {
@@ -597,6 +627,42 @@ mod tests {
     use crate::cst::Tree;
     use crate::cst::ast::HasModuleItem;
     use ra_ap_parser::Edition;
+
+    /// The inline first-child tests of `has_leading_attrs` and `rustc_span` answer as their
+    /// scans do, on every node of every fixture file and of a source with leading comments,
+    /// doc comments and attributes in every position.
+    #[test]
+    fn first_child_fast_paths_match_the_scans() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures");
+        let mut sources: Vec<String> = walkdir::WalkDir::new(root)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|e| e.path().extension().is_some_and(|x| x == "rs"))
+            .filter_map(|e| std::fs::read_to_string(e.path()).ok())
+            .collect();
+        sources.push(
+            "// a\n/* b */\n/// c\n#[d]\n// e\nfn f() {\n    // g\n    #[h] let x = 1;\n    /** i */ \n    let y = /* j */ 2;\n}\n//! k\nstruct S { /// l\n a: u8, // m\n #[n] b: u8 }\n".to_owned(),
+        );
+        let mut nodes = 0;
+        for src in &sources {
+            let tree = Tree::parse_with_errors(src, Edition::Edition2024);
+            for node in tree.root().descendants() {
+                assert_eq!(
+                    has_leading_attrs(node),
+                    has_leading_attrs_scan(node),
+                    "{node:?}"
+                );
+                assert_eq!(
+                    super::super::span::rustc_span(node),
+                    super::super::span::rustc_span_scan(node),
+                    "{node:?}"
+                );
+                nodes += 1;
+            }
+        }
+        assert!(nodes > 1_000_000, "{nodes} nodes compared");
+    }
 
     fn parse(src: &str) -> Tree<'_> {
         Tree::parse_with_errors(src, Edition::CURRENT)

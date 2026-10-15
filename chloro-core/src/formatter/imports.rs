@@ -144,7 +144,74 @@ impl Spanned for UseTree<'_> {
 }
 
 impl<'a> UseSegment<'a> {
+    /// The order of two identifier segments by their names alone (`cmp`'s first test for
+    /// two `Ident` segments).
+    fn ident_cmp(&self, pia: &str, pib: &str) -> Ordering {
+        fn is_upper_snake_case(s: &str) -> bool {
+            s.chars()
+                .all(|c| c.is_uppercase() || c == '_' || c.is_numeric())
+        }
+
+        let (ia, ib) = if self.style_edition >= StyleEdition::Edition2024 {
+            (trim_raw_prefix(pia), trim_raw_prefix(pib))
+        } else {
+            (pia, pib)
+        };
+
+        if self.style_edition >= StyleEdition::Edition2024 {
+            version_sort(ia, ib)
+        } else if self.rustfmt_version < RustfmtVersion::V1_9_0 {
+            // F5: rustfmt 1.8.0 compares with early returns (`v1.8.0
+            // src/imports.rs:945-958`), which is not a total order once a name
+            // starts with `_` (`Ab < _x < ab < Ab`); rustfmt 1.9.0 compares a
+            // key (commit `a57ce886`, CHANGELOG 1.9.0 Fixed #6668).
+            // snake_case < CamelCase < UPPER_SNAKE_CASE
+            if ia.starts_with(char::is_uppercase) && ib.starts_with(char::is_lowercase) {
+                return Ordering::Greater;
+            }
+            if ia.starts_with(char::is_lowercase) && ib.starts_with(char::is_uppercase) {
+                return Ordering::Less;
+            }
+            if is_upper_snake_case(ia) && !is_upper_snake_case(ib) {
+                return Ordering::Greater;
+            }
+            if !is_upper_snake_case(ia) && is_upper_snake_case(ib) {
+                return Ordering::Less;
+            }
+            ia.cmp(ib)
+        } else {
+            fn sorting_key(ident: &str) -> (bool, bool, &str) {
+                // snake_case < CamelCase < UPPER_SNAKE_CASE
+                (
+                    is_upper_snake_case(ident),
+                    ident.starts_with(char::is_uppercase),
+                    ident,
+                )
+            }
+
+            sorting_key(ia).cmp(&sorting_key(ib))
+        }
+    }
+
+    /// `self.remove_alias().cmp(&other.remove_alias())` without copying either segment
+    /// (`remove_alias` clones a name, or a whole nested list); `ord` is `self.cmp(other)`.
+    /// `remove_alias` drops the alias of an `Ident`, `self`, `super` or `crate` segment and
+    /// keeps every other segment as it is, and `cmp` reads aliases only when both segments
+    /// are of one of those kinds.
+    fn cmp_without_alias(&self, other: &UseSegment<'_>, ord: Ordering) -> Ordering {
+        use self::UseSegmentKind::*;
+        match (&self.kind, &other.kind) {
+            // Without aliases, `cmp` compares `None` with `None`.
+            (Slf(_), Slf(_)) | (Super(_), Super(_)) | (Crate(_), Crate(_)) => Ordering::Equal,
+            // Equal aliases compare equal, so `ord` is already the order of the names.
+            (Ident(_, aa), Ident(_, ab)) if aa == ab => ord,
+            (Ident(ia, _), Ident(ib, _)) => self.ident_cmp(ia, ib),
+            _ => ord,
+        }
+    }
+
     // Clone a version of self with any top-level alias removed.
+    #[cfg(test)]
     fn remove_alias(&self) -> UseSegment<'_> {
         let kind = match self.kind {
             UseSegmentKind::Ident(ref s, _) => UseSegmentKind::Ident(s.clone(), None),
@@ -603,16 +670,11 @@ impl Ord for UseSegment<'_> {
     fn cmp(&self, other: &UseSegment) -> Ordering {
         use self::UseSegmentKind::*;
 
-        fn is_upper_snake_case(s: &str) -> bool {
-            s.chars()
-                .all(|c| c.is_uppercase() || c == '_' || c.is_numeric())
-        }
-
         match (&self.kind, &other.kind) {
             (Slf(a), Slf(b)) | (Super(a), Super(b)) | (Crate(a), Crate(b)) => match (a, b) {
                 (Some(sa), Some(sb)) => {
                     if self.style_edition >= StyleEdition::Edition2024 {
-                        version_sort(sa.trim_start_matches("r#"), sb.trim_start_matches("r#"))
+                        version_sort(trim_raw_prefix(sa), trim_raw_prefix(sb))
                     } else {
                         a.cmp(b)
                     }
@@ -621,45 +683,7 @@ impl Ord for UseSegment<'_> {
             },
             (Glob, Glob) => Ordering::Equal,
             (Ident(pia, aa), Ident(pib, ab)) => {
-                let (ia, ib) = if self.style_edition >= StyleEdition::Edition2024 {
-                    (pia.trim_start_matches("r#"), pib.trim_start_matches("r#"))
-                } else {
-                    (pia.as_str(), pib.as_str())
-                };
-
-                let ident_ord = if self.style_edition >= StyleEdition::Edition2024 {
-                    version_sort(ia, ib)
-                } else if self.rustfmt_version < RustfmtVersion::V1_9_0 {
-                    // F5: rustfmt 1.8.0 compares with early returns (`v1.8.0
-                    // src/imports.rs:945-958`), which is not a total order once a name
-                    // starts with `_` (`Ab < _x < ab < Ab`); rustfmt 1.9.0 compares a
-                    // key (commit `a57ce886`, CHANGELOG 1.9.0 Fixed #6668).
-                    // snake_case < CamelCase < UPPER_SNAKE_CASE
-                    if ia.starts_with(char::is_uppercase) && ib.starts_with(char::is_lowercase) {
-                        return Ordering::Greater;
-                    }
-                    if ia.starts_with(char::is_lowercase) && ib.starts_with(char::is_uppercase) {
-                        return Ordering::Less;
-                    }
-                    if is_upper_snake_case(ia) && !is_upper_snake_case(ib) {
-                        return Ordering::Greater;
-                    }
-                    if !is_upper_snake_case(ia) && is_upper_snake_case(ib) {
-                        return Ordering::Less;
-                    }
-                    ia.cmp(ib)
-                } else {
-                    fn sorting_key(ident: &str) -> (bool, bool, &str) {
-                        // snake_case < CamelCase < UPPER_SNAKE_CASE
-                        (
-                            is_upper_snake_case(ident),
-                            ident.starts_with(char::is_uppercase),
-                            ident,
-                        )
-                    }
-
-                    sorting_key(ia).cmp(&sorting_key(ib))
-                };
+                let ident_ord = self.ident_cmp(pia, pib);
 
                 if ident_ord != Ordering::Equal {
                     return ident_ord;
@@ -669,7 +693,7 @@ impl Ord for UseSegment<'_> {
                     (Some(_), None) => Ordering::Greater,
                     (Some(aas), Some(abs)) => {
                         if self.style_edition >= StyleEdition::Edition2024 {
-                            version_sort(aas.trim_start_matches("r#"), abs.trim_start_matches("r#"))
+                            version_sort(trim_raw_prefix(aas), trim_raw_prefix(abs))
                         } else {
                             aas.cmp(abs)
                         }
@@ -698,14 +722,21 @@ impl Ord for UseTree<'_> {
             // The comparison without aliases is a hack to avoid situations like
             // comparing `a::b` to `a as c` - where the latter should be ordered
             // first since it is shorter.
-            if ord != Ordering::Equal && a.remove_alias().cmp(&b.remove_alias()) != Ordering::Equal
-            {
+            if ord != Ordering::Equal && a.cmp_without_alias(b, ord) != Ordering::Equal {
                 return ord;
             }
         }
 
         self.path.len().cmp(&other.path.len())
     }
+}
+
+/// `s.trim_start_matches("r#")` without building a substring searcher for the pattern.
+fn trim_raw_prefix(mut s: &str) -> &str {
+    while let Some(rest) = s.strip_prefix("r#") {
+        s = rest;
+    }
+    s
 }
 
 /// `imports_indent` is fixed at `Block` and `imports_layout` at `Mixed`.
@@ -818,5 +849,70 @@ impl Rewrite for UseTree<'_> {
             }
         }
         Some(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Segments of every kind with and without aliases, names that differ only in a raw
+    /// prefix, in case, in digits and leading zeros, and in underscores.
+    fn segments(
+        style_edition: StyleEdition,
+        rustfmt_version: RustfmtVersion,
+    ) -> Vec<UseSegment<'static>> {
+        let names = [
+            "a", "b", "r#a", "r#r#a", "A", "_a", "a_b", "ab", "x8", "x08", "x10", "AB_C", "Ab",
+        ];
+        let aliases = [None, Some("z"), Some("r#z"), Some("y1"), Some("y01")];
+        let mut kinds = vec![UseSegmentKind::Glob];
+        for alias in aliases {
+            let alias = alias.map(str::to_owned);
+            kinds.push(UseSegmentKind::Slf(alias.clone()));
+            kinds.push(UseSegmentKind::Super(alias.clone()));
+            kinds.push(UseSegmentKind::Crate(alias.clone()));
+            for name in names {
+                kinds.push(UseSegmentKind::Ident(name.to_owned(), alias.clone()));
+            }
+        }
+        kinds
+            .into_iter()
+            .map(|kind| UseSegment {
+                kind,
+                style_edition,
+                rustfmt_version,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn cmp_without_alias_matches_comparing_copies_without_aliases() {
+        for (style_edition, rustfmt_version) in [
+            (StyleEdition::Edition2024, RustfmtVersion::V1_9_0),
+            (StyleEdition::Edition2021, RustfmtVersion::V1_9_0),
+            (StyleEdition::Edition2021, RustfmtVersion::V1_8_0),
+        ] {
+            let segments = segments(style_edition, rustfmt_version);
+            for (i, a) in segments.iter().enumerate() {
+                for (j, b) in segments.iter().enumerate() {
+                    let ord = a.cmp(b);
+                    assert_eq!(
+                        a.cmp_without_alias(b, ord),
+                        a.remove_alias().cmp(&b.remove_alias()),
+                        "segments {i} and {j}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn trim_raw_prefix_matches_trim_start_matches() {
+        for s in [
+            "", "r", "r#", "r#r#", "r#a", "r#r#a", "rr#a", "a r#", "#r#a", "r#\u{e9}",
+        ] {
+            assert_eq!(trim_raw_prefix(s), s.trim_start_matches("r#"), "{s}");
+        }
     }
 }
