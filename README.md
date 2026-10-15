@@ -136,10 +136,15 @@ ratios hold within one measurement window, and chloro and rustfmt are always tim
 same window, interleaved.
 
 Build configuration: `cargo build --release -p chloro --features cli` with the workspace's
-`[profile.release]` (`lto = "fat"`, `codegen-units = 1`), which is what `cargo install` and
-the published binaries use. The profile-guided rows come from `benchmarks/pgo.sh`
-(`-Cprofile-generate`, training on the conformance fixtures, `-Cprofile-use`), which the
-release workflow does not run yet.
+`[profile.release]` (`lto = "fat"`, `codegen-units = 1`), which is what `cargo install` uses
+and what the published binaries start from. The profile-guided rows come from
+`benchmarks/pgo.sh` (`-Cprofile-generate`, training on the conformance fixtures,
+`-Cprofile-use`). The release workflow runs the script's training phase on the targets
+whose runner executes them natively (`x86_64-unknown-linux-gnu`, `x86_64-apple-darwin`,
+`x86_64-pc-windows-msvc`) and builds those binaries with the profile; the two `aarch64`
+targets are cross-compiled and keep the plain build, as does a target whose training fails.
+That step has been validated by running its commands locally on `x86_64-unknown-linux-gnu`
+(the same output as the plain build on every gate), not yet by a release run.
 
 Why it is faster: rustfmt chooses a layout by trying several and keeping the first that
 fits, and chloro does the same work rustfmt does. It memoizes rewrites so nested code does
