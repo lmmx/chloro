@@ -446,8 +446,11 @@ with the container.
   126,000 replies; gates clean. `chloro serve` stays opt-in on `20261015-resident` (head
   `8c67777`), not merged; its record and ledger row are cherry-picked onto the integration
   branch. The sub-millisecond save needs an in-editor client (an LSP front end or an extension
-  speaking the socket): a product decision for the owner, not an experiment. E24 and E27 run
-  from `2f00988`. Wave 4's E24 (memo side array) and E27 (harness: registry
+  speaking the socket): a product decision for the owner, not an experiment. Wave 3 is
+  complete (E19, E20, E22 merged; E21 refuted and kept on its branch). Wave 4 running: E24 and
+  E27 from `2f00988`, E26 from `e312e39`, E23 (`20261015-unit-queue`, /home/user/wt/queue, from
+  `9135c62`, launched 12:14 UTC: the imbalance diagnostic first, with a stop rule, then the unit
+  queue; record EXP-023-unit-queue.md). E25 (arena) waits for E24. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
