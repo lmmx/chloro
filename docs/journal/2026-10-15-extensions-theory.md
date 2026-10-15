@@ -367,8 +367,19 @@ with the container.
   02:39 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
   S2, S4, S7, S8, S5, S12, S15, S10, S13, S16; bound about 12% of instructions), one commit per
   lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
-  `EXP-016-scanner-paths.md`. On landing: reproduce the goldens, conform and Ir on the branch
-  head before merging.
+  `EXP-016-scanner-paths.md`. Landed (`4e8080c`: eleven levers kept, −11.14% Ir on its base,
+  S10, S16 and the record's form of S12 rejected on numbers, the full `config_matrix -n 1220`
+  identical on all 31 values, `bench` 1.11–1.12x in three disjoint pairs) and merged at `e640fbf`
+  after the orchestrator reproduced on the branch (goldens, conform at both versions, Ir
+  278,125,396, fmt, clippy, 231 core tests) and resolved two code conflicts with E15/E18
+  (both imports in `context.rs`; `parallel.rs` keeps E15's cache path and `stitch()` with E16's
+  `line_number()` accessor). Gates on the merged head: goldens 0 of 1238 and 0 of 25,024,
+  sequential and 4 threads; `conform -i` 1220/1220 at both versions; the unit-cache identity
+  harness 0 differences at 1 and 4 threads; Ir 248,202,094–248,202,144 (−57.8% from the start,
+  −20.6% tonight); fmt, clippy with every feature, 290 workspace tests. One `unsafe` block
+  entered chloro-core with S5 (an SSE2 unaligned 16-byte load from a `&[u8; 16]`, gated on the
+  target feature, with a randomised test against the scalar search). The best-known-good is
+  `e640fbf`.
 - All six records are committed and the synthesis sections above are written (02:58 UTC).
 - E18 (`20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates`, agent running since
   02:57 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
