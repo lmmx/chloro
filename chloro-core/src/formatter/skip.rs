@@ -27,6 +27,21 @@ impl SkipContext {
     pub(crate) fn is_empty(&self) -> bool {
         self.macros.is_empty() && self.attributes.is_empty()
     }
+
+    /// Appends a serialisation of the names to `out`, for the key of a cached unit
+    /// (`unit_cache.rs`): the count and the sorted, length-prefixed names of each kind, so
+    /// two contexts give the same bytes exactly when they list the same names.
+    pub(crate) fn write_key(&self, out: &mut Vec<u8>) {
+        for names in [&self.macros, &self.attributes] {
+            let mut sorted: Vec<&String> = names.0.iter().collect();
+            sorted.sort_unstable();
+            out.extend_from_slice(&(sorted.len() as u64).to_le_bytes());
+            for name in sorted {
+                out.extend_from_slice(&(name.len() as u64).to_le_bytes());
+                out.extend_from_slice(name.as_bytes());
+            }
+        }
+    }
 }
 
 /// Whether `attr` may be a `#[rustfmt::skip::<kind>(..)]` attribute: its path starts with

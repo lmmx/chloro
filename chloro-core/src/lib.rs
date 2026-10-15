@@ -4,7 +4,10 @@ pub mod debug;
 pub mod formatter;
 
 pub use formatter::config::Config;
-pub use formatter::{format_source, format_source_with_config, format_source_with_config_parallel};
+pub use formatter::{
+    CachedUnit, UnitCache, UnitKey, format_source, format_source_with_config,
+    format_source_with_config_parallel, format_source_with_unit_cache,
+};
 
 /// Macro for debug output in chloro.
 ///
