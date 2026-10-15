@@ -68,6 +68,9 @@ pub(crate) struct UnitRecord {
     /// Indices into the run's `skipped_range` of the ranges whose end is an output line
     /// number of the worker's buffer (`push_skipped_with_span`).
     pub(crate) output_line_ranges: Vec<usize>,
+    /// Text was written before the first gap call, so the record cannot be replayed in
+    /// order; `format_file` formats the file sequentially instead.
+    pub(crate) broken: bool,
 }
 
 /// The output of one unit.
@@ -81,6 +84,7 @@ struct UnitOutput {
     format_failure: bool,
     skipped_range: Vec<(usize, usize)>,
     output_line_ranges: Vec<usize>,
+    broken: bool,
 }
 
 /// Formats `file` (parsed from `source`) with its top-level items spread over `threads`
@@ -112,38 +116,48 @@ pub(crate) fn format_file(
         main.visit_items_with_reordering(&items);
     } else {
         let outputs = format_units(source, config, &file_attrs, &items, &units, threads);
-        for (unit, out) in units.iter().zip(&outputs) {
-            let Some(gap) = out.gap else {
-                // The unit wrote nothing and consumed nothing (a skipped `mod x;`): its
-                // text is copied with the gap before the next unit.
-                debug_assert!(out.text.is_empty());
-                debug_assert_eq!(out.last_pos, items[unit.0].span().lo());
-                continue;
-            };
-            match gap {
-                GapOp::WithIndent(end) => main.format_missing_with_indent(end),
-                GapOp::NoIndent(end) => main.format_missing(end),
-                GapOp::WithoutIndent(end) => main.format_missing_no_indent(end),
-                GapOp::RemovedImport(lo) => main.format_missing_before_removed_import(lo),
-            }
-            let line_base = main.line_number;
-            main.push_str(&out.text);
-            main.last_pos = out.last_pos;
-            main.macro_rewrite_failure |= out.macro_failure;
-            if out.lost_comment {
-                run.lost_comment.set(true);
-            }
-            if out.format_failure {
-                run.format_failure.set(true);
-            }
-            let mut skipped = run.skipped_range.borrow_mut();
-            for (i, &(lo, hi)) in out.skipped_range.iter().enumerate() {
-                if out.output_line_ranges.contains(&i) {
-                    skipped.push((lo, hi + line_base));
-                } else {
-                    skipped.push((lo, hi));
+        // Every record is checked before anything is written to `main`: a unit that
+        // wrote text before its first gap call cannot be replayed in order, so the file
+        // is then formatted by the sequential walk, which gives the same output (`main`
+        // holds only what `format_separate_mod` writes before the items). No input tried
+        // reaches this; debug builds stop here so that one would be found.
+        let ok = stitchable(&items, &units, &outputs);
+        debug_assert!(ok, "a unit's output cannot be stitched");
+        if ok {
+            for out in &outputs {
+                let Some(gap) = out.gap else {
+                    // The unit wrote nothing and consumed nothing (a skipped `mod x;`,
+                    // checked by `stitchable`): its text is copied with the gap before the
+                    // next unit.
+                    continue;
+                };
+                match gap {
+                    GapOp::WithIndent(end) => main.format_missing_with_indent(end),
+                    GapOp::NoIndent(end) => main.format_missing(end),
+                    GapOp::WithoutIndent(end) => main.format_missing_no_indent(end),
+                    GapOp::RemovedImport(lo) => main.format_missing_before_removed_import(lo),
+                }
+                let line_base = main.line_number;
+                main.push_str(&out.text);
+                main.last_pos = out.last_pos;
+                main.macro_rewrite_failure |= out.macro_failure;
+                if out.lost_comment {
+                    run.lost_comment.set(true);
+                }
+                if out.format_failure {
+                    run.format_failure.set(true);
+                }
+                let mut skipped = run.skipped_range.borrow_mut();
+                for (i, &(lo, hi)) in out.skipped_range.iter().enumerate() {
+                    if out.output_line_ranges.contains(&i) {
+                        skipped.push((lo, hi + line_base));
+                    } else {
+                        skipped.push((lo, hi));
+                    }
                 }
             }
+        } else {
+            main.visit_items_with_reordering(&items);
         }
     }
     main.format_missing_with_indent(end_pos);
@@ -213,7 +227,12 @@ fn format_units(
             .collect();
         handles
             .into_iter()
-            .map(|h| h.join().expect("a formatting thread panicked"))
+            // A worker's panic is re-raised with its own payload, so the message the
+            // sequential path would give is the one reported.
+            .map(|h| {
+                h.join()
+                    .unwrap_or_else(|payload| std::panic::resume_unwind(payload))
+            })
             .collect()
     });
 
@@ -258,5 +277,18 @@ fn format_unit<'a>(
         format_failure: run.format_failure.get(),
         skipped_range: std::mem::take(&mut *run.skipped_range.borrow_mut()),
         output_line_ranges: record.output_line_ranges,
+        broken: record.broken,
     }
+}
+
+/// Whether the unit outputs can be stitched onto the main buffer: every unit recorded
+/// its first gap call, or wrote nothing and consumed nothing (a skipped `mod x;`, whose
+/// text the gap before the next unit copies), and none wrote text before its first gap
+/// call (`UnitRecord::broken`).
+fn stitchable(items: &[ast::Item<'_>], units: &[(usize, usize)], outputs: &[UnitOutput]) -> bool {
+    units.iter().zip(outputs).all(|(unit, out)| {
+        !out.broken
+            && (out.gap.is_some()
+                || (out.text.is_empty() && out.last_pos == items[unit.0].span().lo()))
+    })
 }

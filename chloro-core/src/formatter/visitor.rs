@@ -120,8 +120,14 @@ impl<'a> FmtVisitor<'a> {
     /// Returns `false` otherwise: the caller writes the gap as usual.
     pub(crate) fn defer_gap(&mut self, op: GapOp, end: BytePos) -> bool {
         match &mut self.unit {
-            Some(unit) if unit.gap.is_none() => {
-                debug_assert_eq!(self.buffer, "\n", "a unit's first gap call comes first");
+            Some(unit) if unit.gap.is_none() && !unit.broken => {
+                if self.buffer != "\n" {
+                    // Text before the first gap call: replaying the gap on the main
+                    // buffer would put it before that text. The gap is written here
+                    // and `parallel.rs` formats the file sequentially instead.
+                    unit.broken = true;
+                    return false;
+                }
                 unit.gap = Some(op);
                 self.last_pos = end;
                 true

@@ -44,7 +44,9 @@ impl FmtVisitor<'_> {
         // We have an excessive newline from the removed import.
         if self.buffer.ends_with('\n') {
             self.buffer.pop();
-            self.line_number -= 1;
+            // A worker's buffer starts as an uncounted newline (`parallel.rs`), so the
+            // count can be 0 here.
+            self.line_number = self.line_number.saturating_sub(1);
         }
     }
 
