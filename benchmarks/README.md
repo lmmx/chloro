@@ -175,9 +175,9 @@ rustfmt run), peak RSS, mean CPU time, `identical_outputs` and exit codes.
 The rule of `protocol.md` §3, restated for these tools:
 
 1. **Single-threaded change** (no new threads): `profile.sh` `Ir` lower than the baseline
-   build's on the same sample path, and `examples/bench -n 5` interleaved with the baseline
-   binary (`compare_rustfmt.sh --baseline <dir> --groups e --rounds 3`, or by hand) with
-   non-overlapping min–max MB/s ranges over at least 3 pairs.
+   build's (the script stages both at the same path lengths, EXP-027), and `examples/bench
+   -n 5` interleaved with the baseline binary (`compare_rustfmt.sh --baseline <dir> --groups
+   e --rounds 3`, or by hand) with non-overlapping min–max MB/s ranges over at least 3 pairs.
 2. **Change that adds parallelism or touches the CLI:** `compare_rustfmt.sh --baseline
    <dir>` with at least 10 runs per command over at least 2 interleaved rounds, the `mc`
    and `1c` rows both reported, and the chloro and chloro-base ranges not overlapping
@@ -190,10 +190,12 @@ The rule of `protocol.md` §3, restated for these tools:
 
 ## profile.sh
 
-`setarch -R` (no ASLR) `valgrind --tool=callgrind` on `examples/bench -n 1 --root
-/tmp/chloro-bench/sample49`, under `env -i`, printing the total `Ir` of each run. The
-sample is the 1238 `.rs` files under `chloro-core/tests/conformance/fixtures`, paths sorted
-bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
+`setarch -R` (no ASLR) `valgrind --tool=callgrind` on `examples/bench -n 1 --root <sample>`,
+under `env -i`, printing the total `Ir` of each run. The sample is the 1238 `.rs` files under
+`chloro-core/tests/conformance/fixtures`, paths sorted bytewise, every 25th file (lines 25,
+50, …, 1225): 49 files, 650,213 bytes. The binary and the sample are copied under a staging
+directory of fixed length before each invocation (*Path independence*, below), so the count
+does not depend on where the binary, the fixtures or `--out` are.
 
 - The journals name the sample "every 25th file of the sorted fixture list" without the
   command. Of five constructions tried on `884f9c9` (component-wise or bytewise order;
@@ -206,8 +208,53 @@ bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
   examples/bench` (`884f9c9`): 587,988,576–587,990,380 from `profile.sh` (directory tree at
   `/tmp/chloro-bench/sample49`, `env -i`); 588,096,020 with the caller's environment;
   587,211,777 in `profile-baseline.md` (files copied flat as `NN_<basename>.rs`). Counts are
-  compared only between runs of `profile.sh` itself; under it, repeated runs agree to within
-  about 2K instructions, pinned or not, from any working directory.
+  compared only between runs of `profile.sh` itself.
+- **Run-to-run spread.** Repeated runs of one binary agree to within about 400 instructions,
+  except that about one run in five reads about 1.8K more (2 of 10 runs of `9d78713`:
+  237,768,233–237,768,557 and 237,770,183–237,770,270). Both come from `bench`'s own report,
+  not from the formatter: the order in which it sorts the files by their measured time (the
+  smaller spread) and the decimal printing of the timings, which takes `core`'s exact
+  big-number path for some values (`float_to_decimal_common_exact` +1,239 and
+  `Big32x40::mul_pow2` +314 in a run that read +1,950; EXP-027). Take the minimum of
+  `--runs 3` or more when a difference under about 2K matters.
+- **Path independence (EXP-027).** Before EXP-027 the script ran the binary where it was and
+  read the sample at `--sample` (default `/tmp/chloro-bench/sample49`), and the count moved
+  with the lengths of those paths: the same binary read 239.51 M with the sample at a
+  6-character name, 237.77 M at the default's 8 and 237.90 M at 12. The process holds those
+  strings: `argv[0]` and every file path are heap allocations whose sizes (malloc's size
+  classes) set the heap layout the parser's vector growth meets (EXP-020's term), and they
+  sit on the stack; and glibc reads `/proc/self/maps`, which lists the binary's own path,
+  when Rust's runtime asks for the main thread's stack at start-up (`pthread_getattr_np`,
+  about 40 instructions per byte of the path). Only lengths reach the count, not the text.
+  So the script now copies the binary and the sample under `mktemp -d
+  /tmp/chloro-prof.XXXXXXX` (24 bytes, removed at exit) and runs `<stage>/bench_…` (47
+  bytes) with `--root <stage>/s` (26 bytes). Those are the lengths of the strings the script
+  used before at its default (`/home/user/chloro/target/release/examples/bench` and
+  `/tmp/chloro-bench/sample49`), so the count at the old default is unchanged: 237,768,412–
+  237,768,605 for `9d78713` (three runs; the ledger's 237,768,533). `--sample` is accepted
+  and ignored. Verification (`9d78713`, three runs each, `--core 3`):
+
+  | script | where the sample was (`--sample`, or `--out` for the new script) | binary | `Ir` of three runs |
+  |---|---|---|---|
+  | before | `/tmp/chloro-bench/e27a01` | `target/release/examples/bench` | 239,510,992, 239,512,663, 239,511,218 |
+  | before | `/tmp/chloro-bench/e27a0001` | same | 237,768,585, 237,768,477, 237,768,564 |
+  | before | `/tmp/chloro-bench/e27a00000001` | same | 237,901,113, 237,899,350, 237,899,366 |
+  | after | `/tmp/chloro-bench/e27a01` | `/tmp/chloro-bench/e27b/bench` (28 bytes) | 237,768,550, 237,768,641, 237,768,583 |
+  | after | same | `target/release/examples/bench` (51 bytes) | 237,768,641, 237,768,639, 237,768,647 |
+  | after | same | a copy at a 115-byte path | 237,768,602, 237,768,687, 237,768,381 |
+  | after | `/tmp/chloro-bench/e27a0001` | 28 bytes | 237,768,425, 237,770,094, 237,768,444 |
+  | after | same | 51 bytes | 237,770,188, 237,768,315, 237,768,375 |
+  | after | same | 115 bytes | 237,768,504, 237,768,538, 237,768,516 |
+  | after | `/tmp/chloro-bench/e27a00000001` | 28 bytes | 237,768,385, 237,768,452, 237,768,417 |
+  | after | same | 51 bytes | 237,770,058, 237,768,452, 237,770,211 |
+  | after | same | 115 bytes | 237,768,475, 237,770,207, 237,768,523 |
+
+  After the change the minima of the nine cells lie within 326 instructions of each other
+  (237,768,315–237,768,641); the readings near 237,770,1xx are the report's outlier above.
+  Before, a binary at the 115-byte path also read 2.6–4.5K more than the same binary in the
+  worktree, at any sample path. A relative `--root` of the same 26 bytes (the sample as the
+  working directory) reads about 1.2K more than the absolute one: relative paths cost more to
+  compare and walk; the absolute form keeps the old count.
 - `--annotate N` prints the top of `callgrind_annotate` for the first run; the profile
   files stay in `--out`.
 - `--sim` runs callgrind with `--cache-sim=yes --branch-sim=yes` (same `env -i`, `setarch -R`
