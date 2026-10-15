@@ -168,6 +168,12 @@ impl<'s> Tree<'s> {
         self.elems[i as usize]
     }
 
+    /// Every element of the tree, in preorder.
+    #[inline]
+    pub fn elems(&self) -> &[Elem] {
+        &self.elems
+    }
+
     pub fn root(&self) -> Node<'_> {
         Node { tree: self, idx: 0 }
     }
