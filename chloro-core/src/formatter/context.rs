@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use crate::cst::{AstNode, Node, Tree, TreeArena, ast};
 
-use super::config::Settings;
+use super::config::{RustfmtVersion, Settings};
 use super::macro_args::ParsedMacroArgs;
 use super::nodes::{Block, CachedBlock};
 use super::shape::Shape;
@@ -90,6 +90,13 @@ pub(crate) struct RunState<'a> {
     /// `rustfmt_version = "1.8.0"`): rustfmt then writes nothing, so the file is returned
     /// as it is.
     pub(crate) format_failure: Cell<bool>,
+    /// Set when the run formats a whole file (`format_source_with_config` and
+    /// `parallel.rs`), not a snippet (`format_snippet`: a macro definition body). A
+    /// discarded candidate can set `macro_rewrite_failure`, `lost_comment` or
+    /// `skipped_range`, which only a snippet run reads (`format_snippet`), and under
+    /// `rustfmt_version = "1.8.0"` `format_failure`, which every run reads; see
+    /// [`RewriteContext::may_skip_dead_candidates`].
+    pub(crate) whole_file: Cell<bool>,
     pub(crate) macro_args: RefCell<MacroArgsCache<'a>>,
     /// Rewrites already computed in this run; see [`RewriteContext::memoize`].
     memo: RefCell<HashMap<MemoKey, MemoEntry, FxBuildHasher>>,
@@ -112,6 +119,7 @@ impl<'a> RunState<'a> {
             skipped_range: RefCell::default(),
             lost_comment: Cell::default(),
             format_failure: Cell::default(),
+            whole_file: Cell::default(),
             macro_args: RefCell::default(),
             memo: RefCell::default(),
             blocks: RefCell::default(),
@@ -296,6 +304,15 @@ impl<'a> RewriteContext<'a> {
             is_nested_macro_context,
             inside_macro_ref: self.inside_macro.clone(),
         }
+    }
+
+    /// Whether a candidate rewrite whose text cannot change the result may be left
+    /// uncomputed. Rendering it can still set flags on the run (`macro_rewrite_failure`,
+    /// `lost_comment`, `skipped_range`, and `format_failure` under
+    /// `rustfmt_version = "1.8.0"`); those reach the output only in a snippet run or under
+    /// 1.8.0, so the skip is allowed only in a whole-file run under 1.9.0.
+    pub(crate) fn may_skip_dead_candidates(&self) -> bool {
+        self.run.whole_file.get() && self.config.rustfmt_version() == RustfmtVersion::V1_9_0
     }
 
     pub(crate) fn leave_macro(&self) {
