@@ -182,7 +182,22 @@ with the container.
 - rustd trial: done, recorded in `rustd-trial.md` (verdict: no-go for adoption now, watch list).
   The rustd checkout and build at `/home/user/dioxuslabs/rustd` and the worktree
   `/home/user/wt/rustd-trial` can be removed; the record has the reproduction commands.
-- Queued: E14 allocator
+- E14 (`20261015-allocators`, worktree `/home/user/wt/allocators`, agent running since 02:47
+  UTC, time box 2.5 h): the allocator's own CPU share measured directly with a wrapping global
+  allocator behind an off-by-default feature; glibc against `mimalloc` (default and
+  memory-bounded options), `tikv-jemallocator`, `snmalloc` on the M3 harness rows (wall, CPU,
+  peak RSS); decision rule: RSS within 1.2x of glibc on every workload and wall below with
+  disjoint ranges on most, else measurement only; record `EXP-014-allocators.md`.
+- E16 (`20261015-scanner-paths`, worktree `/home/user/wt/scanner-paths`, agent running since
+  02:55 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
+  S2, S4, S7, S8, S5, S12, S15, S10, S13, S16; bound about 12% of instructions), one commit per
+  lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
+  `EXP-016-scanner-paths.md`. On landing: reproduce the goldens, conform and Ir on the branch
+  head before merging.
+- Theory records landed so far: `incremental-and-process.md`, `scanning-and-strings.md`,
+  `rustd-trial.md`; still being written: `decide-once-and-exact-reuse.md`,
+  `parser-and-substrate.md`, `already-formatted-fast-path.md` (relaunched 02:16 UTC after the
+  01:31 interrupt cancelled the first set).
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
   directly with a wrapping `#[global_allocator]` in an example binary; `perf` is absent in
