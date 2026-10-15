@@ -339,7 +339,7 @@ impl<'a> Chain<'a> {
         let subexpr_list = Self::make_subexpr_list(top, context);
 
         // Un-parse the expression tree into ChainItems
-        let mut rev_children = vec![];
+        let mut rev_children = Vec::with_capacity(subexpr_list.len());
         let mut sub_tries = 0;
         for subexpr in &subexpr_list {
             if subexpr.is_try() {
@@ -390,7 +390,8 @@ impl<'a> Chain<'a> {
         }
 
         let parent = rev_children.pop()?;
-        let mut children = vec![];
+        // Room for every remaining item; a comment between two items grows it.
+        let mut children = Vec::with_capacity(rev_children.len());
         let mut prev_span_end = parent.span.hi();
         let mut iter = rev_children.into_iter().rev().peekable();
         if let Some(first_chain_item) = iter.peek() {
@@ -456,7 +457,10 @@ impl<'a> Chain<'a> {
         top: SubExpr<'a>,
         context: &RewriteContext<'c>,
     ) -> Vec<SubExpr<'a>> {
-        let mut subexpr_list = vec![top];
+        // `vec![top]` holds one entry and every chain has two or more: room for eight, so
+        // that the list does not grow (and move) while the chain is walked.
+        let mut subexpr_list = Vec::with_capacity(8);
+        subexpr_list.push(top);
 
         while let Some(subexpr) = subexpr_list
             .last()
