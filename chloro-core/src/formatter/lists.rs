@@ -3,7 +3,7 @@
 use std::cmp;
 use std::iter::Peekable;
 
-use super::comment::{FindUncommented, find_comment_end, rewrite_comment};
+use super::comment::{FindUncommented, find_any_byte, find_comment_end, rewrite_comment};
 use super::config::Settings;
 use super::context::RewriteContext;
 use super::shape::{Indent, Shape};
@@ -650,6 +650,20 @@ where
 }
 
 pub(crate) fn extract_pre_comment(pre_snippet: &str) -> (Option<String>, ListItemCommentStyle) {
+    // Each of the three tests below needs a `/` in the snippet.
+    if !has_byte(pre_snippet, b'/') {
+        return (None, ListItemCommentStyle::None);
+    }
+    extract_pre_comment_full(pre_snippet)
+}
+
+/// Whether `s` contains the ASCII byte `b`, eight bytes at a time.
+#[inline]
+fn has_byte(s: &str, b: u8) -> bool {
+    find_any_byte(s.as_bytes(), 0, [b]) < s.len()
+}
+
+fn extract_pre_comment_full(pre_snippet: &str) -> (Option<String>, ListItemCommentStyle) {
     let trimmed_pre_snippet = pre_snippet.trim();
     // Both start and end are checked to support keeping a block comment inline with
     // the item, even if there are preceding line comments, while still supporting
@@ -682,6 +696,19 @@ pub(crate) fn extract_pre_comment(pre_snippet: &str) -> (Option<String>, ListIte
 }
 
 pub(crate) fn extract_post_comment(
+    post_snippet: &str,
+    comment_end: usize,
+    separator: &str,
+    is_last: bool,
+) -> Option<String> {
+    // A post-comment is returned only when a part of the snippet starts with `//` or `/*`.
+    if !has_byte(&post_snippet[..comment_end], b'/') {
+        return None;
+    }
+    extract_post_comment_full(post_snippet, comment_end, separator, is_last)
+}
+
+fn extract_post_comment_full(
     post_snippet: &str,
     comment_end: usize,
     separator: &str,
@@ -734,6 +761,46 @@ pub(crate) fn get_comment_end(
     terminator: &str,
     is_last: bool,
 ) -> usize {
+    // Without `/` the snippet holds no comment: `CharClasses` yields every character as
+    // `Normal` (code and character literals) or `InString` (strings, raw strings and
+    // their prefixes), the two kinds `find_uncommented` matches, so its result for a
+    // one-byte pattern is `find`'s; and there is no block comment.
+    let pattern = if is_last { terminator } else { separator };
+    if let [pattern] = *pattern.as_bytes()
+        && !has_byte(post_snippet, b'/')
+    {
+        let bytes = post_snippet.as_bytes();
+        if is_last {
+            return memchr_or(bytes, pattern, bytes.len());
+        }
+        let newline_index = memchr_or(bytes, b'\n', usize::MAX);
+        return match memchr_or(bytes, pattern, usize::MAX) {
+            usize::MAX if newline_index != usize::MAX => newline_index + 1,
+            usize::MAX => 0,
+            separator_index if newline_index != usize::MAX && newline_index > separator_index => {
+                newline_index + 1
+            }
+            _ => bytes.len(),
+        };
+    }
+    get_comment_end_full(post_snippet, separator, terminator, is_last)
+}
+
+/// The position of the first `b` in `bytes`, or `default`.
+#[inline]
+fn memchr_or(bytes: &[u8], b: u8, default: usize) -> usize {
+    match find_any_byte(bytes, 0, [b]) {
+        i if i < bytes.len() => i,
+        _ => default,
+    }
+}
+
+fn get_comment_end_full(
+    post_snippet: &str,
+    separator: &str,
+    terminator: &str,
+    is_last: bool,
+) -> usize {
     if is_last {
         return post_snippet
             .find_uncommented(terminator)
@@ -778,6 +845,37 @@ pub(crate) fn get_comment_end(
 /// Account for extra whitespace between items. This is fiddly
 /// because of the way we divide pre- and post- comments.
 pub(crate) fn has_extra_newline(post_snippet: &str, comment_end: usize) -> bool {
+    if post_snippet.is_empty() || comment_end == 0 {
+        return false;
+    }
+    // The same steps on bytes while the characters met are ASCII: the last character
+    // before `comment_end` is one byte, the first line ends at the first `\n`, and the
+    // whitespace that follows is `char::is_whitespace`'s ASCII set, which has `\x0B` and
+    // `\x0C`. A non-ASCII byte on the way takes the character-based steps.
+    let bytes = post_snippet.as_bytes();
+    if bytes[comment_end - 1].is_ascii() {
+        let rest = &bytes[comment_end - 1..];
+        let first_newline = memchr_or(rest, b'\n', rest.len());
+        let mut newlines = 0;
+        for &b in &rest[first_newline..] {
+            match b {
+                b'\n' => {
+                    newlines += 1;
+                    if newlines > 1 {
+                        return true;
+                    }
+                }
+                b' ' | b'\t' | b'\r' | b'\x0B' | b'\x0C' => {}
+                0x80.. => return has_extra_newline_full(post_snippet, comment_end),
+                _ => return false,
+            }
+        }
+        return false;
+    }
+    has_extra_newline_full(post_snippet, comment_end)
+}
+
+fn has_extra_newline_full(post_snippet: &str, comment_end: usize) -> bool {
     if post_snippet.is_empty() || comment_end == 0 {
         return false;
     }
@@ -999,5 +1097,79 @@ pub(crate) fn struct_lit_formatting<'a>(
         nested: false,
         align_comments: true,
         config: context.config,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every string of up to five characters over the bytes that drive the list-gap
+    /// functions, and a few with `\r`, `\x0B` and non-ASCII characters.
+    fn gap_strings() -> Vec<String> {
+        const ALPHABET: [char; 13] = [
+            ',', ';', ')', ']', '}', ' ', '\n', '/', '*', '"', '\'', 'r', '#',
+        ];
+        let mut strings: Vec<String> = [
+            ", // c\n",
+            ",\n\n    ",
+            ",\r\n\r\n",
+            ",\n\x0B\n",
+            ",\n\x0C \n",
+            ",\n\u{a0}\n",
+            ",\n\u{3000}\n x",
+            "é,\n\n",
+            ", é\n",
+            ",é",
+            "/* a */,\n",
+            ", r#\"a,\"#\n",
+            ", 'a',\n",
+            " r#, \n",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        strings
+    }
+
+    #[test]
+    fn list_gap_fast_paths_match_the_full_functions() {
+        let patterns = [(",", ")"), (";", "}"), ("|", "}"), (",", ""), (",", "|")];
+        for s in &gap_strings() {
+            assert_eq!(extract_pre_comment(s), extract_pre_comment_full(s), "{s:?}");
+            for (separator, terminator) in patterns {
+                for is_last in [false, true] {
+                    assert_eq!(
+                        get_comment_end(s, separator, terminator, is_last),
+                        get_comment_end_full(s, separator, terminator, is_last),
+                        "{s:?} {separator:?} {terminator:?} {is_last}"
+                    );
+                }
+            }
+            for comment_end in (0..=s.len()).filter(|&i| s.is_char_boundary(i)) {
+                assert_eq!(
+                    has_extra_newline(s, comment_end),
+                    has_extra_newline_full(s, comment_end),
+                    "{s:?} {comment_end}"
+                );
+                for is_last in [false, true] {
+                    assert_eq!(
+                        extract_post_comment(s, comment_end, ",", is_last),
+                        extract_post_comment_full(s, comment_end, ",", is_last),
+                        "{s:?} {comment_end} {is_last}"
+                    );
+                }
+            }
+        }
     }
 }

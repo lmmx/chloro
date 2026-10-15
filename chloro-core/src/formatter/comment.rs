@@ -767,7 +767,11 @@ impl<'a> CharClasses<'a> {
 /// `bytes.len()`, testing eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
 /// flags every zero byte and possibly bytes above a zero byte, never below the first one,
 /// so the lowest flag of `y = w ^ target` marks the first byte of `w` equal to `target`.
-fn find_any_byte<const N: usize>(bytes: &[u8], mut pos: usize, targets: [u8; N]) -> usize {
+pub(crate) fn find_any_byte<const N: usize>(
+    bytes: &[u8],
+    mut pos: usize,
+    targets: [u8; N],
+) -> usize {
     const LO: u64 = 0x0101_0101_0101_0101;
     const HI: u64 = 0x8080_8080_8080_8080;
     while let Some(chunk) = bytes.get(pos..pos + 8) {
