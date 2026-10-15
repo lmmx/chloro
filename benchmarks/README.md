@@ -13,6 +13,7 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 | `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample, or on a sample from a list |
 | `cliffs/` | the cliff hunt (EXP-019): scaling fixtures by input shape, callgrind `Ir` per file and the power-law exponent per shape; see `cliffs/README.md` |
 | `samples/` | committed sample lists for `profile.sh --sample-list`: `registry49.txt`, the registry validation sample, and `registry49.sh`, which wrote it (EXP-027) |
+| `schedule/` | the schedule diagnostic (EXP-023): the CLI's `CHLORO_TRACE` timeline per file and worker, the tail and idle core time at four threads, and the schedule rebuilt from thread CPU clocks (today's scheduler, a unit queue, the bound); see `schedule/README.md` |
 | `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`
