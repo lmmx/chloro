@@ -5,7 +5,9 @@ use std::borrow::Cow;
 use crate::cst::ast::{self, AstNode};
 use unicode_width::UnicodeWidthStr;
 
-use super::comment::{CharClasses, FullCodeCharKind, LineClasses, filter_normal_code};
+use super::comment::{
+    CharClasses, FullCodeCharKind, LineClasses, filter_normal_code, find_any_byte,
+};
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
 use super::nodes::{is_repeat_array, node_text};
@@ -258,8 +260,40 @@ pub(crate) fn count_newlines(input: &str) -> usize {
     count_newline_bytes(input.as_bytes())
 }
 
+/// The number of `\n` bytes, eight at a time: `newline_flags(w) >> 7` holds 1 in each
+/// byte of `w` that is `\n` and 0 in the others, so the byte lanes of the sum over at most
+/// 255 words hold at most 255; they are then added in pairs into 16-bit lanes (at most
+/// 510) and the four 16-bit lanes into the top one by a multiplication (at most 2040).
 pub(crate) fn count_newline_bytes(bytes: &[u8]) -> usize {
-    bytes.iter().filter(|&&b| b == b'\n').count()
+    const BYTE_LANES: u64 = 0x00ff_00ff_00ff_00ff;
+    const WORD_ONES: u64 = 0x0001_0001_0001_0001;
+    let mut count = 0;
+    for block in bytes.chunks(8 * 255) {
+        let mut words = block.chunks_exact(8);
+        let mut lanes = 0;
+        for word in &mut words {
+            lanes += newline_flags(u64::from_le_bytes(word.try_into().unwrap())) >> 7;
+        }
+        let pairs = (lanes & BYTE_LANES) + ((lanes >> 8) & BYTE_LANES);
+        count += (pairs.wrapping_mul(WORD_ONES) >> 48) as usize;
+        count += words.remainder().iter().filter(|&&b| b == b'\n').count();
+    }
+    count
+}
+
+/// Bit 7 of a byte of the result is set iff that byte of `w` is `\n` (see
+/// `newline_or_non_ascii`); the other bits are clear.
+fn newline_flags(w: u64) -> u64 {
+    const LOW7: u64 = 0x7f7f_7f7f_7f7f_7f7f;
+    let y = w ^ 0x0a0a_0a0a_0a0a_0a0a;
+    !(((y & LOW7) + LOW7) | y) & !LOW7
+}
+
+/// `count_newlines(s) == 1`, stopping at a second `\n`.
+pub(crate) fn has_one_newline(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    let first = find_any_byte(bytes, 0, *b"\n");
+    first < bytes.len() && find_any_byte(bytes, first + 1, *b"\n") == bytes.len()
 }
 
 /// Wraps String in an Option. Returns Some when the string adheres to the
@@ -622,6 +656,42 @@ mod tests {
                     assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
                 }
             }
+        }
+    }
+
+    #[test]
+    fn newline_counts_match_the_byte_filter() {
+        // Lengths across the eight-byte words and the 255-word blocks, with `\n` at a
+        // stride, next to bytes one bit away from it (`\x0B`, `\x08`, `\x8a`).
+        for len in (0..40).chain([2039, 2040, 2041, 4100, 20_000]) {
+            for stride in [1, 2, 3, 7, 8, 9, 1000] {
+                let bytes: Vec<u8> = (0..len)
+                    .map(|i| match i % stride {
+                        0 => b'\n',
+                        1 => b'\x0B',
+                        2 => b'\x08',
+                        3 => 0x8a,
+                        _ => b'a',
+                    })
+                    .collect();
+                let expected = bytes.iter().filter(|&&b| b == b'\n').count();
+                assert_eq!(count_newline_bytes(&bytes), expected, "{len} {stride}");
+                if let Ok(s) = std::str::from_utf8(&bytes) {
+                    assert_eq!(has_one_newline(s), expected == 1, "{len} {stride}");
+                }
+            }
+        }
+        for s in [
+            "",
+            "a",
+            "\n",
+            "a\nb",
+            "\n\n",
+            "a\nb\nc",
+            "abcdefgh\n",
+            "abcdefghi\nj\n",
+        ] {
+            assert_eq!(has_one_newline(s), count_newlines(s) == 1, "{s:?}");
         }
     }
 
