@@ -7,9 +7,11 @@
 //! which is what distinguishes this substrate from rowan's red nodes (one 64-byte allocation
 //! per handle).
 //!
-//! A tree is built from the same `LexedStr` + `TopEntryPoint::parse` + `intersperse_trivia`
-//! steps that `ra_ap_syntax` feeds to rowan's `GreenNodeBuilder`, so both describe the same
-//! tree (the tests in this module verify it node by node while rowan is a dev-dependency).
+//! A tree is built from the same `LexedStr` + `TopEntryPoint::parse` output that
+//! `ra_ap_syntax` feeds through `intersperse_trivia` to rowan's `GreenNodeBuilder`, so both
+//! describe the same tree (the tests in this module verify it node by node while rowan is a
+//! dev-dependency). [`TreeBuilder::steps`] ports `intersperse_trivia`'s trivia attachment
+//! into the build loop; debug builds check it against `intersperse_trivia` on every tree.
 //!
 //! The typed layer over the tree ([`ast`]) keeps `ra_ap_syntax::ast`'s names, so the
 //! formatter modules read `expr.lhs()`, `item.name()`, `block.stmt_list()` as before.
@@ -29,13 +31,13 @@ mod generated;
 use std::fmt;
 use std::marker::PhantomData;
 
-use ra_ap_parser::{Edition, LexedStr, StrStep, SyntaxKind, TopEntryPoint};
+use ra_ap_parser::{Edition, LexedStr, Output, Step, StrStep, SyntaxKind, TopEntryPoint};
 
 /// Trees allocated during one formatting run, with stable addresses for the run's lifetime.
 pub type TreeArena<'s> = typed_arena::Arena<Tree<'s>>;
 
 /// One node or token of the tree, in preorder.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Elem {
     pub kind: SyntaxKind,
     pub is_node: bool,
@@ -205,6 +207,7 @@ impl<'s> Tree<'s> {
 /// nodes and tokens around them (the synthetic node `macro_args::parse_maybe_bound` builds).
 /// Token offsets are the running total of token lengths from `base`, so every token's text
 /// is the source slice at its offset (checked in debug builds, split floats included).
+#[derive(Clone)]
 pub struct TreeBuilder<'s> {
     src: &'s str,
     elems: Vec<Elem>,
@@ -263,10 +266,37 @@ impl<'s> TreeBuilder<'s> {
         self.elems[i].len = self.at - self.elems[i].start;
     }
 
+    /// Lays out the tree `output` describes over `lexed`, which describe the source from the
+    /// current offset, with trivia attached as `intersperse_trivia` attaches it (see
+    /// [`Self::steps_fused`]). `None` when the parser reported an error (the builder is
+    /// then unusable). Debug builds also run [`Self::steps_interspersed`] on a copy of the
+    /// builder and assert that both give the same elements.
+    pub fn steps(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
+        #[cfg(debug_assertions)]
+        let mut reference = self.clone();
+        #[cfg(debug_assertions)]
+        let expected = reference.steps_interspersed(lexed, output);
+        let result = self.steps_fused(lexed, output);
+        #[cfg(debug_assertions)]
+        {
+            assert_eq!(
+                result, expected,
+                "fused and interspersed build disagree on errors"
+            );
+            assert!(
+                self.elems == reference.elems
+                    && self.open == reference.open
+                    && self.at == reference.at,
+                "fused and interspersed build disagree"
+            );
+        }
+        result
+    }
+
     /// Feeds the steps `intersperse_trivia` produces for `output` over `lexed`, which
     /// describe the source from the current offset. `None` when the parser reported an
-    /// error (the builder is then unusable).
-    pub fn steps(&mut self, lexed: &LexedStr<'_>, output: &ra_ap_parser::Output) -> Option<()> {
+    /// error (the builder is then unusable). The reference for [`Self::steps_fused`].
+    pub fn steps_interspersed(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
         let mut has_error = false;
         lexed.intersperse_trivia(output, &mut |step| match step {
             StrStep::Token { kind, text } => {
@@ -285,6 +315,147 @@ impl<'s> TreeBuilder<'s> {
             StrStep::Error { .. } => has_error = true,
         });
         (!has_error).then_some(())
+    }
+
+    /// [`Self::steps_interspersed`] in one pass: decodes `output` and writes the elements
+    /// directly, with token lengths from `LexedStr::text_start`, instead of producing
+    /// `StrStep`s with their text for a callback.
+    ///
+    /// A port of `LexedStr::intersperse_trivia` and its `Builder` (ra_ap_parser 0.0.307,
+    /// `shortcuts.rs`), whose rules it must reproduce: the first `Enter` takes no trivia;
+    /// an `Exit` is deferred until the next step, so trivia after a node's last token is
+    /// never inside it; before a token, the trivia ahead is emitted at the current depth;
+    /// before an `Enter`, the trivia run ahead is split by [`n_attached_trivias`] into the
+    /// part left in the parent and the part attached inside the new node; a split float
+    /// becomes `NAME_REF`/`INT_NUMBER`, `.` and an optional second `NAME_REF`; at the end
+    /// the remaining trivia goes inside the root. The panics of the original
+    /// (`unreachable!` states, the float asserts) are kept.
+    pub fn steps_fused(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
+        let len = |i: usize| (lexed.text_start(i + 1) - lexed.text_start(i)) as u32;
+        let n = lexed.len();
+        let mut pos = 0usize;
+        let mut state = BuildState::PendingEnter;
+        let mut has_error = false;
+        for step in output.iter() {
+            match step {
+                Step::Token {
+                    kind,
+                    n_input_tokens,
+                } => {
+                    self.leave_pending(&mut state);
+                    pos = self.trivias(lexed, pos, n);
+                    let end = pos + n_input_tokens as usize;
+                    self.token(kind, (lexed.text_start(end) - lexed.text_start(pos)) as u32);
+                    pos = end;
+                }
+                Step::FloatSplit { ends_in_dot } => {
+                    self.leave_pending(&mut state);
+                    pos = self.trivias(lexed, pos, n);
+                    let text = lexed.text(pos);
+                    match text.split_once('.') {
+                        Some((left, right)) => {
+                            assert!(!left.is_empty());
+                            self.start_node(SyntaxKind::NAME_REF);
+                            self.token(SyntaxKind::INT_NUMBER, left.len() as u32);
+                            self.finish_node();
+                            // The parser's own `Exit` of the field expression, moved up.
+                            self.finish_node();
+                            self.token(SyntaxKind::DOT, 1);
+                            if ends_in_dot {
+                                assert!(right.is_empty(), "{left}.{right}");
+                                state = BuildState::Normal;
+                            } else {
+                                assert!(!right.is_empty(), "{left}.{right}");
+                                self.start_node(SyntaxKind::NAME_REF);
+                                self.token(SyntaxKind::INT_NUMBER, right.len() as u32);
+                                self.finish_node();
+                                state = BuildState::PendingExit;
+                            }
+                        }
+                        None => {
+                            // A float without a dot (`1e0`): an error and an `ERROR` node.
+                            has_error = true;
+                            self.start_node(SyntaxKind::ERROR);
+                            self.token(SyntaxKind::FLOAT_NUMBER, text.len() as u32);
+                            self.finish_node();
+                            self.finish_node();
+                            state = if ends_in_dot {
+                                BuildState::Normal
+                            } else {
+                                BuildState::PendingExit
+                            };
+                        }
+                    }
+                    pos += 1;
+                }
+                Step::Enter { kind } => {
+                    match std::mem::replace(&mut state, BuildState::Normal) {
+                        BuildState::PendingEnter => {
+                            // The root: no previous node to leave trivia in.
+                            self.start_node(kind);
+                            continue;
+                        }
+                        BuildState::PendingExit => self.finish_node(),
+                        BuildState::Normal => {}
+                    }
+                    let run = (pos..n).take_while(|&i| lexed.kind(i).is_trivia()).count();
+                    let attached = n_attached_trivias(kind, lexed, pos, run);
+                    for i in pos..pos + run - attached {
+                        self.token(lexed.kind(i), len(i));
+                    }
+                    self.start_node(kind);
+                    for i in pos + run - attached..pos + run {
+                        self.token(lexed.kind(i), len(i));
+                    }
+                    pos += run;
+                }
+                Step::Exit => match std::mem::replace(&mut state, BuildState::PendingExit) {
+                    BuildState::PendingEnter => unreachable!(),
+                    BuildState::PendingExit => self.finish_node(),
+                    BuildState::Normal => {}
+                },
+                Step::Error { .. } => {
+                    // `intersperse_trivia` reports the error at `text_start(pos)`.
+                    let _ = lexed.text_start(pos);
+                    has_error = true;
+                }
+            }
+        }
+        match state {
+            BuildState::PendingExit => {
+                self.trivias(lexed, pos, n);
+                self.finish_node();
+            }
+            BuildState::PendingEnter | BuildState::Normal => unreachable!(),
+        }
+        (!has_error).then_some(())
+    }
+
+    /// Finishes the node whose `Exit` is pending, before a token or a split float.
+    #[inline]
+    fn leave_pending(&mut self, state: &mut BuildState) {
+        match std::mem::replace(state, BuildState::Normal) {
+            BuildState::PendingEnter => unreachable!(),
+            BuildState::PendingExit => self.finish_node(),
+            BuildState::Normal => {}
+        }
+    }
+
+    /// Emits the trivia tokens from `pos` up to the next non-trivia token; returns its index.
+    #[inline]
+    fn trivias(&mut self, lexed: &LexedStr<'_>, mut pos: usize, n: usize) -> usize {
+        while pos < n {
+            let kind = lexed.kind(pos);
+            if !kind.is_trivia() {
+                break;
+            }
+            self.token(
+                kind,
+                (lexed.text_start(pos + 1) - lexed.text_start(pos)) as u32,
+            );
+            pos += 1;
+        }
+        pos
     }
 
     pub fn finish(self) -> Tree<'s> {
@@ -747,6 +918,69 @@ impl<'t, N> AstChildren<'t, N> {
     }
 }
 
+/// The state of [`TreeBuilder::steps_fused`], as `intersperse_trivia`'s.
+enum BuildState {
+    PendingEnter,
+    Normal,
+    PendingExit,
+}
+
+/// How many of the `run` trivia tokens at `pos..pos + run` (the run before a node of
+/// `kind`) go inside the node: rust-analyzer's `n_attached_trivias`, which walks the run
+/// backwards from the node. Only items and fields take trivia. A blank line stops the walk
+/// unless an outer doc comment precedes it; an inner doc comment stops it; any other
+/// comment extends the attached part to include it.
+fn n_attached_trivias(kind: SyntaxKind, lexed: &LexedStr<'_>, pos: usize, run: usize) -> usize {
+    use SyntaxKind::*;
+    match kind {
+        CONST | ENUM | FN | IMPL | MACRO_CALL | MACRO_DEF | MACRO_RULES | MODULE | RECORD_FIELD
+        | STATIC | STRUCT | TRAIT | TUPLE_FIELD | TYPE_ALIAS | UNION | USE | VARIANT
+        | EXTERN_CRATE => {
+            let mut res = 0;
+            // `j` counts from the node backwards: lexed index `pos + run - 1 - j`.
+            let mut j = 0;
+            while j < run {
+                let i = pos + run - 1 - j;
+                match lexed.kind(i) {
+                    WHITESPACE if lexed.text(i).contains("\n\n") => {
+                        // Skip the blank line when the trivia before it is an outer doc
+                        // comment.
+                        if j + 1 < run
+                            && lexed.kind(i - 1) == COMMENT
+                            && is_outer(lexed.text(i - 1))
+                        {
+                            j += 1;
+                            continue;
+                        }
+                        break;
+                    }
+                    COMMENT => {
+                        if is_inner(lexed.text(i)) {
+                            break;
+                        }
+                        res = j + 1;
+                    }
+                    _ => {}
+                }
+                j += 1;
+            }
+            res
+        }
+        _ => 0,
+    }
+}
+
+fn is_outer(text: &str) -> bool {
+    if text.starts_with("////") || text.starts_with("/***") {
+        return false;
+    }
+    text.starts_with("///") || text.starts_with("/**")
+}
+
+fn is_inner(text: &str) -> bool {
+    text.starts_with("//!") || text.starts_with("/*!")
+}
+
 impl<'t, N: AstNode<'t>> Iterator for AstChildren<'t, N> {
     type Item = N;
 
@@ -871,6 +1105,92 @@ mod tests {
             files += 1;
         }
         assert!(files > 300, "{files} fixtures compared");
+    }
+
+    /// The elements, open nodes and result of [`TreeBuilder::steps_fused`] and of
+    /// [`TreeBuilder::steps_interspersed`] over `src` parsed with `entry`; whether the
+    /// parser output holds a split float that ends in a dot.
+    fn assert_fused_equal(src: &str, entry: &TopEntryPoint) -> bool {
+        let edition = Edition::Edition2024;
+        let lexed = LexedStr::new(edition, src);
+        let input = lexed.to_input(edition);
+        let output = entry.parse(&input, edition);
+        let mut fused = TreeBuilder::new(src, 0, 0, 16);
+        let mut reference = TreeBuilder::new(src, 0, 0, 16);
+        let a = fused.steps_fused(&lexed, &output);
+        let b = reference.steps_interspersed(&lexed, &output);
+        assert_eq!(a, b, "result of {src:?}");
+        assert_eq!(fused.elems, reference.elems, "elements of {src:?}");
+        assert_eq!(fused.open, reference.open);
+        assert_eq!(fused.at, reference.at);
+        output
+            .iter()
+            .any(|s| matches!(s, ra_ap_parser::Step::FloatSplit { ends_in_dot: true }))
+    }
+
+    #[test]
+    fn fused_build_equals_the_interspersed_build() {
+        let file = &TopEntryPoint::SourceFile;
+        // Split floats: two fields, a field and a dot before whitespace, an exponent (an error).
+        assert_fused_equal("fn f() { t.0.1; t.0.1.2; x.0 .1; }\n", file);
+        assert!(
+            assert_fused_equal("fn f() { x.0. bar; x.0. await; x.0.0.call(); }\n", file),
+            "a split float that ends in a dot"
+        );
+        assert_fused_equal("fn f() { x.1e0; }\n", file);
+        // A doc comment followed by a blank line, then an item; `////` and `/***` are not
+        // doc comments; a plain comment after a blank line stays outside.
+        assert_fused_equal("/// doc\n\nfn f() {}\n//// four\n\nfn g() {}\n", file);
+        assert_fused_equal("/** doc */\n\nstruct S;\n/*** x */\n\nstruct T;\n", file);
+        assert_fused_equal("// a\n\n// b\nfn f() {}\n", file);
+        // An inner doc comment stops the attachment.
+        assert_fused_equal("mod m {\n    //! inner\n    // c\n    fn f() {}\n}\n", file);
+        // Trailing trivia at the end of a block and of the file.
+        assert_fused_equal("fn f() {\n    x;\n    // end\n}\n\n// eof\n  ", file);
+        // A comment between the attributes and the item, and above the attributes.
+        assert_fused_equal("// above\n#[a]\n// between\n#[b]\nfn f() {}\n", file);
+        // `macro_rules!` bodies and a macro call with comments.
+        assert_fused_equal(
+            "/// m\nmacro_rules! m {\n    // c\n    ($x:expr) => { $x };\n}\nm!(1 /* c */);\n",
+            file,
+        );
+        // Fields and variants take comments; leading trivia of the file.
+        assert_fused_equal(
+            "\n// lead\nstruct S {\n    // a\n    a: u8,\n}\nenum E {\n    /// v\n\n    V,\n}\n",
+            file,
+        );
+        // Fragments (macro arguments), errors, and the empty file.
+        assert_fused_equal("a + /* c */ b", &TopEntryPoint::Expr);
+        assert_fused_equal("Vec<u8> x", &TopEntryPoint::Type);
+        assert_fused_equal("// c\nfn f() {}\n", &TopEntryPoint::MacroItems);
+        assert_fused_equal("fn f( {", file);
+        assert_fused_equal("", file);
+        for src in SOURCES {
+            assert_fused_equal(src, file);
+        }
+    }
+
+    /// Every fixture file, whether or not it parses.
+    #[test]
+    fn fused_build_equals_the_interspersed_build_on_the_fixtures() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures");
+        let mut files = 0;
+        for entry in walkdir::WalkDir::new(root)
+            .into_iter()
+            .filter_map(Result::ok)
+        {
+            let path = entry.path();
+            if path.extension().is_none_or(|e| e != "rs") {
+                continue;
+            }
+            let Ok(src) = std::fs::read_to_string(path) else {
+                continue;
+            };
+            assert_fused_equal(&src, &TopEntryPoint::SourceFile);
+            files += 1;
+        }
+        assert!(files > 1200, "{files} fixtures compared");
     }
 
     #[test]
