@@ -286,9 +286,9 @@ fn format_units_cached(
         .collect()
 }
 
-/// Formats the units `todo` (indices into `units`) on up to `threads` threads, the calling
-/// thread being one of them; on the calling thread alone when `threads <= 1` or there is at
-/// most one unit. The outputs are paired with their unit's index, in no particular order.
+/// Formats the units `todo` (indices into `units`) on up to `threads` threads; on the
+/// calling thread when `threads <= 1` or there is at most one unit. The outputs are
+/// paired with their unit's index, in no particular order.
 fn format_units(
     source: &str,
     config: &Settings,
@@ -334,21 +334,17 @@ fn format_units(
     if threads <= 1 {
         return work();
     }
-    // The calling thread takes units beside `threads - 1` spawned ones instead of waiting in
-    // `join`: one thread fewer to start, and no thread holding a slot while it sleeps
-    // (EXP-029).
     std::thread::scope(|s| {
-        let handles: Vec<_> = (1..threads).map(|_| s.spawn(work)).collect();
-        let mut done = work();
-        for h in handles {
+        let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();
+        handles
+            .into_iter()
             // A worker's panic is re-raised with its own payload, so the message the
             // sequential path would give is the one reported.
-            done.extend(
+            .flat_map(|h| {
                 h.join()
-                    .unwrap_or_else(|payload| std::panic::resume_unwind(payload)),
-            );
-        }
-        done
+                    .unwrap_or_else(|payload| std::panic::resume_unwind(payload))
+            })
+            .collect()
     })
 }
 
