@@ -162,9 +162,15 @@ with the container.
   box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
   validated locally by running the workflow's commands (goldens, conform at both versions, Ir
   against 312.7 M, hyperfine on two crates); record
-  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. On landing: reproduce the Ir
-  and conform gates on its PGO build before merging; the workflow itself is confirmed only by
-  the next release run.
+  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. Landed and merged at `45e8470`
+  after the orchestrator reproduced, on the branch's profile-guided `bench`: 0 of 1238 fixture
+  outputs changed against the golden record and 245,255,322 instructions on the sample (0.784 of
+  312,733,055; the agent measured 245,639,781, M3 244,712,537: the profile differs per training
+  run); the workflow YAML parses and `pgo.sh` passes `bash -n`. The workflow step itself (Linux
+  x86-64, macOS x86-64, Windows x86-64 natively; aarch64 cross builds keep the plain build) is
+  confirmed only by the next release run: check its log for `no profile data available` lines
+  and whether the `macos-13` runner still exists. The agent also noted that print mode with
+  several threads writes files in a varying order (same bytes): a small follow-up.
 - rustd trial: done, recorded in `rustd-trial.md` (verdict: no-go for adoption now, watch list).
   The rustd checkout and build at `/home/user/dioxuslabs/rustd` and the worktree
   `/home/user/wt/rustd-trial` can be removed; the record has the reproduction commands.
