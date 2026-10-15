@@ -91,7 +91,6 @@ use crate::cst::Node;
 
 /// A lower bound on the display width of every one-line rendering of `node`; 0 when the
 /// node contains a comment.
-#[cfg_attr(not(debug_assertions), allow(dead_code))]
 pub(crate) fn one_line_min_width(node: Node<'_>) -> usize {
     min_width_up_to(node, usize::MAX)
 }

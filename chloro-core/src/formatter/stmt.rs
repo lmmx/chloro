@@ -1,6 +1,6 @@
 //! Statement rewriting (rustfmt's `stmt.rs`).
 
-use crate::cst::ast;
+use crate::cst::ast::{self, AstNode};
 
 use super::comment::recover_comment_removed;
 use super::config::StyleEdition;
@@ -59,6 +59,17 @@ impl<'a> Stmt<'a> {
             .enumerate()
             .map(|(i, s)| Stmt::from_ast_node(s, i + 1 == len))
             .collect()
+    }
+
+    /// A lower bound on the width of a one-line rewrite of the statement: the bound of its
+    /// expression ([`super::width::one_line_min_width`]), 0 for any other statement. The
+    /// rewrite is the expression's rewrite with an optional `;`, or the statement's source
+    /// when a comment was lost, either of which contains the expression's tokens.
+    pub(crate) fn one_line_min_width(&self) -> usize {
+        match &self.inner.kind {
+            StmtKind::Expr(e) | StmtKind::Semi(e) => super::width::one_line_min_width(e.syntax()),
+            _ => 0,
+        }
     }
 
     pub(crate) fn is_empty(&self) -> bool {
