@@ -17,7 +17,7 @@ pub mod cli {
     use crate::vlog;
     use args::{Args, print_usage};
     use cache::Cache;
-    use orchestrate::{discover_rust_files, format_all};
+    use orchestrate::{SourceFile, discover_rust_files, format_all};
     use report::{aggregate_results, print_summary};
     use std::io;
     use std::path::Path;
@@ -108,16 +108,17 @@ pub mod cli {
             }
 
             if source_path.is_file() {
-                all_files.push(source_path.canonicalize()?);
+                all_files.push(SourceFile::at(source_path.canonicalize()?));
             } else {
                 all_files.extend(discover_rust_files(source_path)?);
             }
         }
         // A file reachable twice (named twice, through a symlink, or both named and
         // discovered) is processed once: every entry is canonical, so equal files compare
-        // equal. Two workers writing one path could otherwise read a truncated file.
-        all_files.sort();
-        all_files.dedup();
+        // equal. Two workers writing one path could otherwise read a truncated file. The one
+        // sort of the list: discovery yields each tree in this order already.
+        all_files.sort_by(|a, b| a.path.cmp(&b.path));
+        all_files.dedup_by(|a, b| a.path == b.path);
 
         if all_files.is_empty() {
             if args.verbose {
