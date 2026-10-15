@@ -407,18 +407,6 @@ where
         };
         let item_sep_len = if separate { sep_len } else { 0 };
 
-        // Item string may be multi-line. Its length (used for block comment alignment)
-        // should be only the length of the last line.
-        let item_last_line = if item.is_multiline() {
-            inner_item.lines().last().unwrap_or("")
-        } else {
-            inner_item
-        };
-        let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
-        if item_last_line.starts_with(&**indent_str) {
-            item_last_line_width -= unicode_str_width(indent_str);
-        }
-
         if !item.is_substantial() {
             continue;
         }
@@ -543,6 +531,19 @@ where
         {
             let overhead = last_line_width(&result[start..]) + first_line_width(comment.trim());
 
+            // Item string may be multi-line. Its length (used for block comment alignment)
+            // should be only the length of the last line. rustfmt measures it for every
+            // item; it is read only here, for a post-comment, and is measured here.
+            let item_last_line = if item.is_multiline() {
+                inner_item.lines().last().unwrap_or("")
+            } else {
+                inner_item
+            };
+            let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
+            if item_last_line.starts_with(&**indent_str) {
+                item_last_line_width -= unicode_str_width(indent_str);
+            }
+
             let rewrite_post_comment = |item_max_width: &mut Option<usize>| {
                 if item_max_width.is_none() && !last && !inner_item.contains('\n') {
                     *item_max_width = Some(max_width_of_item_with_post_comment(
@@ -633,9 +634,10 @@ where
         }
 
         prev_item_had_post_comment = item.post_comment.is_some();
-        // `contains(':')` is a `memchr`; most items have no `:` and skip the substring
-        // search.
-        prev_item_is_nested_import = inner_item.contains(':') && inner_item.contains("::");
+        // Read only for nested (import) lists. `contains(':')` is a `memchr`; most items
+        // have no `:` and skip the substring search.
+        prev_item_is_nested_import =
+            formatting.nested && inner_item.contains(':') && inner_item.contains("::");
     }
 
     Some(())
