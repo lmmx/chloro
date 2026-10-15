@@ -194,10 +194,17 @@ with the container.
   lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
   `EXP-016-scanner-paths.md`. On landing: reproduce the goldens, conform and Ir on the branch
   head before merging.
-- Theory records landed so far: `incremental-and-process.md`, `scanning-and-strings.md`,
-  `rustd-trial.md`; still being written: `decide-once-and-exact-reuse.md`,
-  `parser-and-substrate.md`, `already-formatted-fast-path.md` (relaunched 02:16 UTC after the
-  01:31 interrupt cancelled the first set).
+- Theory records landed and committed: `incremental-and-process.md`, `scanning-and-strings.md`,
+  `parser-and-substrate.md`, `already-formatted-fast-path.md`, `rustd-trial.md`; still being
+  written: `decide-once-and-exact-reuse.md` (relaunched 02:16 UTC after the 01:31 interrupt
+  cancelled the first set). When it lands: commit it, then fill "Bounds, by record" and "Ranked
+  bounds and the compound picture" above from the five records' tables.
+- E17 (`20261015-parse-floor`, worktree `/home/user/wt/parse-floor`, agent running since 03:05
+  UTC, time box 3 h): the exact, fork-free parse-floor levers of `parser-and-substrate.md` (P8
+  pass `in_trait` down instead of a parent search, P5 macro arguments lexed and parsed once, P1
+  fused trivia interspersal and tree build gated by element equality over both corpora), one
+  gated commit per lever; record `EXP-017-parse-floor.md`. On landing: reproduce goldens,
+  conform and Ir on the branch head before merging.
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
   directly with a wrapping `#[global_allocator]` in an example binary; `perf` is absent in
