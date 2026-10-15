@@ -93,6 +93,10 @@ pub mod cli {
             eprintln!();
         }
 
+        // Opened before the files are discovered: the executable is hashed as soon after
+        // start-up as possible (`cache::tool_key`).
+        let cache = open_cache(&args, &config);
+
         // Collect all files from all source paths
         let mut all_files = Vec::new();
 
@@ -127,8 +131,6 @@ pub mod cli {
             eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
-
-        let cache = open_cache(&args, &config);
 
         // Format files in parallel
         let results = format_all(&all_files, &args, cache.as_ref());
