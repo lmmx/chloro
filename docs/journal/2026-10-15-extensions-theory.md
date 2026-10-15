@@ -483,8 +483,11 @@ with the container.
   −2.49% whole / −1.58% per file, registry −1.05% / −0.91%, peak RSS −10% on `lints.rs` and
   `fx-hir-ty`, `closures-expr` depth 16 at 0.998x and the exponent over depths 8–16 unchanged
   (the whole-series exponent rises 0.013 only because depths 2–6 got cheaper; accepted as not
-  faster growth); store-on-second-miss refuted (1.66x at depth 16). Its gates are reproduced
-  except the option matrix, which is running; merge next. E25 reported (14:45 UTC): the
+  faster growth); store-on-second-miss refuted (1.66x at depth 16). Its gates were reproduced
+  (goldens, conform, fixtures 226,279,028, registry 302,665,100, fmt, clippy, 298 tests, the
+  option matrix's last six values identical) and it is **merged at `30f9aaa`**; post-merge
+  gates identical; the best-known-good is `30f9aaa` at 226,278,649 (fixtures, −61.5% from the
+  start) and 302,664,964 (registry). E25 reported (14:45 UTC): the
   allocator cost is malloc/free pairs (92.6% of formatter blocks die inside their item, 91%
   already on tcache at about 130 Ir a pair), not realloc; a per-thread bump arena on chains,
   overflow and types gives −1.60% / −0.80% per file with RSS neutral, below the 3% falsifier,
