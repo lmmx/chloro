@@ -1,7 +1,10 @@
 use super::args::Args;
 use super::cache::{Cache, Digest, content_digest};
+use super::units::Units;
 use crate::vlog;
-use chloro_core::{format_source_with_config, format_source_with_config_parallel};
+use chloro_core::{
+    format_source_with_config, format_source_with_config_parallel, format_source_with_unit_cache,
+};
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
@@ -34,11 +37,14 @@ pub enum ProcessResult {
 pub const PARALLEL_ITEMS_MIN_BYTES: usize = 128 * 1024;
 
 /// Process a single Rust source file: a cache hit is reported without formatting; otherwise
-/// the file is formatted, its items on up to `threads` threads when it is large enough.
+/// the file is formatted, its items on up to `threads` threads when it is large enough, and
+/// with the unit cache `units` when there is one (only the items it does not hold are
+/// formatted).
 pub fn format_file(
     file_path: &Path,
     args: &Args,
     cache: Option<&Cache>,
+    units: Option<&Units>,
     threads: usize,
 ) -> ProcessResult {
     vlog!(args, {"Processing: {}", file_path.display()});
@@ -79,7 +85,9 @@ pub fn format_file(
         Ok(config) => config,
         Err(e) => return ProcessResult::Error(format!("Invalid --config: {e}")),
     };
-    let formatted = if threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES {
+    let formatted = if let Some(units) = units {
+        format_source_with_unit_cache(&original, &config, threads, units.store())
+    } else if threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES {
         format_source_with_config_parallel(&original, &config, threads)
     } else {
         format_source_with_config(&original, &config)

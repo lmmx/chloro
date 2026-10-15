@@ -1,5 +1,6 @@
 use super::args::Args;
 use super::cache::Cache;
+use super::units::Units;
 use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -28,14 +29,19 @@ fn discover_recursive(dir: &std::path::Path, files: &mut Vec<PathBuf>) -> std::i
 }
 
 /// Formats all files on `args.thread_count()` threads, consulting `cache` for files already
-/// known to be formatted.
+/// known to be formatted and `units` for the unchanged items of the others.
 ///
 /// The files are sorted largest first and handed out from a shared queue, so the large
 /// files start first and no thread is left with a long tail while the others idle. A
 /// file of at least `PARALLEL_ITEMS_MIN_BYTES` has its top-level items formatted on all
 /// the threads (`format_source_with_config_parallel`); the file-level workers and the
 /// item-level workers share the cores, and the scheduler sorts it out.
-pub fn format_all(files: &[PathBuf], args: &Args, cache: Option<&Cache>) -> Vec<ProcessResult> {
+pub fn format_all(
+    files: &[PathBuf],
+    args: &Args,
+    cache: Option<&Cache>,
+    units: Option<&Units>,
+) -> Vec<ProcessResult> {
     let num_threads = args.thread_count();
 
     if args.verbose {
@@ -71,7 +77,10 @@ pub fn format_all(files: &[PathBuf], args: &Args, cache: Option<&Cache>) -> Vec<
                         let Some(&(size, i)) = order.get(k) else {
                             break;
                         };
-                        done.push((i, format_file(&files[i], args, cache, item_threads(size))));
+                        done.push((
+                            i,
+                            format_file(&files[i], args, cache, units, item_threads(size)),
+                        ));
                     }
                     done
                 })
