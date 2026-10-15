@@ -93,6 +93,10 @@ pub mod cli {
             eprintln!();
         }
 
+        // Opened before the files are discovered: the executable is hashed as soon after
+        // start-up as possible (`cache::tool_key`).
+        let cache = open_cache(&args, &config);
+
         // Collect all files from all source paths
         let mut all_files = Vec::new();
 
@@ -104,11 +108,16 @@ pub mod cli {
             }
 
             if source_path.is_file() {
-                all_files.push(source_path.to_path_buf());
+                all_files.push(source_path.canonicalize()?);
             } else {
                 all_files.extend(discover_rust_files(source_path)?);
             }
         }
+        // A file reachable twice (named twice, through a symlink, or both named and
+        // discovered) is processed once: every entry is canonical, so equal files compare
+        // equal. Two workers writing one path could otherwise read a truncated file.
+        all_files.sort();
+        all_files.dedup();
 
         if all_files.is_empty() {
             if args.verbose {
@@ -122,8 +131,6 @@ pub mod cli {
             eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
-
-        let cache = open_cache(&args, &config);
 
         // Format files in parallel
         let results = format_all(&all_files, &args, cache.as_ref());
