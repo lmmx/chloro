@@ -46,10 +46,15 @@ impl Server {
 
     /// The `requests` count of the server's `status` reply.
     fn requests(&self) -> u64 {
+        self.status_count("requests ")
+    }
+
+    /// A count of the server's `status` reply, by its line's prefix.
+    fn status_count(&self, prefix: &str) -> u64 {
         let reply = frames(&self.socket, &[("status", b"")]).unwrap();
         let text = String::from_utf8(value(&reply, "stdout").to_vec()).unwrap();
         text.lines()
-            .find_map(|l| l.strip_prefix("requests "))
+            .find_map(|l| l.strip_prefix(prefix))
             .unwrap()
             .parse()
             .unwrap()
@@ -400,4 +405,72 @@ fn a_stale_socket_is_replaced() {
     // A new server takes the socket over.
     let restarted = Server::start(Path::new(BIN), dir.path());
     assert!(restarted.requests() >= 1);
+}
+
+#[test]
+fn renames_configuration_changes_and_rewrites_under_a_known_stamp_are_seen() {
+    let dir = tempfile::tempdir().unwrap();
+    let server = Server::start(Path::new(BIN), dir.path());
+    let cache = dir.path().join("server-cache");
+    let pair = Pair::new(&[("good.rs", FORMATTED.as_bytes())]);
+    // Older than the settle time: the server records the stamp and answers the next
+    // request on the file from it, without reading the file.
+    std::thread::sleep(Duration::from_millis(1200));
+    for _ in 0..2 {
+        let (local, served) = pair.both(&server.socket, &cache, &["--check", "good.rs"], b"");
+        assert_eq!(local, served);
+        assert_eq!(served.code, Some(0));
+    }
+    // The settled stamp is recorded, so a request that finds the file unchanged takes it.
+    assert_eq!(server.status_count("paths "), 1);
+    // The same size and modification time with other content: the status-change time
+    // differs, so the server reads the file again.
+    let same_size = format!("{:<28}\n", "fn main(){let x=1;}");
+    assert_eq!(same_size.len(), FORMATTED.len());
+    for side in ["local", "served"] {
+        let path = pair.side(side).join("good.rs");
+        let modified = fs::metadata(&path).unwrap().modified().unwrap();
+        fs::write(&path, &same_size).unwrap();
+        fs::File::options()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_modified(modified)
+            .unwrap();
+    }
+    let (local, served) = pair.both(&server.socket, &cache, &["--check", "good.rs"], b"");
+    assert_eq!(local, served);
+    assert_eq!(served.code, Some(1));
+
+    // A rename: the formatted content under a new name, other content under the old one.
+    for side in ["local", "served"] {
+        let side = pair.side(side);
+        fs::write(side.join("good.rs"), FORMATTED).unwrap();
+        fs::rename(side.join("good.rs"), side.join("moved.rs")).unwrap();
+        fs::write(side.join("good.rs"), UNFORMATTED).unwrap();
+    }
+    for args in [
+        &["--check", "moved.rs"][..],
+        &["--check", "good.rs"],
+        &["--check", "."],
+    ] {
+        let (local, served) = pair.both(&server.socket, &cache, args, b"");
+        assert_eq!(local, served, "{args:?}");
+    }
+
+    // A configuration change: the same formatted file under another configuration.
+    for args in [
+        &["--check", "moved.rs"][..],
+        &["--check", "--config", "tab_spaces=2", "moved.rs"],
+        &[
+            "--check",
+            "--config",
+            "tab_spaces=2,max_width=60",
+            "moved.rs",
+        ],
+        &["--check", "moved.rs"],
+    ] {
+        let (local, served) = pair.both(&server.socket, &cache, args, b"");
+        assert_eq!(local, served, "{args:?}");
+    }
 }

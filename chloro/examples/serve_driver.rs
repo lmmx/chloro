@@ -23,8 +23,9 @@
 //!
 //! `rounds` measures several modes in one window: every save is timed once in each mode
 //! (`socket=` a server's socket, with `flags=`; or `exec=` a command, with `cache=` its
-//! `CHLORO_CACHE_DIR` and `pipe=1` for standard input), in an order rotating by one mode per
-//! save, so drifting load falls on every mode alike.
+//! `CHLORO_CACHE_DIR`, `pipe=1` for standard input, `expect=echo` for a command that prints
+//! the formatted source, and `server=` the socket of a server whose memory to read), in an
+//! order rotating by one mode per save, so drifting load falls on every mode alike.
 //!
 //! `identity` drives the scenarios of `chloro-core/examples/unit_cache.rs` through the
 //! socket with the unit cache on and compares every reply (exit code, standard output,
@@ -85,14 +86,21 @@ mod unix {
                     .map(|f| f.value.clone())
             };
             let pid = String::from_utf8(get("stdout").unwrap()).unwrap();
+            // A default socket names its cache directory; else `CHLORO_CACHE_DIR`.
+            let cache_dir = match socket.file_name() {
+                Some(name) if name == "chloro.sock" => {
+                    socket.parent().unwrap().as_os_str().as_bytes().to_vec()
+                }
+                _ => std::env::var_os("CHLORO_CACHE_DIR")
+                    .map(|d| d.as_bytes().to_vec())
+                    .unwrap_or_default(),
+            };
             Client {
                 socket,
                 identity: get("exe").expect("the ping reply carries no identity"),
                 pid: pid.trim().parse().unwrap(),
                 cwd: std::env::current_dir().unwrap(),
-                cache_dir: std::env::var_os("CHLORO_CACHE_DIR")
-                    .map(|d| d.as_bytes().to_vec())
-                    .unwrap_or_default(),
+                cache_dir,
             }
         }
 
@@ -374,10 +382,15 @@ mod unix {
     struct Mode {
         label: String,
         client: Option<Client>,
+        /// The server whose memory is read, for a command that talks to it.
+        watch: Option<Client>,
         flags: Vec<String>,
         argv: Vec<String>,
         cache_dir: Option<String>,
         pipe: bool,
+        /// The command prints the formatted source (`--stdin` without `--check`): its
+        /// output must be the input, which the edits keep formatted.
+        echo: bool,
         times: Vec<f64>,
         failures: usize,
         first: f64,
@@ -385,15 +398,19 @@ mod unix {
     }
 
     impl Mode {
-        /// `label=L;socket=PATH;flags=a,b` or `label=L;cache=DIR;exec=ARGV...;pipe=1`.
+        /// `label=L;socket=PATH;flags=a,b` or `label=L;cache=DIR;exec=ARGV...;pipe=1`, with
+        /// `server=PATH` for a command whose server's memory is read and `expect=echo` for a
+        /// command that prints the (formatted) input.
         fn parse(spec: &str) -> Mode {
             let mut mode = Mode {
                 label: String::new(),
                 client: None,
+                watch: None,
                 flags: Vec::new(),
                 argv: Vec::new(),
                 cache_dir: None,
                 pipe: false,
+                echo: false,
                 times: Vec::new(),
                 failures: 0,
                 first: 0.0,
@@ -404,10 +421,12 @@ mod unix {
                 match key {
                     "label" => mode.label = value.to_string(),
                     "socket" => mode.client = Some(Client::connect(PathBuf::from(value))),
+                    "server" => mode.watch = Some(Client::connect(PathBuf::from(value))),
                     "flags" => mode.flags = value.split(',').map(str::to_string).collect(),
                     "cache" => mode.cache_dir = Some(value.to_string()),
                     "exec" => mode.argv = value.split(' ').map(str::to_string).collect(),
                     "pipe" => mode.pipe = value == "1",
+                    "expect" => mode.echo = value == "echo",
                     other => panic!("unknown key {other}"),
                 }
             }
@@ -499,7 +518,8 @@ mod unix {
                 let t = Instant::now();
                 let outcome = mode.run(&file, &edited);
                 mode.times.push(t.elapsed().as_secs_f64() * 1e3);
-                if !matches!(&outcome, Ok((0, out, err)) if out.is_empty() && err.is_empty()) {
+                let expected_out: &[u8] = if mode.echo { &edited } else { b"" };
+                if !matches!(&outcome, Ok((0, out, err)) if out == expected_out && err.is_empty()) {
                     mode.failures += 1;
                     if mode.failures < 5 {
                         eprintln!("{} save {i}: {outcome:?}", mode.label);
@@ -509,7 +529,7 @@ mod unix {
             fs::write(&file, &original).unwrap();
             if rss_at.contains(&i) {
                 for mode in &mut modes {
-                    if let Some(client) = &mode.client {
+                    if let Some(client) = mode.client.as_ref().or(mode.watch.as_ref()) {
                         mode.rss.push((i, memory(client.pid)));
                     }
                 }
