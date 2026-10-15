@@ -20,6 +20,7 @@ use super::nodes::outer_attributes;
 use super::nodes::{child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
+use super::scratch::with_scratch;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{PathContext, path_segments, rewrite_path};
@@ -56,7 +57,9 @@ fn is_short_pattern_inner(context: &RewriteContext<'_>, pat: &ast::Pat) -> bool 
         | ast::Pat::RangePat(..) => false,
         ast::Pat::TuplePat(t) => t.fields().count() <= 1,
         ast::Pat::TupleStructPat(t) => {
-            t.path().is_some_and(|p| path_segments(&p).len() <= 1) && t.fields().count() <= 1
+            t.path()
+                .is_some_and(|p| with_scratch(|bump| path_segments(&p, bump).len()) <= 1)
+                && t.fields().count() <= 1
         }
         ast::Pat::BoxPat(p) => {
             child::<ast::Pat>(p.syntax()).is_some_and(|p| is_short_pattern_inner(context, &p))

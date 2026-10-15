@@ -23,6 +23,8 @@ alloc-snmalloc = ["dep:snmalloc-rs"]
 alloc-timing = []
 
 [dependencies]
+# The formatter's scratch arena (formatter/scratch.rs, EXP-025).
+bumpalo = { features = ["collections"], version = "3.20.3" }
 ctor = { default-features = false, version = "0.6.1" }
 
 ra_ap_parser = "0.0.307"
