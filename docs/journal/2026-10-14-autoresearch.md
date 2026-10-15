@@ -606,24 +606,35 @@ on the merged tree against the previous best-known-good:
 | 2026-10-15, E18: the chain's dead vertical candidate skipped | 280,278,276 | −3.52% | speculation removed exactly |
 | 2026-10-15, E16: scanner, list-gap and string-assembly fast paths (eleven levers) | 248,202,094 | −11.44% | per-call work removed |
 | PGO on top (measured on `6b78728`, M4) | 206,922,054 against 248,202,137 | −16.6% | code layout; worth less on the shortened hot paths than M3's −21.7% |
+| 2026-10-15, E20: `write_list_into` (the shared sink) and the list scans computed where read | 238,033,187 | −4.10% | assembly into the caller's buffer; scans fused |
+| 2026-10-15, E22: `steps_fused` (the fused trivia step kept, the interspersed path dropped) | 237,768,533 | −0.11% | one path; the layout levers (hot/cold, flag tables, BOLT) rejected |
+| 2026-10-15, E19: six exact levers from the cliff hunt and the repeated-work audit | 232,047,700 | −2.41% (−3.08% per file) | if-else chain in one buffer, use-segment comparison without clones, facts decided from the first child, `definitive_tactic` early stop, macro token trees from the tree |
+| 2026-10-15, E27 harness and E23 trace timeline | 232,051,625 | 0.00% | measurement code only (inside the spread) |
+| 2026-10-15, E28: the memo gated by depth (`MEMO_MIN_DEPTH` = 6) | 226,278,649 | −2.49% (−1.58% per file) | fewer memo stores at shallow depths; hit rate 3.2% |
+| 2026-10-15, E26: a lower bound on one-line width before rendering | 224,591,085 | −0.75% | the nested-closure cliff removed (depth 16: 105.4 M to 5.74 M) |
+| 2026-10-15, E25: a scratch arena (`bumpalo`) for the module-local intermediates of chains, overflow and types | 220,958,649 | −1.62% (−1.55% per file) | malloc/free pairs removed exactly; no `unsafe` |
+| PGO on top (measured on `d2f6fa0`, M5) | 182,602,721 against 220,957,089 | −17.4% | code layout |
 
 The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
 cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-10-15 night
 ([2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md): the theory records and
-experiments E12–E18) it is 0.422 before PGO (248,202,094 against 587,988,576, −57.8%), with
+experiments E12–E18) it was 0.422 before PGO (248,202,094 against 587,988,576, −57.8%), and
+after the day's waves 3 and 4 ([2026-10-15-unmined-tricks.md](2026-10-15-unmined-tricks.md):
+E19–E28, seven merged) it is 0.376 (220,958,649, −62.4%; 182,602,721 profile-guided, 0.311 of the start), with
 every output on both corpora still identical to the record of the starting outputs except
 the 13 files the conformance fixes target. Every step left every output on 1238 fixtures and
 20,850 registry files unchanged, except the conformance fixes, which changed exactly the 13
 files they target, checked file by file against a record of the starting outputs.
 
 Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
-([M4](2026-10-14-autoresearch/measurements/m4-quiet-host.md), on the code of the
-best-known-good `e640fbf`): 0.26–0.44 of its wall time per crate on one core and 0.092–0.179
-on four, with every chloro run below every rustfmt run on all nine crates in both modes;
-0.24–0.38 and 0.072–0.175 with PGO. In process the formatter runs at 11.22–11.79 MB/s
-against 4.96–5.09 for the start in the same window (2.2–2.4x; M3 measured 9.39–9.54 against
-5.22–5.27 on the code of `113367a`, 1.8x). The warm cache answers `--check` on the 1238
-formatted fixtures in 16.9 ms on four cores (M3: 28.9). At the start of the programme the
+([M5](2026-10-14-autoresearch/measurements/m5-quiet-host.md), on the code of the
+best-known-good `e96b530`): 0.239–0.405 of its wall time per crate on one core and 0.083–0.173
+on four, with every chloro run below every rustfmt run and every run of the start's binary on all nine crates in both modes;
+0.210–0.332 and 0.066–0.148 with PGO (M4, on `e640fbf`: 0.26–0.44 and 0.092–0.179; 0.24–0.38 and
+0.072–0.175 with PGO). In process the formatter runs at 9.3–10.4 MB/s against 3.7–4.0 for
+the start in the same window (2.5–2.7x; M4 measured 11.22–11.79 against 4.96–5.09, M3 9.39–9.54
+against 5.22–5.27 on the code of `113367a`). The warm cache answers `--check` on the 1238
+formatted fixtures in 17.8 ms on four cores (M4: 16.9; M3: 28.9). At the start of the programme the
 per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
 time.
 
@@ -730,16 +741,23 @@ Next actions, in the order of value per effort:
 - The formatter reads syntax from a flat preorder array with a generated typed layer
   (chloro-core/src/cst/: mod.rs, generated.rs, ast.rs, gen_ast.py, rust.ungram); rowan and
   ra_ap_syntax are dev-dependencies for the equality tests only
-  (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 16 crates
-- Instructions on the 49-file sample under `benchmarks/profile.sh`: 312,734,032 at
-  `113367a`, and 312,732,924–312,734,679 (inside the spread) at the R5 tree `72bd4b1` =
-  `bdfb9d1`, against 587,988,576 at `884f9c9` (−46.8%); 306,889,893 for the profile-guided
-  build of `8d418ee` (measurements/m2-quiet-host.md)
-- In process on one core of the 2.80GHz host class: 9.39–9.54 MB/s on the 1238 fixtures
-  against 5.22–5.27 for `884f9c9` (11.28–11.59 profile-guided); against rustfmt 1.9.0 on
-  nine crates, formatted input, `--check`: 0.32–0.54 of its wall time on one core and
-  0.105–0.203 on four, with every chloro run below every rustfmt run in both modes
-  (measurements/m3-quiet-host.md, on the code of `113367a`)
+  (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 18 crates (16 after
+  E7b; `bumpalo` for E25's scratch arena, `ctor` for the identity record)
+- Instructions on the 49-file fixture sample under `benchmarks/profile.sh`: 220,957,089 at
+  `d2f6fa0` (the code of the best-known-good `e96b530`) against 587,988,576 at `884f9c9`
+  (−62.4%); 182,602,721 profile-guided (0.311 of the start); on the registry validation
+  sample 299,933,543 against 688,589,271 (−56.4%); the parse-only phase is 39.1% and 46.6%
+  of those counts (measurements/m5-quiet-host.md; the ledger's best-known-good row has the
+  step-by-step chain)
+- In process on one core of the 2.80GHz host class: 9.33–10.38 MB/s on the 1238 fixtures
+  against 3.68–4.03 for `884f9c9` in the same window (11.15–12.56 profile-guided); against
+  rustfmt 1.9.0 on nine crates, formatted input, `--check`: 0.239–0.405 of its wall time on
+  one core and 0.083–0.173 on four, with every chloro run below every rustfmt run and every
+  run of the start's binary in both modes (measurements/m5-quiet-host.md, on the code of
+  `e96b530`; M4 on `e640fbf` read 0.26–0.44 and 0.092–0.179)
+- The nested-closure cliff is removed: a 2,000-byte file of expression closures nested to
+  depth 16 costs 5.69 M instructions against 242.5 M at the start, with identical output
+  (benchmarks/cliffs, E19 and E26)
 - Conformance is 1220/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
   1.9.0 and 1.8.0, and all 31 option values are fully identical (`conform -i`,
   `config_matrix -n 1220` at `113367a`); 20540/20540 registry files identical in the live
