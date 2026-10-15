@@ -1917,7 +1917,7 @@ impl FmtVisitor<'_> {
     fn visit_impl_items(&mut self, items: &[ast::AssocItem]) {
         debug_assert!(!self.config.reorder_impl_items());
         for item in items {
-            self.visit_assoc_item(item);
+            self.visit_assoc_item(item, false);
         }
     }
 }
@@ -2400,7 +2400,7 @@ pub(crate) fn format_trait(
             );
         }
         for item in &items {
-            visitor.visit_assoc_item(item);
+            visitor.visit_assoc_item(item, true);
         }
 
         visitor.format_missing(item_span.hi() - 1);

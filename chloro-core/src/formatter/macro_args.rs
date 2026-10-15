@@ -97,6 +97,46 @@ struct Fragment<'a> {
     node: Node<'a>,
 }
 
+/// A prefix parse of a window of tokens: what [`MacroTokens::prefix_parse`] reports, with
+/// the window's lexed text and the parser's output.
+struct PrefixParse<'a> {
+    consumed: usize,
+    error: Option<usize>,
+    /// Tokens in the window.
+    window: usize,
+    /// Start of the window in the interior.
+    lo: usize,
+    lexed: LexedStr<'a>,
+    output: ra_ap_parser::Output,
+}
+
+impl PrefixParse<'_> {
+    /// Whether the build of the `kind` fragment starting at `lo` would lex and parse the
+    /// same text into the same steps, so that it can take this parse instead.
+    ///
+    /// The fragment is the consumed tokens, so with the whole window consumed its text is
+    /// the window's text and lexes the same. For `Expr` and `Ty` the top entry runs the
+    /// prefix entry's grammar function (`expressions::expr`, `types::type_`) after opening
+    /// a marker that it abandons when the parser stopped at the end of the input, as it
+    /// has here; an abandoned marker is a tombstone that `event::process` drops, so the two
+    /// outputs are the same steps (ra_ap_parser 0.0.307, `grammar.rs` `entry::prefix` and
+    /// `entry::top`). `Pat` and `Item` use other grammar functions and keep the second
+    /// parse.
+    fn matches_top_parse(&self, kind: FragmentKind, lo: usize) -> bool {
+        matches!(kind, FragmentKind::Expr | FragmentKind::Ty)
+            && self.error.is_none()
+            && self.consumed == self.window
+            && self.lo == lo
+    }
+}
+
+/// Whether two parser outputs are the same steps (a debug check of [`PrefixParse`]).
+fn same_steps(a: &ra_ap_parser::Output, b: &ra_ap_parser::Output) -> bool {
+    a.iter()
+        .map(|s| format!("{s:?}"))
+        .eq(b.iter().map(|s| format!("{s:?}")))
+}
+
 /// The token stream of one token tree interior. `'a` is the run (the fragment trees are
 /// kept by it), `'t` the token tree's own tree.
 struct MacroTokens<'a, 't> {
@@ -196,7 +236,15 @@ impl<'a, 't> MacroTokens<'a, 't> {
     /// Prefix-parses `kind` over tokens `start..end`, returning the number of tokens
     /// consumed and, if the parser reported an error, the token index where it did.
     fn prefix_parse(&self, kind: FragmentKind, start: usize, end: usize) -> (usize, Option<usize>) {
-        let text = &self.text[self.toks[start].lo..self.toks[end - 1].hi];
+        let parse = self.prefix_parse_window(kind, start, end);
+        (parse.consumed, parse.error)
+    }
+
+    /// [`Self::prefix_parse`], keeping the window's lexed text and parser output for
+    /// [`Self::build`] to reuse.
+    fn prefix_parse_window(&self, kind: FragmentKind, start: usize, end: usize) -> PrefixParse<'a> {
+        let lo = self.toks[start].lo;
+        let text = &self.text[lo..self.toks[end - 1].hi];
         let lexed = LexedStr::new(self.edition, text);
         let input = lexed.to_input(self.edition);
         let output = kind.prefix_entry().parse(&input, self.edition);
@@ -212,7 +260,14 @@ impl<'a, 't> MacroTokens<'a, 't> {
                 Step::Enter { .. } | Step::Exit => {}
             }
         }
-        (consumed, error)
+        PrefixParse {
+            consumed,
+            error,
+            window: end - start,
+            lo,
+            lexed,
+            output,
+        }
     }
 
     /// Parses one `kind` fragment starting at token `start`, ending no later than `limit`.
@@ -231,6 +286,7 @@ impl<'a, 't> MacroTokens<'a, 't> {
         if kind == FragmentKind::Ty && self.kind(start) == Some(T![?]) {
             return self.parse_maybe_bound(start, limit);
         }
+        let mut reuse = None;
         let consumed = if kind == FragmentKind::Item {
             // Items contain top-level `;`, so they are parsed against the whole remainder.
             match self.prefix_parse(kind, start, limit) {
@@ -244,8 +300,12 @@ impl<'a, 't> MacroTokens<'a, 't> {
                     return None;
                 }
                 let window = end - start;
-                match self.prefix_parse(kind, start, end) {
-                    (n, None) if n > 0 => break n,
+                let parse = self.prefix_parse_window(kind, start, end);
+                match (parse.consumed, parse.error) {
+                    (n, None) if n > 0 => {
+                        reuse = Some(parse);
+                        break n;
+                    }
                     (_, Some(at)) if at >= window && end < limit => {
                         // The window ended inside the fragment: include the separator.
                         end = self.next_sep(end + 1, limit);
@@ -261,7 +321,8 @@ impl<'a, 't> MacroTokens<'a, 't> {
             _ => self.toks[start].lo,
         };
         let hi = self.toks[end - 1].hi;
-        let node = self.build(kind, lo, hi)?;
+        let reuse = reuse.filter(|p| p.matches_top_parse(kind, lo));
+        let node = self.build(kind, lo, hi, reuse)?;
         Some(Fragment { kind, lo, hi, node })
     }
 
@@ -309,11 +370,31 @@ impl<'a, 't> MacroTokens<'a, 't> {
 
     /// Parses `text[lo..hi]` as a `kind` fragment into a tree of its own at its offset in
     /// the file, kept by the run, and returns its node: the root, or the single item under
-    /// a `MacroItems` root.
-    fn build(&self, kind: FragmentKind, lo: usize, hi: usize) -> Option<Node<'a>> {
-        let lexed = LexedStr::new(self.edition, &self.text[lo..hi]);
-        let input = lexed.to_input(self.edition);
-        let output = kind.top_entry().parse(&input, self.edition);
+    /// a `MacroItems` root. `prefix` is a prefix parse that [`PrefixParse::matches_top_parse`]
+    /// over this text, whose lexed text and output are used instead of parsing again.
+    fn build(
+        &self,
+        kind: FragmentKind,
+        lo: usize,
+        hi: usize,
+        prefix: Option<PrefixParse<'a>>,
+    ) -> Option<Node<'a>> {
+        let (lexed, output) = match prefix {
+            Some(p) => {
+                debug_assert_eq!(p.lexed.as_str(), &self.text[lo..hi]);
+                debug_assert!(same_steps(&p.output, &{
+                    let input = p.lexed.to_input(self.edition);
+                    kind.top_entry().parse(&input, self.edition)
+                }));
+                (p.lexed, p.output)
+            }
+            None => {
+                let lexed = LexedStr::new(self.edition, &self.text[lo..hi]);
+                let input = lexed.to_input(self.edition);
+                let output = kind.top_entry().parse(&input, self.edition);
+                (lexed, output)
+            }
+        };
         let base = self.base + lo as BytePos;
         let tree = Tree::from_steps_at(self.file, &lexed, &output, base, self.run.next_tree_id())?;
         let tree = self.run.keep_tree(tree);
@@ -530,12 +611,14 @@ pub(crate) fn parse_expr<'a>(
     if n == 0 {
         return None;
     }
-    let (consumed, error) = tokens.prefix_parse(FragmentKind::Expr, 0, n);
-    if error.is_some() || consumed == 0 {
+    let parse = tokens.prefix_parse_window(FragmentKind::Expr, 0, n);
+    let consumed = parse.consumed;
+    if parse.error.is_some() || consumed == 0 {
         return None;
     }
     let (lo, hi) = (tokens.toks[0].lo, tokens.toks[consumed - 1].hi);
-    let node = tokens.build(FragmentKind::Expr, lo, hi)?;
+    let reuse = Some(parse).filter(|p| p.matches_top_parse(FragmentKind::Expr, lo));
+    let node = tokens.build(FragmentKind::Expr, lo, hi, reuse)?;
     let frag = Fragment {
         kind: FragmentKind::Expr,
         lo,
@@ -590,20 +673,21 @@ pub(crate) fn parse_lazy_static<'a>(
         pos = tokens.toks.partition_point(|t| t.hi <= ty.hi);
         eat(&mut pos, T![=]);
         let limit = tokens.next_sep(pos, n);
-        let (consumed, error) = if pos < limit {
-            tokens.prefix_parse(FragmentKind::Expr, pos, limit)
-        } else {
-            (0, None)
-        };
-        if error.is_some() || consumed == 0 {
+        if pos >= limit {
+            return None;
+        }
+        let parse = tokens.prefix_parse_window(FragmentKind::Expr, pos, limit);
+        let consumed = parse.consumed;
+        if parse.error.is_some() || consumed == 0 {
             return None;
         }
         let (lo, hi) = (tokens.toks[pos].lo, tokens.toks[pos + consumed - 1].hi);
+        let reuse = Some(parse).filter(|p| p.matches_top_parse(FragmentKind::Expr, lo));
         let expr = Fragment {
             kind: FragmentKind::Expr,
             lo,
             hi,
-            node: tokens.build(FragmentKind::Expr, lo, hi)?,
+            node: tokens.build(FragmentKind::Expr, lo, hi, reuse)?,
         };
         pos += consumed;
         eat(&mut pos, T![;]);
@@ -747,5 +831,48 @@ mod tests {
             assert_eq!(entries[1].name, "B");
             assert_eq!(entries[1].ty.syntax().text(), "Vec<u8>");
         });
+    }
+
+    /// A build that reuses a whole-window prefix parse lays out the same tree as one that
+    /// lexes and parses the text again with the top entry point: split floats, closures,
+    /// casts, generic types, ranges, a trailing comment, a type that ends in `>>`.
+    #[test]
+    fn reused_prefix_parse_builds_the_same_tree() {
+        let sources = [
+            "m!(t.0.1);",
+            "m!(x.0 + 1.5e3);",
+            "m!(|a, b| a + b);",
+            "m!(x as Vec<u8> /* c */);",
+            "m!(a..=b);",
+            "m!(Vec<Option<u8>>);",
+            "m!(&'a mut [T; 3]);",
+            "m!(async move { x.await });",
+        ];
+        let mut reused = 0;
+        for src in sources {
+            with_macro(src, |context, tt| {
+                let tokens = MacroTokens::new(context, &tt).unwrap();
+                let n = tokens.toks.len();
+                let (lo, hi) = (tokens.toks[0].lo, tokens.toks[n - 1].hi);
+                for kind in [FragmentKind::Expr, FragmentKind::Ty] {
+                    let parse = tokens.prefix_parse_window(kind, 0, n);
+                    if !parse.matches_top_parse(kind, lo) {
+                        continue;
+                    }
+                    reused += 1;
+                    let a = tokens.build(kind, lo, hi, Some(parse));
+                    let b = tokens.build(kind, lo, hi, None);
+                    let elems = |node: Option<Node<'_>>| {
+                        node.map(|n| {
+                            n.descendants_with_tokens()
+                                .map(|e| (e.kind(), e.text_range()))
+                                .collect::<Vec<_>>()
+                        })
+                    };
+                    assert_eq!(elems(a), elems(b), "{src}");
+                }
+            });
+        }
+        assert!(reused >= sources.len(), "{reused} reused parses");
     }
 }

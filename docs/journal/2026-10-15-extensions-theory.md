@@ -374,8 +374,12 @@ with the container.
   UTC, time box 3 h): the exact, fork-free parse-floor levers of `parser-and-substrate.md` (P8
   pass `in_trait` down instead of a parent search, P5 macro arguments lexed and parsed once, P1
   fused trivia interspersal and tree build gated by element equality over both corpora), one
-  gated commit per lever; record `EXP-017-parse-floor.md`. On landing: reproduce goldens,
-  conform and Ir on the branch head before merging.
+  gated commit per lever; record `EXP-017-parse-floor.md`. Landed (`7f6e98e`: all three kept,
+  −7.11% Ir, tree equality 0 mismatches on 1,330 + 34,008 file trees and 14,579 + 625,316
+  fragment trees) and merged at `fe5da9a` after the orchestrator reproduced: goldens 0 of 1238
+  sequential and 4 threads, 0 of 25,024 registry files; `conform -i` 1220/1220 at both versions;
+  Ir 290,493,068; fmt, clippy, chloro-core tests including the two fused-build equality tests.
+  The best-known-good moves to this merge (ledger).
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
   directly with a wrapping `#[global_allocator]` in an example binary; `perf` is absent in
