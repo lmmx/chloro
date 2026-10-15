@@ -25,6 +25,10 @@ The records, one per area, are under [2026-10-15-extensions-theory/](2026-10-15-
   and string assembly, the `core`/`std` share.
 - [already-formatted-fast-path.md](2026-10-15-extensions-theory/already-formatted-fast-path.md):
   whether canonical text can be recognised more cheaply than it is produced; a verify mode.
+- [rustd-trial.md](2026-10-15-extensions-theory/rustd-trial.md): a bounded feasibility trial of
+  the `rustd` build daemon on chloro-core's tests (measured, not theory): 100% of root functions
+  compiled and 198 tests matching rustc, edit-to-binary 1.4 s against 2.5–2.9 s for incremental
+  cargo, 1.3 GB daemon; no-go for the programme's loop, which is release builds.
 
 ## Lineage
 
@@ -94,9 +98,16 @@ Cache and branch simulation of the same run (`valgrind --tool=callgrind --cache-
 
 ## Handoff (overnight run)
 
-State at 01:45 UTC, 2026-10-15 (kept current as steps land; the orchestrator session is
-`session_01MyJjiAfjdkyrd1k4ZcR6h3`; the quota window resets at 04:40 UTC and check-ins are
-scheduled for 03:15 and 04:45 UTC).
+State at 01:50 UTC, 2026-10-15 (kept current as steps land). The orchestrator session is
+`session_01MyJjiAfjdkyrd1k4ZcR6h3`; the quota window resets at 04:40 UTC. Two scheduled
+tasks wake that session (verified with `list_triggers`; both carry
+`persistent_session_id` = the orchestrator): `trig_01PPWgQpP6SucLHeqt3UJ7EE` at 03:15 UTC
+(safety check-in) and `trig_01Pmv5niPZZ3mcLPpgMzR9cf` at 04:45 UTC (quota-reset resume: verify
+the quota first, then follow this section). If the session cannot be resumed, a new session
+on this branch starts from this section and the scratch paths named here; everything not in
+the repository is in the container's scratch directory
+`/tmp/claude-0/-home-user-chloro/9623d6dc-d933-5682-9d83-7762284f5c7f/scratchpad/` and is lost
+with the container.
 
 - Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR #88, head pushed; the
   best-known-good code is `bdfb9d1` (ledger). Nothing here changes formatter code yet.
@@ -108,19 +119,30 @@ scheduled for 03:15 and 04:45 UTC).
   it, fill its row of "Bounds, by record" above, push.
 - E12 (`20261015-cli-waste`, worktree `/home/user/wt/cli-waste`, agent running): canonicalise
   once per root and per symlink instead of per file, one sort, a stamp-cached tool key;
-  record `2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md`. On landing: reproduce
-  the gates (fmt, clippy, `cargo test -p chloro --all-features`, output identity of `--check`
-  and `--write` against the base binary on fixture and registry copies) and the hyperfine
-  rows before merging; ledger row E12; README cache figure if it moves.
+  record `2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md`. Landed and merged at
+  `92fdef0` after the orchestrator reproduced the gates in the worktree (fmt, clippy, 37 CLI
+  tests; `--check --no-cache` on the formatted fixture copy: same exit code and byte-identical
+  stdout against the base binary) and the headline on this loaded host, base against new
+  interleaved: warm `--check` of the 1238 fixtures on 4 threads 46.0 → 25.6 ms mean (0.56,
+  n = 15); one file with the cache on, core 3, 7.3 → 4.3 ms against 3.3 ms with `--no-cache`
+  (cache overhead 4.0 → 1.0 ms). The agent's own measurements are in the record. The README's
+  warm-cache figure (28.9 ms, M3) stays until a quiet-host measurement (M4) is taken; the
+  record notes one documented weakening of invalidation (a binary rewritten with identical
+  path, size, mtime, inode, device and ctime).
 - rustd trial (ledger row pending; record to write:
   `2026-10-15-extensions-theory/rustd-trial.md`): rustd is a rust-analyzer fork with a build
   daemon compiling functions from RA's MIR with Cranelift, debug output only, pinned to
   `nightly-2026-05-10` (`harness/toolchain`), revision `b9c283a` (2026-10-15 01:14 UTC),
   shallow clone at `/home/user/dioxuslabs/rustd` (a blob-less first clone sits unused at
   `/home/user/dioxuslabs/rustd-blobless`). Found so far: the workspace's `rust-version =
-  "1.98"` refuses the pinned nightly (rustc 1.97.0-nightly), so the release build runs with
-  `--ignore-rust-version` (log: scratch `rustd-trial/build4.log`; started 01:41 UTC; time box
-  45 min). Next: if `target/release/rustd` exists, run
+  "1.98"` refuses the pinned nightly (rustc 1.97.0-nightly); with `--ignore-rust-version`
+  the pinned nightly fails on `hir-def`'s use of the then-unstable `substr_range` (scratch
+  `rustd-trial/build4.log`): at revision `b9c283a` the harness pin and the code disagree. The
+  pin governs the toolchain whose rlibs are linked, not the compiler that builds rustd, so
+  attempt 5 builds rustd itself with stable 1.99.0 (installed) and keeps the nightly for the
+  tested crate (log: `rustd-trial/build5.log`, started 01:47 UTC, time box 45 min; a
+  background loop in the orchestrator waits for its `build exit` line). Next: if
+  `target/release/rustd` exists, run
   `python3 harness/cratetest.py /home/user/wt/rustd-trial/chloro-core --test basic --json ...`
   from `/home/user/dioxuslabs/rustd` (the worktree `/home/user/wt/rustd-trial` is chloro at
   `383fa28` with the `basic` test binary pre-built under the nightly); then `--test unit`;
@@ -128,8 +150,39 @@ scheduled for 03:15 and 04:45 UTC).
   coverage is meaningful. Stop conditions: build failure, essential functions skipped, any
   change needed in rustd. Baseline build-loop timings are in scratch `rustd-trial/baseline.txt`
   (debug lib build 9.7 s, test build 9.3 s, release 34–35 s, lib tests run 21.8 s).
-- Queued experiments, to launch when the four cores are free (one at a time): E13 PGO step in
-  `.github/workflows/binaries.yml` with local validation of the same commands; E14 allocator
+- E15 (`20261015-item-cache`, worktree `/home/user/wt/item-cache`, agent running since 01:50
+  UTC, time box 4 h): the item-level unit cache of the study's section 1, exact by
+  construction (units of `parallel.rs`, positions rebased, whole-file checks unchanged), with
+  the identity harness over both corpora (cold and warm passes against the sequential
+  formatter), the edit scenario on the five largest fixtures, and the cold-path overhead;
+  record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. First result (02:45
+  UTC, branch pushed, six commits to `b8c3882`): exact everywhere (1238 fixtures and 24,582
+  registry files, cold, warm, moved and blanked, 1 and 4 threads; goldens and conform unchanged
+  with the cache off; Ir +0.0005% off); in process 0.26–0.47 of the sequential formatter after
+  a one-literal edit; at process level 1.2–2.0x pinned and 0.9–1.7x unpinned against
+  `--no-cache` (fixed per-run costs, since removed by E12, and the 4-thread item split dilute
+  it), 1.11–2.04x against today's fixed-point cache; cold pass with the cache on +10–15% wall,
+  +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:50 UTC, one hour) to
+  merge the E12/E13 head into the branch, make the unit cache opt-in (`--unit-cache`), and
+  re-measure the edit scenario and the cold overhead. On landing: reproduce the fixture identity
+  harness and the Ir gate, then merge with the cache off by default.
+- E13 (`20261015-pgo-ci`, worktree `/home/user/wt/pgo-ci`, agent running since 02:00 UTC, time
+  box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
+  validated locally by running the workflow's commands (goldens, conform at both versions, Ir
+  against 312.7 M, hyperfine on two crates); record
+  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. Landed and merged at `45e8470`
+  after the orchestrator reproduced, on the branch's profile-guided `bench`: 0 of 1238 fixture
+  outputs changed against the golden record and 245,255,322 instructions on the sample (0.784 of
+  312,733,055; the agent measured 245,639,781, M3 244,712,537: the profile differs per training
+  run); the workflow YAML parses and `pgo.sh` passes `bash -n`. The workflow step itself (Linux
+  x86-64, macOS x86-64, Windows x86-64 natively; aarch64 cross builds keep the plain build) is
+  confirmed only by the next release run: check its log for `no profile data available` lines
+  and whether the `macos-13` runner still exists. The agent also noted that print mode with
+  several threads writes files in a varying order (same bytes): a small follow-up.
+- rustd trial: done, recorded in `rustd-trial.md` (verdict: no-go for adoption now, watch list).
+  The rustd checkout and build at `/home/user/dioxuslabs/rustd` and the worktree
+  `/home/user/wt/rustd-trial` can be removed; the record has the reproduction commands.
+- Queued: E14 allocator
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
   directly with a wrapping `#[global_allocator]` in an example binary; `perf` is absent in

@@ -72,6 +72,32 @@ jobs:
       - run: echo "RUSTFLAGS=${RUSTFLAGS} -C target-feature=+crt-static" >> "${GITHUB_ENV}"
         if: endsWith(matrix.target, 'windows-msvc')
 
+      # Profile-guided build (benchmarks/pgo.sh): where the runner executes the target
+      # natively, train an instrumented build on the conformance fixtures and point
+      # RUSTFLAGS at the merged profile, so the upload action's own `cargo build` below
+      # uses it. Cross-compiled targets, and any target whose training fails, keep the
+      # plain build. The profile is tied to this toolchain and source, so it is made on
+      # every run rather than cached.
+      - name: Train PGO profile
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, env.BINARY_NAME)
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          host=$(rustc -vV | sed -n 's/^host: //p')
+          if [[ "${host}" != "${TARGET}" ]]; then
+            echo "PGO skipped: ${TARGET} is cross-compiled on ${host}; plain build"
+            exit 0
+          fi
+          profile="${PWD}/target/pgo-gen/profiles/merged.profdata"
+          if rustup component add llvm-tools-preview \
+            && benchmarks/pgo.sh --phase train --target "${TARGET}" target "${FEATURES}" \
+            && [[ -s "${profile}" ]]; then
+            if type -P cygpath >/dev/null; then profile=$(cygpath -m "${profile}"); fi
+            echo "RUSTFLAGS=${RUSTFLAGS} -Cprofile-use=${profile} -Cllvm-args=-pgo-warn-missing-function" >> "${GITHUB_ENV}"
+          else
+            echo "::warning::PGO training failed for ${TARGET}; the release binary is the plain build"
+          fi
+
       - name: Extract version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF_NAME#chloro-}" >> $GITHUB_OUTPUT
