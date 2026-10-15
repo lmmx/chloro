@@ -75,7 +75,7 @@ impl FragmentKind {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Tok {
     kind: SyntaxKind,
     /// Byte range relative to the token tree interior.
@@ -162,38 +162,18 @@ impl<'a, 't> MacroTokens<'a, 't> {
         let end = close.text_range().start();
         let text = context.snippet(mk_sp(base, end));
         let edition = context.config.edition().to_ra();
-        let lexed = LexedStr::new(edition, text);
-        if lexer_rejects(&lexed, edition) {
-            return None;
-        }
-        let mut toks = Vec::with_capacity(lexed.len());
-        let mut depth = 0usize;
-        let mut doc_lo = None;
-        for i in 0..lexed.len() {
-            let kind = lexed.kind(i);
-            if kind.is_trivia() {
-                if kind == SyntaxKind::COMMENT
-                    && doc_lo.is_none()
-                    && doc_comment_style(lexed.text(i)).is_some()
-                {
-                    doc_lo = Some(lexed.text_range(i).start);
-                }
-                continue;
-            }
-            match kind {
-                T!['('] | T!['['] | T!['{'] => depth += 1,
-                T![')'] | T![']'] | T!['}'] => depth = depth.saturating_sub(1),
-                _ => {}
-            }
-            let range = lexed.text_range(i);
-            toks.push(Tok {
-                kind,
-                lo: range.start,
-                hi: range.end,
-                top_level_sep: depth == 0 && matches!(kind, T![,] | T![;]),
-                doc_lo: doc_lo.take(),
-            });
-        }
+        let (toks, doc_lo) = if lexes_alone_as_in_file(text) {
+            let from_tree = interior_tokens(tt, open.index(), close.index(), base);
+            #[cfg(debug_assertions)]
+            assert_eq!(
+                Some(&from_tree),
+                lex_interior(text, edition).as_ref(),
+                "the token tree's tokens differ from a lexing of its interior: {text:?}"
+            );
+            from_tree
+        } else {
+            lex_interior(text, edition)?
+        };
         Some(MacroTokens {
             tt: *tt,
             file: context.snippet_provider.entire_snippet(),
@@ -458,6 +438,108 @@ impl<'a, 't> MacroTokens<'a, 't> {
                     && self.doc_at(pos + 1).is_none()
                     && self.kind(pos + 1).is_none_or(|next| next == T![,])
             })
+    }
+}
+
+/// The tokens of a token tree interior and the start of a doc comment after the last one,
+/// from a lexing of the interior's text; `None` when rustc's lexer rejects it.
+fn lex_interior(text: &str, edition: Edition) -> Option<(Vec<Tok>, Option<usize>)> {
+    let lexed = LexedStr::new(edition, text);
+    if lexer_rejects(&lexed, edition) {
+        return None;
+    }
+    let mut tokens = TokCollector::with_capacity(lexed.len());
+    for i in 0..lexed.len() {
+        let range = lexed.text_range(i);
+        tokens.push(lexed.kind(i), range.start, range.end, lexed.text(i));
+    }
+    Some(tokens.finish())
+}
+
+/// The same from the tokens the tree already holds between the delimiters at `open` and
+/// `close` (element indices), at offsets relative to `base`, the start of the interior.
+///
+/// The file was lexed once; a token tree's interior is a run of whole tokens of that
+/// lexing (no token crosses a delimiter), the parser keeps the tokens of a token tree as
+/// the lexer made them, and the lexer is context-free except at the start of its input,
+/// where it reads a shebang (`#!`) or a frontmatter fence (`---`, after blank lines):
+/// [`lexes_alone_as_in_file`] sends those texts to [`lex_interior`]. A tree exists only
+/// for text without lexer errors that rustc's lexer rejects (`Tree::parse`, and the
+/// `lexer_rejects` test of the token tree that held a fragment), so the interior has none
+/// either. Debug builds compare the two on every token tree formatted.
+fn interior_tokens(
+    tt: &ast::TokenTree<'_>,
+    open: u32,
+    close: u32,
+    base: BytePos,
+) -> (Vec<Tok>, Option<usize>) {
+    let tree = tt.syntax().tree();
+    let mut tokens = TokCollector::with_capacity((close - open) as usize);
+    for i in open + 1..close {
+        let e = tree.elem(i);
+        if e.is_node {
+            continue;
+        }
+        let lo = (e.start - base) as usize;
+        let hi = lo + e.len as usize;
+        let text = &tree.source()[e.start as usize..(e.start + e.len) as usize];
+        tokens.push(e.kind, lo, hi, text);
+    }
+    tokens.finish()
+}
+
+/// `false` when lexing `text` alone may differ from lexing it inside a file: its first
+/// character other than whitespace (Unicode's or the lexer's, which adds U+200E and
+/// U+200F) is `#` (a shebang) or `-` (a frontmatter fence).
+fn lexes_alone_as_in_file(text: &str) -> bool {
+    let first = text
+        .chars()
+        .find(|&c| !(c.is_whitespace() || c == '\u{200e}' || c == '\u{200f}'));
+    !matches!(first, Some('#' | '-'))
+}
+
+/// Builds the [`Tok`]s of an interior from its lexer tokens, trivia included.
+struct TokCollector {
+    toks: Vec<Tok>,
+    depth: usize,
+    doc_lo: Option<usize>,
+}
+
+impl TokCollector {
+    fn with_capacity(n: usize) -> TokCollector {
+        TokCollector {
+            toks: Vec::with_capacity(n),
+            depth: 0,
+            doc_lo: None,
+        }
+    }
+
+    fn push(&mut self, kind: SyntaxKind, lo: usize, hi: usize, text: &str) {
+        if kind.is_trivia() {
+            if kind == SyntaxKind::COMMENT
+                && self.doc_lo.is_none()
+                && doc_comment_style(text).is_some()
+            {
+                self.doc_lo = Some(lo);
+            }
+            return;
+        }
+        match kind {
+            T!['('] | T!['['] | T!['{'] => self.depth += 1,
+            T![')'] | T![']'] | T!['}'] => self.depth = self.depth.saturating_sub(1),
+            _ => {}
+        }
+        self.toks.push(Tok {
+            kind,
+            lo,
+            hi,
+            top_level_sep: self.depth == 0 && matches!(kind, T![,] | T![;]),
+            doc_lo: self.doc_lo.take(),
+        });
+    }
+
+    fn finish(self) -> (Vec<Tok>, Option<usize>) {
+        (self.toks, self.doc_lo)
     }
 }
 
@@ -738,6 +820,56 @@ mod tests {
     use crate::cst::TreeArena;
     use crate::formatter::config::Settings;
     use crate::formatter::span::SnippetProvider;
+
+    /// The tokens of every token tree of every fixture file (and of a few sources with
+    /// comments, doc comments, nested delimiters and raw identifiers) taken from the tree
+    /// equal those of a lexing of the interior, at editions 2024 and 2018; interiors that
+    /// start with `#` or `-` are left to the lexer.
+    #[test]
+    fn interior_tokens_match_a_lexing_of_the_interior() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures");
+        let mut sources: Vec<String> = walkdir::WalkDir::new(root)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|e| e.path().extension().is_some_and(|x| x == "rs"))
+            .filter_map(|e| std::fs::read_to_string(e.path()).ok())
+            .collect();
+        sources.push(
+            "m!(a::b => c >> d, x.0.1, r#try, union, 1.0e3, \"s\" /*c*/ /// d\n e, [f(g)]{h});\n"
+                .to_owned(),
+        );
+        sources.push("m!(/// doc\n);\nm!( #!x);\nm!(\n---\n);\nm!(-1);\n".to_owned());
+        let (mut compared, mut left) = (0, 0);
+        for edition in [Edition::Edition2024, Edition::Edition2018] {
+            for src in &sources {
+                let Some(tree) = Tree::parse(src, edition) else {
+                    continue;
+                };
+                for tt in tree.root().descendants().filter_map(ast::TokenTree::cast) {
+                    let Some((open, close)) = delimiters(&tt) else {
+                        continue;
+                    };
+                    let base = open.text_range().end();
+                    let text = &src[base as usize..close.text_range().start() as usize];
+                    if !lexes_alone_as_in_file(text) {
+                        left += 1;
+                        continue;
+                    }
+                    assert_eq!(
+                        Some(interior_tokens(&tt, open.index(), close.index(), base)),
+                        lex_interior(text, edition),
+                        "{text:?}"
+                    );
+                    compared += 1;
+                }
+            }
+        }
+        assert!(
+            compared > 10_000 && left > 0,
+            "{compared} compared, {left} left"
+        );
+    }
 
     fn with_macro<R>(
         src: &str,
