@@ -7,6 +7,7 @@
 //! cargo run --release -p chloro-core --example bench -- --record out.tsv  # hash every output
 //! cargo run --release -p chloro-core --example bench -- --check out.tsv   # compare with a record
 //! cargo run --release -p chloro-core --example bench -- --threads 4       # the parallel API
+//! cargo run --release -p chloro-core --example bench -- --phase parse     # parse only
 //! ```
 //!
 //! Times `format_source` over every `.rs` file under the roots (default: the conformance
@@ -20,6 +21,13 @@
 //! instead of `format_source`, for the timings and the hashes alike, and additionally
 //! compares each output with `format_source`'s: `--threads 4 --check out.tsv` checks the
 //! parallel path against hashes recorded from the sequential one.
+//!
+//! `--phase parse` times `chloro_core::parse_only` instead of `format_source`: the parse every
+//! formatting run starts with (normalisation, lexing, parsing, the flat tree, the rustc
+//! syntax checks) and nothing after it, with the same report, so the parser's MB/s and
+//! instruction count (`benchmarks/profile.sh --phase parse`) sit beside the formatter's.
+//! `--phase format` is the default. `--phase parse` takes no `--record`, `--check` or
+//! `--threads`.
 //!
 //! Allocator features (off by default; EXP-014): `alloc-mimalloc`, `alloc-jemalloc` and
 //! `alloc-snmalloc` make that allocator the example's global allocator (the first enabled in
@@ -263,6 +271,7 @@ fn main() {
     let mut record = None;
     let mut check = None;
     let mut threads = None;
+    let mut parse_phase = false;
     while let Some(arg) = args.next() {
         let mut value = || args.next().expect("option takes a value");
         match arg.as_str() {
@@ -272,12 +281,23 @@ fn main() {
             "--record" => record = Some(PathBuf::from(value())),
             "--check" => check = Some(PathBuf::from(value())),
             "--threads" => threads = Some(value().parse().expect("--threads takes a number")),
+            "--phase" => {
+                parse_phase = match value().as_str() {
+                    "format" => false,
+                    "parse" => true,
+                    other => panic!("--phase takes format or parse, not {other}"),
+                }
+            }
             _ => panic!("unknown argument {arg}"),
         }
     }
     if roots.is_empty() {
         roots.push(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/conformance/fixtures"));
     }
+    assert!(
+        !parse_phase || (record.is_none() && check.is_none() && threads.is_none()),
+        "--phase parse takes no --record, --check or --threads"
+    );
 
     let files: Vec<(PathBuf, String)> = roots
         .iter()
@@ -359,7 +379,11 @@ fn main() {
         let start = Instant::now();
         for ((_, src), slot) in files.iter().zip(per_file.iter_mut()) {
             let t = Instant::now();
-            std::hint::black_box(format(src));
+            if parse_phase {
+                std::hint::black_box(chloro_core::parse_only(src, &config));
+            } else {
+                std::hint::black_box(format(src));
+            }
             *slot = slot.min(t.elapsed().as_secs_f64());
         }
         best = best.min(start.elapsed().as_secs_f64());
@@ -372,6 +396,9 @@ fn main() {
         files.len(),
         mb / best
     );
+    if parse_phase {
+        println!("phase: parse only (chloro_core::parse_only), no formatting");
+    }
     #[cfg(any(
         feature = "alloc-timing",
         feature = "alloc-mimalloc",
