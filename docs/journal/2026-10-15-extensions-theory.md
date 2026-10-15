@@ -184,12 +184,76 @@ formatting instructions), and the head now runs at 1.046x its instructions while
 disagrees with its own code at this revision: no-go for the programme's release-gated loop.
 
 **Decide-once formatting, exact reuse and a shared sink**
-([decide-once-and-exact-reuse.md](2026-10-15-extensions-theory/decide-once-and-exact-reuse.md)):
-being written; its paragraph follows when it lands.
+([decide-once-and-exact-reuse.md](2026-10-15-extensions-theory/decide-once-and-exact-reuse.md)).
+Speculation inside a rewrite, which X9 left unmeasured, is about one sixth of the run: 15.6–18.1%
+by three estimates from per-call-site and per-branch counts of the instruction-level profile
+(measured counts, derived shares), and it is the same work as X9's repeats. Half of it is one
+point, `choose_rhs`, which renders the next-line right-hand side for 177 of 703 right-hand sides
+(30.61 M, 9.79% at that site) and discards it 160 times. `write_list` never runs for a tactic that
+is then not taken, and fn signatures render once: the discarded work is whole candidates. A
+node's one-line text is the same at every shape except through source fallbacks (a failed macro
+rewrite, a lost comment), but whether it is chosen depends on per-construct width limits, on
+items fitting at the nested indent and, for blocks, on a rendered line count; so only the one-line
+fragment maps onto Oppen/Wadler/Prettier-style measure-then-render printing, and comparing line
+counts of rendered multi-line alternatives, failure as control flow, `force_one_line_chain` and
+the side effects of attempts (flags that reach macro-body output, `format_failure` under 1.8.0)
+break the equivalence. Seven levers: a shared sink with rollback by truncation (≤ 8.83–10.52%,
+exact by construction, 191 `-> Option<String>` signatures and 38 `Rewrite` impls in 19 files);
+multi-line reuse by tracked slack (≤ 10.2%, exact in principle, about 250 width tests must record
+their slack: high risk); a one-line memo without the shape in its key (≤ 1.47%, up to 7.9%,
+exact under five stated conditions); a bottom-up one-line width pass (2.1–3.4% net, medium-high
+risk, 1,500–3,000 lines); the chain's dead vertical candidate skipped when the one-line candidate
+fits (≤ 3.03%, estimate 0.75–2.79%, exact by argument with a run-level guard, about 20 lines);
+the nested visitor's doubled buffer (0.44%, 5 lines); literal widths computed once (0.28%).
+Compound: all speculation removed exactly plus the sink gives 229–238 M (−24% to −27%); the
+levers exact without a width model (sink, chain skip, buffer, literal widths) give 269–281 M.
+The chain skip and the literal widths became E18 (running); the buffer is E16's S10; the sink is
+the next large refactor, testable on `write_list` alone first.
 
 ## Ranked bounds and the compound picture
 
-(filled from the records as they land)
+The records' levers, merged and ranked by the strongest supported gain per unit of risk and
+cost. "Ir" rows are shares of 312,733,055 on the sample (the formatter's single-thread cost);
+"wall" rows are process-level effects the instruction count does not show. Overlaps are stated.
+
+| rank | lever (record) | gain | evidence | risk | cost | state |
+|---|---|---|---|---|---|---|
+| 1 | resident process with the item cache (incremental L2 + L1) | editor save 4.3–6.0 ms → about 0.15 ms per request; a one-item edit in a large file 0.26–0.47 in process | measured per component (E15 in process; start-up and cache costs measured) | low for output; lifecycle | a new mode of about the CLI's size | not started |
+| 2 | shared sink (decide-once row 1) | ≤ 8.8–10.5% Ir, exact by construction; absorbs scanning S6/S9 | derived from DHAT and the profile | low on output, high on implementation | every rewrite signature | not started; `write_list` first |
+| 3 | scanner and list-gap fast paths (scanning S1–S16 local) | 37.8 M, 12.1% Ir bound; the record's per-call counts | measured per call site | low | ~60 lines per lever | E16 running |
+| 4 | parse floor without a fork (parser P1, P2, P5, P7, P8) | about 37 M, 12% Ir likely (P1 2.5–8.9%, P2 ≤ 5.5%, P5 1.9%, P7 ≤ 1.9%, P8 0.6%, 4.6–6.6% on large files) | measured shares, hypotheses on the fused cost | low–medium | 150–300 lines each | E17 running (P8, P5, P1) |
+| 5 | PGO in the release binaries (incremental L5) | −21.7% Ir, 0.78–0.92 wall per crate | M3; E13 reproduced 0.784 | none on output | CI step, 2x release build time | merged (E13) |
+| 6 | CLI per-run waste (incremental L3, L4) | warm run 0.56–0.61, cache overhead 2.8 → 0.6–1.0 ms | measured | low | done | merged (E12) |
+| 7 | speculation removed with a width model (decide-once rows 2–4) | up to 15.6–18.1% Ir; with the sink 229–238 M (−24 to −27%) | measured volume; the width model's exactness is the open proof | medium–high | 1,500–3,000 lines plus every decision site | not started |
+| 8 | dead chain candidate and literal widths (decide-once rows 5, 7) | 0.75–3.03% and 0.28% Ir | measured site costs, estimate on the firing rate | low (run-level guard) | ~60 lines | E18 running |
+| 9 | parallel parse of top-level items (parser P9) | four-thread wall on files ≥ 128 KiB 1.17–1.61x | derived from M3; six equality conditions read, corpus check not run | low with a sequential fallback | 300–500 lines | not started |
+| 10 | unit queue across files (incremental L8) | 6.6–34.6% of four-thread wall on crates | derived from M3 CPU/4 | low | ~150 lines | not started |
+| 11 | allocator (incremental L6, L9) | ≤ 8.0–8.4% Ir; wall unproven; RSS is the risk | E14 measuring directly | RSS | 3 lines or the sink | E14 running |
+| 12 | copy-through of single-line nodes (fast path F1) | −5.9% to −17% Ir | measured rate for statements; hypothesis beyond | medium–high: a second one-line formatter in lock-step | 1–2k lines | not started |
+| 13 | source-guided verifier for `--check` (fast path V1) | 0.40–0.76x Ir on formatted input | derived; the rendered-alternative cost is the open measurement | high: a second implementation of every decision | the formatter's size | not started; first experiment: measure that cost |
+| 14 | own lexer or parser (parser P4, P11) | ≤ 3.6% and about 1–1.6% beyond the rest | hypotheses | medium / very high (15 ledger cases re-opened) | 600–1,000 / 5,195 lines | not planned |
+| 15 | per-item CST, streaming (parser P10) | memory only: peak heap −22% to −55% on the largest files | measured peaks | low | high | not planned (peak RSS is already 4–31 MiB) |
+| — | rustd | edit-to-binary 1.4 s against 2.5–2.9 s incremental cargo on chloro-core | measured | debug-only, 1.3 GB, pin mismatch | — | no-go now |
+
+Compound picture for the formatter's single-thread cost (derived; the levers' overlaps are
+removed as each record states, and every figure is a bound until its experiment runs): the
+exact levers without a width model (sink 8.8–10.5%, scanning 12.1%, parse floor about 12%, chain
+skip and literal widths 1–3%, PGO on top) bound the sample at about 200–215 M instructions
+before PGO against 312.7 M today, 0.64–0.69x; with the width-model levers, about 165–180 M,
+0.53–0.58x; PGO (0.784x measured) on top of either: 0.50–0.54x and 0.42–0.45x. On M3's host,
+where 312.7 M corresponds to 9.4 MB/s in process, that is 13.6–14.7 MB/s exact-only and
+16.2–17.7 MB/s with the width model, before PGO (hypothesis: wall time follows instructions,
+which the parser's mispredict share argues against for its part). The parse floor's irreducible
+33–38 M caps the formatter-free ceiling at 77–89 MB/s and the realistic one at 12.7–13.0 MB/s if
+only the parser levers landed.
+
+For latency, the ranking inverts: a resident process removes the 4–6 ms fixed cost that
+dominates a median-file save (E12 took 2 ms of it; 3.8 ms remains as process start and cache
+open), and the item cache makes a large-file edit cost its parse plus one unit; together they
+bound the save at about 0.15 ms against 4.3–6.0 ms today. Neither touches the single-thread
+instruction count, which is why both the throughput levers above and the latency levers are
+worth pursuing, and why the throughput benchmark alone understates what the levers above do
+for a developer's loop.
 
 ## Handoff (overnight run)
 
@@ -317,12 +381,19 @@ with the container.
 
 ## Current State
 
-- The five records under 2026-10-15-extensions-theory/ exist as listed above (those present
-  at the time of this commit are linked; the others are written by sibling agents and are
-  added when they land)
+- Six records under 2026-10-15-extensions-theory/ (five theory records and the rustd trial)
+  are committed, each with its ranked table and its scratch evidence paths; the synthesis
+  above merges their tables (docs/journal/2026-10-15-extensions-theory/)
 - The final head's component shares and cache/branch simulation are recorded above
-  (measured at `31ce20e`)
+  (measured at `31ce20e`, the code of the best-known-good)
+- Experiments the records led to and their state: E12 merged (`92fdef0`), E13 merged
+  (`45e8470`), E15 merged (`4e48bdb`, opt-in), E14, E16, E17, E18 running on their branches
+  (ledger rows in 2026-10-14-autoresearch/experiments.md as they land)
 
 ## Missing
 
-- The synthesis sections above are placeholders until every record has landed
+- No quiet-host measurement of the head after E12–E15 (M4); the README's performance figures
+  are M3's, taken on the code of `113367a`
+- The resident process (rank 1) and the shared sink (rank 2) have no experiment yet
+- Every bound in the tables above is a bound until its experiment runs; the width-model levers
+  rest on an exactness proof that does not exist
