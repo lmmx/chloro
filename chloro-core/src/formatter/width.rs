@@ -13,7 +13,8 @@
 //!
 //! The sum, over the tokens of the node that every rendering writes unchanged, of a lower
 //! bound on each token's display width. A token class is counted only if no formatting
-//! path of chloro (and so of rustfmt, which it reproduces) removes or shortens it:
+//! path of chloro (and so of rustfmt, which it reproduces) removes or shortens it; a
+//! punctuation class only in the node kinds whose rewrite writes it on every path:
 //!
 //! | token class | counted | why (the module that writes it) |
 //! |---|---|---|
@@ -21,7 +22,14 @@
 //! | lifetimes (`LIFETIME_IDENT`) | yes, less 2 for `'r#` | copied as written (`types.rs`, `jump_label_text`); 1.8.0 writes `'r#a` as `'a` (F1) |
 //! | keywords (`SELF_TYPE_KW` ..= `YEET_KW`) | yes | every keyword a rewrite reads is written back: closure `for`, `const`, `static`, `async`, `gen`, `move`, `use` (`rewrite_closure_fn_decl`, each tested with `has_token`); `&raw const`, `&raw mut`, `&mut` (`format_expr`); `if`, `else`, `match`, `loop`, `while`, `for`, `in`, `let` (`ControlFlow`, `rewrite_let`, `matches.rs`); `as` (`CastExpr`); `return`, `break`, `continue`, `yield`, `become`, `do yeet`; `true`, `false` (literals); `self`, `super`, `crate`, `Self` (path segments); `dyn`, `impl`, `unsafe`, `extern`, `fn` (`types.rs`; `force_explicit_abi` only adds `"C"`). The one keyword the formatter drops, the `in` of `pub(in crate)` (`format_visibility`), is in a visibility, which only items and macro arguments formatted as items have: both are uncounted subtrees |
 //! | literals (`INT_NUMBER`, `FLOAT_NUMBER`, `CHAR`, `BYTE`, `STRING`, `BYTE_STRING`, `C_STRING`) | yes | copied from the source (`rewrite_literal`, `rewrite_string_lit`): `format_strings` is off and `hex_literal_case` and `float_literal_trailing_zero` are fixed at `Preserve` (`config.rs`) |
-//! | punctuation and delimiters, `_` | no | one-line lists drop trailing commas (`lists.rs`), `remove_nested_parens` drops parentheses, closure, match-arm and `use`-list braces are removed (`closures.rs`, `matches.rs`, `imports.rs`), `...` is written `..=`, `try!(e)` is written `e?` |
+//! | the parentheses of an argument list (`ARG_LIST`) | yes, 2 | `rewrite_call` (a call) and `rewrite_method_call` (`chains.rs`) go through `overflow::rewrite_with_parens`, whose `Context::rewrite` writes `(` and `wrap_items` writes `)` on every path |
+//! | the pipes of a closure | yes, 2 | `rewrite_closure_fn_decl` writes `"|" + params + "|"` (an empty list is `||`) for every closure, on every path of `rewrite_closure` and `rewrite_last_closure` |
+//! | the `.` of a method call, field access or `.await` | yes, 1 | the chain items write `"." + name`, `".await"` (`ChainItem::rewrite`) |
+//! | the `?` of a try | yes, 1 | the chain items write one `?` per try (`ChainItem::rewrite`, `tries`) |
+//! | the `&` of a reference, the operator of a prefix expression | yes, 1 | `format_expr`: `"&"`, `"&mut "`, `"&raw const "`, `"&raw mut "`; `op_token().text()` (`!`, `-`, `*`) |
+//! | the operator of a binary expression | yes, its length | `bin_op_text` is the operator token's text, written by `rewrite_pair`, `rewrite_all_pairs` and `rewrite_assignment` |
+//! | the brackets of an index, a tuple, an array | yes, 2 | `rewrite_index` writes `[` and `]`; `rewrite_tuple` and `rewrite_array` go through `overflow` (`(`/`)`, `[`/`]`), a repeat array through `rewrite_pair` with `[` and `]` |
+//! | other punctuation and delimiters, `_` | no | one-line lists drop trailing commas (`lists.rs`), `remove_nested_parens` drops parentheses, closure, match-arm and `use`-list braces are removed (`closures.rs`, `matches.rs`, `imports.rs`), `...` is written `..=`, `try!(e)` is written `e?`, a leading match-arm `|` follows `match_arm_leading_pipes` |
 //! | whitespace | no | replaced by the formatter's own |
 //! | comments | no bound | a node with a comment anywhere in it gets the bound 0 |
 //!
@@ -109,7 +117,7 @@ fn min_width_up_to(node: Node<'_>, limit: usize) -> usize {
     let mut skip_end = 0;
     // The direct child of a field or macro call whose tokens are not counted.
     let mut skip_child = usize::MAX;
-    for i in start + 1..end {
+    for i in start..end {
         let e = &elems[i];
         if e.is_node {
             if i < skip_end {
@@ -122,6 +130,10 @@ fn min_width_up_to(node: Node<'_>, limit: usize) -> usize {
             if let Some(child) = uncounted_child_kind(e.kind) {
                 skip_child = direct_child(elems, i, child);
             }
+            width += written_punctuation(elems, i);
+            if width > limit {
+                return width;
+            }
         } else if e.kind == COMMENT {
             return 0;
         } else if i >= skip_end && is_counted_token(e.kind) {
@@ -133,6 +145,35 @@ fn min_width_up_to(node: Node<'_>, limit: usize) -> usize {
         }
     }
     width
+}
+
+/// The punctuation every rendering of node `i` writes itself, as counted in the module
+/// documentation: the parentheses of an argument list, the pipes of a closure, the `.` of a
+/// method call, field or `.await`, the `?` of a try, the `&` of a reference, the operator
+/// of a prefix or binary expression, the brackets of an index, a tuple or an array.
+#[inline]
+fn written_punctuation(elems: &[crate::cst::Elem], i: usize) -> usize {
+    match elems[i].kind {
+        ARG_LIST | CLOSURE_EXPR | INDEX_EXPR | TUPLE_EXPR | ARRAY_EXPR => 2,
+        METHOD_CALL_EXPR | FIELD_EXPR | AWAIT_EXPR | TRY_EXPR | REF_EXPR | PREFIX_EXPR => 1,
+        BIN_EXPR => bin_op_len(elems, i),
+        _ => 0,
+    }
+}
+
+/// The length of a binary expression's operator: its first direct child token other than
+/// whitespace and comments (a comment gives the node no bound anyway).
+fn bin_op_len(elems: &[crate::cst::Elem], parent: usize) -> usize {
+    let end = elems[parent].end as usize;
+    let mut i = parent + 1;
+    while i < end {
+        let e = &elems[i];
+        if !e.is_node && e.kind != WHITESPACE && e.kind != COMMENT {
+            return e.len as usize;
+        }
+        i = e.end as usize;
+    }
+    0
 }
 
 /// Keywords, literals, identifiers and lifetimes: the token classes written unchanged.
@@ -332,14 +373,20 @@ mod tests {
 
     #[test]
     fn counts_identifiers_keywords_and_literals_only() {
-        // `run`, `move`, `x`, `a`, `x`, `0`: 3 + 4 + 1 + 1 + 1 + 1.
-        assert_eq!(bound("run(move |x| a(x, 0))"), (11, true));
+        // `run`, `move`, `x`, `a`, `x`, `0`: 3 + 4 + 1 + 1 + 1 + 1, and the two argument
+        // lists' parentheses and the closure's pipes: 3 x 2.
+        assert_eq!(bound("run(move |x| a(x, 0))"), (17, true));
         // Field names are not counted (`use_field_init_shorthand`), their values are.
         assert_eq!(bound("S { x: y, z }").0, 3);
+        // Operators, dots, `?`, `&`, brackets; not parentheses, which may be removed.
+        assert_eq!(
+            bound("&a.b()? + !c[d] && (e)").0,
+            5 + 1 + 1 + 2 + 1 + 1 + 1 + 2 + 2
+        );
         // Attributes, labels, macro calls and a raw prefix are not counted.
-        assert_eq!(bound("r#match + 'r#a: loop {}").0, 5 + 4);
-        assert_eq!(bound("f(#[cfg(x)] a)").0, 2);
-        assert_eq!(bound("g(vec![a, b])").0, 1);
+        assert_eq!(bound("r#match + 'r#a: loop {}").0, 5 + 1 + 4);
+        assert_eq!(bound("f(#[cfg(x)] a)").0, 2 + 2);
+        assert_eq!(bound("g(vec![a, b])").0, 1 + 2);
         // Non-ASCII characters count as nothing, ASCII ones as one column.
         assert_eq!(bound("\"é\"").0, 2);
         // A comment anywhere: no bound.
@@ -366,11 +413,11 @@ mod tests {
             .descendants()
             .find(|n| n.kind() == CALL_EXPR)
             .unwrap();
-        assert_eq!(one_line_min_width(call), 6);
+        assert_eq!(one_line_min_width(call), 8);
         // A one-line rewrite may be one column wider than its shape.
-        assert!(one_line_fits_checked_and_exceeds(call, 4));
-        assert!(!one_line_fits_checked_and_exceeds(call, 5));
-        assert!(!one_line_fits_checked_and_exceeds(call, 8));
+        assert!(one_line_fits_checked_and_exceeds(call, 6));
+        assert!(!one_line_fits_checked_and_exceeds(call, 7));
+        assert!(!one_line_fits_checked_and_exceeds(call, 9));
         // The scan stops once the limit is passed.
         assert_eq!(min_width_up_to(call, 2), 3);
     }
