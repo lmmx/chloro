@@ -493,8 +493,17 @@ with the container.
   overflow and types gives −1.60% / −0.80% per file with RSS neutral, below the 3% falsifier,
   and adds a 596-line hand-written arena-backed Vec/String with thirteen `unsafe` blocks. Not
   merged: the agent was asked for a Miri run and a `bumpalo` variant (compile-time lifetimes)
-  before a decision; branch `20261015-arena`, head `eaab530`. E26 is running. Then M5 on a
-  quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
+  before a decision; branch `20261015-arena`, head `eaab530`. E26 reported (15:20 UTC) and is
+  **kept**: a token-sum lower bound on one-line width (`width.rs`, a per-token-class proof
+  table, safe code) with pre-checks at the closure-body and one-line `if`/`else` sites;
+  −0.76% on the fixture sample, and the nested-closure cliff collapses (depth 16: 105.4 M →
+  5.81 M; exponent 3.62 → about 1.0); the bound never exceeded a one-line rendering on the
+  fixtures under three option sets, the 25,024 registry files or the 217 cliff files; its
+  gates were reproduced (goldens, conform, `Ir` 230,281,492, fmt, clippy, 302 tests, the option
+  matrix) and it is **merged at `830345e`**; post-merge gates identical on both samples;
+  best-known-good `830345e` at 224,591,085 (fixtures, −61.8% from the start) and 302,124,546
+  (registry); the cliff on the merged head (with E28's memo gate) reads 5.62 M at depth 8 and
+  5.74 M at depth 16. Remaining: E25's soundness follow-up; then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
