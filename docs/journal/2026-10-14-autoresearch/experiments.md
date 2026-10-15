@@ -8,7 +8,7 @@ Append-only. One row per experiment; the procedure and gates are in
 
 | field | value |
 |---|---|
-| commit | `bdfb9d1`, the merge of `20261014-review-fixes` (`eb2d859`) into the integration branch: E6 cache, E1 parallel items, E2 release profile, E4 green reads, E8 rustfmt_version, E7b flat substrate, E3 hot paths, R2 conformance fixes, R5 review fixes, onto `884f9c9` |
+| commit | `92fdef0`, the merge of `20261015-cli-waste` (E12, CLI only: `chloro-core` is the code of `bdfb9d1`, the R5 merge) into the integration branch: E6 cache, E1 parallel items, E2 release profile, E4 green reads, E8 rustfmt_version, E7b flat substrate, E3 hot paths, R2 conformance fixes, R5 review fixes, onto `884f9c9` |
 | `conform -i` | 1220/1220 identical, 0 not idempotent, at `rustfmt_version` 1.9.0 and 1.8.0; all 31 option values fully identical (1022/1022; editions 844/844, 843/843, 838/838) |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` and `registry-e8d87c2.tsv` (outside the repository), recorded from the R2 merge; unchanged at `bdfb9d1` (0 of 1238 and 0 of 20850, sequential and 4 threads); against the `884f9c9` record exactly `0024_many_type_parens.rs` of 1238 fixtures and exactly the 12 registry files the conformance fixes target changed, nothing else |
 | `Ir` on the 49-file sample (`benchmarks/profile.sh`) | 312,734,032 at `113367a`; 312,732,924 and 312,734,679 in R5's two runs at `72bd4b1` (the same tree as `bdfb9d1`), inside the run-to-run spread; against 316,076,716 before the conformance fixes and 587,988,576 for `884f9c9` under the same script (−46.8% in all: −5.75% codegen, −6.36% E4, −0.04% E8, −24.7% E7b, −19.1% E3, −1.06% R2, 0.00% R5) |

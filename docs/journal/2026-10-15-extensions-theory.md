@@ -115,10 +115,16 @@ with the container.
   it, fill its row of "Bounds, by record" above, push.
 - E12 (`20261015-cli-waste`, worktree `/home/user/wt/cli-waste`, agent running): canonicalise
   once per root and per symlink instead of per file, one sort, a stamp-cached tool key;
-  record `2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md`. On landing: reproduce
-  the gates (fmt, clippy, `cargo test -p chloro --all-features`, output identity of `--check`
-  and `--write` against the base binary on fixture and registry copies) and the hyperfine
-  rows before merging; ledger row E12; README cache figure if it moves.
+  record `2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md`. Landed and merged at
+  `92fdef0` after the orchestrator reproduced the gates in the worktree (fmt, clippy, 37 CLI
+  tests; `--check --no-cache` on the formatted fixture copy: same exit code and byte-identical
+  stdout against the base binary) and the headline on this loaded host, base against new
+  interleaved: warm `--check` of the 1238 fixtures on 4 threads 46.0 → 25.6 ms mean (0.56,
+  n = 15); one file with the cache on, core 3, 7.3 → 4.3 ms against 3.3 ms with `--no-cache`
+  (cache overhead 4.0 → 1.0 ms). The agent's own measurements are in the record. The README's
+  warm-cache figure (28.9 ms, M3) stays until a quiet-host measurement (M4) is taken; the
+  record notes one documented weakening of invalidation (a binary rewritten with identical
+  path, size, mtime, inode, device and ctime).
 - rustd trial (ledger row pending; record to write:
   `2026-10-15-extensions-theory/rustd-trial.md`): rustd is a rust-analyzer fork with a build
   daemon compiling functions from RA's MIR with Cranelift, debug output only, pinned to
