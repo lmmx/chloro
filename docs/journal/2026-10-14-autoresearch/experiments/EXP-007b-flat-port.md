@@ -18,6 +18,12 @@ builds below), **read** (from source), **derived** (arithmetic on measured numbe
 | sample | `benchmarks/profile.sh`'s 49 files (every 25th of the C-sorted fixture list, 650,213 bytes) |
 | golden hashes | recorded from the unmodified `dc20cd7` build: 1,238 fixture outputs and 19,463 registry outputs (`bench --record`); the orchestrator's note that E4 changed no output makes them valid for `aa1e058` too |
 
+Lineage: the design is the change-of-direction entry's option 2
+([../../2026-10-10-change-of-direction.md](../../2026-10-10-change-of-direction.md)), measured
+as a bare substrate in [../../2026-10-10-representations.md](../../2026-10-10-representations.md)
+and deferred in [../../2026-10-11-phase-2-close.md](../../2026-10-11-phase-2-close.md); the
+autoresearch entry's "Lineage of the flat syntax array" traces what each added.
+
 ## Question and falsification
 
 **Question.** Does replacing rowan under the formatter with E7's flat array and generated
