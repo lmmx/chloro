@@ -10,12 +10,14 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 |---|---|
 | `compare_rustfmt.sh` | process wall time, CPU time and peak RSS of rustfmt and chloro on named workloads, with hyperfine (`--export-json`) |
 | `report.py` | turns a results directory into markdown tables with chloro/rustfmt ratios |
-| `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample |
+| `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample, or on a sample from a list |
+| `samples/` | committed sample lists for `profile.sh --sample-list`: `registry49.txt`, the registry validation sample, and `registry49.sh`, which wrote it (EXP-027) |
 | `cliffs/` | the cliff hunt (EXP-019): scaling fixtures by input shape, callgrind `Ir` per file and the power-law exponent per shape; see `cliffs/README.md` |
 | `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`
-(standard library only) for the report, `valgrind` and `setarch` for `profile.sh`, the
+(standard library only) for the report and `profile.sh --shuffle`, `valgrind` and `setarch`
+for `profile.sh`, the
 release binaries (`cargo build --release -p chloro --features cli` and `cargo build
 --release -p chloro-core --examples`). The scripts exit with status 2 and a message when a
 tool, binary or workload source is missing.
@@ -33,6 +35,11 @@ benchmarks/compare_rustfmt.sh --baseline /path/to/other/target/release --groups 
 python3 benchmarks/report.py benchmarks/results/<stamp>       # tables again (also written to report.md)
 benchmarks/profile.sh --core 3                                # Ir on the sample
 benchmarks/profile.sh --core 3 --runs 2 --sim                 # Ir plus branch and cache simulation
+benchmarks/profile.sh --core 3 --runs 3 --per-file            # Ir, and each file in a process of its own
+benchmarks/profile.sh --core 3 --sample-list benchmarks/samples/registry49.txt   # the registry sample
+benchmarks/profile.sh --core 3 --runs 3 --per-file --phase parse   # the parser's share, both ways
+target/release/examples/bench -n 5 --phase parse              # the parse phase's MB/s
+benchmarks/profile.sh --core 3 --sim --shuffle 4              # the co-metric over 4 random function orders
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -176,9 +183,9 @@ rustfmt run), peak RSS, mean CPU time, `identical_outputs` and exit codes.
 The rule of `protocol.md` §3, restated for these tools:
 
 1. **Single-threaded change** (no new threads): `profile.sh` `Ir` lower than the baseline
-   build's on the same sample path, and `examples/bench -n 5` interleaved with the baseline
-   binary (`compare_rustfmt.sh --baseline <dir> --groups e --rounds 3`, or by hand) with
-   non-overlapping min–max MB/s ranges over at least 3 pairs.
+   build's (the script stages both at the same path lengths, EXP-027), and `examples/bench
+   -n 5` interleaved with the baseline binary (`compare_rustfmt.sh --baseline <dir> --groups
+   e --rounds 3`, or by hand) with non-overlapping min–max MB/s ranges over at least 3 pairs.
 2. **Change that adds parallelism or touches the CLI:** `compare_rustfmt.sh --baseline
    <dir>` with at least 10 runs per command over at least 2 interleaved rounds, the `mc`
    and `1c` rows both reported, and the chloro and chloro-base ranges not overlapping
@@ -191,10 +198,12 @@ The rule of `protocol.md` §3, restated for these tools:
 
 ## profile.sh
 
-`setarch -R` (no ASLR) `valgrind --tool=callgrind` on `examples/bench -n 1 --root
-/tmp/chloro-bench/sample49`, under `env -i`, printing the total `Ir` of each run. The
-sample is the 1238 `.rs` files under `chloro-core/tests/conformance/fixtures`, paths sorted
-bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
+`setarch -R` (no ASLR) `valgrind --tool=callgrind` on `examples/bench -n 1 --root <sample>`,
+under `env -i`, printing the total `Ir` of each run. The sample is the 1238 `.rs` files under
+`chloro-core/tests/conformance/fixtures`, paths sorted bytewise, every 25th file (lines 25,
+50, …, 1225): 49 files, 650,213 bytes. The binary and the sample are copied under a staging
+directory of fixed length before each invocation (*Path independence*, below), so the count
+does not depend on where the binary, the fixtures or `--out` are.
 
 - The journals name the sample "every 25th file of the sorted fixture list" without the
   command. Of five constructions tried on `884f9c9` (component-wise or bytewise order;
@@ -207,8 +216,53 @@ bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
   examples/bench` (`884f9c9`): 587,988,576–587,990,380 from `profile.sh` (directory tree at
   `/tmp/chloro-bench/sample49`, `env -i`); 588,096,020 with the caller's environment;
   587,211,777 in `profile-baseline.md` (files copied flat as `NN_<basename>.rs`). Counts are
-  compared only between runs of `profile.sh` itself; under it, repeated runs agree to within
-  about 2K instructions, pinned or not, from any working directory.
+  compared only between runs of `profile.sh` itself.
+- **Run-to-run spread.** Repeated runs of one binary agree to within about 450 instructions,
+  except that about one run in five reads about 1.8K more (53 runs of `9d78713` in
+  EXP-027: 43 in 237,768,233–237,768,687, 10 in 237,770,0xx–237,770,2xx). Both come from `bench`'s own report,
+  not from the formatter: the order in which it sorts the files by their measured time (the
+  smaller spread) and the decimal printing of the timings, which takes `core`'s exact
+  big-number path for some values (`float_to_decimal_common_exact` +1,239 and
+  `Big32x40::mul_pow2` +314 in a run that read +1,950; EXP-027). Take the minimum of
+  `--runs 3` or more when a difference under about 2K matters.
+- **Path independence (EXP-027).** Before EXP-027 the script ran the binary where it was and
+  read the sample at `--sample` (default `/tmp/chloro-bench/sample49`), and the count moved
+  with the lengths of those paths: the same binary read 239.51 M with the sample at a
+  6-character name, 237.77 M at the default's 8 and 237.90 M at 12. The process holds those
+  strings: `argv[0]` and every file path are heap allocations whose sizes (malloc's size
+  classes) set the heap layout the parser's vector growth meets (EXP-020's term), and they
+  sit on the stack; and glibc reads `/proc/self/maps`, which lists the binary's own path,
+  when Rust's runtime asks for the main thread's stack at start-up (`pthread_getattr_np`,
+  about 40 instructions per byte of the path). Only lengths reach the count, not the text.
+  So the script now copies the binary and the sample under `mktemp -d
+  /tmp/chloro-prof.XXXXXXX` (24 bytes, removed at exit) and runs `<stage>/bench_…` (47
+  bytes) with `--root <stage>/s` (26 bytes). Those are the lengths of the strings the script
+  used before at its default (`/home/user/chloro/target/release/examples/bench` and
+  `/tmp/chloro-bench/sample49`), so the count at the old default is unchanged: 237,768,412–
+  237,768,605 for `9d78713` (three runs; the ledger's 237,768,533). `--sample` is accepted
+  and ignored. Verification (`9d78713`, three runs each, `--core 3`):
+
+  | script | where the sample was (`--sample`, or `--out` for the new script) | binary | `Ir` of three runs |
+  |---|---|---|---|
+  | before | `/tmp/chloro-bench/e27a01` | `target/release/examples/bench` | 239,510,992, 239,512,663, 239,511,218 |
+  | before | `/tmp/chloro-bench/e27a0001` | same | 237,768,585, 237,768,477, 237,768,564 |
+  | before | `/tmp/chloro-bench/e27a00000001` | same | 237,901,113, 237,899,350, 237,899,366 |
+  | after | `/tmp/chloro-bench/e27a01` | `/tmp/chloro-bench/e27b/bench` (28 bytes) | 237,768,550, 237,768,641, 237,768,583 |
+  | after | same | `target/release/examples/bench` (51 bytes) | 237,768,641, 237,768,639, 237,768,647 |
+  | after | same | a copy at a 115-byte path | 237,768,602, 237,768,687, 237,768,381 |
+  | after | `/tmp/chloro-bench/e27a0001` | 28 bytes | 237,768,425, 237,770,094, 237,768,444 |
+  | after | same | 51 bytes | 237,770,188, 237,768,315, 237,768,375 |
+  | after | same | 115 bytes | 237,768,504, 237,768,538, 237,768,516 |
+  | after | `/tmp/chloro-bench/e27a00000001` | 28 bytes | 237,768,385, 237,768,452, 237,768,417 |
+  | after | same | 51 bytes | 237,770,058, 237,768,452, 237,770,211 |
+  | after | same | 115 bytes | 237,768,475, 237,770,207, 237,768,523 |
+
+  After the change the minima of the nine cells lie within 326 instructions of each other
+  (237,768,315–237,768,641); the readings near 237,770,1xx are the report's outlier above.
+  Before, a binary at the 115-byte path also read 2.6–4.5K more than the same binary in the
+  worktree, at any sample path. A relative `--root` of the same 26 bytes (the sample as the
+  working directory) reads about 1.2K more than the absolute one: relative paths cost more to
+  compare and walk; the absolute form keeps the old count.
 - `--annotate N` prints the top of `callgrind_annotate` for the first run; the profile
   files stay in `--out`.
 - `--sim` runs callgrind with `--cache-sim=yes --branch-sim=yes` (same `env -i`, `setarch -R`
@@ -227,6 +281,117 @@ bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
   2026-10-15). The counts are as repeatable as `Ir`: three runs of one binary gave the same
   `I1mr`, `Bim`, `D1mr` and `D1mw`, `Bcm` within 4 and `Ir` within 220
   (`docs/journal/2026-10-14-autoresearch/experiments/EXP-022-layout.md`).
+
+- `--per-file` adds, for each run, the per-file figure (EXP-019's co-metric): every file of
+  the sample formatted by a `bench` process of its own, so each starts on a fresh heap, and
+  one process on an empty sample, the fixed cost of a process (start-up, arguments, an
+  empty walk). Each file is staged alone at a path of the same length as the whole sample's
+  and keeps its relative path, so it sees the strings it sees in the whole run. The script
+  prints each file's `Ir` (its minimum over `--runs`, since a run reads about 1.8K high now
+  and then), the sum, the empty sample's `Ir`, and both totals net of the fixed cost:
+
+  ```text
+  per-file sum S over n processes; empty sample E; sum net of it S - n·E
+  whole sample W (min); net of the empty sample W - E
+  cross-file term (whole net - per-file net) (W - E) - (S - n·E)
+  ```
+
+  The two net totals count the same formatting work; they differ by what one file's run
+  leaves the next in a shared process: the heap layout (whether the parser's vectors grow
+  in place, EXP-020's term), the allocator's warm free lists, and the directory walk shared
+  by files under one directory. Reading them together: a lever that changes the code's own
+  work moves `W` and `S` by about the same amount; a difference between the two changes is
+  a change in the cross-file term, which is layout, not work (EXP-019's first two levers
+  read +0.19% and +0.24% on `W` and −0.0007% and −0.30% on `S`). For `9d78713`: `W`
+  237,768,646, `S` 253,356,154 over 49 processes, `E` 315,812, net 237,452,834 against
+  237,881,366, cross-file term −428,532 (one run; the record has three). The 50 processes
+  of a per-file run took 1 min 51 s on a loaded host, against about 6 s for the whole
+  sample. Profiles are kept in `OUT/perfile.<run>/<index>.out`
+  (index 0 is the empty sample) and the figures in `OUT/perfile.<run>.tsv`. Per-file runs
+  use plain callgrind (no `--sim`).
+
+- `--sample-list FILE` builds the sample from a list of paths, one per line (`#` lines are
+  comments), relative to the root the list names (`# root: cargo-registry` for
+  `${CARGO_HOME:-~/.cargo}/registry/src`, `# root: fixtures`) or to `--sample-root DIR`. The
+  files are staged as the default sample is, so the count does not depend on where the root
+  is: the registry sample read 322,851,835 and 322,851,931 from the registry and 322,851,628
+  and 322,851,580 from a copy at `/tmp/chloro-bench/e27regcopy-x`, and the fixture sample
+  written as a list (`# root: fixtures`) reads what the default construction reads.
+- **The registry validation sample** (`samples/registry49.txt`, EXP-027; protocol §3): 49
+  files, 731,733 bytes, from the 577 crates of the registry corpus
+  (`docs/journal/2026-10-14-autoresearch/corpus/registry-crates.txt`). The rule, which
+  `samples/registry49.sh` applies and the list's header states: the `.rs` files (`find
+  -type f`) of those crates under `index.crates.io-1949cf8c6b5b557f`, paths relative to the
+  registry's `src` sorted bytewise (20,593 files); N = 20,593 / 49 = 420; candidate k is
+  line 420k, and a candidate that fails a check is replaced by the next line that passes.
+  A file passes when `rustfmt --edition 2024` (stdin, empty configuration) exits 0, its
+  output is a fixed point of rustfmt, and chloro's output is byte-identical to rustfmt's.
+  One candidate was rejected: line 10,920, `rand-0.8.8/src/rngs/thread.rs` (rustfmt exits
+  1: `r.gen::<i32>()`, `gen` is reserved in 2024). The list names the index directory of
+  this container's registry; on a host whose cargo names it otherwise the script stops at
+  the first missing file. Baseline (`9d78713`, three runs): whole sample 322,851,667–322,851,806; per-file sum
+  336,117,569 (each file's minimum over the runs), empty sample 315,812; net 322,535,855
+  against 320,642,781, cross-file term +1,893,074 (the fixture sample's is −402,241: the
+  layout term has either sign). One file, `windows-sys-0.48.0/src/Windows/Win32/System/Rpc/
+  mod.rs` (280,688 bytes), carries 119.4 M of the per-file sum; the rule keeps it.
+
+- `--phase parse` runs `bench --phase parse`: each file is parsed as formatting parses it
+  (`chloro_core::parse_only`: normalisation, lexing, parsing, the flat tree, the rustc
+  syntax checks) and not formatted, under the same invocation, so the count is the parse
+  phase's own and, with `--per-file`, its per-file and net figures too. `bench --phase
+  parse -n 5` gives the parse phase's MB/s the same way. The parser's share of the count is
+  (parse − E) / (format − E), E being each phase's empty sample. For `9d78713` (three runs,
+  this branch's binary):
+
+  | sample | phase | whole `Ir` (min) | per-file sum | empty sample | whole net | per-file net | cross-file term |
+  |---|---|---|---|---|---|---|---|
+  | fixtures | format | 237,765,227 | 253,335,086 | 315,845 | 237,449,382 | 237,858,681 | −409,299 |
+  | fixtures | parse | 86,529,639 | 102,938,260 | 317,136 | 86,212,503 | 87,398,596 | −1,186,093 |
+  | registry | format | 322,841,609 | 336,111,149 | 315,845 | 322,525,764 | 320,634,744 | +1,891,020 |
+  | registry | parse | 139,886,738 | 155,798,944 | 317,136 | 139,569,602 | 140,259,280 | −689,678 |
+
+  The parse phase is 36.3% of the fixture sample's count (36.7% per file) and 43.3% of the
+  registry sample's (43.7% per file; 43.1% without its largest file). In wall time
+  (`taskset -c 3 bench -n 5`, three interleaved pairs, load average 5.8–7.4, provisional):
+  parse 25.3–28.8 MB/s against format 7.1–8.8 on the 1238 fixtures, 24.2–28.6 against
+  9.5–12.6 on the registry sample's 49 files. Adding `parse_only` and the option moved the
+  format phase's count by −3.2K on the fixture sample and −10K on the registry sample
+  against the binary before it (237,768,390 and 322,851,667) with no formatter function
+  changed: `memcmp` called from `str::contains` (`is_contained_in`) costs −4.5K and
+  −11.1K at unchanged call counts (42,554 `memcmp` calls on the fixture sample in both): the
+  needles' `.rodata` addresses moved with the new string literals, and the AVX2 `memcmp`'s
+  cost depends on its operands' alignment; `bench::main` −0.6K and `Timespec::now` +1.7K
+  are `bench`'s own timing code.
+
+- `--shuffle N` (EXP-022's follow-up) measures the co-metric over N random function orders of
+  the same code. It builds this checkout's `bench` with `cargo rustc --release -p chloro-core
+  --example bench --target-dir target/shuffle -- -C save-temps --print link-args` (the
+  example's outputs are removed first, since a fresh example is not linked again and prints
+  no link line; about 30 s when the dependencies are built, 140 MB), keeps the fat-LTO
+  object, and replays rustc's link line (parsed with Python's `shlex`, no shell expansion)
+  once unchanged, which the script checks is byte-identical to cargo's binary, and once per
+  seed 1..N with `-Wl,--shuffle-sections=.text*=<seed>` appended. Each binary runs the sample
+  once under the simulator (as `--sim`), staged like every other run; the script prints each
+  order's `Ir`, `Bc`, `Bcm`, `Bi`, `Bim`, `I1mr`, `D1mr` and `D1mw`, then their mean and
+  standard deviation over the N shuffled orders, beside cargo's order. A seed gives the same
+  order for the same object (seeds 1 and 2 read the same counts in two invocations), and
+  unrelated orders for different objects, so a candidate and its base are compared as two
+  sets of N draws. `--bench` does not apply to the orders: they are this checkout's code
+  (the script notes when `--bench` is another build). For `f0ce72e` (`--sim --shuffle 4`,
+  2 min 4 s on the fixture sample, 2 min 22 s on the registry sample):
+
+  | sample | order | `Ir` | `Bcm` | `Bim` | `I1mr` | `D1mr` | `D1mw` |
+  |---|---|---|---|---|---|---|---|
+  | fixtures | cargo | 237,765,263 | 2,984,285 | 685,184 | 4,710,936 | 655,491 | 505,829 |
+  | fixtures | mean of 4 (s.d.) | 237,768,700 (62) | 2,966,001 (23,167) | 696,849 (15,257) | 4,740,756 (53,352) | 658,253 (622) | 507,551 (175) |
+  | registry | cargo | 322,843,783 | 3,438,200 | 1,155,697 | 3,950,802 | 803,527 | 545,806 |
+  | registry | mean of 4 (s.d.) | 322,840,538 (51) | 3,432,636 (46,120) | 1,162,050 (14,925) | 4,062,006 (56,857) | 805,860 (348) | 546,359 (142) |
+
+  The spread matches EXP-022's on `8ebd3bb` (`I1mr` s.d. 51K, `Bcm` 11–22K): a change to
+  `I1mr` or `Bcm` within one standard deviation of the orders is not resolved by one
+  cargo-order build. Compare the means of N orders of each build: the standard error of a
+  difference of two 4-order means is about 0.7 standard deviations (`I1mr` ≈ 38K, `Bcm`
+  ≈ 16–33K here). Function order alone moves `Ir` by about 3K (EXP-022 saw 5K).
 
 ## pgo.sh
 

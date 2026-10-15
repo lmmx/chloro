@@ -92,6 +92,30 @@ pub fn format_source_with_config(source: &str, config: &Config) -> String {
     }
 }
 
+/// Parses `source` as [`format_source_with_config`] does before it formats anything, and
+/// stops there. The same steps run in the same order: the configuration's settings, the
+/// source's normalisation (a leading byte order mark dropped, `\r\n` read as `\n`), lexing
+/// and parsing for the configured edition, the flat syntax tree ([`crate::cst::Tree`]), the
+/// second parse of syntax rustc accepts and rust-analyzer rejects, and the check for syntax
+/// rustc rejects. The tree is dropped before returning.
+///
+/// Returns the number of elements (nodes and tokens) of the file's tree, or `None` where
+/// [`format_source_with_config`] returns the source unchanged without formatting it:
+/// `disable_all_formatting`, a text longer than `u32::MAX` bytes, a syntax error, or syntax
+/// rustc rejects. A file with an inner `#![rustfmt::skip]` is parsed (the attribute is read
+/// from the tree, after this point).
+///
+/// For measuring the parser's share of the formatter's cost (`examples/bench --phase
+/// parse`, `benchmarks/profile.sh --phase parse`); formatting does not call it.
+pub fn parse_only(source: &str, config: &Config) -> Option<usize> {
+    let settings = Settings::new(config);
+    if settings.disable_all_formatting() {
+        return None;
+    }
+    let normalized = formatting::normalize_src(source);
+    formatting::parse_text(&normalized, &settings)
+}
+
 /// [`format_source_with_config`] with the file's top-level items formatted on up to
 /// `threads` threads. The output is identical; `threads <= 1`, a file with fewer than two
 /// top-level items, or one returned unchanged costs no thread. The threads are spawned
