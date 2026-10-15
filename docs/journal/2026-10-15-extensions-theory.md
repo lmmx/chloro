@@ -154,8 +154,19 @@ with the container.
   record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. On landing: reproduce
   the identity harness and the Ir gate before any merge; the cache stays off by default in
   the library.
-- Queued experiments, to launch when the four cores are free (one at a time): E13 PGO step in
-  `.github/workflows/binaries.yml` with local validation of the same commands; E14 allocator
+- E13 (`20261015-pgo-ci`, worktree `/home/user/wt/pgo-ci`, agent running since 02:00 UTC, time
+  box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
+  validated locally by running the workflow's commands (goldens, conform at both versions, Ir
+  against 312.7 M, hyperfine on two crates); record
+  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. On landing: reproduce the Ir
+  and conform gates on its PGO build before merging; the workflow itself is confirmed only by
+  the next release run.
+- rustd trial, results so far (01:49–01:55 UTC): `basic` test binary MATCH, `chloro_core`
+  3004 of 3004 root functions and 15,212 generic instances compiled by rustd, 0 skipped, 33.5 s
+  and 1.34 GiB peak for the cold compile; the `unit` (183 tests), `parallel_equivalence` and
+  `rustfmt_version` binaries are running (`rustd-trial/trial-unit.log`); the edit-loop bench
+  (`harness/bench.py chloro`, entry added to the rustd checkout's `benches.json`) follows.
+- Queued: E14 allocator
   measurement (glibc vs `mimalloc` with memory options vs `tikv-jemallocator` vs `snmalloc`;
   wall, CPU, peak RSS on the M3 harness rows, and the allocator's own CPU share measured
   directly with a wrapping `#[global_allocator]` in an example binary; `perf` is absent in
