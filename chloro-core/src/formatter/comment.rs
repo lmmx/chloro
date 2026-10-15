@@ -443,6 +443,26 @@ pub(crate) trait FindUncommented {
 
 impl FindUncommented for str {
     fn find_uncommented(&self, pat: &str) -> Option<usize> {
+        // A one-byte pattern other than `/`: `CharClasses` yields a character as a comment
+        // kind only after a `/` followed by `*` or `/`, and every other character as
+        // `Normal` or `InString`, the kinds a pattern character matches in. So a pattern
+        // byte before the first such `/` is the first match, and a text with neither has
+        // no match. Otherwise the search below runs.
+        if let [needle] = *pat.as_bytes()
+            && needle != b'/'
+        {
+            let bytes = self.as_bytes();
+            let mut pos = 0;
+            loop {
+                pos = find_any_byte(bytes, pos, [needle, b'/']);
+                match bytes.get(pos) {
+                    None => return None,
+                    Some(&b) if b == needle => return Some(pos),
+                    Some(_) if !matches!(bytes.get(pos + 1), Some(b'*' | b'/')) => pos += 1,
+                    Some(_) => break,
+                }
+            }
+        }
         let first = pat.bytes().next().filter(u8::is_ascii);
         let mut needle_iter = pat.chars();
         let mut classes = CharClasses::new(self);
@@ -1678,7 +1698,9 @@ mod tests {
                 None => Some(s.len() - pat.len()),
             }
         }
-        let patterns = ["", "a", "r", "/", "\"", "*/", "aa", "a/", "r#", "é", "aé"];
+        let patterns = [
+            "", "a", "r", "/", "\"", "*/", "aa", "a/", "r#", "é", "aé", "#", "*", "\\", "\n", "'",
+        ];
         for s in scan_strings(5) {
             for pat in patterns {
                 assert_eq!(s.find_uncommented(pat), by_char(&s, pat), "{s:?} {pat:?}");
