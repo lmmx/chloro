@@ -30,6 +30,7 @@ use super::macros::convert_try_mac;
 use super::nodes::child;
 use super::nodes::node_text;
 use super::overflow::OverflowableItem;
+use super::scratch::{ScratchString, ScratchVec};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::types::SegmentParam;
@@ -150,8 +151,15 @@ struct ChainItem<'a> {
 
 #[derive(Debug)]
 enum ChainItemKind<'a> {
-    Parent { expr: ast::Expr<'a>, parens: bool },
-    MethodCall(ast::NameRef<'a>, Vec<SegmentParam<'a>>, Vec<ast::Expr<'a>>),
+    Parent {
+        expr: ast::Expr<'a>,
+        parens: bool,
+    },
+    MethodCall(
+        ast::NameRef<'a>,
+        ScratchVec<SegmentParam<'a>>,
+        ScratchVec<ast::Expr<'a>>,
+    ),
     StructField(ast::NameRef<'a>),
     TupleField(ast::NameRef<'a>, bool),
     Await,
@@ -319,7 +327,7 @@ impl<'a> ChainItem<'a> {
             format!("::<{}>", type_list.join(", "))
         };
         let name = node_text(method_name.syntax());
-        let mut callee_str = String::with_capacity(1 + name.len() + type_str.len());
+        let mut callee_str = ScratchString::with_capacity(1 + name.len() + type_str.len());
         callee_str.push('.');
         callee_str.push_str(name);
         callee_str.push_str(&type_str);
@@ -331,7 +339,7 @@ impl<'a> ChainItem<'a> {
 #[derive(Debug)]
 struct Chain<'a> {
     parent: ChainItem<'a>,
-    children: Vec<ChainItem<'a>>,
+    children: ScratchVec<ChainItem<'a>>,
 }
 
 impl<'a> Chain<'a> {
@@ -339,7 +347,7 @@ impl<'a> Chain<'a> {
         let subexpr_list = Self::make_subexpr_list(top, context);
 
         // Un-parse the expression tree into ChainItems
-        let mut rev_children = Vec::with_capacity(subexpr_list.len());
+        let mut rev_children = ScratchVec::with_capacity(subexpr_list.len());
         let mut sub_tries = 0;
         for subexpr in &subexpr_list {
             if subexpr.is_try() {
@@ -368,7 +376,7 @@ impl<'a> Chain<'a> {
             post_comment_span: Span,
             post_comment_snippet: &str,
             prev_span_end: &mut BytePos,
-            children: &mut Vec<ChainItem>,
+            children: &mut ScratchVec<ChainItem>,
         ) {
             let white_spaces: &[_] = &[' ', '\t'];
             if post_comment_snippet
@@ -391,10 +399,11 @@ impl<'a> Chain<'a> {
 
         let parent = rev_children.pop()?;
         // Room for every remaining item; a comment between two items grows it.
-        let mut children = Vec::with_capacity(rev_children.len());
+        let mut children = ScratchVec::with_capacity(rev_children.len());
         let mut prev_span_end = parent.span.hi();
-        let mut iter = rev_children.into_iter().rev().peekable();
-        if let Some(first_chain_item) = iter.peek() {
+        // The remaining entries from the end of `rev_children`: `pop` is the next one and
+        // `last` the one after it.
+        if let Some(first_chain_item) = rev_children.last() {
             let comment_span = mk_sp(prev_span_end, first_chain_item.span.lo());
             let comment_snippet = context.snippet(comment_span);
             if !is_tries(trim(comment_snippet)) {
@@ -406,7 +415,7 @@ impl<'a> Chain<'a> {
                 );
             }
         }
-        while let Some(chain_item) = iter.next() {
+        while let Some(chain_item) = rev_children.pop() {
             let comment_snippet = context.snippet(chain_item.span);
             // FIXME: Figure out the way to get a correct span when converting `try!` to `?`.
             let handle_comment =
@@ -433,11 +442,11 @@ impl<'a> Chain<'a> {
             children.push(chain_item);
 
             // Post-comment
-            if !handle_comment || iter.peek().is_none() {
+            if !handle_comment || rev_children.is_empty() {
                 continue;
             }
 
-            let next_lo = iter.peek()?.span.lo();
+            let next_lo = rev_children.last()?.span.lo();
             let post_comment_span = mk_sp(prev_span_end, next_lo);
             let post_comment_snippet = context.snippet(post_comment_span);
             handle_post_comment(
@@ -456,10 +465,10 @@ impl<'a> Chain<'a> {
     fn make_subexpr_list<'c: 'a>(
         top: SubExpr<'a>,
         context: &RewriteContext<'c>,
-    ) -> Vec<SubExpr<'a>> {
+    ) -> ScratchVec<SubExpr<'a>> {
         // `vec![top]` holds one entry and every chain has two or more: room for eight, so
         // that the list does not grow (and move) while the chain is walked.
-        let mut subexpr_list = Vec::with_capacity(8);
+        let mut subexpr_list = ScratchVec::with_capacity(8);
         subexpr_list.push(top);
 
         while let Some(subexpr) = subexpr_list
@@ -542,7 +551,7 @@ struct ChainFormatterShared<'a> {
     children: &'a [ChainItem<'a>],
     /// The current rewrites of items (includes trailing `?`s, but not any way to
     /// connect the rewrites together).
-    rewrites: Vec<String>,
+    rewrites: ScratchVec<String>,
     /// Whether the chain can fit on one line.
     fits_single_line: bool,
     /// The number of children in the chain. This is not equal to `self.children.len()`
@@ -556,7 +565,7 @@ impl<'a> ChainFormatterShared<'a> {
     fn new(chain: &'a Chain) -> ChainFormatterShared<'a> {
         ChainFormatterShared {
             children: &chain.children,
-            rewrites: Vec::with_capacity(chain.children.len() + 1),
+            rewrites: ScratchVec::with_capacity(chain.children.len() + 1),
             fits_single_line: false,
             child_count: chain.children.len(),
             allow_overflow: false,
@@ -834,9 +843,9 @@ impl<'a> ChainFormatterBlock<'a> {
 /// Removes try operators (`?`s) that appear in the given string. If removing
 /// them leaves an empty line, remove that line as well unless it is the first
 /// line (we need the first newline for detecting pre/post comment).
-fn trim_tries(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut line_buffer = String::with_capacity(s.len());
+fn trim_tries(s: &str) -> ScratchString {
+    let mut result = ScratchString::with_capacity(s.len());
+    let mut line_buffer = ScratchString::with_capacity(s.len());
     for (kind, _, c) in CharClasses::new(s) {
         match c {
             '\n' => {

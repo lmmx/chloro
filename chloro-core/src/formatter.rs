@@ -16,6 +16,7 @@
 //! | `rustc_compat` | syntax rust-analyzer accepts but rustc's parser (and so rustfmt) rejects |
 //! | `rustc_syntax` | syntax rustc's parser accepts and rust-analyzer's rejects, rebuilt from the parser's steps |
 //! | `shape`, `context`, `span`, `nodes`, `utils`, `sort` | shared infrastructure |
+//! | `scratch` | not from rustfmt: a per-thread bump arena for intermediates that stay inside one module (EXP-025) |
 //!
 //! `nodes` and `span` adapt the syntax tree (`crate::cst`) to rustc's AST shape (doc comments as attributes,
 //! rustc's spans), which lets the ported modules keep rustfmt's control flow.
@@ -44,6 +45,7 @@ pub mod printer;
 mod reorder;
 mod rustc_compat;
 mod rustc_syntax;
+mod scratch;
 mod shape;
 mod skip;
 mod sort;
