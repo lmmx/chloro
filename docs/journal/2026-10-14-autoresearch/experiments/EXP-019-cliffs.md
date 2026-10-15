@@ -455,3 +455,57 @@ sample counts with *Heap layout*. The generator and its README stay in `benchmar
   lever under about 1 M should be judged with the per-file sum beside the sample's count.
 - use-list's remaining exponent is the comparison count; a sort key per segment
   (`sort_by_cached_key`) would need `version_sort` as a key, which it is not.
+
+## Merged with the integration head
+
+At the coordinator's request the branch took the integration head before its own merge:
+`fdcbcd5` merges `9d78713` (E20's sink, E22's `steps_fused` and `profile.sh --sim`) and
+`72df381` the journal commit `2f00988` above it.
+
+**Resolution (read).** `lists.rs` conflicted in `write_list` and in the test module. E20's
+`c40a441` moves the item's last-line width into the post-comment branch, as `f18dac3` did, and
+also moves the nested-import test under `formatting.nested`; `f18dac3` adds nothing beyond it,
+so E20's form stands and `f18dac3`'s is dropped. The `definitive_tactic` early stop
+(`774559d`) and its test were re-applied on E20's file unchanged: `lists.rs` at the merged head
+is E20's file plus exactly `774559d`'s 111 added and 4 removed lines. `experiments.md` keeps
+every row (E20, E22, E19). No other file conflicted; the other five E19 levers merged as
+they were.
+
+**Figures (measured).** `benchmarks/profile.sh --core 3` at the script's default sample path
+(`/tmp/chloro-bench/sample49`):
+
+| build | binary path | `Ir` |
+|---|---|---|
+| integration head `9d78713` | this worktree's `target/release/examples/bench` | 237,770,134 |
+| integration head `9d78713` | `/tmp/chloro-bench/bin/bench-I` | 237,770,050; 237,768,455 |
+| merged head `72df381` | this worktree's `target/release/examples/bench` (the script's default) | **232,050,549; 232,050,509** |
+| merged head `72df381` | `/tmp/chloro-bench/bin/bench-M` | 232,048,568; 232,050,352 |
+
+The merged head is −5,719,585 `Ir` (−2.41%) against the integration head at the same paths.
+The per-file sum (one process per sample file, `/tmp/chloro-bench/1f-bench-<x>`): 251,045,466
+→ 243,308,946, **−7,736,520 (−3.08%)**, which is the combined E19 effect net of heap layout:
+E19's −11.53 M on its own base less the −3.75 M of `f18dac3`, which E20 had already taken
+(−7.78 M expected). The sample's count shows 2.0 M less because realloc's `memcpy` rises
++1,973,619 at 1,291 fewer calls (the heap-layout term); by function the E19 levers move as
+on their own branch (`rustc_span` −3.63 M, `outer_attributes` −2.44 M, the multi-line width
+scans −1.57 M, `total_item_width` −0.55 M, lexing −0.9 M, `StrSearcher` −0.36 M).
+
+**Gates on `72df381` (measured).**
+
+| gate | result |
+|---|---|
+| `cargo fmt --all --check` | clean |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | clean |
+| `cargo test --workspace --all-features` | 296 passed, 0 failed (1 ignored) |
+| `bench --check` on 1238 fixtures (`fixtures-e8d87c2.tsv`), sequential and `--threads 4` | 0 changed; 0 differ from `format_source` |
+| `bench --check` on 20,850 recorded registry files (`registry-e8d87c2.tsv`, 25,024 present), sequential and `--threads 4` | 0 changed; 0 differ |
+| `conform -i`, `conform -i -V 1.8.0` | 1220/1220 identical, 0 not idempotent, at both versions |
+| `profile.sh --core 3`, default sample path | 232,050,509–232,050,549 (above); at the private path `cliffs49` with the `bench-g` copy 232,048,721 |
+| per-file sum, again under the gate script | 243,307,307 (243,308,946 above; run-to-run spread) |
+
+`clippy` and the tests ran on an archive of `72df381` with their own target directory; the
+goldens and `conform` on copies of its release binaries.
+
+**Errata** (from § 3, unchanged): the if-else and use-list exponent ranges in the messages of
+`d17cb74` and `9c43d8c`, and the per-file baseline in `a4b51d5`'s message; the figures of this
+record are the consistent ones.
