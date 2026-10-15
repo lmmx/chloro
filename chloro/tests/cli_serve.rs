@@ -15,6 +15,21 @@ const BIN: &str = env!("CARGO_BIN_EXE_chloro");
 const UNFORMATTED: &str = "fn main(){let x=1;}\n";
 const FORMATTED: &str = "fn main() {\n    let x = 1;\n}\n";
 
+/// Spawns `command`, retrying while the executable is busy (`ETXTBSY`): a test that has
+/// just copied the binary can lose a race with another test's fork, whose child holds the
+/// copy open for writing until it executes.
+fn spawn(command: &mut Command) -> Child {
+    let start = Instant::now();
+    loop {
+        match command.spawn() {
+            Err(e) if e.raw_os_error() == Some(26) && start.elapsed() < Duration::from_secs(10) => {
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            result => return result.unwrap(),
+        }
+    }
+}
+
 /// A server on `<dir>/s.sock` with its cache under `<dir>/server-cache`.
 struct Server {
     child: Child,
@@ -24,14 +39,14 @@ struct Server {
 impl Server {
     fn start(bin: &Path, dir: &Path) -> Server {
         let socket = dir.join("s.sock");
-        let child = Command::new(bin)
-            .args(["serve", "--idle-timeout", "120", "--socket"])
-            .arg(&socket)
-            .env("CHLORO_CACHE_DIR", dir.join("server-cache"))
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .unwrap();
+        let child = spawn(
+            Command::new(bin)
+                .args(["serve", "--idle-timeout", "120", "--socket"])
+                .arg(&socket)
+                .env("CHLORO_CACHE_DIR", dir.join("server-cache"))
+                .stdout(Stdio::null())
+                .stderr(Stdio::null()),
+        );
         let server = Server { child, socket };
         let start = Instant::now();
         while frames(&server.socket, &[("ping", b"")]).is_none() {
@@ -120,16 +135,16 @@ struct Run {
 
 /// Runs `bin args` in `dir` (cache under `cache`), with `stdin` piped in.
 fn run(bin: &Path, dir: &Path, cache: &Path, args: &[&str], stdin: &[u8]) -> Run {
-    let mut child = Command::new(bin)
-        .args(args)
-        .current_dir(dir)
-        .env("CHLORO_CACHE_DIR", cache)
-        .env_remove("CHLORO_VIA_SERVER")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
+    let mut child = spawn(
+        Command::new(bin)
+            .args(args)
+            .current_dir(dir)
+            .env("CHLORO_CACHE_DIR", cache)
+            .env_remove("CHLORO_VIA_SERVER")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped()),
+    );
     child.stdin.take().unwrap().write_all(stdin).unwrap();
     let Output {
         status,
@@ -368,12 +383,16 @@ fn stop_and_a_replaced_executable_end_the_server() {
     fs::copy(BIN, &copy).unwrap();
     let mut server = Server::start(&copy, dir.path());
     // A second server on the same socket refuses to start.
-    let second = Command::new(&copy)
-        .args(["serve", "--socket"])
-        .arg(&server.socket)
-        .env("CHLORO_CACHE_DIR", dir.path().join("server-cache"))
-        .output()
-        .unwrap();
+    let second = spawn(
+        Command::new(&copy)
+            .args(["serve", "--socket"])
+            .arg(&server.socket)
+            .env("CHLORO_CACHE_DIR", dir.path().join("server-cache"))
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped()),
+    )
+    .wait_with_output()
+    .unwrap();
     assert_eq!(second.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&second.stderr).contains("already answers"));
     let mut bytes = fs::read(&copy).unwrap();
