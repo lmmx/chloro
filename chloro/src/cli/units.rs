@@ -40,7 +40,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 /// Version of the on-disk layout. A layout change reads a new file.
@@ -77,10 +77,16 @@ pub fn file_name_of(key: &Digest) -> String {
     name
 }
 
-/// The entries of one unit cache file, shared by the worker threads.
+/// The entries of one unit cache file, shared by the worker threads: an implementation of
+/// [`UnitCache`] over a `HashMap` keyed by [`unit_digest`]. A run of the CLI uses one
+/// generation; a resident server (`server.rs`) keeps the store and starts a generation per
+/// request ([`Units::next_generation`]).
 pub struct UnitStore {
-    generation: u32,
+    generation: AtomicU32,
     entries: Mutex<HashMap<Digest, (u32, CachedUnit)>>,
+    /// [`RECORD_HEADER_LEN`] plus [`CachedUnit::heap_size`] of every entry: the bytes the
+    /// entries would take in the file, the measure [`Units::trim`] bounds.
+    held: AtomicUsize,
     /// Bytes of the records read from disk.
     file_len: usize,
     lookups: AtomicUsize,
@@ -95,7 +101,7 @@ impl UnitCache for UnitStore {
         self.lookups.fetch_add(1, Ordering::Relaxed);
         let mut entries = self.entries.lock().unwrap_or_else(|e| e.into_inner());
         let (seen, unit) = entries.get_mut(&digest)?;
-        *seen = self.generation;
+        *seen = self.generation.load(Ordering::Relaxed);
         self.hits.fetch_add(1, Ordering::Relaxed);
         Some(unit.clone())
     }
@@ -104,10 +110,17 @@ impl UnitCache for UnitStore {
         let digest = unit_digest(key);
         self.stores.fetch_add(1, Ordering::Relaxed);
         self.dirty.store(true, Ordering::Relaxed);
-        self.entries
+        let size = held_size(&unit);
+        let generation = self.generation.load(Ordering::Relaxed);
+        let old = self
+            .entries
             .lock()
             .unwrap_or_else(|e| e.into_inner())
-            .insert(digest, (self.generation, unit));
+            .insert(digest, (generation, unit));
+        self.held.fetch_add(size, Ordering::Relaxed);
+        if let Some((_, old)) = old {
+            self.held.fetch_sub(held_size(&old), Ordering::Relaxed);
+        }
     }
 }
 
@@ -130,7 +143,26 @@ pub struct UnitStats {
     pub record_bytes: usize,
 }
 
+/// The bytes an entry is counted for: its record header and its record's heap size.
+fn held_size(unit: &CachedUnit) -> usize {
+    RECORD_HEADER_LEN + unit.heap_size()
+}
+
 impl UnitStore {
+    fn new(generation: u32, entries: Entries, file_len: usize) -> UnitStore {
+        let held = entries.values().map(|(_, u)| held_size(u)).sum();
+        UnitStore {
+            generation: AtomicU32::new(generation),
+            entries: Mutex::new(entries),
+            held: AtomicUsize::new(held),
+            file_len,
+            lookups: AtomicUsize::new(0),
+            hits: AtomicUsize::new(0),
+            stores: AtomicUsize::new(0),
+            dirty: AtomicBool::new(false),
+        }
+    }
+
     fn stats(&self, entries_read: usize) -> UnitStats {
         let entries = self.entries.lock().unwrap_or_else(|e| e.into_inner());
         UnitStats {
@@ -179,16 +211,10 @@ impl Units {
                     .and_then(|bytes| parse(&bytes, &self.key))
                     .unwrap_or_default();
                 let read = entries.len();
-                let store = UnitStore {
-                    generation: generation.wrapping_add(1),
-                    entries: Mutex::new(entries),
-                    file_len,
-                    lookups: AtomicUsize::new(0),
-                    hits: AtomicUsize::new(0),
-                    stores: AtomicUsize::new(0),
-                    dirty: AtomicBool::new(false),
-                };
-                (store, read)
+                (
+                    UnitStore::new(generation.wrapping_add(1), entries, file_len),
+                    read,
+                )
             })
             .0
     }
@@ -212,7 +238,69 @@ impl Units {
 
     /// [`save`](Units::save), given whether the executable is unchanged.
     fn write(self, executable_unchanged: bool) -> io::Result<bool> {
-        let Some((store, _)) = self.store.into_inner() else {
+        self.write_kept(executable_unchanged)
+    }
+
+    /// Starts a new generation of the store, if it was read: a resident server calls it
+    /// before each request, so that [`trim`](Units::trim) and the file keep the units seen
+    /// most recently.
+    pub fn next_generation(&self) {
+        if let Some((store, _)) = self.store.get() {
+            store.generation.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    /// The bytes the entries held would take in the file (0 when it was never read).
+    pub fn held_bytes(&self) -> usize {
+        self.store
+            .get()
+            .map_or(0, |(store, _)| store.held.load(Ordering::Relaxed))
+    }
+
+    /// Drops the entries seen least recently while the entries held take more than
+    /// `max_bytes` (as [`held_bytes`](Units::held_bytes) counts), down to three quarters of
+    /// it: the bound a resident server keeps in memory, as [`MAX_BYTES`] bounds the file.
+    /// Returns the number of entries dropped.
+    pub fn trim(&self, max_bytes: usize) -> usize {
+        let Some((store, _)) = self.store.get() else {
+            return 0;
+        };
+        if store.held.load(Ordering::Relaxed) <= max_bytes {
+            return 0;
+        }
+        let generation = store.generation.load(Ordering::Relaxed);
+        let mut entries = store.entries.lock().unwrap_or_else(|e| e.into_inner());
+        let mut ages: Vec<(u32, Digest)> = entries
+            .iter()
+            .map(|(digest, (seen, _))| (generation.wrapping_sub(*seen), *digest))
+            .collect();
+        // Oldest first.
+        ages.sort_unstable_by(|a, b| b.cmp(a));
+        let target = max_bytes / 4 * 3;
+        let mut held = store.held.load(Ordering::Relaxed);
+        let mut dropped = 0;
+        for (_, digest) in ages {
+            if held <= target {
+                break;
+            }
+            if let Some((_, unit)) = entries.remove(&digest) {
+                held -= held_size(&unit);
+                dropped += 1;
+            }
+        }
+        store.held.store(held, Ordering::Relaxed);
+        dropped
+    }
+
+    /// Writes the file atomically if a unit was stored since the store was read or last
+    /// written, keeping the entries in memory (a resident server writes when it goes idle).
+    /// `Ok(false)` when there was nothing to write.
+    ///
+    /// # Errors
+    ///
+    /// As [`save`](Units::save).
+    pub fn write_kept(&self, executable_unchanged: bool) -> io::Result<bool> {
+        let Some((store, _)) = self.store.get() else {
             return Ok(false);
         };
         if !store.dirty.load(Ordering::Relaxed) {
@@ -223,15 +311,13 @@ impl Units {
                 "the chloro executable changed during the run; the unit cache was not written",
             ));
         }
-        let generation = store.generation;
-        let entries = store
-            .entries
-            .into_inner()
-            .unwrap_or_else(|e| e.into_inner());
+        let generation = store.generation.load(Ordering::Relaxed);
+        let entries = store.entries.lock().unwrap_or_else(|e| e.into_inner());
         let mut records: Vec<(Digest, u32, Vec<u8>)> = entries
-            .into_iter()
-            .map(|(digest, (seen, unit))| (digest, seen, unit.to_bytes()))
+            .iter()
+            .map(|(digest, (seen, unit))| (*digest, *seen, unit.to_bytes()))
             .collect();
+        drop(entries);
         // Newest first; `wrapping_sub` orders correctly across a wrap. Then keep records
         // while they fit the bound.
         records.sort_by_key(|(digest, seen, _)| (generation.wrapping_sub(*seen), *digest));
@@ -271,6 +357,7 @@ impl Units {
             let _ = fs::remove_file(&tmp);
         }
         written?;
+        store.dirty.store(false, Ordering::Relaxed);
         Ok(true)
     }
 }

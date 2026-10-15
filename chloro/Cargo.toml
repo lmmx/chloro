@@ -64,3 +64,8 @@ tempfile.workspace = true
 # [lints.rust]
 # missing_docs = "deny"
 # unsafe_code = "forbid"
+
+# The measurement and identity driver of `chloro serve` (EXP-021).
+[[example]]
+name = "serve_driver"
+required-features = ["cli"]

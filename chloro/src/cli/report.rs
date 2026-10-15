@@ -2,6 +2,7 @@
 use super::args::Args;
 use super::cache::Digest;
 use super::worker::ProcessResult;
+use std::io::Write;
 
 /// Aggregated results of a CLI run.
 pub struct AggregatedResults {
@@ -66,30 +67,62 @@ pub fn aggregate_results(results: Vec<ProcessResult>) -> AggregatedResults {
     agg
 }
 
-/// Print summary report
-pub fn print_summary(agg: &AggregatedResults, args: &Args) {
+/// Writes a line to `err` as `eprintln!` writes to standard error: a failed write panics.
+#[macro_export]
+macro_rules! ewriteln {
+    ($err:expr) => {
+        if let Err(e) = writeln!($err) {
+            panic!("failed printing to stderr: {e}");
+        }
+    };
+    ($err:expr, $($arg:tt)*) => {
+        if let Err(e) = writeln!($err, $($arg)*) {
+            panic!("failed printing to stderr: {e}");
+        }
+    };
+}
+
+/// Write the summary report to `err` (standard error for the CLI, the reply for a server)
+pub fn print_summary(agg: &AggregatedResults, args: &Args, err: &mut dyn Write) {
     if !args.verbose && agg.errors.is_empty() {
         return;
     }
 
-    eprintln!();
-    eprintln!("=== Formatting Summary ===");
-    eprintln!("Files processed: {}", agg.files_processed);
-    eprintln!("Files changed: {}", agg.files_changed);
-    eprintln!("Files unchanged: {}", agg.files_unchanged);
+    ewriteln!(err);
+    ewriteln!(err, "=== Formatting Summary ===");
+    ewriteln!(err, "Files processed: {}", agg.files_processed);
+    ewriteln!(err, "Files changed: {}", agg.files_changed);
+    ewriteln!(err, "Files unchanged: {}", agg.files_unchanged);
     if args.verbose {
-        eprintln!("Cache hits: {}", agg.cache_hits);
+        ewriteln!(err, "Cache hits: {}", agg.cache_hits);
     }
 
     if !agg.errors.is_empty() {
-        eprintln!();
-        eprintln!("Errors: {}", agg.errors.len());
+        ewriteln!(err);
+        ewriteln!(err, "Errors: {}", agg.errors.len());
         if args.verbose {
             for error in &agg.errors {
-                eprintln!("  - {}", error);
+                ewriteln!(err, "  - {}", error);
             }
         } else {
-            eprintln!("Run with --verbose to see details");
+            ewriteln!(err, "Run with --verbose to see details");
         }
     }
+}
+
+/// The end of a run: the summary, the check-mode error, and the exit code.
+pub fn finish(agg: &AggregatedResults, args: &Args, err: &mut dyn Write) -> i32 {
+    print_summary(agg, args, err);
+
+    // Exit with error if in check mode and files need formatting
+    if args.check && agg.files_changed > 0 {
+        ewriteln!(err);
+        ewriteln!(err, "Error: {} file(s) need formatting", agg.files_changed);
+        return 1;
+    }
+
+    if !agg.errors.is_empty() {
+        return 1;
+    }
+    0
 }

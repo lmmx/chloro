@@ -1,7 +1,5 @@
 use super::args::Args;
-use super::cache::Cache;
-use super::units::Units;
-use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
+use super::worker::{Caches, PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
 use std::ffi::OsStr;
 use std::fs;
 use std::io;
@@ -131,20 +129,16 @@ fn resolve_entry(
     Ok(())
 }
 
-/// Formats all files on `args.thread_count()` threads, consulting `cache` for files already
-/// known to be formatted and `units` for the unchanged items of the others.
+/// Formats all files on `args.thread_count()` threads, consulting the fixed-point cache for
+/// files already known to be formatted and the unit cache for the unchanged items of the
+/// others.
 ///
 /// The files are sorted largest first and handed out from a shared queue, so the large
 /// files start first and no thread is left with a long tail while the others idle. A
 /// file of at least `PARALLEL_ITEMS_MIN_BYTES` has its top-level items formatted on all
 /// the threads (`format_source_with_config_parallel`); the file-level workers and the
 /// item-level workers share the cores, and the scheduler sorts it out.
-pub fn format_all(
-    files: &[SourceFile],
-    args: &Args,
-    cache: Option<&Cache>,
-    units: Option<&Units>,
-) -> Vec<ProcessResult> {
+pub fn format_all(files: &[SourceFile], args: &Args, caches: Caches<'_>) -> Vec<ProcessResult> {
     let num_threads = args.thread_count();
 
     if args.verbose {
@@ -179,7 +173,7 @@ pub fn format_all(
                         };
                         done.push((
                             i,
-                            format_file(&files[i].path, args, cache, units, item_threads(size)),
+                            format_file(&files[i].path, args, caches, item_threads(size)),
                         ));
                     }
                     done

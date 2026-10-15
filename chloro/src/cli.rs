@@ -25,20 +25,29 @@ static GLOBAL: snmalloc_rs::SnMalloc = snmalloc_rs::SnMalloc;
 pub mod cli {
     pub mod args;
     pub mod cache;
+    #[cfg(unix)]
+    pub mod client;
     pub mod logs;
     pub mod orchestrate;
+    #[cfg(unix)]
+    pub mod protocol;
     pub mod report;
+    #[cfg(unix)]
+    pub mod server;
+    #[cfg_attr(not(unix), allow(dead_code))]
+    pub mod stat;
     pub mod units;
     pub mod worker;
 
-    use crate::vlog;
+    use crate::{ewriteln, vlog};
     use args::{Args, print_usage};
     use cache::Cache;
     use orchestrate::{SourceFile, discover_rust_files, format_all};
-    use report::{aggregate_results, print_summary};
-    use std::io;
-    use std::path::Path;
+    use report::{AggregatedResults, aggregate_results, finish};
+    use std::io::{self, Read, Write};
+    use std::path::{Path, PathBuf};
     use units::Units;
+    use worker::{Caches, PARALLEL_ITEMS_MIN_BYTES, ProcessResult, STDIN_NAME, format_stdin};
 
     /// Open the fixed-point cache named by the arguments, or `None` when it is disabled by
     /// `--no-cache`, when no cache directory resolves, or when the running executable cannot
@@ -66,9 +75,80 @@ pub mod cli {
         cache
     }
 
+    /// A combination of options no run accepts, as the message to print.
+    pub fn invalid_combination(args: &Args) -> Option<&'static str> {
+        (args.stdin && args.write).then_some("--write cannot be used with --stdin")
+    }
+
+    /// The canonical files named by `args.sources`, each once, sorted; relative sources are
+    /// resolved against `base` (the process's directory when `None`). `Ok(Err(code))` when a
+    /// source does not exist (after printing the error to `err`).
+    ///
+    /// # Errors
+    ///
+    /// The first error canonicalising a file or listing a directory.
+    pub fn collect_files(
+        args: &Args,
+        base: Option<&Path>,
+        err: &mut dyn Write,
+    ) -> io::Result<Result<Vec<SourceFile>, i32>> {
+        let mut all_files = Vec::new();
+
+        for source in &args.sources {
+            let source_path = match base {
+                Some(base) => base.join(source),
+                None => PathBuf::from(source),
+            };
+            if !source_path.exists() {
+                ewriteln!(err, "Error: Source path does not exist: {}", source);
+                return Ok(Err(1));
+            }
+
+            if source_path.is_file() {
+                all_files.push(SourceFile::at(source_path.canonicalize()?));
+            } else {
+                all_files.extend(discover_rust_files(&source_path)?);
+            }
+        }
+        // A file reachable twice (named twice, through a symlink, or both named and
+        // discovered) is processed once: every entry is canonical, so equal files compare
+        // equal. Two workers writing one path could otherwise read a truncated file. The one
+        // sort of the list: discovery yields each tree in this order already.
+        all_files.sort_by(|a, b| a.path.cmp(&b.path));
+        all_files.dedup_by(|a, b| a.path == b.path);
+        Ok(Ok(all_files))
+    }
+
+    /// Threads for formatting the items of one source of `len` bytes.
+    pub fn item_threads(args: &Args, len: usize) -> usize {
+        if len >= PARALLEL_ITEMS_MIN_BYTES {
+            args.thread_count()
+        } else {
+            1
+        }
+    }
+
+    /// The `--stdin` source formatted and reported as one file.
+    pub fn run_stdin(
+        input: io::Result<Vec<u8>>,
+        args: &Args,
+        caches: Caches<'_>,
+        out: &mut dyn Write,
+    ) -> AggregatedResults {
+        let result = match input {
+            Ok(bytes) => {
+                let threads = item_threads(args, bytes.len());
+                format_stdin(bytes, args, caches, threads, out)
+            }
+            Err(e) => ProcessResult::Error(format!("Failed to read {STDIN_NAME}: {e}")),
+        };
+        aggregate_results(vec![result])
+    }
+
     /// Entry point for the chloro CLI
     ///
-    /// Migrates Rust documentation to markdown files.
+    /// Formats the Rust sources named on the command line (or standard input with
+    /// `--stdin`); `chloro serve` runs the resident server (Unix).
     ///
     /// # Errors
     ///
@@ -78,7 +158,8 @@ pub mod cli {
     /// - files cannot be parsed,
     /// - or writing files fails.
     ///
-    /// The process will also exit with a non-zero status if migration fails.
+    /// The process will also exit with a non-zero status if formatting fails, or in check
+    /// mode if a file is not formatted.
     pub fn main() -> io::Result<()> {
         let args: Args = facet_args::from_std_args()
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{e}")))?;
@@ -88,16 +169,55 @@ pub mod cli {
             std::process::exit(0);
         }
 
+        #[cfg(unix)]
+        if server::is_serve_invocation(&args) {
+            let code = server::main(&args)?;
+            std::process::exit(code);
+        }
+
+        let stdin = args.stdin.then(|| {
+            let mut bytes = Vec::new();
+            io::stdin().read_to_end(&mut bytes).map(|_| bytes)
+        });
+
+        #[cfg(unix)]
+        if args.via_server_requested()
+            && let Some(code) = client::forward(&args, stdin.as_ref())
+        {
+            if code != 0 {
+                std::process::exit(code);
+            }
+            return Ok(());
+        }
+
+        let code = run(&args, stdin)?;
+        if code != 0 {
+            std::process::exit(code);
+        }
+        Ok(())
+    }
+
+    /// One run of the CLI in this process: the exit code.
+    fn run(args: &Args, stdin: Option<io::Result<Vec<u8>>>) -> io::Result<i32> {
+        let mut err = io::stderr();
         let config = match args.formatting_config() {
             Ok(config) => config,
             Err(e) => {
-                eprintln!("Error: invalid --config: {e}");
-                std::process::exit(1);
+                ewriteln!(err, "Error: invalid --config: {e}");
+                return Ok(1);
             }
         };
+        if let Some(message) = invalid_combination(args) {
+            ewriteln!(err, "Error: {message}");
+            return Ok(1);
+        }
 
         if args.verbose {
-            eprintln!("Sources: {}", args.sources.join(", "));
+            if args.stdin {
+                eprintln!("Sources: {STDIN_NAME}");
+            } else {
+                eprintln!("Sources: {}", args.sources.join(", "));
+            }
             eprintln!(
                 "Mode: {}",
                 if args.check {
@@ -113,47 +233,11 @@ pub mod cli {
 
         // Opened before the files are discovered: the executable is hashed as soon after
         // start-up as possible (`cache::tool_key`).
-        let cache = open_cache(&args, &config);
-
-        // Collect all files from all source paths
-        let mut all_files = Vec::new();
-
-        for source in &args.sources {
-            let source_path = Path::new(source);
-            if !source_path.exists() {
-                eprintln!("Error: Source path does not exist: {}", source);
-                std::process::exit(1);
-            }
-
-            if source_path.is_file() {
-                all_files.push(SourceFile::at(source_path.canonicalize()?));
-            } else {
-                all_files.extend(discover_rust_files(source_path)?);
-            }
-        }
-        // A file reachable twice (named twice, through a symlink, or both named and
-        // discovered) is processed once: every entry is canonical, so equal files compare
-        // equal. Two workers writing one path could otherwise read a truncated file. The one
-        // sort of the list: discovery yields each tree in this order already.
-        all_files.sort_by(|a, b| a.path.cmp(&b.path));
-        all_files.dedup_by(|a, b| a.path == b.path);
-
-        if all_files.is_empty() {
-            if args.verbose {
-                eprintln!("No Rust files found.");
-            }
-            return Ok(());
-        }
-
-        if args.verbose {
-            eprintln!("Found {} Rust file(s)", all_files.len());
-            eprintln!("Processing with {} threads", args.thread_count());
-            eprintln!();
-        }
+        let cache = open_cache(args, &config);
 
         // The unit cache lives next to the fixed-point cache and is read on the first file
         // the fixed-point cache does not answer.
-        let units = match &cache {
+        let open_units = || match &cache {
             Some(cache) if args.unit_cache => Some(Units::new(cache)),
             Some(_) => {
                 vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
@@ -162,9 +246,43 @@ pub mod cli {
             None => None,
         };
 
-        // Format files in parallel
-        let results = format_all(&all_files, &args, cache.as_ref(), units.as_ref());
-        let agg = aggregate_results(results);
+        let (agg, units) = if let Some(input) = stdin {
+            let units = open_units();
+            let caches = Caches {
+                fixed: cache.as_ref(),
+                units: units.as_ref(),
+                stats: None,
+            };
+            (run_stdin(input, args, caches, &mut io::stdout()), units)
+        } else {
+            let all_files = match collect_files(args, None, &mut err)? {
+                Ok(files) => files,
+                Err(code) => return Ok(code),
+            };
+
+            if all_files.is_empty() {
+                if args.verbose {
+                    eprintln!("No Rust files found.");
+                }
+                return Ok(0);
+            }
+
+            if args.verbose {
+                eprintln!("Found {} Rust file(s)", all_files.len());
+                eprintln!("Processing with {} threads", args.thread_count());
+                eprintln!();
+            }
+
+            let units = open_units();
+            let caches = Caches {
+                fixed: cache.as_ref(),
+                units: units.as_ref(),
+                stats: None,
+            };
+            // Format files in parallel
+            let results = format_all(&all_files, args, caches);
+            (aggregate_results(results), units)
+        };
 
         if let (Some(units), Some(cache)) = (units, &cache) {
             if let Some(stats) = units.stats() {
@@ -196,21 +314,8 @@ pub mod cli {
             }
         }
 
-        // Print summary
-        print_summary(&agg, &args);
-
-        // Exit with error if in check mode and files need formatting
-        if args.check && agg.files_changed > 0 {
-            eprintln!();
-            eprintln!("Error: {} file(s) need formatting", agg.files_changed);
-            std::process::exit(1);
-        }
-
-        if !agg.errors.is_empty() {
-            std::process::exit(1);
-        }
-
-        Ok(())
+        // Print the summary; exit with an error if in check mode and files need formatting
+        Ok(finish(&agg, args, &mut err))
     }
 }
 

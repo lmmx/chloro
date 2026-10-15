@@ -142,6 +142,22 @@ pub fn tool_key_in(dir: &Path) -> Option<Digest> {
     Some(tool_key_of(&digest))
 }
 
+/// The identity of the running executable (see the module documentation) and the path
+/// `current_exe` names: what `chloro serve` and its clients compare, so that a client is
+/// answered only by a server running the same executable. `None` when the executable cannot
+/// be opened or the platform gives no modification time.
+pub fn executable_identity() -> Option<(Vec<u8>, Option<PathBuf>)> {
+    let (file, path) = open_executable()?;
+    let identity = identity_bytes(path.as_deref(), &file.metadata().ok()?)?;
+    Some((identity, path))
+}
+
+/// The identity of the file now at `path`, in the form of [`executable_identity`]: a
+/// server compares it with its own to notice that its executable was replaced on disk.
+pub fn identity_at(path: &Path) -> Option<Vec<u8>> {
+    identity_bytes(Some(path), &fs::metadata(path).ok()?)
+}
+
 /// The running executable opened for reading (on Linux the running image, `/proc/self/exe`),
 /// and the path `current_exe` names.
 fn open_executable() -> Option<(fs::File, Option<PathBuf>)> {
@@ -463,11 +479,49 @@ impl Cache {
                 "the chloro executable changed during the run; the cache file was not written",
             ));
         }
+        self.record(seen);
+        self.write()
+    }
+
+    /// Record `seen` as fixed points of one run, in memory: the next generation. A resident
+    /// server records every request and writes the file when it goes idle ([`write`]).
+    ///
+    /// [`write`]: Cache::write
+    pub fn record(&mut self, seen: impl IntoIterator<Item = Digest>) {
         self.generation = self.generation.wrapping_add(1);
         for digest in seen {
             self.entries.insert(digest, self.generation);
         }
-        let mut records: Vec<(Digest, u32)> = self.entries.into_iter().collect();
+    }
+
+    /// Keep at most [`MAX_ENTRIES`] entries in memory, dropping those seen least recently,
+    /// once there are a quarter more: the bound a resident server holds between writes.
+    pub fn bound(&mut self) {
+        if self.entries.len() <= MAX_ENTRIES + MAX_ENTRIES / 4 {
+            return;
+        }
+        let generation = self.generation;
+        let mut records: Vec<(Digest, u32)> = self.entries.drain().collect();
+        records.sort_by_key(|(_, seen)| generation.wrapping_sub(*seen));
+        records.truncate(MAX_ENTRIES);
+        self.entries.extend(records);
+    }
+
+    /// Write the entries recorded so far to the file atomically, as [`save`] does, keeping
+    /// them in memory.
+    ///
+    /// # Errors
+    ///
+    /// As [`save`].
+    ///
+    /// [`save`]: Cache::save
+    pub fn write(&self) -> io::Result<()> {
+        if !self.executable_unchanged() {
+            return Err(io::Error::other(
+                "the chloro executable changed during the run; the cache file was not written",
+            ));
+        }
+        let mut records: Vec<(Digest, u32)> = self.entries.iter().map(|(d, s)| (*d, *s)).collect();
         if records.len() > MAX_ENTRIES {
             // Newest generation first; `wrapping_sub` orders correctly across a wrap.
             records.sort_by_key(|(_, seen)| self.generation.wrapping_sub(*seen));
