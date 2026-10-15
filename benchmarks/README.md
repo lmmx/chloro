@@ -11,6 +11,7 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 | `compare_rustfmt.sh` | process wall time, CPU time and peak RSS of rustfmt and chloro on named workloads, with hyperfine (`--export-json`) |
 | `report.py` | turns a results directory into markdown tables with chloro/rustfmt ratios |
 | `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample |
+| `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`
 (standard library only) for the report, `valgrind` and `setarch` for `profile.sh`, the
@@ -208,3 +209,41 @@ bytewise, every 25th file (lines 25, 50, …, 1225): 49 files, 650,213 bytes.
   about 2K instructions, pinned or not, from any working directory.
 - `--annotate N` prints the top of `callgrind_annotate` for the first run; the profile
   files stay in `--out`.
+
+## pgo.sh
+
+```sh
+benchmarks/pgo.sh                     # target/pgo/release/{chloro,examples/bench}
+benchmarks/pgo.sh /path/to/root cli   # another target root, the CLI's features
+benchmarks/pgo.sh --phase train       # profile only: target/pgo-gen/profiles/merged.profdata
+benchmarks/pgo.sh --phase use         # the -Cprofile-use builds from that profile
+benchmarks/pgo.sh --target x86_64-unknown-linux-gnu   # every build with --target
+```
+
+The train phase builds the CLI and `examples/bench` with `-Cprofile-generate`, runs
+`chloro --check` on `chloro-core/tests/conformance/fixtures` and `bench -n 1`, and merges
+the raw profiles with `llvm-profdata` (rustup component `llvm-tools-preview`). The use
+phase builds both with `-Cprofile-use=<merged.profdata>
+-Cllvm-args=-pgo-warn-missing-function`; the second flag makes LLVM print a warning for
+every function the profile has no record of, which shows a profile that does not match
+the code (it does not fail a `-D warnings` build). `--target` defaults to
+`$CARGO_BUILD_TARGET`; training runs the instrumented binaries, so the target has to be
+the host. Anything already in `RUSTFLAGS` is kept in both phases.
+
+The release workflow (`.github/workflows/binaries.yml`, step "Train PGO profile") runs
+`pgo.sh --phase train --target <target>` on each matrix target whose triple equals the
+runner's host (`x86_64-unknown-linux-gnu` on `ubuntu-22.04`, `x86_64-apple-darwin` on
+`macos-13`, `x86_64-pc-windows-msvc` on `windows-2022`), then appends `-Cprofile-use` and
+the warning flag to `RUSTFLAGS`, so `taiki-e/upload-rust-binary-action`'s own `cargo build
+--release --target <target>` is the profile-guided build. The two `aarch64` targets are
+cross-compiled on those runners and keep the plain build; if any command of the training
+fails, or no profile is left, the step prints a warning and the binary is the plain build.
+The instrumented build passes `--target` like the action does: the symbol names the
+profile is keyed by differ between a build with `--target` and one without, and on
+`x86_64-unknown-linux-gnu` a profile trained without `--target` left 1017 functions of
+`chloro` and `chloro_core` without profile data in the action's build, against none with
+it. With `--target`, `RUSTFLAGS` also stays off build scripts and proc macros, so their runs
+during the build write no raw profiles (2 files and 1.0 MB merged, against 13 and 4.1 MB).
+These commands were run locally on `x86_64-unknown-linux-gnu`
+(`docs/journal/2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`); the macOS and
+Windows paths of the step have not been run.
