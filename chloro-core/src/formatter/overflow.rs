@@ -18,7 +18,7 @@ use super::expr::{
 };
 use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, ListTactic, Separator, SeparatorTactic,
-    definitive_tactic, itemize_list, total_item_width, write_list,
+    definitive_tactic, itemize_list, total_item_width, write_list_capacity, write_list_into,
 };
 use super::macros::MacroArg;
 use super::patterns::{TuplePatField, can_be_overflowed_pat};
@@ -490,16 +490,15 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
         // Replace the stub with the full overflowing last argument if the rewrite
         // succeeded and its first line fits with the other arguments.
         match (overflow_last, tactic, placeholder) {
-            (true, DefinitiveListTactic::Horizontal, Some(ref overflowed))
-                if self.items.len() == 1 =>
-            {
+            // The overflowed rewrite is moved into the list, not copied.
+            (true, DefinitiveListTactic::Horizontal, Some(overflowed)) if self.items.len() == 1 => {
                 // When we are rewriting a nested function call, we restrict the
                 // budget for the inner function to avoid them being deeply nested.
                 // However, when the inner function has a prefix or a suffix
                 // (e.g., `foo() as u32`), this budget reduction may produce poorly
                 // formatted code, where a prefix or a suffix being left on its own
                 // line. Here we explicitly check those cases.
-                if has_one_newline(overflowed) {
+                if has_one_newline(&overflowed) {
                     let rw = self
                         .items
                         .last()
@@ -508,10 +507,10 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
                     if no_newline {
                         list_items[self.items.len() - 1].item = rw;
                     } else {
-                        list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                        list_items[self.items.len() - 1].item = Some(overflowed);
                     }
                 } else {
-                    list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                    list_items[self.items.len() - 1].item = Some(overflowed);
                 }
             }
             (true, DefinitiveListTactic::Horizontal, placeholder @ Some(..)) => {
@@ -574,7 +573,10 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
         tactic
     }
 
-    fn rewrite_items(&self) -> Option<(bool, String)> {
+    /// rustfmt's `rewrite_items` up to its `write_list`: the list items, their formatting
+    /// and whether the list is horizontal (extendable). The list itself is written by
+    /// [`Context::rewrite`], into the buffer that `wrap_items` returns in rustfmt.
+    fn rewrite_items(&self) -> (Vec<ListItem>, ListFormatting<'_>, bool) {
         let span = self.items_span();
         let items = itemize_list(
             self.context.snippet_provider,
@@ -613,39 +615,39 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
             .trailing_separator(trailing_separator)
             .ends_with_newline(ends_with_newline);
 
-        write_list(&list_items, &fmt)
-            .map(|items_str| (tactic == DefinitiveListTactic::Horizontal, items_str))
+        (list_items, fmt, tactic == DefinitiveListTactic::Horizontal)
     }
 
-    fn wrap_items(&self, items_str: &str, shape: Shape, is_extendable: bool) -> String {
+    fn delims(&self) -> (&'static str, &'static str) {
+        match self.custom_delims {
+            Some((lhs, rhs)) => (lhs, rhs),
+            _ => (self.prefix, self.suffix),
+        }
+    }
+
+    /// rustfmt's `wrap_items`, on a buffer that already holds the callee, the opening
+    /// delimiter and, from `items_start`, the list: puts the list on the opening line or
+    /// between indented lines, and closes it.
+    fn wrap_items(
+        &self,
+        result: &mut String,
+        items_start: usize,
+        shape: Shape,
+        is_extendable: bool,
+        nested_indent_str: &str,
+        indent_str: &str,
+    ) {
         let shape = Shape {
             width: shape.width.saturating_sub(last_line_width(self.ident)),
             ..shape
         };
-
-        let (prefix, suffix) = match self.custom_delims {
-            Some((lhs, rhs)) => (lhs, rhs),
-            _ => (self.prefix, self.suffix),
-        };
+        let items_str = &result[items_start..];
 
         let extend_width = if items_str.is_empty() {
             2
         } else {
             first_line_width(items_str) + 1
         };
-        let nested_indent_str = self
-            .nested_shape
-            .indent
-            .to_string_with_newline(self.context.config);
-        let indent_str = shape
-            .block()
-            .indent
-            .to_string_with_newline(self.context.config);
-        let mut result = String::with_capacity(
-            self.ident.len() + items_str.len() + 2 + indent_str.len() + nested_indent_str.len(),
-        );
-        result.push_str(self.ident);
-        result.push_str(prefix);
         let force_single_line = if self.context.config.style_edition() >= StyleEdition::Edition2024
         {
             !self.context.use_block_indent() || (is_extendable && extend_width <= shape.width)
@@ -656,22 +658,51 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
                 || (self.context.inside_macro() && !items_str.contains('\n') && fits_one_line)
                 || (is_extendable && extend_width <= shape.width)
         };
-        if force_single_line {
-            result.push_str(items_str);
-        } else {
+        if !force_single_line {
             if !items_str.is_empty() {
-                result.push_str(&nested_indent_str);
-                result.push_str(items_str);
+                result.insert_str(items_start, nested_indent_str);
             }
-            result.push_str(&indent_str);
+            result.push_str(indent_str);
         }
-        result.push_str(suffix);
-        result
+        result.push_str(self.delims().1);
     }
 
     fn rewrite(&self, shape: Shape) -> Option<String> {
-        let (extendable, items_str) = self.rewrite_items()?;
-        Some(self.wrap_items(&items_str, shape, extendable))
+        let (list_items, fmt, extendable) = self.rewrite_items();
+        let (prefix, suffix) = self.delims();
+        let nested_indent_str = self
+            .nested_shape
+            .indent
+            .to_string_with_newline(self.context.config);
+        let indent_str = shape
+            .block()
+            .indent
+            .to_string_with_newline(self.context.config);
+        // One buffer for the callee, the delimiters, the list and its indents: the list is
+        // written in place instead of into a string of its own that is then copied.
+        let mut result = String::with_capacity(
+            self.ident.len()
+                + prefix.len()
+                + write_list_capacity(&list_items, &fmt)
+                + nested_indent_str.len()
+                + indent_str.len()
+                + suffix.len(),
+        );
+        result.push_str(self.ident);
+        result.push_str(prefix);
+        let items_start = result.len();
+        if !write_list_into(&list_items, &fmt, &mut result) {
+            return None;
+        }
+        self.wrap_items(
+            &mut result,
+            items_start,
+            shape,
+            extendable,
+            &nested_indent_str,
+            &indent_str,
+        );
+        Some(result)
     }
 }
 
