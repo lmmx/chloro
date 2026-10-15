@@ -27,7 +27,7 @@
 //! | `cwd` | the client's working directory, against which relative paths resolve |
 //! | `cache-dir` | the cache directory the client resolved (empty with `--no-cache`) |
 //! | `config` | the `--config` string |
-//! | `threads` | the `--threads` value (`0`: the server's cores) |
+//! | `threads` | the `--threads` value (`0`: the server's own, see `State::item_threads`) |
 //! | `flag` | `no-cache` or `unit-cache`, once per flag given |
 //! | `check`, `write` | a source path, once per path; one mode per request |
 //! | `stdin`, `stdin-check` | the source text (`--stdin`, `--stdin --check`) |
@@ -56,10 +56,8 @@ use super::protocol::{self, Frame};
 use super::report::aggregate_results;
 use super::stat::StatTable;
 use super::units::{self, Units};
-use super::worker::{Caches, format_file};
-use super::{
-    collect_files, format_all, invalid_combination, item_threads, report::finish, run_stdin,
-};
+use super::worker::{Caches, PARALLEL_ITEMS_MIN_BYTES, format_file};
+use super::{collect_files, format_all, invalid_combination, report::finish, run_stdin};
 use crate::ewriteln;
 use std::collections::HashMap;
 use std::fs;
@@ -126,7 +124,14 @@ struct State {
     dir: Option<PathBuf>,
     identity: Vec<u8>,
     exe_path: Option<PathBuf>,
+    /// Threads for a request of several files (`format_all`): `--threads`, else one per core.
     threads: usize,
+    /// Threads for the items of one large file in a request of one source (a file or
+    /// standard input): `--threads`, else 1. Item threads started on every request leave
+    /// glibc's per-thread arenas fragmented: unpinned, the server's RSS grew 1.10-2.43x over
+    /// 1,000 whole-file saves of the large fixtures with one per core, and 1.00-1.07x with one
+    /// (EXP-021, w4).
+    item_threads: usize,
     /// By `Config::key_bytes`; `None` when the cache cannot be opened.
     configs: HashMap<Vec<u8>, Option<ConfigState>>,
     stats: StatTable,
@@ -349,11 +354,12 @@ impl State {
 
     fn status(&self) -> Vec<u8> {
         let mut out = format!(
-            "pid {}\nrequests {}\nbusy-us {}\nthreads {}\nconfigs {}\npaths {}\n",
+            "pid {}\nrequests {}\nbusy-us {}\nthreads {}\nitem-threads {}\nconfigs {}\npaths {}\n",
             std::process::id(),
             self.requests,
             self.busy.as_micros(),
             self.threads,
+            self.item_threads,
             self.configs.len(),
             self.stats.len()
         );
@@ -414,6 +420,8 @@ impl State {
             cache_dir: String::new(),
             threads: if request.threads > 0 {
                 request.threads
+            } else if request.stdin.is_some() {
+                self.item_threads
             } else {
                 self.threads
             },
@@ -425,7 +433,19 @@ impl State {
         };
         let mut stdout = Vec::new();
         let mut stderr = Vec::new();
-        match self.run(&args, &request.cwd, request.stdin, &mut stdout, &mut stderr) {
+        let single = if request.threads > 0 {
+            request.threads
+        } else {
+            self.item_threads
+        };
+        match self.run(
+            &args,
+            single,
+            &request.cwd,
+            request.stdin,
+            &mut stdout,
+            &mut stderr,
+        ) {
             Ok(code) => Reply::ok(code, stdout, stderr),
             // As `main` returning the error: the runtime prints it and exits with 1.
             Err(e) => {
@@ -435,10 +455,12 @@ impl State {
         }
     }
 
-    /// The CLI's run (`cli::run`) against the server's caches.
+    /// The CLI's run (`cli::run`) against the server's caches; a single file's items are
+    /// formatted on `single` threads when it is large enough.
     fn run(
         &mut self,
         args: &Args,
+        single: usize,
         cwd: &Path,
         stdin: Option<Vec<u8>>,
         out: &mut Vec<u8>,
@@ -496,12 +518,14 @@ impl State {
                 // One file (an editor's save) on the request's thread: no worker thread to
                 // start. A panic here is caught by the request, which falls back, and the
                 // client's run reports it as the CLI would.
-                [file] => vec![format_file(
-                    &file.path,
-                    args,
-                    caches,
-                    item_threads(args, usize::try_from(file.len).unwrap_or(usize::MAX)),
-                )],
+                [file] => {
+                    let threads = if file.len >= PARALLEL_ITEMS_MIN_BYTES as u64 {
+                        single
+                    } else {
+                        1
+                    };
+                    vec![format_file(&file.path, args, caches, threads)]
+                }
                 _ => format_all(&files, args, caches),
             };
             aggregate_results(results)
@@ -666,6 +690,7 @@ pub fn main(args: &Args) -> io::Result<i32> {
         identity,
         exe_path,
         threads: args.thread_count(),
+        item_threads: args.threads.max(1),
         configs: HashMap::new(),
         stats: StatTable::default(),
         last_request: Instant::now(),

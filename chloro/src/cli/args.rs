@@ -92,6 +92,10 @@ pub fn print_usage() {
     println!("Server (Unix):");
     println!("  chloro serve [--socket PATH] [--idle-timeout SECS] [--cache-dir D] [--threads N]");
     println!();
+    println!("  --threads N: threads for a request of several files (default: one per core)");
+    println!("  and for the items of a large file in a request of one source (default: 1;");
+    println!("  item threads started on every request grow the server's memory).");
+    println!();
     println!("  Keeps the caches of one cache directory in memory and answers requests on a");
     println!("  Unix-domain socket (one server per cache directory). It exits after");
     println!("  --idle-timeout seconds without a request (default 1800; 0: never), when the");
