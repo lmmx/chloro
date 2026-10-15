@@ -298,11 +298,26 @@ where
         ListTactic::Mixed | ListTactic::HorizontalVertical => width,
     };
 
-    let (sep_count, total_width) = calculate_width(items.clone());
-    let total_sep_len = sep.len() * sep_count.saturating_sub(1);
-    let real_total = total_width + total_sep_len;
+    // rustfmt sums the widths of all items and their separators, then tests every item for
+    // a newline: horizontal iff the sum fits `limit` and no item is multi-line. Both tests
+    // are made item by item here and stop at the first item that decides: a multi-line
+    // item, or a prefix whose widths and separators already exceed `limit` (the sum only
+    // grows). Neither test has an effect, so the answer is rustfmt's.
+    let mut total_width = 0;
+    let mut sep_total = 0;
+    let horizontal = items.into_iter().enumerate().all(|(i, item)| {
+        let item = item.as_ref();
+        if item.is_multiline() {
+            return false;
+        }
+        if i > 0 {
+            sep_total += sep.len();
+        }
+        total_width += total_item_width(item);
+        total_width + sep_total <= limit
+    });
 
-    if real_total <= limit && !items.into_iter().any(|item| item.as_ref().is_multiline()) {
+    if horizontal {
         DefinitiveListTactic::Horizontal
     } else {
         match tactic {
@@ -986,6 +1001,7 @@ where
 }
 
 /// Returns the count and total width of the list items.
+#[cfg(test)]
 fn calculate_width<I, T>(items: I) -> (usize, usize)
 where
     I: IntoIterator<Item = T>,
@@ -1103,6 +1119,97 @@ pub(crate) fn struct_lit_formatting<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// rustfmt's `definitive_tactic`: the sum of every width, then the newline test.
+    fn definitive_tactic_reference(
+        items: &[ListItem],
+        tactic: ListTactic,
+        sep: Separator,
+        width: usize,
+    ) -> DefinitiveListTactic {
+        let pre_line_comments = items.iter().any(|item| item.has_single_line_comment());
+        let limit = match tactic {
+            _ if pre_line_comments => return DefinitiveListTactic::Vertical,
+            ListTactic::Horizontal => return DefinitiveListTactic::Horizontal,
+            ListTactic::Vertical => return DefinitiveListTactic::Vertical,
+            ListTactic::LimitedHorizontalVertical(limit) => cmp::min(width, limit),
+            ListTactic::Mixed | ListTactic::HorizontalVertical => width,
+        };
+        let (sep_count, total_width) = calculate_width(items);
+        let real_total = total_width + sep.len() * sep_count.saturating_sub(1);
+        if real_total <= limit && !items.iter().any(|item| item.is_multiline()) {
+            DefinitiveListTactic::Horizontal
+        } else {
+            match tactic {
+                ListTactic::Mixed => DefinitiveListTactic::Mixed,
+                _ => DefinitiveListTactic::Vertical,
+            }
+        }
+    }
+
+    /// `definitive_tactic`'s early exits answer as the full sum does, on every list of up to
+    /// three items over items of several widths, multi-line and non-ASCII items and items
+    /// with block and line comments, at every tactic, both separators and every width up
+    /// to 40.
+    #[test]
+    fn definitive_tactic_matches_the_full_sum() {
+        let mut kinds: Vec<ListItem> = [
+            "",
+            "a",
+            "abcd",
+            "abcdefghijklmnop",
+            "x\ny",
+            "\u{e9}\u{3000}z",
+            "a\r\nb",
+        ]
+        .iter()
+        .map(|s| ListItem::from_str(*s))
+        .collect();
+        kinds.push(ListItem::from_item(None));
+        let mut commented = ListItem::from_str("abc");
+        commented.post_comment = Some("/* note */".to_owned());
+        kinds.push(commented);
+        let mut line_comment = ListItem::from_str("ab");
+        line_comment.pre_comment = Some("// first".to_owned());
+        kinds.push(line_comment);
+        let mut multi_comment = ListItem::from_str("ab");
+        multi_comment.post_comment = Some("/* a\nb */".to_owned());
+        kinds.push(multi_comment);
+        let mut lists: Vec<Vec<ListItem>> = vec![vec![]];
+        for len in 1..=3 {
+            let mut next = Vec::new();
+            for list in lists.iter().filter(|l| l.len() == len - 1) {
+                for kind in &kinds {
+                    let mut list = list.clone();
+                    list.push(kind.clone());
+                    next.push(list);
+                }
+            }
+            lists.extend(next);
+        }
+        let tactics = [
+            ListTactic::Vertical,
+            ListTactic::Horizontal,
+            ListTactic::HorizontalVertical,
+            ListTactic::LimitedHorizontalVertical(10),
+            ListTactic::LimitedHorizontalVertical(25),
+            ListTactic::Mixed,
+        ];
+        for list in &lists {
+            for tactic in tactics {
+                for sep in [Separator::Comma, Separator::VerticalBar] {
+                    for width in 0..=40 {
+                        assert_eq!(
+                            definitive_tactic(list.as_slice(), tactic, sep, width),
+                            definitive_tactic_reference(list, tactic, sep, width),
+                            "{:?} {tactic:?} {sep:?} {width}",
+                            list.iter().map(|i| i.item.clone()).collect::<Vec<_>>()
+                        );
+                    }
+                }
+            }
+        }
+    }
 
     /// Every string of up to five characters over the bytes that drive the list-gap
     /// functions, and a few with `\r`, `\x0B` and non-ASCII characters.
