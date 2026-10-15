@@ -377,18 +377,6 @@ where
         };
         let item_sep_len = if separate { sep_len } else { 0 };
 
-        // Item string may be multi-line. Its length (used for block comment alignment)
-        // should be only the length of the last line.
-        let item_last_line = if item.is_multiline() {
-            inner_item.lines().last().unwrap_or("")
-        } else {
-            inner_item
-        };
-        let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
-        if item_last_line.starts_with(&**indent_str) {
-            item_last_line_width -= unicode_str_width(indent_str);
-        }
-
         if !item.is_substantial() {
             continue;
         }
@@ -511,6 +499,19 @@ where
         if tactic != DefinitiveListTactic::Horizontal
             && let Some(comment) = item.post_comment.as_ref()
         {
+            // Item string may be multi-line. Its length (used for block comment alignment)
+            // should be only the length of the last line. (rustfmt computes it for every
+            // item; only a post-comment reads it, and it reads nothing that changes above.)
+            let item_last_line = if item.is_multiline() {
+                inner_item.lines().last().unwrap_or("")
+            } else {
+                inner_item
+            };
+            let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
+            if item_last_line.starts_with(&**indent_str) {
+                item_last_line_width -= unicode_str_width(indent_str);
+            }
+
             let overhead = last_line_width(&result) + first_line_width(comment.trim());
 
             let rewrite_post_comment = |item_max_width: &mut Option<usize>| {
