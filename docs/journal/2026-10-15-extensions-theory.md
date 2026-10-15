@@ -422,9 +422,16 @@ with the container.
   goldens and conform; `Ir` 238,033,298 at the default sample path). Best-known-good is
   `60de639`, −4.10% from `e640fbf`. E22 reported (co-metric `profile.sh --sim` kept;
   `steps_fused` kept, −0.105% `Ir`, −3% `Bcm`; hot/cold splits, flag tables and BOLT rejected;
-  the layout lever closed under the plateau rule) and its gates are being reproduced in
-  `/home/user/wt/layout` before the merge (its ledger row will conflict with E20's; keep both).
-  E19 is finishing its own background work; E21 is running. The external research brief and
+  the layout lever closed under the plateau rule), its gates were reproduced in the worktree
+  (goldens, conform, `Ir` 247,935,835, co-metric, fmt, clippy, 290 tests) and it is **merged at
+  `9d78713`**; post-merge gates identical, `Ir` 237,768,533 at the default sample path, which is
+  the best-known-good. E19 reported (six exact levers, −4.59% on its base, output identical; a
+  real cliff in nested closures with exponent 3.6 that no small exact change fixes, rustfmt
+  itself exponential there; a per-file co-metric isolating the heap-layout term) and was asked
+  to merge the integration head into `20261015-cliffs` first, because its `f18dac3` is the same
+  lever as E20's `c40a441` in lists.rs; it re-gates on the merged branch and reports the
+  default-path `Ir`. E21 is running. Wave 4's E24 (memo side array) and E27 (harness: registry
+  sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
   the additive term in cliff fits, imbalance diagnostics first, a parse-only phase, the daemon
