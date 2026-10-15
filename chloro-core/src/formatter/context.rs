@@ -52,6 +52,20 @@ impl Hasher for FxHasher {
 
 pub(crate) type FxBuildHasher = BuildHasherDefault<FxHasher>;
 
+/// The nesting depth from which [`RewriteContext::memoize`] looks rewrites up and stores
+/// them, counted in rewrites in progress: an expression rewritten while `MEMO_MIN_DEPTH` or
+/// more others are being rewritten. Shallower rewrites are computed every time.
+///
+/// On ordinary code a rewrite is rarely asked for twice with the same shape, and storing
+/// every result costs about as much as the hits save; the hits come from layout attempts
+/// that rewrite a subexpression again at the same shape, and they gather inside nested
+/// expressions, where the exponential nesting is too. Measured in EXP-028, one process per
+/// file: storing every rewrite cost 6.8 M instructions on the 49-file fixture sample and its
+/// hits saved 6.7 M (on the registry sample 4.0 M and 0.3 M); from depth 6, 1,801 of 9,766
+/// lookups, which found 188 of the 315 entries found, the two samples cost 3.9 M and 2.9 M
+/// less than with every rewrite stored, and no cliff shape costs more.
+const MEMO_MIN_DEPTH: u32 = 6;
+
 /// What a memoized rewrite reads besides its node: the shape and the context flags.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct MemoKey {
@@ -112,6 +126,10 @@ pub(crate) struct RunState<'a> {
     arena: &'a TreeArena<'a>,
     /// The id of the next tree to be built ([`RunState::next_tree_id`]).
     next_tree_id: Cell<u32>,
+    /// The number of [`RewriteContext::memoize`] rewrites in progress.
+    memo_depth: Cell<u32>,
+    /// Set while a debug build checks a memo hit against the rewrite itself.
+    memo_checking: Cell<bool>,
 }
 
 impl<'a> RunState<'a> {
@@ -127,6 +145,8 @@ impl<'a> RunState<'a> {
             line_starts: RefCell::default(),
             arena,
             next_tree_id: Cell::new(1),
+            memo_depth: Cell::new(0),
+            memo_checking: Cell::new(false),
         }
     }
 
@@ -351,6 +371,11 @@ impl<'a> RewriteContext<'a> {
     /// macro failure flag, the lost comment flag and the skipped line ranges. These are
     /// recorded with the result and replayed on a hit, so memoization changes no output.
     /// A rewrite that leaves a context flag changed is not stored.
+    ///
+    /// Rewrites nested less than [`MEMO_MIN_DEPTH`] deep are neither looked up nor stored.
+    /// Which rewrites are stored changes no output, as a stored result is the one the
+    /// rewrite returns for its key; the levels above the threshold are rewritten once per
+    /// attempt of the levels around them, a factor that does not grow with the nesting below.
     pub(crate) fn memoize(
         &self,
         node: Node<'_>,
@@ -358,6 +383,13 @@ impl<'a> RewriteContext<'a> {
         shape: Shape,
         rewrite: impl FnOnce() -> Option<String>,
     ) -> Option<String> {
+        let depth = self.run.memo_depth.get();
+        if depth < MEMO_MIN_DEPTH {
+            self.run.memo_depth.set(depth + 1);
+            let result = rewrite();
+            self.run.memo_depth.set(depth);
+            return result;
+        }
         let key = MemoKey {
             tree: node.tree_id(),
             index: node.index(),
@@ -376,19 +408,26 @@ impl<'a> RewriteContext<'a> {
                 .skipped_range
                 .borrow_mut()
                 .extend_from_slice(&entry.skipped_range);
+            if cfg!(debug_assertions) && !self.run.memo_checking.get() {
+                // The check only reads the table, so the borrow may stay.
+                self.check_memo_hit(depth, entry, rewrite);
+            }
             return entry.result.clone();
         }
 
         let failure_before = self.macro_rewrite_failure.replace(false);
         let lost_before = self.run.lost_comment.replace(false);
         let skipped_before = self.run.skipped_range.borrow().len();
+        self.run.memo_depth.set(depth + 1);
         let result = rewrite();
+        self.run.memo_depth.set(depth);
         let macro_failure = self.macro_rewrite_failure.get();
         let lost_comment = self.run.lost_comment.get();
         self.macro_rewrite_failure
             .set(failure_before || macro_failure);
         self.run.lost_comment.set(lost_before || lost_comment);
-        if self.flags() == key.flags {
+        // A debug build's hit check rewrites without storing (`check_memo_hit`).
+        if self.flags() == key.flags && !(cfg!(debug_assertions) && self.run.memo_checking.get()) {
             let skipped_range = self.run.skipped_range.borrow()[skipped_before..].to_vec();
             self.run.memo.borrow_mut().insert(
                 key,
@@ -401,6 +440,43 @@ impl<'a> RewriteContext<'a> {
             );
         }
         result
+    }
+
+    /// Debug builds: a memo hit equals the rewrite computed again, result and effects. The
+    /// check rewrites with the memo read but not written and checks no hit inside it, so it
+    /// costs one rewrite per hit over memoized subexpressions; the run's effects are
+    /// restored afterwards.
+    #[cold]
+    fn check_memo_hit(
+        &self,
+        depth: u32,
+        entry: &MemoEntry,
+        rewrite: impl FnOnce() -> Option<String>,
+    ) {
+        let failure_before = self.macro_rewrite_failure.replace(false);
+        let lost_before = self.run.lost_comment.replace(false);
+        let skipped_before = self.run.skipped_range.borrow().len();
+        self.run.memo_checking.set(true);
+        self.run.memo_depth.set(depth + 1);
+        let result = rewrite();
+        self.run.memo_depth.set(depth);
+        self.run.memo_checking.set(false);
+        let macro_failure = self.macro_rewrite_failure.replace(failure_before);
+        let lost_comment = self.run.lost_comment.replace(lost_before);
+        let skipped: Vec<_> = self
+            .run
+            .skipped_range
+            .borrow_mut()
+            .drain(skipped_before..)
+            .collect();
+        assert!(
+            result == entry.result
+                && macro_failure == entry.macro_failure
+                && lost_comment == entry.lost_comment
+                && skipped == entry.skipped_range,
+            "a memo hit differs from the rewrite: {:?} against {result:?}",
+            entry.result
+        );
     }
 }
 
@@ -442,6 +518,224 @@ mod tests {
                 + 1;
             assert_eq!(run.line_of(src, pos), expected, "{pos}");
         }
+    }
+
+    /// A rewrite's result and effects: macro failure, lost comment, skipped ranges.
+    type Answer = (Option<String>, bool, bool, Vec<(usize, usize)>);
+
+    /// The memo for the test below: a function of the node, tag, shape and context flags
+    /// that rewrites later nodes first, some at a narrower or offset shape and some with a
+    /// context flag set (as layout attempts do), and sets the run's effects for some keys.
+    struct Workload<'n, 't> {
+        nodes: &'n [Node<'t>],
+        /// Through `memoize` (the memo under test) or through `reference`.
+        memoized: bool,
+        /// A memo that stores every rewrite, with its effects.
+        reference: RefCell<HashMap<MemoKey, Answer>>,
+        /// Rewrites computed by `memoize` at a depth it memoizes, per key since the last clear.
+        computed: RefCell<HashMap<MemoKey, u32>>,
+        /// Rewrites asked of `memoize`, and computed below the depth it memoizes.
+        lookups: Cell<u32>,
+        shallow: Cell<u32>,
+    }
+
+    impl Workload<'_, '_> {
+        fn rewrite(
+            &self,
+            context: &RewriteContext<'_>,
+            i: usize,
+            tag: u8,
+            shape: Shape,
+        ) -> Option<String> {
+            let node = self.nodes[i];
+            let key = MemoKey {
+                tree: node.tree_id(),
+                index: node.index(),
+                tag,
+                shape,
+                flags: context.flags(),
+            };
+            if self.memoized {
+                let depth = context.run.memo_depth.get();
+                self.lookups.set(self.lookups.get() + 1);
+                return context.memoize(node, tag, shape, || {
+                    if depth < MEMO_MIN_DEPTH {
+                        self.shallow.set(self.shallow.get() + 1);
+                    } else if !context.run.memo_checking.get() {
+                        let mut computed = self.computed.borrow_mut();
+                        let n = computed.entry(key).or_default();
+                        *n += 1;
+                        assert_eq!(*n, 1, "{i} computed again at depth {depth}");
+                    }
+                    self.body(context, i, tag, shape)
+                });
+            }
+            let hit = self.reference.borrow().get(&key).cloned();
+            if let Some((result, failure, lost, skipped)) = hit {
+                if failure {
+                    context.macro_rewrite_failure.set(true);
+                }
+                if lost {
+                    context.run.lost_comment.set(true);
+                }
+                context.run.skipped_range.borrow_mut().extend(skipped);
+                return result;
+            }
+            let failure_before = context.macro_rewrite_failure.replace(false);
+            let lost_before = context.run.lost_comment.replace(false);
+            let skipped_before = context.run.skipped_range.borrow().len();
+            let result = self.body(context, i, tag, shape);
+            let failure = context.macro_rewrite_failure.get();
+            let lost = context.run.lost_comment.get();
+            context.macro_rewrite_failure.set(failure_before || failure);
+            context.run.lost_comment.set(lost_before || lost);
+            let skipped = context.run.skipped_range.borrow()[skipped_before..].to_vec();
+            self.reference
+                .borrow_mut()
+                .insert(key, (result.clone(), failure, lost, skipped));
+            result
+        }
+
+        fn body(
+            &self,
+            context: &RewriteContext<'_>,
+            i: usize,
+            tag: u8,
+            shape: Shape,
+        ) -> Option<String> {
+            let mut h = FxHasher::default();
+            h.write_usize(i);
+            h.write_u8(tag);
+            h.write_usize(shape.width);
+            h.write_usize(shape.offset);
+            h.write_u8(context.flags());
+            let h = h.finish() >> 7;
+            let mut out = format!(
+                "{i}.{tag}.{}.{}.{}",
+                shape.width,
+                shape.offset,
+                context.flags()
+            );
+            if h % 7 == 0 {
+                context.macro_rewrite_failure.set(true);
+            }
+            if h % 11 == 0 {
+                context.run.lost_comment.set(true);
+            }
+            if h % 5 == 0 {
+                context
+                    .run
+                    .skipped_range
+                    .borrow_mut()
+                    .push((i, (h % 9) as usize));
+            }
+            for k in 0..(h % 4) {
+                let bits = h >> (8 * k + 3);
+                let j = i + 1 + (bits % 4) as usize;
+                if j >= self.nodes.len() {
+                    break;
+                }
+                let child = Shape {
+                    width: shape.width.saturating_sub(((bits >> 2) % 3) as usize),
+                    offset: shape.offset + ((bits >> 4) % 2) as usize,
+                    ..shape
+                };
+                let result = if (bits >> 5) % 5 == 0 {
+                    let saved = context.is_if_else_block.replace(true);
+                    let result = self.rewrite(context, j, tag, child);
+                    context.is_if_else_block.set(saved);
+                    result
+                } else {
+                    self.rewrite(context, j, (bits >> 7) as u8 % 2, child)
+                };
+                // A digest of the child's result keeps the strings short.
+                match result {
+                    Some(r) => {
+                        let mut d = FxHasher::default();
+                        d.write(r.as_bytes());
+                        out.push_str(&format!("({:x})", d.finish() >> 48));
+                    }
+                    None if h % 3 == 0 => return None,
+                    None => out.push('-'),
+                }
+            }
+            Some(out)
+        }
+    }
+
+    /// `memoize` answers every rewrite as a memo that stores every rewrite does, result and
+    /// replayed effects (macro failure, lost comment, skipped ranges), on random nests of
+    /// rewrites over a tree's nodes with clears in between; it never computes a key twice
+    /// between clears at a depth it memoizes, and leaves the depth as it found it.
+    #[test]
+    fn memoize_answers_as_a_memo_storing_every_rewrite() {
+        use crate::formatter::config::Settings;
+        use crate::formatter::shape::Indent;
+        use crate::formatter::span::SnippetProvider;
+        let src =
+            "fn f() { a(b(c, d), e.f(g, [h, i]), (j, k)); if l { m(n, o) } else { p.q().r(s) } }\n";
+        let tree = Tree::parse(src, Edition::Edition2024).unwrap();
+        let nodes: Vec<Node> = tree.root().descendants().collect();
+        assert!(nodes.len() > 60, "{}", nodes.len());
+        let settings = Settings::default();
+        let arena = TreeArena::new();
+        let run = Rc::new(RunState::new(&arena));
+        let context = RewriteContext::new(&settings, SnippetProvider::new(src), run.clone());
+        let workload = |memoized| Workload {
+            nodes: &nodes,
+            memoized,
+            reference: RefCell::default(),
+            computed: RefCell::default(),
+            lookups: Cell::new(0),
+            shallow: Cell::new(0),
+        };
+        let (memo, reference) = (workload(true), workload(false));
+        let mut state = 0x9e37_79b9_7f4a_7c15_u64;
+        let mut next = move |n: u64| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state % n
+        };
+        let mut computed = 0;
+        for step in 0..200 {
+            if next(20) == 0 {
+                run.clear_memo();
+                reference.reference.borrow_mut().clear();
+                computed += memo.computed.borrow().values().sum::<u32>();
+                memo.computed.borrow_mut().clear();
+            }
+            let i = next(nodes.len() as u64) as usize;
+            let tag = next(2) as u8;
+            let shape = Shape {
+                width: 10 + next(4) as usize,
+                indent: Indent::new(4 * next(2) as usize, 0),
+                offset: next(3) as usize,
+            };
+            let mut answers: Vec<Answer> = Vec::new();
+            for w in [&memo, &reference] {
+                context.macro_rewrite_failure.set(false);
+                run.lost_comment.set(false);
+                run.skipped_range.borrow_mut().clear();
+                let result = w.rewrite(&context, i, tag, shape);
+                answers.push((
+                    result,
+                    context.macro_rewrite_failure.get(),
+                    run.lost_comment.get(),
+                    run.skipped_range.borrow().clone(),
+                ));
+                assert_eq!(run.memo_depth.get(), 0);
+            }
+            assert_eq!(answers[0], answers[1], "step {step}");
+        }
+        computed += memo.computed.borrow().values().sum::<u32>();
+        let (lookups, shallow) = (memo.lookups.get(), memo.shallow.get());
+        // Rewrites were computed above and below the threshold, and found in the memo.
+        let hits = lookups - computed - shallow;
+        assert!(
+            computed > 1_000 && shallow > 500 && hits > 1_000,
+            "{lookups} rewrites: {computed} computed at memoized depths, {shallow} above, {hits} found"
+        );
     }
 
     /// `block_of` answers what `Block::from_block_expr` answers on every block of a source
