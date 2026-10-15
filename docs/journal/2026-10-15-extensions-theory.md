@@ -415,6 +415,20 @@ with the container.
   experiment per merge, re-run gates on the merged head, ledger row, best-known-good only on
   reproduced gates; then wave 4 (E23–E27 of the same table) and a quiet-host M5. If this
   session is not resumed, a new session starts from this bullet and the four branches.
+- Wave 3 progress (11:15 UTC): E20 reported and **merged at `60de639`** after the integrator
+  reproduced its gates in the worktree (goldens 0 of 1238 sequential and 4 threads, 0 of
+  25,024 registry; conform 1220/1220 at both versions; `Ir` 238,032,982 against the agent's
+  238,033,138; fmt, clippy, 291 tests) and re-ran gates 1–3 on the merged head (identical
+  goldens and conform; `Ir` 238,033,298 at the default sample path). Best-known-good is
+  `60de639`, −4.10% from `e640fbf`. E22 reported (co-metric `profile.sh --sim` kept;
+  `steps_fused` kept, −0.105% `Ir`, −3% `Bcm`; hot/cold splits, flag tables and BOLT rejected;
+  the layout lever closed under the plateau rule) and its gates are being reproduced in
+  `/home/user/wt/layout` before the merge (its ledger row will conflict with E20's; keep both).
+  E19 is finishing its own background work; E21 is running. The external research brief and
+  report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
+  additions (a registry validation sample, rollback as state, generation-stamped side arrays,
+  the additive term in cliff fits, imbalance diagnostics first, a parse-only phase, the daemon
+  client's own latency) that change the wave-4 briefs and the protocol.
 - Order of the remaining morning work once E14, E16, E17 and E18 report: reproduce and merge each
   (Ir, goldens sequential and 4 threads, conform both versions; for E14 the RSS rule); then the
   quiet-host measurement M4 of the final head against `884f9c9` and rustfmt with
