@@ -461,9 +461,10 @@ with the container.
   `benchmarks/samples/registry49.txt` and `--sample-list`, `parse_only` and `--phase parse`,
   `--shuffle N`; protocol §3/§4 amended); finding: the parser is 36.3% of the fixture sample's
   instructions and 43.3% of the registry sample's net of process start-up, above T9's 40%
-  trigger on the registry sample; its gates are being reproduced before the merge, after which
-  the best-known-good figure is re-recorded with the new script (its `bench` reads about 3 K
-  lower from `.rodata` alignment). E25 (`20261015-arena`, /home/user/wt/arena, launched 12:45
+  trigger on the registry sample; its gates were reproduced (goldens, conform, fixtures 237,764,952, registry 322,841,637,
+  parse 86,529,679, fmt, clippy, 292 tests) and it is **merged at `28534ec`**; post-merge gates
+  identical; the best-known-good is `28534ec` at 232,051,704 (fixtures) and 305,873,488
+  (registry; −5.26% against the code before E19), parse-only 86,534,335 (37.3%). E25 (`20261015-arena`, /home/user/wt/arena, launched 12:45
   UTC: allocation attribution by lifetime first, stop rule, then a per-item arena or string pool
   on the hottest paths) runs with E23, E26 and E28; both E25 and E28 merged E27's harness into
   their branches for the per-file and registry figures. Then M5 on a quiet host. Wave 4's E24 (memo side array) and E27 (harness: registry
