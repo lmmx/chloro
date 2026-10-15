@@ -22,7 +22,7 @@ use super::lists::{
 };
 use super::macros::MacroArg;
 use super::patterns::{TuplePatField, can_be_overflowed_pat};
-use super::scratch::ScratchVec;
+use super::scratch::{Bump, ScratchVec, with_scratch};
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{SegmentParam, can_be_overflowed_type};
@@ -577,7 +577,10 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
     /// rustfmt's `rewrite_items` up to its `write_list`: the list items, their formatting
     /// and whether the list is horizontal (extendable). The list itself is written by
     /// [`Context::rewrite`], into the buffer that `wrap_items` returns in rustfmt.
-    fn rewrite_items(&self) -> (ScratchVec<ListItem>, ListFormatting<'_>, bool) {
+    fn rewrite_items<'s>(
+        &self,
+        bump: &'s Bump,
+    ) -> (ScratchVec<'s, ListItem>, ListFormatting<'_>, bool) {
         let span = self.items_span();
         let items = itemize_list(
             self.context.snippet_provider,
@@ -592,7 +595,7 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
             true,
         );
         // Made and dropped in this module: in the scratch arena (EXP-025).
-        let mut list_items: ScratchVec<_> = items.collect();
+        let mut list_items = ScratchVec::from_iter_in(items, bump);
 
         // Try letting the last argument overflow to the next line with block
         // indentation. If its first line fits on one line with the other arguments,
@@ -670,7 +673,11 @@ impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
     }
 
     fn rewrite(&self, shape: Shape) -> Option<String> {
-        let (list_items, fmt, extendable) = self.rewrite_items();
+        with_scratch(|bump| self.rewrite_in(shape, bump))
+    }
+
+    fn rewrite_in(&self, shape: Shape, bump: &Bump) -> Option<String> {
+        let (list_items, fmt, extendable) = self.rewrite_items(bump);
         let (prefix, suffix) = self.delims();
         let nested_indent_str = self
             .nested_shape

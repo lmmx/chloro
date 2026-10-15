@@ -20,7 +20,7 @@ use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
-use super::scratch::{ScratchString, ScratchVec};
+use super::scratch::{Bump, ScratchString, ScratchVec, with_scratch};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp, rustc_span, token_span};
 use super::utils::{
@@ -35,9 +35,12 @@ pub(crate) enum PathContext {
 }
 
 /// The segments of a path, outermost qualifier first.
-pub(crate) fn path_segments<'a>(path: &ast::Path<'a>) -> ScratchVec<ast::PathSegment<'a>> {
+pub(crate) fn path_segments<'a, 'b>(
+    path: &ast::Path<'a>,
+    bump: &'b Bump,
+) -> ScratchVec<'b, ast::PathSegment<'a>> {
     // Room for four, as `Vec` gives on its first push.
-    let mut segments = ScratchVec::with_capacity(4);
+    let mut segments = ScratchVec::with_capacity_in(4, bump);
     let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
@@ -91,7 +94,17 @@ pub(crate) fn rewrite_path(
     if let Some(ident) = single_ident_path(path) {
         return (ident.len() <= shape.width).then_some(ident);
     }
-    let segments = path_segments(path);
+    with_scratch(|bump| rewrite_path_in(context, path_context, path, shape, bump))
+}
+
+fn rewrite_path_in(
+    context: &RewriteContext<'_>,
+    path_context: PathContext,
+    path: &ast::Path,
+    shape: Shape,
+    bump: &Bump,
+) -> Option<String> {
+    let segments = path_segments(path, bump);
     let first = segments.first()?;
     let is_global =
         has_token(first.syntax(), T![::]) && child::<ast::TypeAnchor>(first.syntax()).is_none();
@@ -120,7 +133,7 @@ pub(crate) fn rewrite_path(
         if let Some(ast::Type::PathType(trait_ty)) = anchor_types.next() {
             result.push_str(" as ");
             let trait_path = trait_ty.path()?;
-            let trait_segments = path_segments(&trait_path);
+            let trait_segments = path_segments(&trait_path, bump);
             if trait_segments
                 .first()
                 .is_some_and(|s| has_token(s.syntax(), T![::]))
@@ -140,6 +153,7 @@ pub(crate) fn rewrite_path(
                 path_span.hi(),
                 context,
                 shape,
+                bump,
             )?;
         }
 
@@ -156,9 +170,11 @@ pub(crate) fn rewrite_path(
         path_span.hi(),
         context,
         shape,
+        bump,
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn rewrite_path_segments(
     path_context: PathContext,
     mut buffer: String,
@@ -167,6 +183,7 @@ fn rewrite_path_segments(
     span_hi: BytePos,
     context: &RewriteContext<'_>,
     shape: Shape,
+    bump: &Bump,
 ) -> Option<String> {
     let mut first = true;
     let shape = shape.visual_indent(0);
@@ -187,6 +204,7 @@ fn rewrite_path_segments(
             span_hi,
             context,
             new_shape,
+            bump,
         )?;
 
         buffer.push_str(&segment_string);
@@ -299,15 +317,16 @@ fn rewrite_assoc_type_arg(
 ///
 /// When the segment contains a positive number of parameters, we update span_lo
 /// so that invariants described above will hold for the next segment.
-fn rewrite_segment(
+fn rewrite_segment<'b>(
     path_context: PathContext,
     segment: &ast::PathSegment,
     span_lo: &mut BytePos,
     span_hi: BytePos,
     context: &RewriteContext<'_>,
     shape: Shape,
-) -> Option<ScratchString> {
-    let mut result = ScratchString::with_capacity(128);
+    bump: &'b Bump,
+) -> Option<ScratchString<'b>> {
+    let mut result = ScratchString::with_capacity_in(128, bump);
     result.push_str(&segment_ident(segment)?);
 
     let ident_len = result.len();
@@ -1184,14 +1203,16 @@ fn join_bounds_inner(
             let Some(path) = pt.path() else {
                 return false;
             };
-            let segments = path_segments(&path);
-            if segments.len() > 1 {
-                true
-            } else {
-                segments[0]
-                    .generic_arg_list()
-                    .is_some_and(|args| args.generic_args().count() > 1)
-            }
+            with_scratch(|bump| {
+                let segments = path_segments(&path, bump);
+                if segments.len() > 1 {
+                    true
+                } else {
+                    segments[0]
+                        .generic_arg_list()
+                        .is_some_and(|args| args.generic_args().count() > 1)
+                }
+            })
         }
         BoundKind::Use => item
             .use_bound_generic_args()
