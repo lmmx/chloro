@@ -66,7 +66,14 @@ fn single_ident_path(path: &ast::Path) -> Option<String> {
     let name_ref = only_node(segment, SyntaxKind::NAME_REF)?;
     let mut text = String::new();
     for child in name_ref.children_with_tokens() {
-        text.push_str(child.as_token()?.text());
+        let token = child.as_token()?.text();
+        // The first token is copied with one exact allocation (a `NAME_REF` is nearly
+        // always one token); `push_str` onto an empty string would go through `reserve`.
+        if text.is_empty() {
+            text = token.to_owned();
+        } else {
+            text.push_str(token);
+        }
     }
     Some(text)
 }
