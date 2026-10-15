@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Instruction count (callgrind total Ir) of examples/bench formatting the fixed 49-file
-# sample once. Deterministic to within a few thousand instructions since D1 (fc90e53), so
-# it resolves changes far below wall-clock noise.
+# sample once. Deterministic to within about 400 instructions since D1 (fc90e53) (about one
+# run in five reads 1.8K more, from bench's own timing report; see benchmarks/README.md) and
+# independent of where the sample and the binary live (below), so it resolves changes far
+# below wall-clock noise.
 #
 #   benchmarks/profile.sh [--bench BIN] [--runs N] [--core N] [--out DIR] [--annotate N] [--sim]
 #
@@ -15,6 +17,11 @@
 # The journals record "every 25th file of the sorted fixture list" but not the command;
 # this construction is the one of five tried whose count (588.0M at 884f9c9) lies near the
 # last recorded figure (586.8M at f6c5be9). See benchmarks/README.md.
+#
+# Path independence (EXP-027): the binary and the sample are copied under a directory whose
+# path has a fixed length (mktemp -d /tmp/chloro-prof.XXXXXXX), so the count does not depend
+# on where BIN, the sample or OUT live. The two paths bench sees have the lengths of the
+# ones this script used before (47 and 26 bytes), so the count is the one recorded then.
 set -euo pipefail
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -22,7 +29,6 @@ REPO=$(cd "$HERE/.." && pwd)
 FIXTURES=$REPO/chloro-core/tests/conformance/fixtures
 BENCH=$REPO/target/release/examples/bench
 RUNS=1 CORE= OUT= ANNOTATE=0 SIM=0
-SAMPLE=/tmp/chloro-bench/sample49
 
 die() { echo "profile.sh: error: $*" >&2; exit 2; }
 while [ $# -gt 0 ]; do
@@ -31,10 +37,10 @@ while [ $# -gt 0 ]; do
     --runs) RUNS=$2; shift ;;
     --core) CORE=$2; shift ;;
     --out) OUT=$2; shift ;;
-    --sample) SAMPLE=$2; shift ;;
+    --sample) echo "profile.sh: note: --sample is ignored: the sample is staged under a path of fixed length (EXP-027)" >&2; shift ;;
     --annotate) ANNOTATE=$2; shift ;;
     --sim) SIM=1; shift; continue ;;
-    -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
     *) die "unknown argument $1" ;;
   esac
   shift
@@ -51,15 +57,31 @@ BENCH=$(cd "$(dirname "$BENCH")" && pwd)/$(basename "$BENCH")
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
 
+# What bench sees (EXP-027). The count depends on the lengths of the strings the process
+# holds, not on their text: argv[0] and the path strings through malloc's size classes (the
+# heap layout the parser's vector growth meets, EXP-020) and the stack, and the binary's
+# own path through glibc's reading of /proc/self/maps at start-up (pthread_getattr_np,
+# about 40 instructions per byte). So everything bench sees lives under STAGE, a directory
+# of fixed length (24 bytes) in /tmp: the binary as STAGE/bench_..., 47 bytes, as
+# /home/user/chloro/target/release/examples/bench was, and the sample as STAGE/s, 26
+# bytes, as /tmp/chloro-bench/sample49 was. The count at the old default is unchanged.
+STAGE=$(mktemp -d /tmp/chloro-prof.XXXXXXX)
+trap 'rm -rf "$STAGE"' EXIT
+fixed() { local s=$1; while [ ${#s} -lt "$2" ]; do s+=_; done; printf '%s' "$s"; }
+EXE=$STAGE/$(fixed bench $((47 - ${#STAGE} - 1)))
+ROOT=$STAGE/s
+[ ${#EXE} = 47 ] && [ ${#ROOT} = 26 ] || die "staging paths $EXE, $ROOT are not 47 and 26 bytes long"
+cp "$BENCH" "$EXE"
+
 # Build the sample.
-rm -rf "$SAMPLE"; mkdir -p "$SAMPLE"
+mkdir -p "$ROOT"
 (cd "$FIXTURES" && find . -name '*.rs' | sed 's|^\./||' | LC_ALL=C sort | awk 'NR % 25 == 0') > "$OUT/sample.txt"
 total=$(cd "$FIXTURES" && find . -name '*.rs' | wc -l)
 [ "$total" = 1238 ] || echo "warning: fixture list has $total files, not 1238; the sample differs from the journals'" >&2
-(cd "$FIXTURES" && xargs -a "$OUT/sample.txt" cp --parents -t "$SAMPLE")
+(cd "$FIXTURES" && xargs -a "$OUT/sample.txt" cp --parents -t "$ROOT")
 n=$(wc -l < "$OUT/sample.txt")
-bytes=$(cd "$SAMPLE" && xargs -a "$OUT/sample.txt" cat | wc -c)
-echo "sample: $n files, $bytes bytes ($SAMPLE; list in $OUT/sample.txt)"
+bytes=$(cd "$ROOT" && xargs -a "$OUT/sample.txt" cat | wc -c)
+echo "sample: $n files, $bytes bytes (list in $OUT/sample.txt)"
 echo "bench: $BENCH sha256=$(sha256sum "$BENCH" | cut -c1-16)"
 
 # The simulator's totals of one profile, then the top ten functions by I1mr and by Bcm.
@@ -91,10 +113,14 @@ irs=()
 for ((i = 1; i <= RUNS; i++)); do
   cg=$OUT/callgrind.$i.out
   log=$OUT/callgrind.$i.log
-  # Fixed environment and sample path: the count moves by up to ~0.1% with the size of the
-  # environment and the path strings (stack and heap layout), not with the code.
-  "${pin[@]}" env -i "$SETARCH" "$(uname -m)" -R "$VALGRIND" --tool=callgrind ${sim[@]+"${sim[@]}"} --callgrind-out-file="$cg" \
-    "$BENCH" -n 1 --root "$SAMPLE" > "$OUT/bench.$i.txt" 2> "$log" || { cat "$log" >&2; die "valgrind failed"; }
+  # Fixed environment (env -i), address space (setarch -R) and path lengths (EXE, ROOT): the
+  # count moves by up to 1% with the size of the environment and the paths' lengths (stack
+  # and heap layout), not with the code.
+  (cd "$STAGE" && "${pin[@]}" env -i "$SETARCH" "$(uname -m)" -R "$VALGRIND" --tool=callgrind ${sim[@]+"${sim[@]}"} \
+    --callgrind-out-file="$cg" "$EXE" -n 1 --root "$ROOT") > "$OUT/bench.$i.txt" 2> "$log" ||
+    { cat "$log" >&2; die "valgrind failed"; }
+  seen=$(sed -n 's/^\([0-9]*\) files,.*/\1/p' "$OUT/bench.$i.txt")
+  [ "$seen" = "$n" ] || die "bench formatted ${seen:-no} files, not $n (output in $OUT/bench.$i.txt)"
   # Ir is the first of the collected events, with or without --sim.
   ir=$(sed -n 's/.*Collected : *//p' "$log" | tr -d ',' | head -1 | awk '{print $1}')
   [ -n "$ir" ] || { cat "$log" >&2; die "no 'Collected' line in $log"; }
