@@ -11,7 +11,8 @@ use super::context::RewriteContext;
 use super::shape::{Indent, Shape};
 use super::span::Span;
 use super::utils::{
-    concat, first_line_width, last_line_width, trim_left_preserve_layout, trimmed_last_line_width,
+    concat, first_line_width, last_line_width, trim, trim_left_preserve_layout,
+    trimmed_last_line_width,
 };
 
 fn is_custom_comment(comment: &str) -> bool {
@@ -359,7 +360,7 @@ pub(crate) fn rewrite_missing_comment(
     context: &RewriteContext<'_>,
 ) -> Option<String> {
     let missing_snippet = context.snippet(span);
-    let trimmed_snippet = missing_snippet.trim();
+    let trimmed_snippet = trim(missing_snippet);
     // check the span starts with a comment
     let pos = trimmed_snippet.find('/');
     if !trimmed_snippet.is_empty() && pos.is_some() {

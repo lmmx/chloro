@@ -98,8 +98,8 @@ pub(crate) fn last_line_used_width(s: &str, offset: usize) -> usize {
 #[inline]
 pub(crate) fn trimmed_last_line_width(s: &str) -> usize {
     unicode_str_width(match s.rfind('\n') {
-        Some(n) => s[(n + 1)..].trim(),
-        None => s.trim(),
+        Some(n) => trim(&s[(n + 1)..]),
+        None => trim(s),
     })
 }
 
@@ -254,6 +254,32 @@ fn is_ascii_single_line(bytes: &[u8]) -> bool {
 /// without the formatting machinery.
 pub(crate) fn concat(parts: &[&str]) -> String {
     parts.concat()
+}
+
+/// `str::trim` on bytes while the ends are ASCII. `char::is_whitespace` is true on exactly
+/// these ASCII characters: tab, `\n`, `\x0B`, `\x0C`, `\r` and space (`u8::is_ascii_whitespace`
+/// leaves out `\x0B`, so `trim_ascii` is not equivalent). A first or last kept byte that is
+/// not ASCII starts a character that may be Unicode whitespace: `str::trim` decides then.
+/// An all-whitespace text gives the empty slice at its start, as `str::trim` does.
+pub(crate) fn trim(s: &str) -> &str {
+    let bytes = s.as_bytes();
+    let Some(start) = bytes.iter().position(|&b| !is_whitespace_byte(b)) else {
+        return &s[..0];
+    };
+    let end = bytes
+        .iter()
+        .rposition(|&b| !is_whitespace_byte(b))
+        .unwrap_or(start)
+        + 1;
+    if !bytes[start].is_ascii() || !bytes[end - 1].is_ascii() {
+        return s.trim();
+    }
+    &s[start..end]
+}
+
+#[inline]
+fn is_whitespace_byte(b: u8) -> bool {
+    matches!(b, b'\t' | b'\n' | b'\x0B' | b'\x0C' | b'\r' | b' ')
 }
 
 pub(crate) fn count_newlines(input: &str) -> usize {
@@ -655,6 +681,29 @@ mod tests {
                     s.insert_str(at, special);
                     assert_eq!(unicode_str_width(&s), s.width(), "{s:?}");
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn ascii_first_trim_matches_str_trim() {
+        // Every string of up to five characters over the ASCII whitespace of
+        // `char::is_whitespace` (with `\x0B` and `\x0C`), a letter, and non-ASCII
+        // characters that are (U+0085, U+00A0, U+3000) and are not (`é`) whitespace; the
+        // result must be the same slice of the input, not only equal text.
+        const ALPHABET: [char; 11] = [
+            ' ', '\t', '\n', '\r', '\x0B', '\x0C', 'a', '\u{85}', '\u{a0}', '\u{3000}', 'é',
+        ];
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                let (fast, full) = (trim(&s), s.trim());
+                assert_eq!(fast, full, "{s:?}");
+                assert_eq!(fast.as_ptr(), full.as_ptr(), "{s:?}");
             }
         }
     }

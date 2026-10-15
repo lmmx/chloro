@@ -10,7 +10,7 @@ use super::config::{RustfmtVersion, StyleEdition};
 use super::parallel::GapOp;
 use super::shape::{Indent, Shape};
 use super::span::{BytePos, Span, mk_sp};
-use super::utils::{count_newlines, last_line_width};
+use super::utils::{count_newlines, last_line_width, trim};
 use super::visitor::FmtVisitor;
 
 struct SnippetStatus {
@@ -96,11 +96,11 @@ impl FmtVisitor<'_> {
         let snippet = self.snippet(span);
 
         // Do nothing for spaces in the beginning of the file
-        if start == 0 && end as usize == snippet.len() && snippet.trim().is_empty() {
+        if start == 0 && end as usize == snippet.len() && trim(snippet).is_empty() {
             return;
         }
 
-        if snippet.trim().is_empty() {
+        if trim(snippet).is_empty() {
             // Keep vertical spaces within range.
             self.push_vertical_spaces(count_newlines(snippet));
             process_last_snippet(self, "", snippet);
@@ -326,7 +326,7 @@ impl FmtVisitor<'_> {
             }
         }
 
-        let remaining = snippet[status.line_start..subslice.len() + offset].trim();
+        let remaining = trim(&snippet[status.line_start..subslice.len() + offset]);
         if !remaining.is_empty() {
             self.push_str(&self.block_indent.to_string(self.config));
             self.push_str(remaining);
