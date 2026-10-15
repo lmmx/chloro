@@ -1070,20 +1070,19 @@ impl ControlFlow<'_> {
         };
 
         Some((
-            format!(
-                "{}{}{}{}{}",
-                label_string,
+            concat(&[
+                &label_string,
                 self.keyword,
                 between_kwd_cond_comment.as_deref().unwrap_or(
                     if pat_expr_string.is_empty() || pat_expr_string.starts_with('\n') {
                         ""
                     } else {
                         " "
-                    }
+                    },
                 ),
-                pat_expr_string,
-                after_cond_comment.as_deref().unwrap_or(block_sep)
-            ),
+                &pat_expr_string,
+                after_cond_comment.as_deref().unwrap_or(block_sep),
+            ]),
             used_width,
         ))
     }
@@ -1762,25 +1761,25 @@ pub(crate) fn wrap_struct_field(
         .collect();
     if inner_attrs.is_empty() {
         if should_vertical {
-            Some(format!(
-                "{}{}{}",
-                nested_shape.indent.to_string_with_newline(context.config),
+            Some(concat(&[
+                &nested_shape.indent.to_string_with_newline(context.config),
                 fields_str,
-                shape.indent.to_string_with_newline(context.config)
-            ))
+                &shape.indent.to_string_with_newline(context.config),
+            ]))
         } else {
             // One liner or visual indent.
             Some(concat(&[" ", fields_str, " "]))
         }
     } else {
-        Some(format!(
-            "{}{}{}{}{}",
-            nested_shape.indent.to_string_with_newline(context.config),
-            rewrite_attrs(&inner_attrs, context, shape)?,
-            nested_shape.indent.to_string_with_newline(context.config),
+        let nested_indent = nested_shape.indent.to_string_with_newline(context.config);
+        let attrs_str = rewrite_attrs(&inner_attrs, context, shape)?;
+        Some(concat(&[
+            &nested_indent,
+            &attrs_str,
+            &nested_indent,
             fields_str,
-            shape.indent.to_string_with_newline(context.config)
-        ))
+            &shape.indent.to_string_with_newline(context.config),
+        ]))
     }
 }
 
