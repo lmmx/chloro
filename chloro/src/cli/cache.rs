@@ -42,11 +42,44 @@
 //! been written for [`STALE_FILE_AGE`] (files of binaries or configurations no longer in use)
 //! are removed, and so are temporary files of that age left behind by a crash.
 //!
-//! The executable is hashed when the cache is opened, which the CLI does before it discovers
-//! files. On Linux the running image is read through `/proc/self/exe`; elsewhere
+//! The executable's digest is taken when the cache is opened, which the CLI does before it
+//! discovers files. On Linux the running image is read through `/proc/self/exe`; elsewhere
 //! `current_exe` names a path, which a `cargo install` during the run can replace, so the
 //! executable's size and modification time are recorded at open and a save whose values
 //! differ is skipped: the entries belong to the binary that produced them.
+//!
+//! # Executable digest record
+//!
+//! Reading and hashing the executable (2 MB) costs more than the rest of a one-file run, so
+//! its digest is recorded in the cache directory under the executable's identity and read
+//! back by later runs, which then open the executable and take one `metadata` call on it
+//! instead of reading it. The identity is the path `current_exe` names, the size and the
+//! modification time and, on Unix, the device, the inode and the status-change time (`ctime`)
+//! of the opened executable (`/proc/self/exe` on Linux, the running image). It is taken from
+//! the open file, not by path, so it describes the bytes a miss reads even where
+//! `/proc/self/exe` is emulated: under valgrind, `stat("/proc/self/exe")` names valgrind's
+//! own binary while opening it gives the client's. The record is
+//! `<cache-dir>/<32 hex chars>.chloro-exe`, the hex being the first 128 bits of
+//! `BLAKE3("chloro executable identity\0" || identity)`, and holds `CHLOROEX`, the format
+//! version, the identity (length-prefixed), the 32-byte BLAKE3 of the executable's bytes,
+//! and a BLAKE3 of all of the above. A record whose identity is not the current one, or
+//! whose layout or check does not hold, is ignored: the executable is read and hashed, and
+//! the record is written again (atomically, as cache files are) if the identity did not
+//! change while the executable was read. Records age out with the cache files
+//! ([`STALE_FILE_AGE`]).
+//!
+//! What the record does not see: an executable whose bytes changed while its identity stayed
+//! the same. On Unix any write to a file sets its `ctime` to the current time, and `ctime`
+//! cannot be set from user space; a replacement by rename or copy gives a new inode or a new
+//! `ctime`. The identity therefore stays the same only for a write that lands within the
+//! file system's timestamp granularity of the previous change after a chloro run has
+//! recorded it (a few milliseconds on Linux with coarse timestamps), for a clock set back to
+//! the previous `ctime`, or for a write that bypasses the file system (the block device, or
+//! another system mounting it). Elsewhere (Windows) the identity is path, size and
+//! modification time, and a binary rewritten in place with the same size and its
+//! modification time restored is not seen. In those cases the cache answers for the binary
+//! the record was taken from, as it would if the cache file had been copied; anyone who can
+//! write the cache directory can already add entries to it.
 
 use chloro_core::Config;
 use chloro_core::formatter::config::{
@@ -202,7 +235,50 @@ pub fn config_key_bytes(config: &Config) -> Vec<u8> {
 /// Identity of the formatter: crate version, cache format version, target, and the digest
 /// of the running executable. `None` when the executable cannot be read.
 pub fn tool_key() -> Option<Digest> {
-    let bytes = executable_bytes()?;
+    Some(tool_key_of(&executable_digest()?))
+}
+
+/// [`tool_key`], taking the executable's digest from its record under `dir` when the record
+/// names the running executable's identity, and recording it there otherwise (see the
+/// module documentation).
+pub fn tool_key_in(dir: &Path) -> Option<Digest> {
+    let (file, path) = open_executable()?;
+    // The identity is taken from the open file, the one whose bytes are read on a miss.
+    let identity = |file: &fs::File| identity_bytes(path.as_deref(), &file.metadata().ok()?);
+    let read = || read_to_end(&file).map(|bytes| *blake3::hash(&bytes).as_bytes());
+    let digest = match identity(&file) {
+        Some(id) => recorded_digest(dir, &id, || identity(&file), read)?,
+        None => read()?,
+    };
+    Some(tool_key_of(&digest))
+}
+
+/// The running executable opened for reading (on Linux the running image, `/proc/self/exe`),
+/// and the path `current_exe` names.
+fn open_executable() -> Option<(fs::File, Option<PathBuf>)> {
+    let path = std::env::current_exe().ok();
+    if cfg!(target_os = "linux")
+        && let Ok(file) = fs::File::open("/proc/self/exe")
+    {
+        return Some((file, path));
+    }
+    let file = fs::File::open(path.as_ref()?).ok()?;
+    Some((file, path))
+}
+
+fn read_to_end(mut file: &fs::File) -> Option<Vec<u8>> {
+    let mut bytes = Vec::new();
+    io::Read::read_to_end(&mut file, &mut bytes).ok()?;
+    Some(bytes)
+}
+
+/// BLAKE3 of the running executable's bytes.
+fn executable_digest() -> Option<Digest> {
+    Some(*blake3::hash(&executable_bytes()?).as_bytes())
+}
+
+/// The tool key of an executable whose bytes have the digest `executable`.
+fn tool_key_of(executable: &Digest) -> Digest {
     let mut hasher = blake3::Hasher::new();
     hasher.update(b"chloro fixed-point cache\0");
     hasher.update(&FORMAT_VERSION.to_le_bytes());
@@ -212,8 +288,8 @@ pub fn tool_key() -> Option<Digest> {
     hasher.update(b"\0");
     hasher.update(std::env::consts::ARCH.as_bytes());
     hasher.update(b"\0");
-    hasher.update(blake3::hash(&bytes).as_bytes());
-    Some(*hasher.finalize().as_bytes())
+    hasher.update(executable);
+    *hasher.finalize().as_bytes()
 }
 
 /// The bytes of the running executable. On Linux `/proc/self/exe` is read directly: it is
@@ -242,6 +318,131 @@ fn exe_stamp() -> Option<ExeStamp> {
         len: meta.len(),
         modified: meta.modified().ok(),
     })
+}
+
+/// Suffix of the files that record an executable's digest under its identity.
+pub const EXE_FILE_SUFFIX: &str = ".chloro-exe";
+
+const EXE_MAGIC: &[u8; 8] = b"CHLOROEX";
+
+/// Serialises the identity of the executable at `path` with metadata `meta` (see the module
+/// documentation). `None` when the platform gives no modification time; the executable is
+/// then read on every run.
+fn identity_bytes(path: Option<&Path>, meta: &fs::Metadata) -> Option<Vec<u8>> {
+    let mut out = Vec::with_capacity(128);
+    let path = path.map_or(&[][..], |p| p.as_os_str().as_encoded_bytes());
+    out.extend_from_slice(&(path.len() as u64).to_le_bytes());
+    out.extend_from_slice(path);
+    out.extend_from_slice(&meta.len().to_le_bytes());
+    let (after_epoch, since) = match meta.modified().ok()?.duration_since(std::time::UNIX_EPOCH) {
+        Ok(d) => (1u8, d),
+        Err(e) => (0u8, e.duration()),
+    };
+    out.push(after_epoch);
+    out.extend_from_slice(&since.as_secs().to_le_bytes());
+    out.extend_from_slice(&since.subsec_nanos().to_le_bytes());
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        out.extend_from_slice(&meta.dev().to_le_bytes());
+        out.extend_from_slice(&meta.ino().to_le_bytes());
+        out.extend_from_slice(&meta.ctime().to_le_bytes());
+        out.extend_from_slice(&meta.ctime_nsec().to_le_bytes());
+    }
+    Some(out)
+}
+
+/// File name of the record for the executable identity `identity`.
+fn exe_file_name(identity: &[u8]) -> String {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(b"chloro executable identity\0");
+    hasher.update(identity);
+    let key = hasher.finalize();
+    let mut name = String::with_capacity(32 + EXE_FILE_SUFFIX.len());
+    for byte in &key.as_bytes()[..16] {
+        name.push_str(&format!("{byte:02x}"));
+    }
+    name.push_str(EXE_FILE_SUFFIX);
+    name
+}
+
+/// The record of `digest` for `identity`.
+fn exe_record(identity: &[u8], digest: &Digest) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(8 + 4 + 4 + identity.len() + 64);
+    bytes.extend_from_slice(EXE_MAGIC);
+    bytes.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
+    bytes.extend_from_slice(
+        &u32::try_from(identity.len())
+            .unwrap_or(u32::MAX)
+            .to_le_bytes(),
+    );
+    bytes.extend_from_slice(identity);
+    bytes.extend_from_slice(digest);
+    let check = blake3::hash(&bytes);
+    bytes.extend_from_slice(check.as_bytes());
+    bytes
+}
+
+/// The digest a record holds, if the record is well formed and was written for `identity`.
+fn parse_exe_record(bytes: &[u8], identity: &[u8]) -> Option<Digest> {
+    let (body, check) = bytes.split_at_checked(bytes.len().checked_sub(32)?)?;
+    if blake3::hash(body).as_bytes()[..] != check[..] {
+        return None;
+    }
+    let rest = body.strip_prefix(EXE_MAGIC)?;
+    let (version, rest) = rest.split_at_checked(4)?;
+    if version != FORMAT_VERSION.to_le_bytes() {
+        return None;
+    }
+    let (len, rest) = rest.split_at_checked(4)?;
+    let len = u32::from_le_bytes(len.try_into().ok()?) as usize;
+    let (recorded, digest) = rest.split_at_checked(len)?;
+    if recorded != identity {
+        return None;
+    }
+    digest.try_into().ok()
+}
+
+/// The executable digest recorded under `dir` for `identity`; when there is none, `compute`
+/// gives it, and it is recorded if `current` still returns `identity` afterwards (the file
+/// did not change while it was read).
+fn recorded_digest(
+    dir: &Path,
+    identity: &[u8],
+    current: impl FnOnce() -> Option<Vec<u8>>,
+    compute: impl FnOnce() -> Option<Digest>,
+) -> Option<Digest> {
+    let path = dir.join(exe_file_name(identity));
+    if let Some(digest) = fs::read(&path)
+        .ok()
+        .and_then(|bytes| parse_exe_record(&bytes, identity))
+    {
+        return Some(digest);
+    }
+    let digest = compute()?;
+    if current().as_deref() == Some(identity) {
+        // A record that cannot be written costs the next run a read of the executable.
+        let _ = write_atomically(dir, &path, &exe_record(identity, &digest));
+    }
+    Some(digest)
+}
+
+/// Writes `bytes` to `path` in `dir` through a fresh temporary file renamed over it.
+fn write_atomically(dir: &Path, path: &Path, bytes: &[u8]) -> io::Result<()> {
+    fs::create_dir_all(dir)?;
+    let target = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default();
+    let (tmp, mut file) = create_temp(dir, target)?;
+    let written = file.write_all(bytes);
+    drop(file);
+    let written = written.and_then(|()| fs::rename(&tmp, path));
+    if written.is_err() {
+        // The temporary file was created by this call (`create_new`), so it is ours.
+        let _ = fs::remove_file(&tmp);
+    }
+    written
 }
 
 /// Key of the cache file for one (tool, config) pair: `BLAKE3(tool || config)`. Its first
@@ -310,7 +511,7 @@ impl Cache {
     /// Read the cache file for `config` under `dir`. A missing, unreadable, or malformed file
     /// gives an empty cache at the same path.
     pub fn open(dir: &Path, config: &Config) -> Option<Self> {
-        let tool = tool_key()?;
+        let tool = tool_key_in(dir)?;
         let key = file_key(&tool, config);
         let path = dir.join(file_name_of(&key));
         let (generation, entries) = fs::read(&path)
@@ -385,21 +586,7 @@ impl Cache {
         }
 
         let dir = self.path.parent().unwrap_or(Path::new("."));
-        fs::create_dir_all(dir)?;
-        let target = self
-            .path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or_default();
-        let (tmp, mut file) = create_temp(dir, target)?;
-        let written = file.write_all(&bytes);
-        drop(file);
-        let written = written.and_then(|()| fs::rename(&tmp, &self.path));
-        if written.is_err() {
-            // The temporary file was created by this call (`create_new`), so it is ours.
-            let _ = fs::remove_file(&tmp);
-        }
-        written?;
+        write_atomically(dir, &self.path, &bytes)?;
         remove_stale_files(dir);
         Ok(())
     }
@@ -474,8 +661,8 @@ fn parse(bytes: &[u8], key: &Digest) -> Option<(u32, HashMap<Digest, u32>)> {
     Some((generation, entries))
 }
 
-/// Remove the cache files, and the temporary files of saves that did not finish, in `dir`
-/// not written for `STALE_FILE_AGE`. Errors are ignored.
+/// Remove the cache files, the executable digest records, and the temporary files of saves
+/// that did not finish, in `dir` not written for `STALE_FILE_AGE`. Errors are ignored.
 fn remove_stale_files(dir: &Path) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -483,10 +670,13 @@ fn remove_stale_files(dir: &Path) {
     let now = std::time::SystemTime::now();
     for entry in entries.flatten() {
         let path = entry.path();
-        // `<hex>.chloro-cache`, or `.<cache file name>.<pid>.<nanos>.tmp` (`temp_name`).
+        // `<hex>.chloro-cache`, `<hex>.chloro-exe`, or `.<either name>.<pid>.<nanos>.tmp`
+        // (`temp_name`).
         let ours = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
-            n.ends_with(FILE_SUFFIX)
-                || (n.starts_with('.') && n.contains(FILE_SUFFIX) && n.ends_with(".tmp"))
+            [FILE_SUFFIX, EXE_FILE_SUFFIX].iter().any(|suffix| {
+                n.ends_with(suffix)
+                    || (n.starts_with('.') && n.contains(suffix) && n.ends_with(".tmp"))
+            })
         });
         if !ours {
             continue;
@@ -799,6 +989,9 @@ mod tests {
         };
         let stale_cache = aged("00ff.chloro-cache", old);
         let stale_tmp = aged(".00ff.chloro-cache.12.34.tmp", old);
+        let stale_exe = aged("00ee.chloro-exe", old);
+        let stale_exe_tmp = aged(".00ee.chloro-exe.12.34.tmp", old);
+        let fresh_exe = aged("00dd.chloro-exe", now);
         let fresh_tmp = aged(".00ff.chloro-cache.56.78.tmp", now);
         let foreign = aged(".notes.tmp", old);
         remove_stale_files(dir.path());
@@ -808,6 +1001,12 @@ mod tests {
             "a temporary file left by a crash is removed"
         );
         assert!(fresh_tmp.exists(), "a save in progress is left alone");
+        assert!(
+            !stale_exe.exists(),
+            "an executable record not written for long"
+        );
+        assert!(!stale_exe_tmp.exists());
+        assert!(fresh_exe.exists());
         assert!(
             foreign.exists(),
             "a file that is not chloro's is left alone"
@@ -820,6 +1019,197 @@ mod tests {
         assert_eq!(tool_key(), Some(key));
         assert_eq!(executable_bytes().map(|b| b.is_empty()), Some(false));
         assert!(exe_stamp().is_some_and(|s| s.len > 0));
+    }
+
+    /// `recorded_digest` with a computation that counts its calls.
+    fn recorded(dir: &Path, identity: &[u8], digest: Digest, calls: &mut usize) -> Digest {
+        recorded_digest(
+            dir,
+            identity,
+            || Some(identity.to_vec()),
+            || {
+                *calls += 1;
+                Some(digest)
+            },
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn exe_record_round_trips() {
+        let dir = tempfile::tempdir().unwrap();
+        let identity = b"an executable's identity".to_vec();
+        let digest = content_digest(b"its bytes");
+        let mut calls = 0;
+        assert_eq!(recorded(dir.path(), &identity, digest, &mut calls), digest);
+        assert_eq!(calls, 1, "computed on a miss");
+        let path = dir.path().join(exe_file_name(&identity));
+        assert!(path.exists(), "and recorded");
+        assert_eq!(
+            parse_exe_record(&fs::read(&path).unwrap(), &identity),
+            Some(digest)
+        );
+        let other = content_digest(b"other bytes");
+        assert_eq!(recorded(dir.path(), &identity, other, &mut calls), digest);
+        assert_eq!(calls, 1, "read back, not computed, on a hit");
+        assert!(
+            dir.path().read_dir().unwrap().count() == 1,
+            "no temporary file is left behind"
+        );
+    }
+
+    #[test]
+    fn exe_record_rejects_corruption_and_other_identities() {
+        let identity = b"identity".to_vec();
+        let digest = content_digest(b"bytes");
+        let record = exe_record(&identity, &digest);
+        assert_eq!(parse_exe_record(&record, &identity), Some(digest));
+        assert_eq!(
+            parse_exe_record(&record, b"identitx"),
+            None,
+            "another identity"
+        );
+        assert_eq!(
+            parse_exe_record(&record[..record.len() - 1], &identity),
+            None
+        );
+        assert_eq!(parse_exe_record(b"", &identity), None);
+        for i in 0..record.len() {
+            let mut flipped = record.clone();
+            flipped[i] ^= 1;
+            assert_eq!(parse_exe_record(&flipped, &identity), None, "byte {i}");
+        }
+    }
+
+    #[test]
+    fn a_changed_size_or_modification_time_recomputes() {
+        let dir = tempfile::tempdir().unwrap();
+        let exe = dir.path().join("exe");
+        fs::write(&exe, b"version one").unwrap();
+        let identity = || identity_bytes(Some(&exe), &fs::metadata(&exe).unwrap()).unwrap();
+        let cache = dir.path().join("cache");
+        let mut calls = 0;
+        let first = identity();
+        recorded(&cache, &first, content_digest(b"1"), &mut calls);
+        recorded(&cache, &identity(), content_digest(b"1"), &mut calls);
+        assert_eq!(calls, 1, "an unchanged executable is a hit");
+
+        let modified = fs::metadata(&exe).unwrap().modified().unwrap();
+        // Same modification time, another size.
+        fs::write(&exe, b"version two, longer").unwrap();
+        fs::File::options()
+            .write(true)
+            .open(&exe)
+            .unwrap()
+            .set_modified(modified)
+            .unwrap();
+        let second = identity();
+        assert_ne!(second, first);
+        assert_eq!(
+            recorded(&cache, &second, content_digest(b"2"), &mut calls),
+            content_digest(b"2")
+        );
+        assert_eq!(calls, 2, "a changed size recomputes");
+
+        // Same size, another modification time.
+        fs::File::options()
+            .write(true)
+            .open(&exe)
+            .unwrap()
+            .set_modified(modified + Duration::from_secs(1))
+            .unwrap();
+        let third = identity();
+        assert_ne!(third, second);
+        recorded(&cache, &third, content_digest(b"3"), &mut calls);
+        assert_eq!(calls, 3, "a changed modification time recomputes");
+    }
+
+    /// On Unix, a rewrite in place with the same size and the modification time put back
+    /// changes the status-change time, which the identity holds.
+    #[cfg(unix)]
+    #[test]
+    fn a_rewrite_with_its_modification_time_restored_recomputes() {
+        let dir = tempfile::tempdir().unwrap();
+        let exe = dir.path().join("exe");
+        fs::write(&exe, b"version one").unwrap();
+        let identity = || identity_bytes(Some(&exe), &fs::metadata(&exe).unwrap()).unwrap();
+        let before = identity();
+        let modified = fs::metadata(&exe).unwrap().modified().unwrap();
+        // Past the file system's timestamp granularity.
+        std::thread::sleep(Duration::from_millis(50));
+        fs::write(&exe, b"version two").unwrap();
+        fs::File::options()
+            .write(true)
+            .open(&exe)
+            .unwrap()
+            .set_modified(modified)
+            .unwrap();
+        let meta = fs::metadata(&exe).unwrap();
+        assert_eq!((meta.len(), meta.modified().unwrap()), (11, modified));
+        assert_ne!(identity(), before);
+    }
+
+    #[test]
+    fn a_stale_record_with_a_wrong_digest_is_replaced() {
+        let dir = tempfile::tempdir().unwrap();
+        let identity = b"current identity".to_vec();
+        let right = content_digest(b"right");
+        let wrong = content_digest(b"wrong");
+        let path = dir.path().join(exe_file_name(&identity));
+        let mut calls = 0;
+        // A record under this identity's name written for another identity (a copy, or a
+        // name collision), then one with a corrupted digest.
+        for stale in [exe_record(b"previous identity", &wrong), {
+            let mut r = exe_record(&identity, &wrong);
+            r[8 + 4 + 4 + identity.len()] ^= 1;
+            r
+        }] {
+            fs::write(&path, stale).unwrap();
+            assert_eq!(recorded(dir.path(), &identity, right, &mut calls), right);
+            assert_eq!(
+                parse_exe_record(&fs::read(&path).unwrap(), &identity),
+                Some(right),
+                "the record is replaced"
+            );
+        }
+        assert_eq!(calls, 2);
+        assert_eq!(recorded(dir.path(), &identity, wrong, &mut calls), right);
+        assert_eq!(calls, 2);
+    }
+
+    #[test]
+    fn no_record_is_written_when_the_executable_changes_while_read() {
+        let dir = tempfile::tempdir().unwrap();
+        let identity = b"identity at open".to_vec();
+        let digest = content_digest(b"bytes");
+        let got = recorded_digest(
+            dir.path(),
+            &identity,
+            || Some(b"identity after the read".to_vec()),
+            || Some(digest),
+        );
+        assert_eq!(got, Some(digest), "the run still uses the digest it read");
+        assert_eq!(
+            dir.path().read_dir().unwrap().count(),
+            0,
+            "nothing recorded"
+        );
+    }
+
+    #[test]
+    fn tool_key_in_is_tool_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let key = tool_key().expect("the test binary can be read");
+        assert_eq!(tool_key_in(dir.path()), Some(key), "computed and recorded");
+        let records: Vec<_> = dir
+            .path()
+            .read_dir()
+            .unwrap()
+            .map(|e| e.unwrap().file_name().into_string().unwrap())
+            .collect();
+        assert_eq!(records.len(), 1, "{records:?}");
+        assert!(records[0].ends_with(EXE_FILE_SUFFIX), "{records:?}");
+        assert_eq!(tool_key_in(dir.path()), Some(key), "read from the record");
     }
 
     #[test]
