@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """EXP-023: the diagnostic build's patch, applied to a scratch worktree and never committed.
 
-usage: trace_patch.py WORKTREE base
+usage: trace_patch.py WORKTREE base|owner
 
 Adds to the CHLORO_TRACE timeline (chloro/src/cli/trace.rs) what it cannot record without
 touching chloro-core or calling the thread CPU clock: each file's and worker's on-CPU time
@@ -10,7 +10,12 @@ formatted on several threads (parallel.rs) its parse, units phase, stitch, every
 and every unit, as `item` lines (kind 1 parse, 2 units phase, 3 stitch, 0 item worker, 4 unit;
 `n` encodes the file's length times 1e6 plus the unit length or count). Build with
 `cargo build --release -p chloro --features cli` after applying, copy the binary out, then
-`git checkout chloro-core chloro/src` to drop the patch. sim.py reads these traces."""
+`git checkout chloro-core chloro/src` to drop the patch. sim.py reads these traces.
+
+`owner` is for a checkout of 0a6080c (EXP-029's lever (a), reverted), whose split-file worker
+formats units itself beside `threads - 1` spawned ones: the same records, plus an `item 5` line
+with that worker's share of the units (its CPU is also in the file's; split_sim.py takes it out
+of the file's sequential part)."""
 import sys
 root, variant = sys.argv[1], sys.argv[2]
 
@@ -90,7 +95,15 @@ edit('chloro-core/src/formatter/parallel.rs', [
     ('''    std::thread::scope(|s| {
         let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();''', '''    let _g = DiagPhase(2, std::time::Instant::now(), source.len() * 1_000_000 + order.len(), diag_cpu());
     std::thread::scope(|s| {
-        let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();'''),
+        let handles: Vec<_> = (0..threads).map(|_| s.spawn(work)).collect();''') if variant == 'base' else
+    ('''    std::thread::scope(|s| {
+        let handles: Vec<_> = (1..threads).map(|_| s.spawn(work)).collect();
+        let mut done = work();''', '''    let _g = DiagPhase(2, std::time::Instant::now(), source.len() * 1_000_000 + order.len(), diag_cpu());
+    std::thread::scope(|s| {
+        let handles: Vec<_> = (1..threads).map(|_| s.spawn(work)).collect();
+        let (o0, oc) = (std::time::Instant::now(), diag_cpu());
+        let mut done = work();
+        diag_push((5, o0, std::time::Instant::now(), diag_cpu() - oc, source.len() * 1_000_000 + done.len()));'''),
     ('''            if ok {
                 stitch(&mut main, &run, &outputs);''', '''            if ok {
                 let _g = DiagPhase(3, std::time::Instant::now(), source.len() * 1_000_000 + outputs.len(), diag_cpu());
@@ -138,7 +151,7 @@ pub fn cpu_start() {
 
 /// Stamps the end of the current file's read.'''),
 ])
-if variant == 'base':
+if variant in ('base', 'owner'):
     edit('chloro/src/cli/orchestrate.rs', [
         ('''                        let start = trace::now();''', '''                        let start = trace::now();
                         trace::cpu_start();'''),
