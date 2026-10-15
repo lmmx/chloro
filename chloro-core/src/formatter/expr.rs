@@ -114,12 +114,18 @@ pub(crate) fn format_expr(
 ) -> Option<String> {
     // Paths and literals have no subexpressions: rewriting one again costs less than
     // storing it.
-    if matches!(expr, ast::Expr::PathExpr(_) | ast::Expr::Literal(_)) {
-        return format_expr_uncached(expr, expr_type, context, shape);
-    }
-    context.memoize(expr.syntax(), expr_type as u8, shape, || {
+    let result = if matches!(expr, ast::Expr::PathExpr(_) | ast::Expr::Literal(_)) {
         format_expr_uncached(expr, expr_type, context, shape)
-    })
+    } else {
+        context.memoize(expr.syntax(), expr_type as u8, shape, || {
+            format_expr_uncached(expr, expr_type, context, shape)
+        })
+    };
+    #[cfg(debug_assertions)]
+    if let Some(r) = &result {
+        super::width::debug_check(expr.syntax(), shape, r);
+    }
+    result
 }
 
 fn format_expr_uncached(
