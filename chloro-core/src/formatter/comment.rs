@@ -785,14 +785,71 @@ impl<'a> CharClasses<'a> {
 }
 
 /// Returns the position of the first byte at or after `pos` that is one of `targets`, or
-/// `bytes.len()`, testing eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
-/// flags every zero byte and possibly bytes above a zero byte, never below the first one,
-/// so the lowest flag of `y = w ^ target` marks the first byte of `w` equal to `target`.
+/// `bytes.len()`. With SSE2 (every x86-64 target) it tests sixteen bytes per step, and the
+/// last step of a slice of at least sixteen bytes reads the final sixteen and shifts out
+/// the flags of the bytes before `pos`; shorter slices, and other targets, are searched
+/// eight bytes at a time.
+#[inline(always)]
 pub(crate) fn find_any_byte<const N: usize>(
     bytes: &[u8],
     mut pos: usize,
     targets: [u8; N],
 ) -> usize {
+    #[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
+    {
+        let len = bytes.len();
+        if len >= 16 {
+            while pos + 16 <= len {
+                let found = sixteen_byte_flags(bytes[pos..pos + 16].try_into().unwrap(), targets);
+                if found != 0 {
+                    return pos + found.trailing_zeros() as usize;
+                }
+                pos += 16;
+            }
+            if pos >= len {
+                return pos;
+            }
+            // The final sixteen bytes start `skip` bytes before `pos`, `0 < skip < 16`.
+            let skip = pos - (len - 16);
+            let tail = bytes[len - 16..].try_into().unwrap();
+            let found = sixteen_byte_flags(tail, targets) >> skip;
+            return if found != 0 {
+                pos + found.trailing_zeros() as usize
+            } else {
+                len
+            };
+        }
+    }
+    find_any_byte_by_word(bytes, pos, targets)
+}
+
+/// Bit `i` set iff `chunk[i]` is one of `targets`.
+#[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
+#[inline(always)]
+fn sixteen_byte_flags<const N: usize>(chunk: &[u8; 16], targets: [u8; N]) -> u32 {
+    use std::arch::x86_64::{
+        _mm_cmpeq_epi8, _mm_loadu_si128, _mm_movemask_epi8, _mm_or_si128, _mm_set1_epi8,
+        _mm_setzero_si128,
+    };
+    // SAFETY: the `cfg` above compiles this only where SSE2 is enabled, so every intrinsic
+    // is available; `_mm_loadu_si128` reads 16 bytes from a pointer with no alignment
+    // requirement, and `chunk` is a reference to exactly 16 initialised bytes. The others
+    // only read their register arguments.
+    unsafe {
+        let v = _mm_loadu_si128(chunk.as_ptr().cast());
+        let mut eq = _mm_setzero_si128();
+        for t in targets {
+            eq = _mm_or_si128(eq, _mm_cmpeq_epi8(v, _mm_set1_epi8(t as i8)));
+        }
+        _mm_movemask_epi8(eq) as u32
+    }
+}
+
+/// `find_any_byte` eight bytes at a time. For a word `y`, `(y - 0x01..) & !y & 0x80..`
+/// flags every zero byte and possibly bytes above a zero byte, never below the first one,
+/// so the lowest flag of `y = w ^ target` marks the first byte of `w` equal to `target`.
+#[inline(always)]
+fn find_any_byte_by_word<const N: usize>(bytes: &[u8], mut pos: usize, targets: [u8; N]) -> usize {
     const LO: u64 = 0x0101_0101_0101_0101;
     const HI: u64 = 0x8080_8080_8080_8080;
     while let Some(chunk) = bytes.get(pos..pos + 8) {
@@ -1597,10 +1654,22 @@ mod tests {
                 .wrapping_add(1442695040888963407);
             (state >> 33) as usize
         };
-        for _ in 0..20_000 {
-            let len = next() % 40;
+        // Dense targets on 0 to 39 bytes, then sparse ones (one byte in 64 drawn from the
+        // whole alphabet) on 0 to 79 bytes, across the sixteen-byte steps and final reads.
+        for round in 0..40_000 {
+            let (len, sparse) = if round < 20_000 {
+                (next() % 40, false)
+            } else {
+                (next() % 80, true)
+            };
             let bytes: Vec<u8> = (0..len)
-                .map(|_| ALPHABET[next() % ALPHABET.len()])
+                .map(|_| {
+                    if sparse && next() % 64 != 0 {
+                        b'q'
+                    } else {
+                        ALPHABET[next() % ALPHABET.len()]
+                    }
+                })
                 .collect();
             for pos in 0..=len {
                 let expected = bytes[pos..]
