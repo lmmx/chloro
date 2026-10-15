@@ -1,5 +1,9 @@
 # Review: CLI cache, parallel item formatting, flat CST
 
+**Status (2026-10-15):** all ten findings are fixed with tests on `20261014-review-fixes`,
+merged at `bdfb9d1`; the changes, tests and gates are in
+[EXP-011-review-fixes.md](EXP-011-review-fixes.md). The text below is the review as written.
+
 Reviewer pass over `claude/chloro-perf-research-swarm-nrscj8` (integration head), read-only.
 Scope: `chloro/src/cli/cache.rs` with `worker.rs` and `cli.rs`;
 `chloro-core/src/formatter/parallel.rs`; `chloro-core/src/cst/mod.rs`.

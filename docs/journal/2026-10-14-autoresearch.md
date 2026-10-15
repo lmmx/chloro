@@ -378,6 +378,36 @@ parse and skips edits whose trigger text is absent. After the E3 merge the branc
 312,736,691 against 316,299,929 for its base (−1.13%); reproduced here as 312,734,032
 against 316,076,716.
 
+**R5: the review findings, fixed.** The ten findings of the read-only review
+([experiments/review-cache-parallel-cst.md](2026-10-14-autoresearch/experiments/review-cache-parallel-cst.md))
+are closed on `20261014-review-fixes`, each by a small change with a test
+([experiments/EXP-011-review-fixes.md](2026-10-14-autoresearch/experiments/EXP-011-review-fixes.md)).
+The two confirmed by running the binary: a file reachable twice (named twice, through a
+symlink, or both named and discovered) was formatted, counted and, under `--write`, written
+once per occurrence, with two workers able to race on the same path; the file list is now
+canonical, sorted and de-duplicated, and a test holds `--check` to one file for a symlink
+plus a path named twice. The cache's temporary file did not name its target and was opened
+with truncation, so two processes with the same pid saving at the same clock reading under
+different configurations could file one configuration's fixed points under the other's; it
+is now `.<cache file name>.<pid>.<nanos>.tmp`, created exclusively. The latent ones: a
+source above `u32::MAX` bytes is returned unchanged instead of wrapping the tree's offsets;
+the parallel replay checks every unit record before writing to the main buffer and falls
+back to the sequential walk (same output) where a record cannot be stitched, instead of
+trusting two `debug_assert!`s in release builds; a worker's panic keeps its payload; a line
+count saturates; the cache header holds the whole 32-byte file key (a copied or colliding
+file reads as empty), the cache is opened before file discovery, Linux hashes the running
+image through `/proc/self/exe`, and a save is skipped when the executable's size or mtime
+changed since open; stale temporary files are swept with the stale cache files; and a test
+holds the parallel and sequential paths to byte-identical output on 113 fixtures under two
+configurations at 2 and 4 threads. Gates on the branch head, reproduced here before the
+merge: fmt, clippy and every workspace test clean; 0 of 1238 fixture and 0 of 20850
+registry outputs changed against the `e8d87c2` goldens, sequential and at 4 threads;
+`conform -i` 1220/1220 at both versions with 0 non-idempotent; 312,732,924 and
+312,734,679 instructions on the sample against the best-known-good 312,734,032, inside the
+run-to-run spread. The agent that started the branch stopped after two findings when the
+container's disk allowance ran out; the orchestrator freed the build caches of merged
+worktrees and finished the other eight.
+
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
@@ -528,13 +558,14 @@ final build:
 
 ## Handoff for the next session
 
-State at the end of this session (2026-10-14, about 23:35 UTC):
+State at the end of this session (2026-10-15, about 00:30 UTC):
 
 - Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR
   [lmmx/chloro#88](https://github.com/lmmx/chloro/pull/88), head carries every merge listed
-  in the ledger; best-known-good `113367a` (312,734,032 `Ir`; conform 1220/1220 at both
-  versions; goldens `fixtures-e8d87c2.tsv`, `registry-e8d87c2.tsv` in this container's
-  scratch directory, re-recordable with `bench --record` at that commit).
+  in the ledger; best-known-good `bdfb9d1` (the R5 merge; 312,734,032 `Ir` within the
+  spread; conform 1220/1220 at both versions; goldens `fixtures-e8d87c2.tsv`,
+  `registry-e8d87c2.tsv` in this container's scratch directory, re-recordable with
+  `bench --record` at that commit).
 - M3, the quiet-host measurement of the final head, runs in a sibling session and pushes
   `20261014-measure-m3` with `measurements/m3-quiet-host.md` when done; the first step of
   the next session is to merge that branch and copy its headline numbers into the README's
@@ -549,27 +580,23 @@ State at the end of this session (2026-10-14, about 23:35 UTC):
   `20261014-parallel-items`, `20261014-cli-build`, `20261014-green-reads`,
   `20261014-rustfmt-version`, `20261014-flat-cst` (prototype, not merged by design),
   `20261014-flat-port`, `20261014-hot-paths`, `20261014-conformance-fixes`,
-  `20261014-measure-m1`, `20261014-measure-m2`. Worktrees under `/home/user/wt/` and the
+  `20261014-review-fixes`, `20261014-measure-m1`, `20261014-measure-m2`. Worktrees under
+  `/home/user/wt/` (their build caches removed to free the disk allowance) and the
   scratch data under the session's scratchpad are lost with this container.
 
 Next actions, in the order of value per effort:
 
-0. Fix the review findings in
-   [experiments/review-cache-parallel-cst.md](2026-10-14-autoresearch/experiments/review-cache-parallel-cst.md),
-   each a small change with a test: the CLI's file list is not de-duplicated and
-   command-line paths are not canonicalised, so a path given twice or a symlink to a listed
-   file is formatted twice and can race under `--write` (confirmed by running the binary);
-   the cache's temporary file name does not carry the target file's name and is not created
-   with `create_new`; inputs over 4 GiB wrap `u32` offsets instead of being refused; the
-   deferred-gap replay guards a dropped unit with a `debug_assert!` only; the worker's join
-   loses the panic payload; `line_number -= 1` can underflow on a worker. None changes any
-   output on the corpora; the two confirmed ones are the duplicate-path report and the
-   `--check` count.
+0. Done (R5, merge `bdfb9d1`): the ten review findings are fixed with tests;
+   [experiments/EXP-011-review-fixes.md](2026-10-14-autoresearch/experiments/EXP-011-review-fixes.md)
+   has the changes and gates. What remains of them: on macOS and Windows a binary replaced
+   between process start and the cache open (now the first thing after argument parsing)
+   is still hashed by path; the cache key still does not record which of the two formatting
+   paths observed a fixed point (guarded by `tests/parallel_equivalence.rs`, not removed).
 1. Merge `20261014-measure-m3`; update the README's performance table from it; move the
    best-known-good row's in-process figure to M3's.
 2. Add the profile-guided build to `.github/workflows/binaries.yml` as proposed in
    EXP-002 (−21% instructions on the sample, measured; the script is `benchmarks/pgo.sh`).
-3. Act on the review findings in `review-cache-parallel-cst.md` if any are bugs.
+3. Done with 0.
 4. If EXP-010 bounds the fused tree build above 3%, run it as an experiment on a
    `YYYYMMDD-fused-build` branch under the protocol's gates.
 5. The remaining formatter levers from profile-flat.md: intermediate `String`s per rewrite
@@ -586,7 +613,8 @@ Next actions, in the order of value per effort:
   ra_ap_syntax are dev-dependencies for the equality tests only
   (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 16 crates
 - Instructions on the 49-file sample under `benchmarks/profile.sh`: 312,734,032 at
-  `113367a` against 587,988,576 at `884f9c9` (−46.8%); 306,889,893 for the profile-guided
+  `113367a`, and 312,732,924–312,734,679 (inside the spread) at the R5 tree `72bd4b1` =
+  `bdfb9d1`, against 587,988,576 at `884f9c9` (−46.8%); 306,889,893 for the profile-guided
   build of `8d418ee` (measurements/m2-quiet-host.md)
 - In process on one core of the 2.80GHz host class: 7.25–7.73 MB/s on the 1238 fixtures
   against 4.94–5.03 for `884f9c9`; against rustfmt 1.9.0 on nine crates, formatted input,
@@ -603,7 +631,14 @@ Next actions, in the order of value per effort:
   sets the count; `format_source_with_config_parallel` is the library entry
 - The CLI records content digests of files found already formatted and skips formatting
   them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs); a check of 1238
-  formatted files takes about 30 ms warm
+  formatted files takes about 30 ms warm; the cache file's 48-byte header carries its
+  (binary, configuration) key, the save is skipped when the executable changed since the
+  open, and the temporary file is created exclusively (R5)
+- The CLI's file list is canonical, sorted and de-duplicated, so a file reachable twice is
+  formatted once (chloro/src/cli.rs, chloro/tests/cli_files.rs); the parallel replay checks
+  every unit record and falls back to the sequential walk where one cannot be stitched
+  (chloro-core/src/formatter/parallel.rs); chloro-core/tests/parallel_equivalence.rs holds
+  the two paths to identical output
 - `Config::rustfmt_version` selects rustfmt 1.9.0 (default) or 1.8.0 output; 1.7.0 is
   refused with the reason (chloro-core/src/formatter/config.rs; `conform -V 1.8.0`;
   snapshots under chloro-core/tests/conformance/snapshots/ra-1.8.0/ and
@@ -630,6 +665,7 @@ Next actions, in the order of value per effort:
 
 ## Divergence
 
-- README badges state 33 dependencies and a 2.5 MB binary; the release CLI is 1,928,728
-  bytes and chloro-core's runtime tree is 16 crates (the badges are regenerated by `just
-  emblazon`, which was not run)
+- README badges state 33 dependencies and a 2.5 MB binary; the release CLI is 2,017,472
+  bytes at `bdfb9d1` and chloro-core's runtime tree is 16 crates (the badges are regenerated
+  by `just emblazon`; `just` and `blazon` are not installed in this container, so it was not
+  run)
