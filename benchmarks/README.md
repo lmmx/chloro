@@ -10,7 +10,8 @@ the README quotes are under `docs/journal/2026-10-14-autoresearch/measurements/`
 |---|---|
 | `compare_rustfmt.sh` | process wall time, CPU time and peak RSS of rustfmt and chloro on named workloads, with hyperfine (`--export-json`) |
 | `report.py` | turns a results directory into markdown tables with chloro/rustfmt ratios |
-| `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample |
+| `profile.sh` | callgrind total instructions (`Ir`) of `examples/bench` on the fixed 49-file sample, or on a sample from a list |
+| `samples/` | committed sample lists for `profile.sh --sample-list`: `registry49.txt`, the registry validation sample, and `registry49.sh`, which wrote it (EXP-027) |
 | `pgo.sh` | not a measurement: the profile-guided build of the CLI and of `examples/bench` that the `head-pgo` rows measure, and the training phase the release workflow runs |
 
 Requirements: `hyperfine` 2.0 (the JSON schema below is 2.0's), `taskset`, `jq`, `python3`
@@ -33,6 +34,7 @@ python3 benchmarks/report.py benchmarks/results/<stamp>       # tables again (al
 benchmarks/profile.sh --core 3                                # Ir on the sample
 benchmarks/profile.sh --core 3 --runs 2 --sim                 # Ir plus branch and cache simulation
 benchmarks/profile.sh --core 3 --runs 3 --per-file            # Ir, and each file in a process of its own
+benchmarks/profile.sh --core 3 --sample-list benchmarks/samples/registry49.txt   # the registry sample
 ```
 
 Results go to `benchmarks/results/<UTC stamp>/` unless `--out` is given:
@@ -302,6 +304,31 @@ does not depend on where the binary, the fixtures or `--out` are.
   sample. Profiles are kept in `OUT/perfile.<run>/<index>.out`
   (index 0 is the empty sample) and the figures in `OUT/perfile.<run>.tsv`. Per-file runs
   use plain callgrind (no `--sim`).
+
+- `--sample-list FILE` builds the sample from a list of paths, one per line (`#` lines are
+  comments), relative to the root the list names (`# root: cargo-registry` for
+  `${CARGO_HOME:-~/.cargo}/registry/src`, `# root: fixtures`) or to `--sample-root DIR`. The
+  files are staged as the default sample is, so the count does not depend on where the root
+  is: the registry sample read 322,851,835 and 322,851,931 from the registry and 322,851,628
+  and 322,851,580 from a copy at `/tmp/chloro-bench/e27regcopy-x`, and the fixture sample
+  written as a list (`# root: fixtures`) reads what the default construction reads.
+- **The registry validation sample** (`samples/registry49.txt`, EXP-027; protocol §3): 49
+  files, 731,733 bytes, from the 577 crates of the registry corpus
+  (`docs/journal/2026-10-14-autoresearch/corpus/registry-crates.txt`). The rule, which
+  `samples/registry49.sh` applies and the list's header states: the `.rs` files (`find
+  -type f`) of those crates under `index.crates.io-1949cf8c6b5b557f`, paths relative to the
+  registry's `src` sorted bytewise (20,593 files); N = 20,593 / 49 = 420; candidate k is
+  line 420k, and a candidate that fails a check is replaced by the next line that passes.
+  A file passes when `rustfmt --edition 2024` (stdin, empty configuration) exits 0, its
+  output is a fixed point of rustfmt, and chloro's output is byte-identical to rustfmt's.
+  One candidate was rejected: line 10,920, `rand-0.8.8/src/rngs/thread.rs` (rustfmt exits
+  1: `r.gen::<i32>()`, `gen` is reserved in 2024). The list names the index directory of
+  this container's registry; on a host whose cargo names it otherwise the script stops at
+  the first missing file. Baseline (`9d78713`, three runs): whole sample 322,851,667–322,851,806; per-file sum
+  336,117,569 (each file's minimum over the runs), empty sample 315,812; net 322,535,855
+  against 320,642,781, cross-file term +1,893,074 (the fixture sample's is −402,241: the
+  layout term has either sign). One file, `windows-sys-0.48.0/src/Windows/Win32/System/Rpc/
+  mod.rs` (280,688 bytes), carries 119.4 M of the per-file sum; the rule keeps it.
 
 ## pgo.sh
 
