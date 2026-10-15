@@ -85,9 +85,14 @@ fn tree(formatted: usize, unformatted: usize) -> TempDir {
     dir
 }
 
+/// The fixed-point cache files in `cache_dir` (the unit cache's `.chloro-units` files next
+/// to them are tested in `cli_unit_cache.rs`).
 fn cache_files(cache_dir: &Path) -> Vec<std::path::PathBuf> {
     match fs::read_dir(cache_dir) {
-        Ok(entries) => entries.map(|e| e.unwrap().path()).collect(),
+        Ok(entries) => entries
+            .map(|e| e.unwrap().path())
+            .filter(|p| !p.to_string_lossy().ends_with(".chloro-units"))
+            .collect(),
         Err(_) => Vec::new(),
     }
 }

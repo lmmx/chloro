@@ -26,6 +26,10 @@ pub struct Args {
     #[facet(named, long, default)]
     pub no_cache: bool,
 
+    /// Do not read or write the unit cache (the fixed-point cache stays on)
+    #[facet(named, long, default)]
+    pub no_unit_cache: bool,
+
     /// Directory of the fixed-point cache (default: `CHLORO_CACHE_DIR`, else the user cache
     /// directory)
     #[facet(named, long, default)]
@@ -53,7 +57,9 @@ pub fn print_usage() {
     println!("  -w, --write        Write formatted output back to files");
     println!("  -v, --verbose      Show verbose output");
     println!("      --config OPTS  rustfmt options as comma-separated key=value pairs");
-    println!("      --no-cache     Format every file; do not read or write the cache");
+    println!("      --no-cache     Format every file; do not read or write the caches");
+    println!("      --no-unit-cache");
+    println!("                     Do not read or write the unit cache");
     println!("      --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the");
     println!("                     user cache directory, e.g. ~/.cache/chloro)");
     println!("      --threads N    Threads to use (default: one per core)");
@@ -80,6 +86,11 @@ pub fn print_usage() {
     println!("  keyed by the chloro binary and the --config options, and skips formatting");
     println!("  files whose content it has seen formatted before. The output and exit code");
     println!("  are the same with and without the cache.");
+    println!();
+    println!("  For a file that changed, chloro also keeps the formatted output of each");
+    println!("  top-level item (or group of `use`/`mod`/`extern crate` items) under the same");
+    println!("  key and the item's text, and formats only the items it has not seen. The");
+    println!("  output and exit code are the same; --no-unit-cache turns this part off.");
 }
 
 impl Args {
