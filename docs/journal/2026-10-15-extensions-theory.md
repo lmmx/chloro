@@ -434,7 +434,11 @@ with the container.
   232,050,590, co-metric, fmt, clippy, 296 tests) and **merged it at `05ab7b4`** (post-merge
   gates identical; `Ir` 232,047,700). Best-known-good is `05ab7b4`, −60.5% from the start. The
   unfixed cliff (nested closures, exponent 3.6; rustfmt itself exponential there) goes to E26's
-  brief: an exact fix needs a lower bound on one-line width. E21 is running. Wave 4's E24 (memo side array) and E27 (harness: registry
+  brief: an exact fix needs a lower bound on one-line width. E26 (`20261015-width`,
+  /home/user/wt/width, from `e312e39`) launched 11:58 UTC with that brief: a token-sum lower
+  bound on one-line width with a per-token-class proof, a verification harness over both
+  corpora, pre-checks at one-line-only attempt sites, the cliff exponent before and after;
+  record EXP-026-width-bound.md. E21 is running; E24 and E27 run from `2f00988`. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
