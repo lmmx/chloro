@@ -613,6 +613,7 @@ on the merged tree against the previous best-known-good:
 | 2026-10-15, E28: the memo gated by depth (`MEMO_MIN_DEPTH` = 6) | 226,278,649 | −2.49% (−1.58% per file) | fewer memo stores at shallow depths; hit rate 3.2% |
 | 2026-10-15, E26: a lower bound on one-line width before rendering | 224,591,085 | −0.75% | the nested-closure cliff removed (depth 16: 105.4 M to 5.74 M) |
 | 2026-10-15, E25: a scratch arena (`bumpalo`) for the module-local intermediates of chains, overflow and types | 220,958,649 | −1.62% (−1.55% per file) | malloc/free pairs removed exactly; no `unsafe` |
+| 2026-10-17, E31: own token conversion over `rustc_lexer` with the parser's input built in one pass (P2), the common tokens by a byte scan (P4) | 203,151,226 | −8.06% (registry −14.76%) | two passes over the tokens become one; `LexedStr` kept for error texts; 0 token or element mismatches on both corpora |
 | PGO on top (measured on `d2f6fa0`, M5) | 182,602,721 against 220,957,089 | −17.4% | code layout |
 
 The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
@@ -620,7 +621,7 @@ cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-1
 ([2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md): the theory records and
 experiments E12–E18) it was 0.422 before PGO (248,202,094 against 587,988,576, −57.8%), and
 after the day's waves 3 and 4 ([2026-10-15-unmined-tricks.md](2026-10-15-unmined-tricks.md):
-E19–E28, seven merged) it is 0.376 (220,958,649, −62.4%; 182,602,721 profile-guided, 0.311 of the start), with
+E19–E28, seven merged) it was 0.376 (220,958,649, −62.4%; 182,602,721 profile-guided, 0.311 of the start), and after E31 (2026-10-17) it is 0.346 (203,151,226, -65.4%; 171,001,243 profile-guided, 0.291), with
 every output on both corpora still identical to the record of the starting outputs except
 the 13 files the conformance fixes target. Every step left every output on 1238 fixtures and
 20,850 registry files unchanged, except the conformance fixes, which changed exactly the 13
@@ -743,12 +744,12 @@ Next actions, in the order of value per effort:
   ra_ap_syntax are dev-dependencies for the equality tests only
   (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 18 crates (16 after
   E7b; `bumpalo` for E25's scratch arena, `ctor` for the identity record)
-- Instructions on the 49-file fixture sample under `benchmarks/profile.sh`: 220,957,089 at
-  `d2f6fa0` (the code of the best-known-good `e96b530`) against 587,988,576 at `884f9c9`
-  (−62.4%); 182,602,721 profile-guided (0.311 of the start); on the registry validation
-  sample 299,933,543 against 688,589,271 (−56.4%); the parse-only phase is 39.1% and 46.6%
-  of those counts (measurements/m5-quiet-host.md; the ledger's best-known-good row has the
-  step-by-step chain)
+- Instructions on the 49-file fixture sample under `benchmarks/profile.sh`: 203,151,226 at the
+  best-known-good `2ecc8a3` (E31 merged) against 587,988,576 at `884f9c9` (-65.4%);
+  171,001,243 profile-guided (0.291 of the start); on the registry validation
+  sample 255,677,420 against 688,589,271 (-62.9%); the parse-only phase is 33.7% and 41.7%
+  of those counts (M5 measured 220,957,089 / 299,933,543 and 39.1% / 46.6% on the code of
+  `e96b530`, before E31; the ledger's best-known-good row has the step-by-step chain)
 - In process on one core of the 2.80GHz host class: 9.33–10.38 MB/s on the 1238 fixtures
   against 3.68–4.03 for `884f9c9` in the same window (11.15–12.56 profile-guided); against
   rustfmt 1.9.0 on nine crates, formatted input, `--check`: 0.239–0.405 of its wall time on

@@ -154,8 +154,10 @@ index (a query allocates nothing), formats the top-level items of large files on
 with the text between items kept sequential, and hands files to one worker per core from a
 largest-first queue, and bounds the width of a one-line rendering from a node's tokens so an
 attempt that cannot fit is never rendered. On the 49-file profile sample the formatter executes
-62% fewer instructions than the release before this work (587.99 M to 220.96 M, callgrind,
-`benchmarks/profile.sh`; 182.60 M profile-guided).
+65% fewer instructions than the release before this work (587.99 M to 203.15 M, callgrind,
+`benchmarks/profile.sh`; 171.00 M profile-guided). The wall-time figures above were measured on
+the code before the last merge (E31, the lexer front end, −8% instructions); its record is the
+ledger's best-known-good row.
 
 The cache: the CLI records the BLAKE3 digest of each file it found already formatted, in a
 file named by the digest of the chloro binary and of the `--config` options, under

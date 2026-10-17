@@ -266,6 +266,15 @@ owner's decision, not done here):
 | P3 + P6 | | ≈ 11–13 M (5.5–6.5%) fixtures, ≈ 16–19 M (6.3–7.5%) registry | the registry parse share would fall from 41.81% to about 37–38% (fixtures from 33.77% to about 29–30%) |
 | P11: own parser | grammar 18.74 M (fixtures), 24.74 M (registry) | beyond P3 + P6, only a difference in decision cost (the same work in any recursive descent over the same grammar; the theory record's ≈ 1–1.6% of its total) | very high risk: 15 conformance-ledger cases re-opened |
 
+Merged at `2ecc8a3` after the integrator reproduced the gates on the merged tree: 0 of 1238
+fixture hashes changed (sequential and 4 threads), 0 of 25,077 registry hashes; `conform -i`
+1220/1220 at 1.9.0 and 1.8.0; `Ir` 203,151,226 and 203,151,309 on the fixture sample (per file
+202,934,484 net) and 255,677,420 and 255,677,661 on the registry sample (per file 255,654,373); parse
+phase 68,607,540 and 106,890,987; fmt, clippy, 308 tests, the option matrix identical on every
+value; `lex_equality --root <fixtures> --root <registry>` with the default 10,000 random texts
+and 10,000 mutations: 0 mismatches; the debug-assertion `bench` over both corpora against the
+golden hashes: 0 changed, no assertion fired. The merge was conflict-free.
+
 ## What surprised
 
 - P7 bought nothing. The walk's 33 Ir per element is the rules' cost, not the loop's: fused

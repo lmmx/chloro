@@ -537,6 +537,15 @@ clocks needs the patched build (`trace_patch.py`) and is not rerun here.
   simulated tail was at most 12.9%; these two crates measure above that bound on the quiet
   host, so the lever that remains is inside the split file (sub-item units, or parsing the
   split file's items in parallel with the other files), not between files.
+- **Read with EXP-029** ([../experiments/EXP-029-split-tail.md](../experiments/EXP-029-split-tail.md)):
+  a release build's trace has no record of a split file's item threads, so this wall view counts
+  the split file's whole span as one busy core and its item workers as idle. On patched traces of
+  the same two crates in a quiet window, the idle core time in the tail is 2.2 core-ms on `fx-hir`
+  (10.6 read blind, as here) and 5.3 on `fx-ide-db` (6.7 blind), and the schedule rebuilt from
+  on-CPU costs sits 1.1–1.5% above the work-conserving bound: `fx-hir`'s tail is its split file's
+  units finishing on all four cores, not idle time; `fx-ide-db`'s is real (its split file's parse
+  and one 288 KB `const` unit) and 1.1% of capacity. The tail shares in the table above are
+  reproduced by EXP-029's release-build collections (20.8–22.3% and 12.9–14.0%).
 - The profile-guided build shows the same two tails (23.4% and 22.1%; `fx-ide-db`'s split
   file finishes later relative to the others, 7.81 ms) and otherwise the same shape; its
   format windows are 0.80–0.95x head's.
