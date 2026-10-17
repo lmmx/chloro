@@ -88,10 +88,43 @@
 //! wider than its shape, and a node whose bound exceeds the width by more than one has no
 //! one-line rewrite at that width.
 //!
-//! Neither predicate looks at the shape or the options, so both are functions of the node.
+//! # Renderings that are never one line
 //!
-//! Debug builds check both facts on every expression rewrite (`format_expr`), and render
-//! every attempt the bound skips and check that it fails (`closures.rs`, `expr.rs`).
+//! The bound decides an attempt by width. An attempt can also fail on structure: the node
+//! has no one-line rendering at any shape. [`never_one_line`] holds for a node in which a
+//! `match` with at least one arm is rendered, and which has no comment, no attribute and
+//! no `asm!`:
+//!
+//! - `rewrite_match` (`matches.rs`; rustfmt matches.rs:72) writes `"{\n"` after the
+//!   condition whenever the arm list is not empty, on every path that returns text; the
+//!   one path that returns the source (`match x { /* c */ }`) has no arm;
+//! - every rewrite of an expression contains the rewrite of each subexpression that the
+//!   node writes (calls and method calls their arguments, closures their bodies with or
+//!   without the block, pairs, prefixes, parentheses, index, field and `return`/`break`
+//!   values, struct literal fields): the formatter drops delimiters, labels, field names
+//!   (`use_field_init_shorthand`, which needs a path value) and attributes, never a
+//!   subexpression; a block is written either through its expression on one line or
+//!   through a nested visitor, whose result has a line break before the closing brace
+//!   whenever the block has a statement;
+//! - the rewrites that return source text instead (so a one-line `match` in the input
+//!   would come back on one line) are excluded by the conditions: `recover_comment_removed`
+//!   swaps in the source only when the source has a comment (`changed_comment_content`),
+//!   `#[rustfmt::skip]` needs an attribute, `asm!` is returned as written
+//!   (`format_expr`). A `match` in a macro call is in the token tree, not in the node's
+//!   tree, and is not seen; a `match` inside a pattern's `const` block, a generic argument
+//!   or an item is not counted (the 2021 slice-pattern fallback and type rewrites write
+//!   source text there).
+//!
+//! So every rewrite of such a node that returns text has a line break, at every shape and
+//! under every option: an attempt that keeps only a one-line result fails whatever it
+//! renders.
+//!
+//! None of the three predicates looks at the shape or the options, so all are functions of
+//! the node.
+//!
+//! Debug builds check the three facts on every expression rewrite (`format_expr`), and
+//! render every attempt the bound or [`never_one_line`] skips and check that it fails
+//! (`closures.rs`, `expr.rs`).
 
 use ra_ap_parser::SyntaxKind::{self, *};
 
@@ -329,13 +362,53 @@ pub(crate) fn one_line_fits_checked_and_exceeds(node: Node<'_>, width: usize) ->
         && min_width_up_to(node, limit) > limit
 }
 
-/// Debug builds: checks the two facts of the module documentation on a rewrite of `node` at
-/// `shape` that returned `result`.
+/// Whether every rewrite of `node` that returns text has a line break: a `match` with an
+/// arm is rendered in it, and it has no comment, attribute or `asm!` (see the module
+/// documentation). One pass over the node's elements, made only when its source has a `=>`,
+/// which every arm has (a byte search for the `>` first, the cheapest test).
+pub(crate) fn never_one_line(node: Node<'_>) -> bool {
+    let text = node.text();
+    if !text.as_bytes().contains(&b'>') || !text.contains("=>") {
+        return false;
+    }
+    let tree = node.tree();
+    let elems = tree.elems();
+    let start = node.index() as usize;
+    let end = elems[start].end as usize;
+    let mut arm = false;
+    // Elements below `skip_end` belong to a subtree whose `match` arms are not counted.
+    let mut skip_end = 0;
+    for (i, e) in elems.iter().enumerate().take(end).skip(start) {
+        if e.is_node {
+            match e.kind {
+                ATTR | ASM_EXPR => return false,
+                MATCH_ARM if i >= skip_end => arm = true,
+                CONST_BLOCK_PAT | GENERIC_ARG_LIST | FN | STRUCT | ENUM | UNION | TRAIT | IMPL
+                | TYPE_ALIAS | CONST | STATIC | MODULE | MACRO_RULES | MACRO_DEF | EXTERN_BLOCK
+                    if i >= skip_end =>
+                {
+                    skip_end = e.end as usize;
+                }
+                _ => {}
+            }
+        } else if e.kind == COMMENT {
+            return false;
+        }
+    }
+    arm
+}
+
+/// Debug builds: checks the three facts of the module documentation on a rewrite of `node`
+/// at `shape` that returned `result`.
 #[cfg(debug_assertions)]
 pub(crate) fn debug_check(node: Node<'_>, shape: super::shape::Shape, result: &str) {
     if result.contains('\n') {
         return;
     }
+    assert!(
+        !never_one_line(node),
+        "a node with a rendered `match` arm has a one-line rendering: {node:?} -> {result:?}"
+    );
     let width = super::utils::unicode_str_width(result);
     let min = one_line_min_width(node);
     assert!(
@@ -402,6 +475,34 @@ mod tests {
         assert!(!bound("f(m!())").1);
         assert!(!bound("|x: u8| x").1);
         assert!(!bound("Vec::<u8>::new()").1);
+    }
+
+    #[test]
+    fn never_one_line_needs_a_rendered_match_arm() {
+        let nl = |expr: &str| {
+            let src = format!("fn f() {{ {expr}; }}");
+            let tree = Tree::parse(&src, Edition::Edition2024)
+                .unwrap_or_else(|| panic!("{src} does not parse"));
+            let node = tree
+                .root()
+                .descendants()
+                .find(|n| n.kind() == EXPR_STMT)
+                .and_then(|n| n.first_child())
+                .unwrap();
+            never_one_line(node)
+        };
+        assert!(nl("a.map(|x| match x { _ => 1 })"));
+        assert!(nl("f(S { a: match x { A => 1, B => 2 } })"));
+        // No arm: `match x {}` is one line.
+        assert!(!nl("a.map(|x| match x {})"));
+        // A comment or an attribute anywhere: the source may come back.
+        assert!(!nl("a.map(|x| match x { _ => 1 /* c */ })"));
+        assert!(!nl("f(#[rustfmt::skip] match x { _ => 1 })"));
+        // A `match` in a macro call, a generic argument or an item is not counted.
+        assert!(!nl("a.map(|x| m!(match x { _ => 1 }))"));
+        assert!(!nl("f::<{ match N { _ => 1 } }>()"));
+        assert!(!nl("f({ fn g() { match x { _ => 1 } } })"));
+        assert!(!nl("a.map(|x| x + 1)"));
     }
 
     #[test]

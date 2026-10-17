@@ -30,7 +30,7 @@ use super::shape::Shape;
 use super::span::{Span, Spanned, node_range_span};
 use super::types::{binder_params, rewrite_bound_params};
 use super::utils::{concat, last_line_width, left_most_sub_expr};
-use super::width::one_line_fits_checked_and_exceeds;
+use super::width::{never_one_line, one_line_fits_checked_and_exceeds};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
@@ -202,13 +202,18 @@ fn rewrite_closure_expr(
     let veto_multiline = (!allow_multi_line(expr) && !context.inside_macro())
         || context.config.force_multiline_blocks();
     // Under the veto only a one-line rewrite is kept. When a one-line rewrite of `expr` is at
-    // most a column wider than `shape` and every one-line rendering of it is wider than that
-    // (`width.rs`), no rewrite can be one line, so the attempt fails whatever it renders; it
-    // is not made where its effects on the run cannot reach the output. Debug builds make it
-    // and check.
+    // most a column wider than `shape` and every one-line rendering of it is wider than that,
+    // or when `expr` renders a `match` with arms, which is never one line (`width.rs`), no
+    // rewrite can be one line, so the attempt fails whatever it renders; it is not made
+    // where its effects on the run cannot reach the output. Debug builds make it and check.
+    // Both tests are made only for a body whose source is longer than the shape is wide: the
+    // source length bounds the width bound from above, and a shorter body mostly fits, so
+    // the source length spares the scans where they would rarely find anything.
     let skip = veto_multiline
         && context.may_skip_dead_candidates()
-        && one_line_fits_checked_and_exceeds(expr.syntax(), shape.width);
+        && expr.syntax().text_range().len() as usize > shape.width + 1
+        && (one_line_fits_checked_and_exceeds(expr.syntax(), shape.width)
+            || never_one_line(expr.syntax()));
     #[cfg(not(debug_assertions))]
     if skip {
         return None;
@@ -218,7 +223,8 @@ fn rewrite_closure_expr(
         .filter(|rw| !(veto_multiline && rw.contains('\n')));
     debug_assert!(
         !skip || result.is_none(),
-        "a closure body skipped by its width bound has a one-line rewrite: {:?} -> {result:?}",
+        "a closure body skipped by its width bound or as never one line has a one-line \
+         rewrite: {:?} -> {result:?}",
         expr.syntax()
     );
     result.map(|rw| concat(&[prefix, " ", &rw]))
