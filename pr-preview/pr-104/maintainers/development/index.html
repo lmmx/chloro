@@ -1422,7 +1422,8 @@ cargo<span class="w"> </span><span class="nb">test</span><span class="w"> </span
 </code></pre></div>
 <p><code>--all-features</code> includes the measurement-only allocator features (<code>alloc-jemalloc</code> and the
 others), which need a C toolchain; jemalloc does not build with MSVC, so on Windows test
-with <code>--features chloro/cli</code> instead.</p>
+with <code>--features chloro/cli</code> instead, in a checkout made with <code>core.autocrlf</code> off: the tests
+compare fixtures, snapshots and generated code byte for byte.</p>
 <p>The <code>Justfile</code> wraps the usual commands: <code>just test</code> (with <code>cargo nextest</code>), <code>just clippy</code>
 (<code>-D warnings</code>, all targets and features), <code>just check</code>, <code>just docs</code> (rustdoc). Formatting and
 lint hooks run through <a href="https://github.com/j178/prek">prek</a> or pre-commit: <code>just
