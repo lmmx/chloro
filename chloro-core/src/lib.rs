@@ -6,7 +6,7 @@ pub mod formatter;
 pub use formatter::config::Config;
 pub use formatter::{
     CachedUnit, ParseError, UnitCache, UnitKey, format_source, format_source_with_config,
-    format_source_with_config_parallel, format_source_with_unit_cache, parse_only,
+    format_source_with_config_parallel, format_source_with_unit_cache, is_unchanged, parse_only,
     try_format_source_with_config, try_format_source_with_config_parallel,
     try_format_source_with_unit_cache,
 };

@@ -111,10 +111,17 @@ text.
 
 chloro handles both as rustfmt does:
 
-- A byte order mark at the start of a file is dropped.
-- Line endings follow the `newline_style` option. The default, `Auto`, uses the style of the
-  file's first line ending (`\r\n` or `\n`), or the platform's for a file without one, as
-  rustfmt does; `Unix` and `Windows` force one and `Native` uses the platform's.
+- The file is formatted as rustc reads it: without a byte order mark at the start, and with
+  `\r\n` read as `\n`.
+- The output's line endings follow the `newline_style` option. `Unix` and `Windows` force
+  `\n` or `\r\n`, and `Native` uses the platform's. The default, `Auto`, takes the style of
+  the first line ending of the text as rustc reads it, in which `\r\n` is already `\n`: so
+  the output has `\n` line endings (the platform's for a file without a line break).
+- Whether a file needs formatting is decided as rustfmt decides it. Under `Auto`, a file
+  that differs from its formatted output only in its `\r\n` line endings or a byte order
+  mark is formatted: `--check` passes and `--write` leaves it as it is. A file with `\r\n`
+  line endings that does need formatting is written with `\n` ones. Under the other styles,
+  any difference in the bytes counts.
 
 A few things rustfmt does that chloro does not (reading `rustfmt.toml`, `--emit`, formatting
 standard input) are listed under

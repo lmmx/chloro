@@ -32,7 +32,8 @@ The formatting functions return text, not errors. Source that does not parse, or
 rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so
 does a file with an inner `#![rustfmt::skip]` attribute, or any file when
 `disable_all_formatting` is set ([parse errors](#parse-errors) tells the first case from
-the others). To find out whether anything changed, compare the output with the input:
+the others). To find out whether anything changed, compare the output with the input, or,
+to decide as rustfmt does, use `is_unchanged`:
 
 ```rust
 let source = "fn main() {\n    let x = 1;\n}\n";
@@ -42,11 +43,20 @@ assert!(!needs_formatting);
 // Not valid Rust: returned as written.
 let broken = "fn main( {";
 assert_eq!(chloro::format_source(broken), broken);
+
+// `\r\n` line endings: the output has `\n` ones, and rustfmt counts the file as formatted.
+let crlf = "fn main() {\r\n    let x = 1;\r\n}\r\n";
+let config = chloro::Config::default();
+let formatted = chloro::format_source_with_config(crlf, &config);
+assert_eq!(formatted, source);
+assert!(chloro::is_unchanged(crlf, &formatted, &config));
 ```
 
 As in rustfmt, a byte order mark is dropped and `\r\n` in the input reads as `\n`; the
-output's line endings are set by `newline_style` (by default, those of the input's first
-line).
+output's line endings are set by `newline_style`, by default `\n` (the platform's for input
+with no line break). `is_unchanged` compares as rustfmt's `--check` does: under the default
+`newline_style = "Auto"`, a source that differs from its output only in `\r\n` line endings
+or a byte order mark is unchanged; under the other styles, the bytes must be equal.
 
 ## Parse errors
 
