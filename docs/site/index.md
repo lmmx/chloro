@@ -1,6 +1,6 @@
 ---
 title: chloro
-description: A Rust code formatter that reproduces rustfmt's output, byte for byte, without the compiler.
+description: A fast Rust code formatter that matches the output of rustfmt, byte for byte.
 ---
 
 <h1 id="chloro-home">chloro</h1>
@@ -9,7 +9,7 @@ description: A Rust code formatter that reproduces rustfmt's output, byte for by
 ![The chloro mark: a leaf whose veins branch like a syntax tree](assets/images/chloro.svg){ width="132" height="132" }
 </div>
 
-<p class="chl-tagline">A Rust code formatter that produces the same output as rustfmt.</p>
+<p class="chl-tagline">A fast Rust code formatter that matches the output of rustfmt.</p>
 
 chloro is a module-by-module port of rustfmt 1.9.0's formatting code onto the syntax trees
 of rust-analyzer's parser. It writes the same bytes as `rustfmt --edition 2024` without
