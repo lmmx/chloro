@@ -145,10 +145,14 @@ impl From<Edition> for StyleEdition {
 pub enum RustfmtVersion {
     /// rustfmt 1.8.0 as shipped with Rust 1.88.0 (`rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)`).
     V1_8_0,
-    /// rustfmt 1.9.0 (`rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`): the release the
-    /// formatter is ported from and the one that produced the reference snapshots.
+    /// rustfmt 1.9.0 (`rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, Rust 1.97.0): the
+    /// release the formatter is ported from and the one that produced the reference
+    /// snapshots.
     #[default]
     V1_9_0,
+    /// rustfmt 1.10.0 as shipped with Rust 1.99.0 (`rustfmt 1.10.0-stable (b940084d7e
+    /// 2026-09-28)`).
+    V1_10_0,
 }
 
 impl RustfmtVersion {
@@ -157,8 +161,21 @@ impl RustfmtVersion {
         match self {
             RustfmtVersion::V1_8_0 => "1.8.0",
             RustfmtVersion::V1_9_0 => "1.9.0",
+            RustfmtVersion::V1_10_0 => "1.10.0",
         }
     }
+}
+
+/// The case of the digits of hexadecimal integer literals (`0x..`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum HexLiteralCase {
+    /// Leave the digits as they are written.
+    #[default]
+    Preserve,
+    /// Upper-case the digits.
+    Upper,
+    /// Lower-case the digits.
+    Lower,
 }
 
 /// Formatting options, named and defaulted as rustfmt's stable options.
@@ -222,6 +239,9 @@ pub struct Config {
     pub force_explicit_abi: bool,
     /// Don't reformat anything.
     pub disable_all_formatting: bool,
+    /// The case of the digits of hexadecimal literals: stable from rustfmt 1.10.0; earlier
+    /// releases apply it from `--config` and refuse it in `rustfmt.toml`.
+    pub hex_literal_case: HexLiteralCase,
     /// The rustfmt release whose output is reproduced (a chloro option; rustfmt has none).
     pub rustfmt_version: RustfmtVersion,
 }
@@ -256,6 +276,7 @@ impl Default for Config {
             use_field_init_shorthand: false,
             force_explicit_abi: true,
             disable_all_formatting: false,
+            hex_literal_case: HexLiteralCase::Preserve,
             rustfmt_version: RustfmtVersion::V1_9_0,
         }
     }
@@ -361,6 +382,7 @@ impl Config {
             use_field_init_shorthand,
             force_explicit_abi,
             disable_all_formatting,
+            hex_literal_case,
             rustfmt_version,
         } = self;
 
@@ -439,6 +461,12 @@ impl Config {
         out.push(match rustfmt_version {
             RustfmtVersion::V1_8_0 => 0u8,
             RustfmtVersion::V1_9_0 => 1,
+            RustfmtVersion::V1_10_0 => 2,
+        });
+        out.push(match hex_literal_case {
+            HexLiteralCase::Preserve => 0,
+            HexLiteralCase::Upper => 1,
+            HexLiteralCase::Lower => 2,
         });
         out
     }
@@ -475,7 +503,9 @@ impl Config {
     /// Parse one `key = value` setting using rustfmt's option names and value spellings,
     /// as accepted by `rustfmt --config key=value` and `rustfmt.toml`.
     ///
-    /// Unstable rustfmt options are rejected unless set to their default value.
+    /// Unstable rustfmt options are rejected unless set to their default value. Whether an
+    /// option is stable can depend on the release, so set `rustfmt_version` first:
+    /// `hex_literal_case` takes a value other than `Preserve` only from rustfmt 1.10.0.
     pub fn set(&mut self, key: &str, value: &str) -> Result<(), String> {
         let value = value.trim().trim_matches('"');
         let bool_ = || match value {
@@ -559,22 +589,47 @@ impl Config {
             "use_field_init_shorthand" => self.use_field_init_shorthand = bool_()?,
             "force_explicit_abi" => self.force_explicit_abi = bool_()?,
             "disable_all_formatting" => self.disable_all_formatting = bool_()?,
+            "hex_literal_case" => {
+                let case = [
+                    HexLiteralCase::Preserve,
+                    HexLiteralCase::Upper,
+                    HexLiteralCase::Lower,
+                ][choice(&["Preserve", "Upper", "Lower"])?];
+                if case != HexLiteralCase::Preserve
+                    && self.rustfmt_version < RustfmtVersion::V1_10_0
+                {
+                    return Err(unstable_before_1_10(key));
+                }
+                self.hex_literal_case = case;
+            }
             "rustfmt_version" => {
-                self.rustfmt_version = match value {
+                let version = match value {
                     "1.8.0" => RustfmtVersion::V1_8_0,
                     "1.9.0" => RustfmtVersion::V1_9_0,
+                    "1.10.0" => RustfmtVersion::V1_10_0,
                     "1.7.0" => {
                         return Err(
                             "rustfmt 1.7.0 is not supported: it has no Style Guide 2024 rules \
                              and refuses `version = \"Two\"` on stable, so its output is not \
                              reachable from the 2024 rules by a few branch points (540 of the \
                              981 rust-analyzer fixtures both releases accept differ); \
-                             supported: 1.8.0, 1.9.0"
+                             supported: 1.8.0, 1.9.0, 1.10.0"
                                 .to_owned(),
                         );
                     }
                     _ => return Err(bad()),
+                };
+                if version < RustfmtVersion::V1_10_0
+                    && self.hex_literal_case != HexLiteralCase::Preserve
+                {
+                    return Err(unstable_before_1_10("hex_literal_case"));
                 }
+                self.rustfmt_version = version;
+            }
+            "doc_comment_code_block_small_heuristics"
+                if self.rustfmt_version < RustfmtVersion::V1_10_0 =>
+            {
+                return Err(format!("unknown option `{key}`"));
             }
             _ => match UNSTABLE_DEFAULTS.iter().find(|(k, _)| *k == key) {
                 Some((_, default)) if *default == value => {}
@@ -588,6 +643,15 @@ impl Config {
         }
         Ok(())
     }
+}
+
+/// The error for an option set away from its default under a rustfmt release that has it
+/// as unstable: `hex_literal_case`, stabilised in rustfmt 1.10.0.
+fn unstable_before_1_10(key: &str) -> String {
+    format!(
+        "`{key}` is an unstable rustfmt option before rustfmt 1.10.0; only its default \
+         `Preserve` is supported (set `rustfmt_version = \"1.10.0\"` first)"
+    )
 }
 
 /// A value of an option in a configuration file, typed as TOML types it.
@@ -675,8 +739,17 @@ impl Config {
             | "edition"
             | "style_edition"
             | "rustfmt_version" => "string",
+            // Stabilised in rustfmt 1.10.0.
+            "hex_literal_case" if self.rustfmt_version >= RustfmtVersion::V1_10_0 => "string",
+            // Added, unstable, in rustfmt 1.10.0: unknown to earlier releases.
+            "doc_comment_code_block_small_heuristics"
+                if self.rustfmt_version < RustfmtVersion::V1_10_0 =>
+            {
+                return Ok(Some(format!("Unknown configuration option `{key}`")));
+            }
             _ if UNSTABLE_DEFAULTS.iter().any(|(k, _)| *k == key)
-                || UNSTABLE_FILE_OPTIONS.contains(&key) =>
+                || UNSTABLE_FILE_OPTIONS.contains(&key)
+                || key == "hex_literal_case" =>
             {
                 return Ok(Some(format!(
                     "can't set `{key} = {value}`, unstable features are only available in \
@@ -738,6 +811,8 @@ const UNSTABLE_DEFAULTS: &[(&str, &str)] = &[
     ("wrap_comments", "false"),
     ("format_code_in_doc_comments", "false"),
     ("doc_comment_code_block_width", "100"),
+    // Added in rustfmt 1.10.0; unknown before it (`Config::set`, `Config::set_from_file`).
+    ("doc_comment_code_block_small_heuristics", "Inherit"),
     ("comment_width", "80"),
     ("normalize_comments", "false"),
     ("normalize_doc_attributes", "false"),
@@ -745,7 +820,6 @@ const UNSTABLE_DEFAULTS: &[(&str, &str)] = &[
     ("format_macro_matchers", "false"),
     ("format_macro_bodies", "true"),
     ("skip_macro_invocations", "[]"),
-    ("hex_literal_case", "Preserve"),
     ("float_literal_trailing_zero", "Preserve"),
     ("empty_item_single_line", "true"),
     ("struct_lit_single_line", "true"),
@@ -828,6 +902,9 @@ impl Settings {
     }
     pub(crate) fn newline_style(&self) -> NewlineStyle {
         self.config.newline_style
+    }
+    pub(crate) fn hex_literal_case(&self) -> HexLiteralCase {
+        self.config.hex_literal_case
     }
     pub(crate) fn fn_call_width(&self) -> usize {
         self.heuristics.fn_call_width
@@ -1068,8 +1145,12 @@ mod tests {
         assert!(config.set("rustfmt_version", "1.6.0").is_err());
         assert!(config.set("rustfmt_version", "2.0.0").is_err());
         assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        config.set("rustfmt_version", "1.10.0").unwrap();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_10_0);
         assert!(RustfmtVersion::V1_8_0 < RustfmtVersion::V1_9_0);
+        assert!(RustfmtVersion::V1_9_0 < RustfmtVersion::V1_10_0);
         assert_eq!(RustfmtVersion::V1_8_0.as_str(), "1.8.0");
+        assert_eq!(RustfmtVersion::V1_10_0.as_str(), "1.10.0");
     }
 
     #[test]
@@ -1182,5 +1263,48 @@ mod tests {
         let warned = config.set_from_file("fn_args_layout", FileValue::String("Vertical"));
         assert!(warned.unwrap().unwrap().contains("deprecated"));
         assert_eq!(config.fn_params_layout, Density::Vertical);
+    }
+
+    #[test]
+    fn hex_literal_case_is_stable_from_rustfmt_1_10_0() {
+        // Before 1.10.0, unstable: only its default on the command line, a warning in a file.
+        let mut config = Config::default();
+        let err = config.set("hex_literal_case", "Upper").unwrap_err();
+        assert!(
+            err.contains("unstable rustfmt option before rustfmt 1.10.0"),
+            "{err}"
+        );
+        config.set("hex_literal_case", "preserve").unwrap();
+        let warned = config.set_from_file("hex_literal_case", FileValue::String("Upper"));
+        assert!(warned.unwrap().unwrap().starts_with("can't set"));
+        assert_eq!(config.hex_literal_case, HexLiteralCase::Preserve);
+        // `doc_comment_code_block_small_heuristics` is unknown before 1.10.0, unstable from it.
+        let unknown = config.set_from_file(
+            "doc_comment_code_block_small_heuristics",
+            FileValue::String("Max"),
+        );
+        assert!(unknown.unwrap().unwrap().starts_with("Unknown"));
+        // From 1.10.0, stable, case-insensitive, and of TOML type string.
+        config.set("rustfmt_version", "1.10.0").unwrap();
+        config.set("hex_literal_case", "lower").unwrap();
+        assert_eq!(config.hex_literal_case, HexLiteralCase::Lower);
+        assert_eq!(
+            config.set_from_file("hex_literal_case", FileValue::String("Upper")),
+            Ok(None)
+        );
+        assert_eq!(config.hex_literal_case, HexLiteralCase::Upper);
+        assert!(
+            config
+                .set_from_file("hex_literal_case", FileValue::Integer(1))
+                .is_err()
+        );
+        let unstable = config.set_from_file(
+            "doc_comment_code_block_small_heuristics",
+            FileValue::String("Max"),
+        );
+        assert!(unstable.unwrap().unwrap().starts_with("can't set"));
+        // An earlier release with a case set is refused, as the case would be.
+        assert!(config.set("rustfmt_version", "1.9.0").is_err());
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_10_0);
     }
 }

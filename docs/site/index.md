@@ -19,7 +19,7 @@ the Rust compiler. It comes as a 2 MB command-line tool and as a library.
 
 <div class="chl-conform">
 <span class="chl-figure">1220/1220</span>
-<span class="chl-label">rust-analyzer files formatted identically to rustfmt 1.9.0, and to rustfmt 1.8.0</span>
+<span class="chl-label">rust-analyzer files formatted identically to rustfmt 1.9.0, and to rustfmt 1.8.0 and 1.10.0</span>
 <span class="chl-note">default options, none non-idempotent;
 <a href="compatibility/">rustfmt compatibility</a></span>
 </div>
@@ -95,7 +95,8 @@ It takes rustfmt's stable options under their rustfmt names (`max_width`, `tab_s
 `--config key=value` on the command line or on a `Config` in the library, and takes each
 crate's edition from its `Cargo.toml` as `cargo fmt` does. Unstable options
 keep their default values. By default it reproduces rustfmt 1.9.0; with
-`rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
+`rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88,
+and with `rustfmt_version = "1.10.0"` rustfmt 1.10.0, shipped with Rust 1.99.
 
 The command line is not a replacement for the `rustfmt` binary: chloro has no `--emit`
 modes, and formats standard input only with `--stdin`.

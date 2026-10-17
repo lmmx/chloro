@@ -125,7 +125,8 @@ configuration file with these rules, for a tool that reads its own.
 | `use_field_init_shorthand` | `false` | `true`, `false` |
 | `force_explicit_abi` | `true` | `true`, `false` |
 | `disable_all_formatting` | `false` | `true`, `false` |
-| `rustfmt_version` | `1.9.0` | `1.8.0`, `1.9.0` (chloro only) |
+| `hex_literal_case` | `Preserve` | `Preserve`, `Upper`, `Lower`; stable from rustfmt 1.10.0 ([below](#hex_literal_case)) |
+| `rustfmt_version` | `1.9.0` | `1.8.0`, `1.9.0`, `1.10.0` (chloro only) |
 
 Each option means what it means in rustfmt; the
 [rustfmt configuration reference](https://rust-lang.github.io/rustfmt/) describes them.
@@ -160,12 +161,30 @@ reproduced:
 - `1.9.0`, the default: `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the release chloro is
   ported from.
 - `1.8.0`: `rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)`, as shipped with Rust 1.88.0.
+- `1.10.0`: `rustfmt 1.10.0-stable (b940084d7e 2026-09-28)`, as shipped with Rust 1.99.0.
 
-The two releases differ in a handful of formatting decisions and in which syntax their
+The releases differ in a handful of formatting decisions and in which syntax their
 parsers accept; [rustfmt compatibility](../compatibility.md#rustfmt-releases) lists the
 differences. `1.7.0` and earlier are rejected with an explanation: rustfmt 1.7.0 has no
 2024 Style Guide rules, and its output differs from 1.9.0's too widely to reproduce with a
 few version checks in the formatter.
+
+A configuration file is read with the release it names, or the one `--config` names, so
+an option that only a later release has as stable, such as `hex_literal_case`, applies
+there. Set it with `rustfmt_version` in the same file or the same `--config`:
+
+```toml title="rustfmt.toml"
+rustfmt_version = "1.10.0"
+hex_literal_case = "Upper"
+```
+
+### `hex_literal_case`
+
+The case of the digits of a hexadecimal integer literal: `Preserve` leaves them as written,
+`Upper` writes `0xFF` and `Lower` `0xff`. The `0x` prefix and a suffix such as `u8` are kept
+as written. rustfmt 1.10.0 made the option stable; before it, it is an unstable option, so
+under `rustfmt_version` 1.8.0 or 1.9.0 another value than `Preserve` is an error on the
+command line and a warning in a file, as for the options below.
 
 ### Unstable rustfmt options
 
@@ -182,10 +201,11 @@ Error: invalid --config: `wrap_comments` is an unstable rustfmt option; only its
 ??? info "The unstable options and the defaults chloro applies"
 
     `indent_style = Block`, `wrap_comments = false`, `format_code_in_doc_comments = false`,
-    `doc_comment_code_block_width = 100`, `comment_width = 80`, `normalize_comments = false`,
+    `doc_comment_code_block_width = 100`, `doc_comment_code_block_small_heuristics = Inherit`
+    (from rustfmt 1.10.0), `comment_width = 80`, `normalize_comments = false`,
     `normalize_doc_attributes = false`, `format_strings = false`,
     `format_macro_matchers = false`, `format_macro_bodies = true`,
-    `skip_macro_invocations = []`, `hex_literal_case = Preserve`,
+    `skip_macro_invocations = []`, `hex_literal_case = Preserve` (before rustfmt 1.10.0),
     `float_literal_trailing_zero = Preserve`, `empty_item_single_line = true`,
     `struct_lit_single_line = true`, `fn_single_line = false`, `where_single_line = false`,
     `imports_indent = Block`, `imports_layout = Mixed`, `imports_granularity = Preserve`,

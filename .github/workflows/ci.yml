@@ -93,12 +93,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      # Every fixture identical to its stored rustfmt snapshot, at both reproduced releases,
+      # Every fixture identical to its stored rustfmt snapshot, at each reproduced release,
       # and none non-idempotent (docs/site/maintainers/development.md, "Conformance")
-      - name: conform at rustfmt 1.9.0 and 1.8.0
+      - name: conform at rustfmt 1.9.0, 1.8.0 and 1.10.0
         shell: bash
         run: |
-          for version in 1.9.0 1.8.0; do
+          for version in 1.9.0 1.8.0 1.10.0; do
             out=$(cargo run --release -q -p chloro-core --example conform -- -i -V "${version}")
             echo "${out}" | tail -n 2
             if ! grep -q '^not idempotent: 0$' <<< "${out}"; then

@@ -15,17 +15,18 @@ use ra_ap_parser::{SyntaxKind, T};
 use crate::cst::{Node, NodeOrToken, Token};
 
 use super::comment::{CharClasses, FullCodeCharKind, LineClasses, contains_comment};
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{RhsAssignKind, rewrite_array, rewrite_assign_rhs};
 use super::formatting::{format_code_block, format_snippet};
+use super::header::{HeaderPart, format_header};
 use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::macro_args::{ParsedMacroArgs, parse_expr, parse_lazy_static, parse_macro_args};
 use super::nodes::node_text;
 use super::nodes::{Block, BlockRules, child};
 use super::overflow::{self, Delimiter, OverflowableItem};
 use super::shape::{Indent, Shape};
-use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
+use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span, token_span};
 use super::utils::{
     concat, filtered_str_fits, format_visibility, indent_next_line, is_empty_line,
     remove_trailing_white_spaces, trim_left_preserve_layout,
@@ -615,14 +616,42 @@ pub(crate) fn rewrite_macro_def(
         return Some(snippet);
     };
 
-    let mut result = if def.is_macro_rules() {
-        String::from("macro_rules!")
+    let mut result = if context.config.rustfmt_version() >= RustfmtVersion::V1_10_0 {
+        // F19: rustfmt 1.10.0 builds the header from its parts, keeping a comment between
+        // them (`macro_rules! /* c */ foo`), which rustfmt 1.9.0 drops (`1.99.0
+        // src/macros.rs:456`).
+        let mut header = if def.is_macro_rules() {
+            let pos = context.snippet_provider.span_after(span, "!");
+            vec![HeaderPart::new("macro_rules!", span.with_hi(pos))]
+        } else {
+            let macro_lo = context.snippet_provider.span_before(span, "macro");
+            let macro_hi = macro_lo + "macro".len() as BytePos;
+            let vis = def.visibility();
+            let vis_span = vis.map_or(mk_sp(span.lo(), span.lo()), |v| node_range_span(v.syntax()));
+            vec![
+                HeaderPart::new(
+                    format_visibility(vis.as_ref()).trim_end().to_owned(),
+                    vis_span,
+                ),
+                HeaderPart::new("macro", mk_sp(macro_lo, macro_hi)),
+            ]
+        };
+        let name = def.name()?;
+        header.push(HeaderPart::new(
+            node_text(name.syntax()),
+            node_range_span(name.syntax()),
+        ));
+        format_header(context, shape, header)
     } else {
-        format!("{}macro", format_visibility(def.visibility().as_ref()))
+        let mut result = if def.is_macro_rules() {
+            String::from("macro_rules!")
+        } else {
+            format!("{}macro", format_visibility(def.visibility().as_ref()))
+        };
+        result += " ";
+        result += node_text(def.name()?.syntax());
+        result
     };
-
-    result += " ";
-    result += node_text(def.name()?.syntax());
 
     let multi_branch_style = def.is_macro_rules() || parsed_def.len() != 1;
 

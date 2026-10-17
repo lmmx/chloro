@@ -159,7 +159,7 @@ below is the Markdown version of a page of https://lmmx.github.io/chloro/.
 "Reference" = [
   {"reference/cli.md" = "Reference for the chloro command: usage, every option, environment variables and exit statuses."},
   {"reference/api.md" = "chloro's public Rust API on docs.rs, and where each entry point is explained on this site."},
-  {"compatibility.md" = "What chloro's output has been compared against, rustfmt 1.9.0 and 1.8.0, the options covered, and the known differences."},
+  {"compatibility.md" = "What chloro's output has been compared against, rustfmt 1.9.0, 1.8.0 and 1.10.0, the options covered, and the known differences."},
   {"performance.md" = "chloro's speed and memory against rustfmt and cargo fmt, the conditions of each measurement, and what was not measured."},
   {"changelog.md" = "What changed in each chloro release, for people who use it."},
 ]

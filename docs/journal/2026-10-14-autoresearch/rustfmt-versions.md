@@ -3,6 +3,7 @@
 Part of [../2026-10-14-autoresearch.md](../2026-10-14-autoresearch.md). Labels as in that
 entry: **measured** (run on this host), **read** (from source or git history),
 **hypothesis** (not established). No chloro source file was changed for this document.
+rustfmt 1.10.0 (F15–F22, P9, P10) is in [../2026-10-17-rustfmt-1.10.md](../2026-10-17-rustfmt-1.10.md).
 
 Four separate things are named here and kept apart:
 

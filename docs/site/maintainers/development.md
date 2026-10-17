@@ -50,16 +50,19 @@ The conformance suite lives in `chloro-core/tests/conformance/`:
 
 - `fixtures/rust-analyzer/` holds 1238 `.rs` files from rust-analyzer, the corpus.
 - `snapshots/ra/<crate>/<case>.rustfmt.rs` holds rustfmt 1.9.0's output for each, or the
-  input itself where rustfmt rejects the file. `snapshots/ra-1.8.0/` holds rustfmt 1.8.0's
-  output where it differs from 1.9.0's.
-- `rustfmt-versions/` holds a reproducer for each class of difference between rustfmt 1.8.0
-  and 1.9.0.
+  input itself where rustfmt rejects the file. `snapshots/ra-1.8.0/` and
+  `snapshots/ra-1.10.0/` hold rustfmt 1.8.0's and 1.10.0's output where it differs from
+  1.9.0's.
+- `rustfmt-versions/` holds a reproducer for each class of difference between the rustfmt
+  releases, with each release's output at editions 2021 and 2024 in
+  `snapshots/rustfmt-versions/`.
 
 `conform` compares chloro with the stored snapshots, without running rustfmt:
 
 ```sh
 cargo run --release -p chloro-core --example conform -- -i            # 1.9.0
 cargo run --release -p chloro-core --example conform -- -i -V 1.8.0   # 1.8.0
+cargo run --release -p chloro-core --example conform -- -i -V 1.10.0  # 1.10.0
 ```
 
 It reports the number of identical files, diff totals, files that are not idempotent
@@ -68,6 +71,13 @@ It reports the number of identical files, diff totals, files that are not idempo
 
 ```sh
 cargo test -p chloro-core --test conformance batch
+```
+
+`CHLORO_RUSTFMT_VERSIONS` names the toolchains of the other releases, for the batch test's
+`snapshots/ra-<version>/` and the reproducers' snapshots alike:
+
+```sh
+CHLORO_RUSTFMT_VERSIONS="1.8.0=1.88.0,1.10.0=1.99.0" cargo test -p chloro-core --test conformance rustfmt_versions
 ```
 
 For the `parser` and `syntax` crates (581 small cases) only the `.rustfmt.rs` files are
@@ -90,7 +100,7 @@ registry.
 CI (`.github/workflows/ci.yml`) runs on every pull request: `cargo fmt --check`, clippy with
 warnings denied, the tests on Linux, macOS (arm64) and Windows, a build of the
 `aarch64-pc-windows-msvc` release target, `cargo check` on Rust 1.88 (the workspace's
-`rust-version`), and `conform -i` at both rustfmt releases. The arm64 runner matters: the byte
+`rust-version`), and `conform -i` at the three rustfmt releases. The arm64 runner matters: the byte
 search in `formatter/comment.rs` has an SSE2 path on x86-64 and a portable one elsewhere.
 
 A change that is meant to leave the output alone (a performance change, a refactor) must
@@ -109,7 +119,8 @@ show that it does. In order, cheapest first:
     Zero files may change, sequentially or with four threads. Add
     `--root ~/.cargo/registry/src` to do the same over the registry corpus.
 
-3. `conform -i` at both rustfmt releases: no fewer identical files, none non-idempotent.
+3. `conform -i` at the three rustfmt releases: no fewer identical files, none
+   non-idempotent.
 4. `config_matrix -n 1220`: no option value loses a file.
 5. For a performance claim, the instruction count on both samples
    ([Benchmarking](benchmarking.md)).

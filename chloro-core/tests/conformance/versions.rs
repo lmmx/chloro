@@ -19,7 +19,7 @@ use chloro_core::formatter::format_source_with_config;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const VERSIONS: &[&str] = &["1.9.0", "1.8.0"];
+const VERSIONS: &[&str] = &["1.9.0", "1.8.0", "1.10.0"];
 const EDITIONS: &[&str] = &["2024", "2021"];
 
 fn cases(dir: &Path) -> Vec<PathBuf> {

@@ -643,7 +643,7 @@ impl<'a> UseTree<'a> {
 /// or detect the violated order and panic (#6668), which this does not model.
 pub(crate) fn sort_use_trees(list: &mut [UseTree<'_>], rustfmt_version: RustfmtVersion) {
     match rustfmt_version {
-        RustfmtVersion::V1_9_0 => list.sort(),
+        RustfmtVersion::V1_9_0 | RustfmtVersion::V1_10_0 => list.sort(),
         RustfmtVersion::V1_8_0 => {
             for i in 1..list.len() {
                 let mut j = i;

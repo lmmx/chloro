@@ -634,10 +634,10 @@ mod tests {
     fn default_config_key_is_pinned() {
         // Pins the serialisation: a change here changes every cache file name.
         let key = config_key_bytes(&Config::default());
-        assert_eq!(key.len(), 49);
+        assert_eq!(key.len(), 50);
         assert_eq!(
             hex(&key),
-            "6400000000000000000400000000000000000000000000000000000101010a000000000000000101000300010000010001"
+            "6400000000000000000400000000000000000000000000000000000101010a00000000000000010100030001000001000100"
         );
     }
 
@@ -684,6 +684,7 @@ mod tests {
             ("force_explicit_abi", "false"),
             ("disable_all_formatting", "true"),
             ("rustfmt_version", "1.8.0"),
+            ("rustfmt_version", "1.10.0"),
         ] {
             let mut config = Config::default();
             config.set(key, value).unwrap();
@@ -693,6 +694,12 @@ mod tests {
                 "{key}={value} leaves the key unchanged"
             );
         }
+        // An option of rustfmt 1.10.0 changes the key of that release's configuration.
+        let mut config = Config::default();
+        config.set("rustfmt_version", "1.10.0").unwrap();
+        let base = config_key_bytes(&config);
+        config.set("hex_literal_case", "Upper").unwrap();
+        assert_ne!(config_key_bytes(&config), base);
     }
 
     #[test]

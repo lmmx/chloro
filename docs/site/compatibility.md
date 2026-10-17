@@ -1,5 +1,5 @@
 ---
-description: "What chloro's output has been compared against, rustfmt 1.9.0 and 1.8.0, the options covered, and the known differences."
+description: "What chloro's output has been compared against, rustfmt 1.9.0, 1.8.0 and 1.10.0, the options covered, and the known differences."
 ---
 
 # rustfmt compatibility
@@ -18,6 +18,7 @@ here; they do not show that chloro and rustfmt agree on every possible input.
 |---|---|
 | rustfmt release reproduced by default | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, shipped with Rust 1.97.0 |
 | second release, with `rustfmt_version = "1.8.0"` | `rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)`, shipped with Rust 1.88.0 |
+| third release, with `rustfmt_version = "1.10.0"` | `rustfmt 1.10.0-stable (b940084d7e 2026-09-28)`, shipped with Rust 1.99.0 |
 | how rustfmt is run | `rustfmt --edition 2024` (or the edition under test) on standard input, with no `rustfmt.toml` |
 | what counts as identical | the same bytes; where rustfmt rejects a file, the expected output is the input, unchanged |
 
@@ -27,10 +28,13 @@ here; they do not show that chloro and rustfmt agree on every possible input.
 |---|---|---|---|
 | rustfmt release | 1.9.0, the default | 1220 rust-analyzer source files, default options | 1220 of 1220, none non-idempotent |
 | rustfmt release | 1.8.0 | the same | 1220 of 1220, none non-idempotent |
+| rustfmt release | 1.10.0 | the same | 1220 of 1220, none non-idempotent |
 | stable options | 31 non-default values of 24 options (below) | the same, every file rustfmt accepts under the option | every file (1022 of 1022 for each value at edition 2024) |
+| stable options, rustfmt 1.10.0 | the same 31 values, and `hex_literal_case` `Upper` and `Lower` | all 1238 files, a file rustfmt rejects compared as its input | 1238 of 1238 for each value |
 | edition | 2015, 2018, 2021, 2024 | the same | 838/838, 843/843, 844/844, 1022/1022 |
 | style edition | 2015, 2021, 2024 | the same | 1022/1022 each |
 | code chloro was not developed on | default options, rustfmt 1.9.0 | 20,850 files of 577 crates from crates.io | 20,540 of the 20,540 files rustfmt formats |
+| the same at rustfmt 1.10.0 | default options, editions 2024 and 2021 | 9547 files of the 285 crates of a smaller registry | 9547 of 9547 at each edition, a file rustfmt rejects compared as its input |
 | the same at rustfmt 1.8.0 | default options | 20,019 files of 559 crates, measured before the last conformance fixes | 20,007 of 20,019: 9 files the later fixes target, 3 that both releases reject |
 
 Notes on the table:
@@ -65,21 +69,28 @@ not part of the comparison.
 
 ## rustfmt releases
 
-rustfmt 1.8.0 and 1.9.0 differ in two ways, and `rustfmt_version` reproduces both:
+The releases differ in two ways, and `rustfmt_version` reproduces both:
 
-- **Formatting.** A handful of constructs come out differently, for example raw labels in
-  `break 'r#a` (1.8.0 drops the `r#`), a labelled block as a closure body, `use self::self;`,
-  `super let`, the import order of `_`-prefixed names at editions before 2024, and a
-  `macro_rules!` body that is a single `const { .. }` block.
+- **Formatting.** A handful of constructs come out differently. Between 1.8.0 and 1.9.0,
+  for example: raw labels in `break 'r#a` (1.8.0 drops the `r#`), a labelled block as a
+  closure body, `use self::self;`, `super let`, the import order of `_`-prefixed names at
+  editions before 2024, and a `macro_rules!` body that is a single `const { .. }` block.
+  Between 1.9.0 and 1.10.0: attributes on an unnamed parameter (`#[attr] ...`, which 1.9.0
+  drops), the `const` of a trait impl (1.10.0 writes `const impl Trait for T`), range
+  patterns, comments between `macro_rules!` and the name, `super let` (which 1.9.0 leaves
+  as written), and a `//` comment in an empty parameter list of a long signature. 1.10.0
+  also makes `hex_literal_case` a stable option.
 - **Acceptance.** Each release's rustfmt formats only what its own toolchain's parser
   accepts. For example, rustfmt 1.8.0 formats `if a && let …` at edition 2021 and
-  `impl !Trait {}`, which 1.9.0 rejects and leaves alone, and rejects `[const]` bounds,
-  which 1.9.0 formats.
+  `impl !Trait {}`, which 1.9.0 rejects and leaves alone, and rejects `[const]` bounds and
+  `const impl`, which 1.9.0 formats; rustfmt 1.10.0 rejects `impl const Trait for T`.
 
-On the rust-analyzer corpus at edition 2024, the two releases give identical output on all
-but one of the files both accept. A reproducer for each difference, at both releases and
-editions 2021 and 2024, is in `chloro-core/tests/conformance/rustfmt-versions/`; the
-[rustfmt versions record][versions] names each class and the rustfmt change behind it.
+On the rust-analyzer corpus at edition 2024, 1.8.0 and 1.9.0 give identical output on all
+but one of the files both accept, and so do 1.9.0 and 1.10.0. A reproducer for each
+difference, at the three releases and editions 2021 and 2024, is in
+`chloro-core/tests/conformance/rustfmt-versions/`; the rustfmt versions records
+([1.7.0 to 1.9.0][versions], [1.10.0][v110]) name each class and the rustfmt change behind
+it.
 
 rustfmt 1.7.0 and earlier are refused: 1.7.0 has no 2024 Style Guide rules, and 540 of the
 981 rust-analyzer files both releases accept come out differently. Nightly rustfmt is not
@@ -121,7 +132,7 @@ Six cases are recorded and open in the [conformance ledger][ledger]:
 | 21 | rustfmt's internal error on one file of rustyline 14.0.0. | rustfmt exits with an error and writes the output chloro writes. |
 | 22 | rustfmt's run time on a 47 KB generated file of pest_meta 2.9.2. | rustfmt takes over nine minutes and chloro 0.2 s, for identical output. |
 | 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro's output matches rustfmt's at every pass. |
-| 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro reports a parse error and leaves the file unchanged. |
+| 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, and `default const impl` (unstable), which rust-analyzer rejects. | chloro reports a parse error and leaves the file unchanged. |
 
 A difference not listed here is a bug: please [open an issue](https://github.com/lmmx/chloro/issues)
 with the input, the options, and the rustfmt version.
@@ -129,11 +140,12 @@ with the input, the options, and the rustfmt version.
 ## Reproducing the comparison
 
 The `rustfmt` on `PATH` is the 1.9.0 reference; `rustup run 1.88.0 rustfmt` is the 1.8.0
-one.
+one and `rustup run 1.99.0 rustfmt` the 1.10.0 one.
 
 ```sh
 cargo run --release -p chloro-core --example conform -- -i              # 1220 files against the 1.9.0 snapshots
 cargo run --release -p chloro-core --example conform -- -i -V 1.8.0     # the same at rustfmt_version = 1.8.0
+cargo run --release -p chloro-core --example conform -- -i -V 1.10.0    # the same at rustfmt_version = 1.10.0
 cargo run --release -p chloro-core --example config_matrix -- -n 1220   # 31 option values against live rustfmt
 cargo run --release -p chloro-core --example config_matrix -- --root ~/.cargo/registry/src -n 30000 default
 cargo test -p chloro-core --test conformance batch                      # regenerate the snapshots
@@ -144,3 +156,4 @@ regenerated.
 
 [ledger]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-14-autoresearch/conformance-ledger.md
 [versions]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-14-autoresearch/rustfmt-versions.md
+[v110]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-17-rustfmt-1.10.md

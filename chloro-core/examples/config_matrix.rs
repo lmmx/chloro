@@ -18,9 +18,10 @@
 //!
 //! `rustfmt_version=<v>` is chloro's option and is not passed to rustfmt: the comparison
 //! runs against the rustfmt named by `--rustfmt <command>` (program and arguments), which
-//! defaults to `rustup run 1.88.0 rustfmt` for 1.8.0 and to the `rustfmt` on `PATH`
-//! otherwise. A file that rustfmt rejects (or panics on) is compared against its input,
-//! as the snapshots do, so the count covers every file of the corpus.
+//! defaults to `rustup run 1.88.0 rustfmt` for 1.8.0, to `rustup run 1.99.0 rustfmt` for
+//! 1.10.0 and to the `rustfmt` on `PATH` otherwise. A file that rustfmt rejects (or panics
+//! on) is compared against its input, as the snapshots do, so the count covers every file
+//! of the corpus.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -106,6 +107,11 @@ fn entry(option: &str, rustfmt_command: Option<&[String]>) -> Entry {
         Some(c) => c.to_vec(),
         None if config.rustfmt_version.as_str() == "1.8.0" => {
             ["rustup", "run", "1.88.0", "rustfmt"]
+                .map(String::from)
+                .to_vec()
+        }
+        None if config.rustfmt_version.as_str() == "1.10.0" => {
+            ["rustup", "run", "1.99.0", "rustfmt"]
                 .map(String::from)
                 .to_vec()
         }

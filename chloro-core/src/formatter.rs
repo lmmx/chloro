@@ -30,6 +30,7 @@ pub mod config;
 mod context;
 mod expr;
 mod formatting;
+mod header;
 mod imports;
 mod items;
 mod lists;

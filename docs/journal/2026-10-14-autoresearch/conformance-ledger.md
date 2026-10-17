@@ -494,6 +494,11 @@ differ are the const block items of case 16.
 - diesel 2.3.14 `src/macros/static_cond.rs` (`#![cfg_attr(rustfmt, rustfmt_skip)]`): both
   return the file as written; the comparison tool lists it under "chloro returns the file
   unchanged" because its parse check cannot tell an echoed file from a rejected one.
+- `default const impl Trait for T {}` and `default const unsafe impl ..` (specialisation of
+  a const trait impl, both unstable; found while adding rustfmt 1.10.0, 2026-10-17):
+  rust-analyzer reads `default const` as the start of a `const` item and reports "expected a
+  name", so chloro leaves the file unchanged; rustfmt 1.9.0 writes `default impl<T> const
+  Trait`, rustfmt 1.10.0 `default const impl<T> Trait`.
 
 ## Policy
 
