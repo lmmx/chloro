@@ -1305,9 +1305,10 @@ itself.</p>
 </code></pre></div>
 <p><a href="https://github.com/cargo-bins/cargo-binstall">cargo-binstall</a> downloads the binary
 attached to the <a href="https://github.com/lmmx/chloro/releases">GitHub release</a> for your
-platform. The 0.8.0 release has binaries for <code>x86_64-unknown-linux-gnu</code>,
-<code>x86_64-pc-windows-msvc</code> and <code>aarch64-pc-windows-msvc</code>; on any other platform
-<code>cargo binstall</code> falls back to building from source.</p>
+platform. Releases have binaries for <code>x86_64-unknown-linux-gnu</code>,
+<code>x86_64-pc-windows-msvc</code> and <code>aarch64-pc-windows-msvc</code>, and for macOS where its runner
+built them (the <a href="https://github.com/lmmx/chloro/releases">release page</a> lists them); on
+any other platform <code>cargo binstall</code> falls back to building from source.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-sh highlight"><pre><span></span><code>cargo<span class="w"> </span>install<span class="w"> </span>chloro<span class="w"> </span>--features<span class="w"> </span>cli
@@ -1334,22 +1335,21 @@ profile-guided optimisation; see <a href="../../maintainers/releasing/#profile-g
 <h2 id="the-library">The library<a class="headerlink" href="#the-library" title="Permanent link">&para;</a></h2>
 <p>Add <code>chloro</code> to your <code>Cargo.toml</code> for the formatting functions and <code>Config</code>:</p>
 <div class="language-toml highlight"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">chloro</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.8"</span>
+<span class="n">chloro</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.9"</span>
 </code></pre></div>
 <p><code>chloro</code> re-exports <code>format_source</code>, <code>format_source_with_config</code> and <code>Config</code> from
 <code>chloro-core</code>. The parallel and cached entry points, and the syntax tree, are only in
 <code>chloro-core</code>:</p>
 <div class="language-toml highlight"><pre><span></span><code><span class="k">[dependencies]</span>
-<span class="n">chloro-core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.8"</span>
+<span class="n">chloro-core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.9"</span>
 </code></pre></div>
 <p>Both crates have no default features. The <a href="../../guide/library/">Library guide</a> shows what
 each entry point does, and the <a href="../../reference/api/">Rust API reference</a> lists them with
 links to docs.rs.</p>
 <div class="admonition note">
 <p class="admonition-title">Versions</p>
-<p>The performance work and the rustfmt 1.8.0 support described on this site are on the
-main branch and not yet in a published release; 0.8.0 is the latest release. The
-<a href="../../changelog/">Changelog</a> says which version each change is in.</p>
+<p>This site describes chloro 0.9.0. The <a href="../../changelog/">Changelog</a> says which version
+each change is in, and <code>chloro --version</code> which version you have.</p>
 </div>
 <h2 id="run-time-requirements">Run-time requirements<a class="headerlink" href="#run-time-requirements" title="Permanent link">&para;</a></h2>
 <p>chloro has no run-time dependencies. It does not call <code>rustfmt</code>, <code>rustc</code> or <code>cargo</code>, and it

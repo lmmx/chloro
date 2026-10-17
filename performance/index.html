@@ -668,6 +668,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-large-workspace-ruff" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A large workspace: ruff
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#other-measurements" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1315,6 +1326,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-large-workspace-ruff" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A large workspace: ruff
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#other-measurements" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1605,6 +1627,58 @@ same session.</p>
 wall times in milliseconds. The first five crates are from rust-analyzer, whose files make up
 chloro's conformance corpus. The other four come from crates.io and were not used during
 chloro's development.</p>
+<h2 id="a-large-workspace-ruff">A large workspace: ruff<a class="headerlink" href="#a-large-workspace-ruff" title="Permanent link">&para;</a></h2>
+<p>A single measurement of the whole <a href="https://github.com/astral-sh/ruff">ruff</a> workspace,
+taken with <code>just vs-ruff</code>
+(<a href="../maintainers/benchmarking/#on-any-cargo-project-just-vs-rustfmt">Benchmarking</a>) on a
+20-core workstation, against <code>cargo fmt</code> with the rustfmt ruff's toolchain pins,
+<code>1.10.0-stable (b940084d7e 2026-09-28)</code>. Both tools check the 2,008 files <code>cargo fmt --all</code>
+formats, in an already-formatted checkout, with hyperfine: 5 timed runs each after 1 warm-up,
+not pinned to cores, chloro with its cache off.</p>
+<table>
+<thead>
+<tr>
+<th>command</th>
+<th>wall time, mean ± σ</th>
+<th>share of <code>cargo fmt</code>'s</th>
+<th>peak memory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chloro --check</code>, 20 threads (the default)</td>
+<td>212.3 ± 4.8 ms</td>
+<td>0.038</td>
+<td>89.9 MiB</td>
+</tr>
+<tr>
+<td><code>chloro --check --threads 1</code></td>
+<td>1598.3 ± 12.6 ms</td>
+<td>0.284</td>
+<td>16.2 MiB</td>
+</tr>
+<tr>
+<td><code>cargo fmt --all -- --check</code></td>
+<td>5633.0 ± 104.8 ms</td>
+<td>1</td>
+<td>194.5 MiB</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The one-thread row is the like-for-like comparison, since rustfmt formats on one thread:
+  0.28 of <code>cargo fmt</code>'s time, inside the one-core range of the nine crates above, though on a
+  different machine and with fewer runs.</li>
+<li>Peak memory is that of the largest single process, which for <code>cargo fmt</code> is rustfmt.</li>
+<li>The recipe passes the file list to chloro through <code>xargs</code>, which can split a list this long
+  into several chloro runs, one after another; their start-up and lost parallelism count
+  against chloro (<a href="https://github.com/lmmx/chloro/issues/99">#99</a>).</li>
+<li>The outputs agree on all but one file. In a separate check of ruff at commit <code>8d122c1</code>
+  (2,023 files) with the same rustfmt, <code>cargo fmt --check</code> found nothing to change and
+  <code>chloro --check</code> reported one file, which has three <code>\r\n</code> line endings among <code>\n</code> ones:
+  rustfmt leaves them as they are and chloro converts them
+  (<a href="https://github.com/lmmx/chloro/issues/97">#97</a>).</li>
+</ul>
 <h2 id="other-measurements">Other measurements<a class="headerlink" href="#other-measurements" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1691,10 +1765,11 @@ training to the targets whose runners execute them natively; see
 <a href="../maintainers/releasing/#profile-guided-builds">Releasing</a>.</p>
 <h2 id="what-was-not-measured">What was not measured<a class="headerlink" href="#what-was-not-measured" title="Permanent link">&para;</a></h2>
 <ul>
-<li>macOS and Windows: every figure here is from x86-64 Linux.</li>
+<li>macOS and Windows: the measurements other than ruff's are from x86-64 Linux.</li>
 <li>rustfmt's throughput in process: rustfmt is only timed as a process, including its
   start-up (loading <code>librustc_driver</code> costs it about 30 ms and 34 MiB).</li>
-<li>Memory bandwidth, and runs on more than four cores.</li>
+<li>Memory bandwidth. Apart from the ruff measurement, nothing was measured on more than four
+  cores.</li>
 <li>Unformatted input. The inputs are formatted by rustfmt first, because rustfmt's <code>--check</code>
   builds a diff of every file that would change, and that would add the cost of the diff to
   rustfmt's time.</li>

@@ -1139,7 +1139,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2026-10-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.9.0 - 2026-10-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.9.0 - 2026-10-17">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1374,7 +1385,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2026-10-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.9.0 - 2026-10-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.9.0 - 2026-10-17">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1554,7 +1576,8 @@ released together at the same version.</p>
 <p>This file is written by hand. Each crate also has a commit-level changelog generated at
 release time by release-plz: <a href="https://github.com/lmmx/chloro/blob/master/chloro/CHANGELOG.md">chloro/CHANGELOG.md</a> and
 <a href="https://github.com/lmmx/chloro/blob/master/chloro-core/CHANGELOG.md">chloro-core/CHANGELOG.md</a>.</p>
-<h2 id="unreleased"><a href="https://github.com/lmmx/chloro/compare/chloro-v0.8.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="unreleased"><a href="https://github.com/lmmx/chloro/compare/chloro-v0.9.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="090-2026-10-17"><a href="https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0">0.9.0</a> - 2026-10-17<a class="headerlink" href="#090-2026-10-17" title="Permanent link">&para;</a></h2>
 <p>The performance and conformance work of
 <a href="https://github.com/lmmx/chloro/pull/88">#88</a>. Every output is identical to 0.8.0's except
 for the conformance fixes listed under <em>Fixed</em>. The measurements behind the figures below
@@ -1591,6 +1614,8 @@ are described on the <a href="https://lmmx.github.io/chloro/performance/">Perfor
 <li>Formatting is faster. Against rustfmt 1.9.0 on nine crates, chloro takes 0.21–0.35 of
   rustfmt's wall time on one core and 0.08–0.17 on four. Against 0.8.0, the formatter executes 66% fewer
   instructions on the same files and formats 2.7 times as many bytes per second on one core.</li>
+<li>On the whole ruff workspace (2,008 files), chloro took 0.28 of <code>cargo fmt</code>'s wall time on
+  one thread and 0.038 on 20.</li>
 <li>Peak memory on the same crates is 4–10 MiB on one core, against 6–29 MiB for 0.8.0
   (rustfmt: 43–86 MiB).</li>
 <li>Nested closures no longer slow formatting down superlinearly: a 2 KB file of closures
