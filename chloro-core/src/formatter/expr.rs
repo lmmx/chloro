@@ -123,7 +123,13 @@ pub(crate) fn format_expr(
     };
     #[cfg(debug_assertions)]
     if let Some(r) = &result {
-        super::width::debug_check(expr.syntax(), shape, r);
+        super::width::debug_check(
+            expr.syntax(),
+            shape,
+            context.config.chain_width(),
+            context.config.tab_spaces(),
+            r,
+        );
     }
     result
 }
