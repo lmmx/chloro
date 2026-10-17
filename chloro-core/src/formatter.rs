@@ -58,7 +58,10 @@ mod utils;
 mod visitor;
 mod width;
 
+use std::borrow::Cow;
+
 use config::{Config, Settings};
+pub use formatting::ParseError;
 pub use unit_cache::{CachedUnit, UnitCache, UnitKey};
 
 /// Format Rust source code with rustfmt's default style (`rustfmt --edition 2024`).
@@ -72,28 +75,27 @@ pub fn format_source(source: &str) -> String {
 /// Format Rust source code with the given configuration.
 ///
 /// Source that does not parse is returned unchanged, as is a file with an inner
-/// `#![rustfmt::skip]` attribute or a configuration with `disable_all_formatting`.
+/// `#![rustfmt::skip]` attribute or a configuration with `disable_all_formatting`;
+/// [`try_format_source_with_config`] tells the first case from the others.
 ///
 /// As in rustfmt, the formatted text never starts with a byte order mark, and `\r\n` line
 /// endings in the source (including inside literals) read as `\n`; the output's line
 /// endings are set by `newline_style`.
 pub fn format_source_with_config(source: &str, config: &Config) -> String {
-    let settings = Settings::new(config);
-    if settings.disable_all_formatting() {
-        return source.to_owned();
-    }
-    let normalized = formatting::normalize_src(source);
-    match formatting::format_text(&normalized, &settings, false, true) {
-        Some(formatted) if formatted.echoed => source.to_owned(),
-        Some(formatted) => {
-            let mut text = formatted.text;
-            // rustfmt detects the `Auto` style on the normalised source, in which no
-            // `\r\n` is left: `Auto` produces `\n` line endings.
-            formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
-            text
-        }
-        None => source.to_owned(),
-    }
+    format_whole(source, config, format_sequential).unwrap_or_else(|_| source.to_owned())
+}
+
+/// [`format_source_with_config`], or the syntax error for which it returns the source
+/// unchanged: a file that rustc's parser rejects, which rustfmt leaves as it is and reports
+/// with exit status 1. Every other source is `Ok` with the same text as
+/// [`format_source_with_config`], including one returned unchanged for an inner
+/// `#![rustfmt::skip]` or `disable_all_formatting`.
+///
+/// The error is found by parsing the source again, so it costs nothing on a source that
+/// parses.
+pub fn try_format_source_with_config(source: &str, config: &Config) -> Result<String, ParseError> {
+    format_whole(source, config, format_sequential)
+        .or_else(|refused| refused.reason(source, config))
 }
 
 /// Parses `source` as [`format_source_with_config`] does before it formats anything, and
@@ -131,20 +133,23 @@ pub fn parse_only(source: &str, config: &Config) -> Option<usize> {
 /// more than it saves, so a caller formatting many files should keep file-level
 /// parallelism and use this only above a size of its choosing.
 pub fn format_source_with_config_parallel(source: &str, config: &Config, threads: usize) -> String {
-    let settings = Settings::new(config);
-    if settings.disable_all_formatting() {
-        return source.to_owned();
-    }
-    let normalized = formatting::normalize_src(source);
-    match formatting::format_text_parallel(&normalized, &settings, threads, None) {
-        Some(formatted) if formatted.echoed => source.to_owned(),
-        Some(formatted) => {
-            let mut text = formatted.text;
-            formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
-            text
-        }
-        None => source.to_owned(),
-    }
+    let format = |text: &str, settings: &Settings| {
+        formatting::format_text_parallel(text, settings, threads, None)
+    };
+    format_whole(source, config, format).unwrap_or_else(|_| source.to_owned())
+}
+
+/// [`format_source_with_config_parallel`], or the syntax error for which it returns the
+/// source unchanged, as [`try_format_source_with_config`] reports it.
+pub fn try_format_source_with_config_parallel(
+    source: &str,
+    config: &Config,
+    threads: usize,
+) -> Result<String, ParseError> {
+    let format = |text: &str, settings: &Settings| {
+        formatting::format_text_parallel(text, settings, threads, None)
+    };
+    format_whole(source, config, format).or_else(|refused| refused.reason(source, config))
 }
 
 /// [`format_source_with_config_parallel`] with a cache of formatted top-level units. The
@@ -171,23 +176,80 @@ pub fn format_source_with_unit_cache(
     threads: usize,
     cache: &dyn UnitCache,
 ) -> String {
+    format_whole(source, config, format_with_units(config, threads, cache))
+        .unwrap_or_else(|_| source.to_owned())
+}
+
+/// [`format_source_with_unit_cache`], or the syntax error for which it returns the source
+/// unchanged, as [`try_format_source_with_config`] reports it.
+pub fn try_format_source_with_unit_cache(
+    source: &str,
+    config: &Config,
+    threads: usize,
+    cache: &dyn UnitCache,
+) -> Result<String, ParseError> {
+    format_whole(source, config, format_with_units(config, threads, cache))
+        .or_else(|refused| refused.reason(source, config))
+}
+
+/// A source the formatter returns unchanged without formatting it (it does not parse, or the
+/// formatting failed): its normalised text.
+struct Refused<'s>(Cow<'s, str>);
+
+impl Refused<'_> {
+    /// The syntax error for which `source` was refused under `config`, or `source` unchanged
+    /// when it parses.
+    fn reason(self, source: &str, config: &Config) -> Result<String, ParseError> {
+        match formatting::parse_error(&self.0, &Settings::new(config)) {
+            Some(error) => Err(error),
+            None => Ok(source.to_owned()),
+        }
+    }
+}
+
+/// Formats the whole of `source` with `format`, one of `formatting`'s functions, which is
+/// given the normalised text: the formatted text with the configured line endings, the
+/// source unchanged where it is not to be formatted, or `Err` when `format` refuses it.
+fn format_whole<'s>(
+    source: &'s str,
+    config: &Config,
+    format: impl FnOnce(&str, &Settings) -> Option<formatting::Formatted>,
+) -> Result<String, Refused<'s>> {
     let settings = Settings::new(config);
     if settings.disable_all_formatting() {
-        return source.to_owned();
+        return Ok(source.to_owned());
     }
     let normalized = formatting::normalize_src(source);
-    let cache = parallel::CacheUse {
-        cache,
-        context: unit_cache::key_context(config),
-    };
-    match formatting::format_text_parallel(&normalized, &settings, threads, Some(cache)) {
-        Some(formatted) if formatted.echoed => source.to_owned(),
+    match format(&normalized, &settings) {
+        Some(formatted) if formatted.echoed => Ok(source.to_owned()),
         Some(formatted) => {
             let mut text = formatted.text;
+            // rustfmt detects the `Auto` style on the normalised source, in which no
+            // `\r\n` is left: `Auto` produces `\n` line endings.
             formatting::apply_newline_style(settings.newline_style(), &mut text, &normalized);
-            text
+            Ok(text)
         }
-        None => source.to_owned(),
+        None => Err(Refused(normalized)),
+    }
+}
+
+/// [`format_whole`]'s `format` for [`format_source_with_config`].
+fn format_sequential(text: &str, settings: &Settings) -> Option<formatting::Formatted> {
+    formatting::format_text(text, settings, false, true)
+}
+
+/// [`format_whole`]'s `format` for [`format_source_with_unit_cache`].
+fn format_with_units<'a>(
+    config: &'a Config,
+    threads: usize,
+    cache: &'a dyn UnitCache,
+) -> impl FnOnce(&str, &Settings) -> Option<formatting::Formatted> + 'a {
+    move |text, settings| {
+        let cache = parallel::CacheUse {
+            cache,
+            context: unit_cache::key_context(config),
+        };
+        formatting::format_text_parallel(text, settings, threads, Some(cache))
     }
 }
 

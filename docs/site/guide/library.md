@@ -12,7 +12,7 @@ threads.</p>
 
 | crate | what it gives you |
 |---|---|
-| [`chloro`](https://docs.rs/chloro) | `format_source`, `format_source_with_config`, `Config`; and the command line behind the `cli` feature |
+| [`chloro`](https://docs.rs/chloro) | `format_source`, `format_source_with_config`, `try_format_source_with_config`, `Config`, `ParseError`; and the command line behind the `cli` feature |
 | [`chloro-core`](https://docs.rs/chloro-core) | all of the above, plus the parallel and cached entry points, `parse_only`, and the syntax tree |
 
 `chloro` re-exports these items from `chloro-core`, so both crates use the same `Config` type.
@@ -28,10 +28,11 @@ assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 `format_source` formats with rustfmt's defaults at edition 2024, the same as
 `format_source_with_config(source, &Config::default())`.
 
-The formatting functions do not return errors. Source that does not parse, or that rustc's parser would reject,
-comes back unchanged, as rustfmt leaves such a file alone; so does a file with an inner
-`#![rustfmt::skip]` attribute, or any file when `disable_all_formatting` is set. To find out
-whether anything changed, compare the output with the input:
+The formatting functions return text, not errors. Source that does not parse, or that
+rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so
+does a file with an inner `#![rustfmt::skip]` attribute, or any file when
+`disable_all_formatting` is set ([parse errors](#parse-errors) tells the first case from
+the others). To find out whether anything changed, compare the output with the input:
 
 ```rust
 let source = "fn main() {\n    let x = 1;\n}\n";
@@ -46,6 +47,36 @@ assert_eq!(chloro::format_source(broken), broken);
 As in rustfmt, a byte order mark is dropped and `\r\n` in the input reads as `\n`; the
 output's line endings are set by `newline_style` (by default, those of the input's first
 line).
+
+## Parse errors
+
+`try_format_source_with_config` returns the same text as `format_source_with_config`, or
+the syntax error for which that returns the source unchanged: the error rustfmt reports for
+a file it leaves alone, which the command line prints
+([exit status](cli.md#exit-status)).
+
+```rust
+let config = chloro::Config::default();
+let source = "fn main() {\n    let x = ;\n}\n";
+let error = chloro::try_format_source_with_config(source, &config).unwrap_err();
+assert_eq!((error.line(), error.column()), (2, 13));
+assert_eq!(error.message(), "expected expression, found `;`");
+assert_eq!(error.to_string(), "2:13: expected expression, found `;`");
+
+// Left unchanged, but not an error.
+let skipped = "#![rustfmt::skip]\nfn main(){}\n";
+assert_eq!(chloro::try_format_source_with_config(skipped, &config).as_deref(), Ok(skipped));
+```
+
+The position is where rustc reports most syntax errors: the line, and the column in
+characters, both from 1, on the source with any byte order mark dropped and `\r\n` read as
+`\n`. `width()` is the number of characters the error covers on its line. The message is
+rust-analyzer's parser's, worded like rustc's where its tokens allow, or for syntax that
+rust-analyzer's parser accepts and rustc's rejects, "rustc's parser rejects this syntax".
+The error is found by parsing the source again once it has been refused, so the `try_`
+functions cost no more than the others on a source that parses. `chloro-core` has
+`try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` for the
+entry points below.
 
 ## Options
 

@@ -51,16 +51,25 @@ const DYN: &str = "dyn ";
 
 /// rust-analyzer's message for a float literal without `.` after a `.` (`s.1e0`); its
 /// position is a token index, not a text offset.
-const FLOAT_FIELD: &str = "illegal float literal";
+pub(crate) const FLOAT_FIELD: &str = "illegal float literal";
 
-/// `true` if rustc's lexer rejects the text `lexed` holds. rust-analyzer reports an
-/// identifier directly followed by `#`, a string or a character literal (`foo#bar`,
-/// `foo"x"`) as an unknown literal prefix in every edition; rustc reserves these prefixes
-/// from edition 2021, and before reads an identifier and the next token.
+/// `true` if rustc's lexer rejects the text `lexed` holds.
 pub(crate) fn lexer_rejects(lexed: &LexedStr<'_>, edition: Edition) -> bool {
+    lexer_rejection(lexed, edition).is_some()
+}
+
+/// The first of `lexed`'s errors that rustc's lexer also reports, as the token's index and
+/// the message. rust-analyzer reports an identifier directly followed by `#`, a string or a
+/// character literal (`foo#bar`, `foo"x"`) as an unknown literal prefix in every edition;
+/// rustc reserves these prefixes from edition 2021, and before reads an identifier and the
+/// next token.
+pub(crate) fn lexer_rejection<'a>(
+    lexed: &'a LexedStr<'_>,
+    edition: Edition,
+) -> Option<(usize, &'a str)> {
     lexed
         .errors()
-        .any(|(_, msg)| edition.at_least_2021() || !msg.starts_with("unknown literal prefix"))
+        .find(|(_, msg)| edition.at_least_2021() || !msg.starts_with("unknown literal prefix"))
 }
 
 /// An element of an owned tree: a node, or a token of a kind and a length.

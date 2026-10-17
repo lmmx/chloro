@@ -95,7 +95,7 @@ Print the help text and exit.
 | status | meaning |
 |---|---|
 | 0 | success; with `--check`, nothing needs formatting |
-| 1 | `--check` found files to format, or a file could not be read or written, or a source does not exist, or `--config` or the arguments were invalid |
+| 1 | `--check` found files to format, or a file does not parse ([errors](../guide/cli.md#exit-status)), or a file could not be read or written, or a source does not exist, or `--config` or the arguments were invalid |
 
 ## Environment
 

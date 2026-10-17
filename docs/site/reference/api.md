@@ -20,12 +20,15 @@ each is explained on this site.
 | `format_source_with_config(source: &str, config: &Config) -> String` | yes | yes | any options |
 | `format_source_with_config_parallel(source, config, threads) -> String` | | yes | top-level items on up to `threads` threads; [guide](../guide/library.md#one-large-file-on-several-threads) |
 | `format_source_with_unit_cache(source, config, threads, cache: &dyn UnitCache) -> String` | | yes | reuses formatted items; [guide](../guide/library.md#a-cache-of-formatted-items) |
+| `try_format_source_with_config(source, config) -> Result<String, ParseError>` | yes | yes | the same text, or the syntax error; [guide](../guide/library.md#parse-errors) |
+| `try_format_source_with_config_parallel(source, config, threads)`, `try_format_source_with_unit_cache(source, config, threads, cache)` | | yes | the same for the parallel and cached functions |
+| `ParseError` | yes | yes | `message()`, `line()`, `column()` (from 1, in characters), `width()`; `Display` as `line:column: message` |
 | `parse_only(source, config) -> Option<usize>` | | yes | the parse alone; [guide](../guide/library.md#parse-without-formatting) |
 
 Every formatting function returns the source unchanged when it does not parse, when rustc's
 parser would reject it, when it has an inner `#![rustfmt::skip]`, or when
-`disable_all_formatting` is set. All of them return the same text for the same source and
-configuration.
+`disable_all_formatting` is set; the `try_` functions return the error instead in the first
+two cases. All of them return the same text for the same source and configuration.
 
 ## Configuration
 

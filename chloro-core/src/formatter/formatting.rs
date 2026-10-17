@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 
-use ra_ap_parser::{Edition, LexedStr, TopEntryPoint};
+use ra_ap_parser::{Edition, LexedStr, StrStep, SyntaxKind, TopEntryPoint};
 
 use crate::cst::{AstNode, Tree, TreeArena, ast, lex};
 
@@ -12,8 +12,8 @@ use super::comment::{CharClasses, LineClasses};
 use super::config::{NewlineStyle, RustfmtVersion, Settings};
 use super::context::RunState;
 use super::nodes::{contains_skip, inner_attributes};
-use super::rustc_compat::rejected_by_rustc;
-use super::rustc_syntax::reparse;
+use super::rustc_compat::{rejected_by_rustc, rustc_rejection};
+use super::rustc_syntax::{FLOAT_FIELD, lexer_rejection, reparse};
 use super::shape::Indent;
 use super::span::SnippetProvider;
 use super::utils::indent_next_line;
@@ -43,32 +43,37 @@ pub(crate) struct Formatted {
 /// A file that rust-analyzer's lexer or parser rejects is parsed again by `rustc_syntax`
 /// when rustc's parser accepts it.
 fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
+    let tree = parse_tree(source, edition, rustfmt_version)?;
+    (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
+}
+
+/// [`parse`] without the check for syntax rustc's parser rejects: the tree of
+/// rust-analyzer's lexer and parser, or the one `rustc_syntax` rebuilds.
+fn parse_tree(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
     // Chloro's own lexer front end (`lex::lex`, EXP-031). On a parser error, `reparse` gets
     // `LexedStr` with this parser output, which is the one `to_input`'s input gives.
     if let Some((tokens, input)) = lex::lex(edition, source) {
         let output = TopEntryPoint::SourceFile.parse(&input, edition);
-        let tree = match Tree::from_steps_at(source, &tokens, &output, 0, 0) {
-            Some(tree) => tree,
+        return match Tree::from_steps_at(source, &tokens, &output, 0, 0) {
+            Some(tree) => Some(tree),
             None => {
                 let lexed = LexedStr::new(edition, source);
-                reparse(source, &lexed, Some(&output), edition, rustfmt_version)?
+                reparse(source, &lexed, Some(&output), edition, rustfmt_version)
             }
         };
-        return (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree);
     }
     // A lexer error, or a shebang or frontmatter: `Tree::parse`, keeping the lexer's and the
     // parser's output for `reparse`.
     let lexed = LexedStr::new(edition, source);
-    let tree = if lexed.errors().next().is_none() {
+    if lexed.errors().next().is_none() {
         let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
         match Tree::from_steps_at(source, &lexed, &output, 0, 0) {
-            Some(tree) => tree,
-            None => reparse(source, &lexed, Some(&output), edition, rustfmt_version)?,
+            Some(tree) => Some(tree),
+            None => reparse(source, &lexed, Some(&output), edition, rustfmt_version),
         }
     } else {
-        reparse(source, &lexed, None, edition, rustfmt_version)?
-    };
-    (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree)
+        reparse(source, &lexed, None, edition, rustfmt_version)
+    }
 }
 
 /// Whether a text of `len` bytes is too long for the tree: its offsets, lengths and
@@ -88,6 +93,190 @@ pub(crate) fn parse_text(source: &str, config: &Settings) -> Option<usize> {
         return None;
     }
     parse(source, config.edition().to_ra(), config.rustfmt_version()).map(|tree| tree.len())
+}
+
+/// The syntax error that made the formatter return a source unchanged. rustfmt leaves a
+/// file that rustc's parser rejects as it is and reports rustc's first error; chloro finds
+/// the error with rust-analyzer's lexer and parser and the rules of `rustc_compat`, so the
+/// message is theirs, not rustc's. The position is where rustc reports most such errors:
+/// the token the parser could not accept, or the end of the token before it when a token
+/// is missing at the end of a line or of the file.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ParseError {
+    message: String,
+    line: usize,
+    column: usize,
+    width: usize,
+}
+
+impl ParseError {
+    /// What is wrong, such as "expected expression, found `;`".
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// The line of the error, from 1.
+    pub fn line(&self) -> usize {
+        self.line
+    }
+
+    /// The column of the error's start, from 1, in characters: a tab counts as one, and a
+    /// byte order mark at the start of the file as none.
+    pub fn column(&self) -> usize {
+        self.column
+    }
+
+    /// The number of characters from [`column`](Self::column) that the error covers on its
+    /// line, at least one.
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    /// The error `message` at bytes `start..end` of `source`, the normalised text.
+    fn at(source: &str, start: usize, end: usize, message: String) -> ParseError {
+        let line_start = source[..start].rfind('\n').map_or(0, |i| i + 1);
+        let line_end = source[start..]
+            .find('\n')
+            .map_or(source.len(), |i| start + i);
+        ParseError {
+            message,
+            line: source[..start].matches('\n').count() + 1,
+            column: source[line_start..start].chars().count() + 1,
+            width: source[start..end.clamp(start, line_end)]
+                .chars()
+                .count()
+                .max(1),
+        }
+    }
+}
+
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}: {}", self.line, self.column, self.message)
+    }
+}
+
+impl std::error::Error for ParseError {}
+
+/// The error for which [`format_text`] returned `None` on `source`, found by parsing it
+/// again, or `None` if it parses: the formatting failed (`RunState::format_failure`).
+///
+/// Only called for a refused file, so the parse that formatting depends on stays as it is.
+pub(crate) fn parse_error(source: &str, config: &Settings) -> Option<ParseError> {
+    if exceeds_offset_range(source.len()) {
+        let message = "the file is larger than 4 GiB".to_owned();
+        return Some(ParseError::at(source, 0, 0, message));
+    }
+    let edition = config.edition().to_ra();
+    let rustfmt_version = config.rustfmt_version();
+    let Some(tree) = parse_tree(source, edition, rustfmt_version) else {
+        return Some(syntax_error(source, edition));
+    };
+    let e = tree.elem(rustc_rejection(tree.root(), edition, rustfmt_version)?);
+    let (start, end) = (e.start as usize, (e.start + e.len) as usize);
+    let message = "rustc's parser rejects this syntax".to_owned();
+    Some(ParseError::at(source, start, end, message))
+}
+
+/// The first error of rust-analyzer's lexer or parser in `source`, for a file that
+/// `rustc_syntax` could not rebuild either.
+///
+/// A file whose first parser error is one that `rustc_syntax` explains, followed by one it
+/// does not, is reported at the first: the rebuild does not say which error stopped it.
+fn syntax_error(source: &str, edition: Edition) -> ParseError {
+    let lexed = LexedStr::new(edition, source);
+    if let Some((i, msg)) = lexer_rejection(&lexed, edition) {
+        let range = lexed.text_range(i);
+        return ParseError::at(source, range.start, range.end, msg.to_owned());
+    }
+    let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
+    let mut first = None;
+    let mut float_field = None;
+    lexed.intersperse_trivia(&output, &mut |step| {
+        if let StrStep::Error { msg, pos } = step {
+            if msg == FLOAT_FIELD {
+                float_field.get_or_insert(pos);
+            } else {
+                first.get_or_insert((msg.to_owned(), pos));
+            }
+        }
+    });
+    let Some((msg, pos)) = first else {
+        // A float literal used as a field name that `rustc_syntax` could not make a name
+        // (its position is a token index), or no error at all.
+        let (start, end) = float_field.map_or((0, 0), |i| {
+            let range = lexed.text_range(i);
+            (range.start, range.end)
+        });
+        let message = float_field.map_or("the file could not be parsed", |_| FLOAT_FIELD);
+        return ParseError::at(source, start, end, message.to_owned());
+    };
+    // The parser reports an error at the trivia before the token it could not accept.
+    let significant = |i: usize| !lexed.kind(i).is_trivia();
+    let next = (0..lexed.len()).find(|&i| lexed.text_start(i) >= pos && significant(i));
+    let prev = (0..lexed.len())
+        .rev()
+        .find(|&i| lexed.text_start(i) < pos && significant(i));
+    let message = rustc_message(&msg, next.map(|i| (lexed.kind(i), lexed.text(i))), edition);
+    let prev_end = prev.map_or(0, |i| lexed.text_range(i).end);
+    match next {
+        // A token missing at the end of a line, as rustc places "expected `;`".
+        Some(i)
+            if msg.starts_with("expected ")
+                && source[prev_end..lexed.text_start(i)].contains('\n') =>
+        {
+            ParseError::at(source, prev_end, prev_end, message)
+        }
+        Some(i) => {
+            let range = lexed.text_range(i);
+            ParseError::at(source, range.start, range.end, message)
+        }
+        // At the end of the file, rustc reports the error after the last token.
+        None => ParseError::at(source, prev_end, prev_end, message),
+    }
+}
+
+/// rust-analyzer's parser message `msg`, worded as rustc words its messages where that
+/// takes no more than the tokens: a token kind such as `SEMICOLON` as the token, `;`, and
+/// after "expected ..." the token found, `found` (`None` at the end of the file).
+fn rustc_message(msg: &str, found: Option<(SyntaxKind, &str)>, edition: Edition) -> String {
+    let mut message = msg
+        .split(' ')
+        .map(|word| {
+            let (name, rest) = word.split_at(word.trim_end_matches(',').len());
+            match kind_named(name) {
+                Some(SyntaxKind::IDENT) => format!("identifier{rest}"),
+                Some(kind) if kind.is_punct() || name.ends_with("_KW") => {
+                    format!("`{}`{rest}", kind.text())
+                }
+                _ => word.to_owned(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ");
+    if msg.starts_with("expected ") && !msg.contains(", got ") {
+        // The first line of a token found that spans lines (a string literal): the message
+        // is one line.
+        let found = found.map(|(kind, text)| (kind, text.lines().next().unwrap_or(text)));
+        match found {
+            Some((kind, text)) if kind.is_keyword(edition) => {
+                message.push_str(&format!(", found keyword `{text}`"));
+            }
+            Some((_, text)) => message.push_str(&format!(", found `{text}`")),
+            None => message.push_str(", found `<eof>`"),
+        }
+    }
+    message
+}
+
+/// The token kind whose `Debug` name is `name`, such as `SEMICOLON`.
+fn kind_named(name: &str) -> Option<SyntaxKind> {
+    if name.is_empty() || !name.bytes().all(|b| b.is_ascii_uppercase() || b == b'_') {
+        return None;
+    }
+    (0..SyntaxKind::__LAST as u16)
+        .map(SyntaxKind::from)
+        .find(|kind| format!("{kind:?}") == name)
 }
 
 /// Formats a parsed source text. Returns `None` when the text does not parse or is longer

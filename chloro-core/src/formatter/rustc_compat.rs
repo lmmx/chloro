@@ -561,8 +561,9 @@ impl Walker {
     }
 }
 
-/// Walks the subtree of `root` in source order: one pass over its preorder elements.
-fn walk(root: Node<'_>, w: &mut Walker) -> bool {
+/// Walks the subtree of `root` in source order: one pass over its preorder elements. Returns
+/// the index of the first element a rule rejects.
+fn walk(root: Node<'_>, w: &mut Walker) -> Option<u32> {
     let tree = root.tree();
     let first = root.index();
     let end = tree.elem(first).end;
@@ -579,21 +580,21 @@ fn walk(root: Node<'_>, w: &mut Walker) -> bool {
         let e = tree.elem(i);
         if !e.is_node {
             if w.token(tree, i, e, first) {
-                return true;
+                return Some(i);
             }
             i += 1;
             continue;
         }
         let node = tree.node_at(i);
         if node_rejected(node, e.kind, first, w.toolchain) {
-            return true;
+            return Some(i);
         }
         match e.kind {
             SyntaxKind::ATTR if has_token(node, T![!]) => {
                 // After an outer doc comment, an inner attribute is an error ("expected
                 // outer doc comment" has a counterpart for `#![..]`).
                 if w.pending_outer_doc || inner_attr_in_if_block(tree, i, first) {
-                    return true;
+                    return Some(i);
                 }
                 attr_end = e.end;
                 attr_inner_doc_ok = w.inner_doc_ok;
@@ -604,14 +605,14 @@ fn walk(root: Node<'_>, w: &mut Walker) -> bool {
                 let mut j = i + 1;
                 if j < e.end && !tree.elem(j).is_node {
                     if w.token(tree, j, tree.elem(j), first) {
-                        return true;
+                        return Some(j);
                     }
                     j += 1;
                 }
                 for j in j..e.end {
                     let t = tree.elem(j);
                     if !t.is_node && w.colon(t.kind) {
-                        return true;
+                        return Some(j);
                     }
                 }
                 i = e.end;
@@ -621,7 +622,7 @@ fn walk(root: Node<'_>, w: &mut Walker) -> bool {
         }
         i += 1;
     }
-    false
+    None
 }
 
 /// `true` if rustc's parser rejects the file whose root is `file`, which rust-analyzer's
@@ -635,14 +636,25 @@ pub(crate) fn rejected_by_rustc(
 }
 
 /// `true` if rustc's parser rejects the syntax under `root` (a file or a macro argument).
-///
-/// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
-/// `root`; for a file, that is all of them.
 pub(crate) fn subtree_rejected_by_rustc(
     root: Node<'_>,
     edition: Edition,
     rustfmt_version: RustfmtVersion,
 ) -> bool {
+    rustc_rejection(root, edition, rustfmt_version).is_some()
+}
+
+/// The index of the element under `root` (a file or a macro argument) at which rustc's
+/// parser rejects it, or `None` if it accepts it: the first element a rule rejects, or the
+/// doc comment at the end of a file.
+///
+/// Rules that look at ancestors (`let` placement, `if` blocks) only see ancestors within
+/// `root`; for a file, that is all of them.
+pub(crate) fn rustc_rejection(
+    root: Node<'_>,
+    edition: Edition,
+    rustfmt_version: RustfmtVersion,
+) -> Option<u32> {
     let is_file = root.kind() == SyntaxKind::SOURCE_FILE;
     let mut walker = Walker {
         toolchain: Toolchain {
@@ -654,7 +666,24 @@ pub(crate) fn subtree_rejected_by_rustc(
         pending_outer_doc: false,
     };
     // A doc comment at the end of a file documents nothing.
-    walk(root, &mut walker) || (is_file && walker.pending_outer_doc)
+    walk(root, &mut walker)
+        .or_else(|| (is_file && walker.pending_outer_doc).then(|| last_outer_doc_comment(root)))
+}
+
+/// The index of the last outer doc comment under `root`, or of `root` if there is none.
+fn last_outer_doc_comment(root: Node<'_>) -> u32 {
+    let tree = root.tree();
+    let first = root.index();
+    (first..tree.elem(first).end)
+        .rev()
+        .find(|&i| {
+            let e = tree.elem(i);
+            !e.is_node
+                && e.kind == SyntaxKind::COMMENT
+                && doc_comment_style(&tree.source()[e.start as usize..(e.start + e.len) as usize])
+                    == Some(DocStyle::Outer)
+        })
+        .unwrap_or(first)
 }
 
 #[cfg(test)]

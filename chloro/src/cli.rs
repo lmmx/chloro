@@ -220,6 +220,10 @@ pub mod cli {
         }
 
         trace::mark("saved");
+        // As rustfmt reports a file that does not parse: its error, and exit status 1
+        for diagnostic in &agg.parse_errors {
+            eprint!("{diagnostic}");
+        }
         // Print summary
         print_summary(&agg, &args);
         trace::finish();
@@ -231,7 +235,7 @@ pub mod cli {
             std::process::exit(1);
         }
 
-        if !agg.errors.is_empty() {
+        if !agg.errors.is_empty() || !agg.parse_errors.is_empty() {
             std::process::exit(1);
         }
 
