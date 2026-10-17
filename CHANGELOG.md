@@ -51,7 +51,8 @@ are described on the [Performance](https://lmmx.github.io/chloro/performance/) p
   rustfmt's wall time on one core and 0.08–0.17 on four. Against 0.8.0, the formatter executes 66% fewer
   instructions on the same files and formats 2.7 times as many bytes per second on one core.
 - On the whole ruff workspace (2,008 files), chloro took 0.28 of `cargo fmt`'s wall time on
-  one thread and 0.038 on 20.
+  one thread and 0.038 on 20 (one measurement on a 20-core machine, against the rustfmt
+  1.10.0 that ruff's toolchain pins).
 - Peak memory on the same crates is 4–10 MiB on one core, against 6–29 MiB for 0.8.0
   (rustfmt: 43–86 MiB).
 - Nested closures no longer slow formatting down superlinearly: a 2 KB file of closures
