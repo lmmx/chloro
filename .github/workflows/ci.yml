@@ -55,10 +55,13 @@ jobs:
           - os: windows-latest
             features: --features chloro/cli,chloro-core/alloc-timing
     steps:
+      # The tests compare bytes (fixtures, snapshots, generated code): keep the files as
+      # committed, without Windows' \r\n conversion on checkout.
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --workspace ${{ matrix.features }}
+      - run: cargo test --workspace --no-fail-fast ${{ matrix.features }}
 
   windows-arm:
     name: build (aarch64-pc-windows-msvc)

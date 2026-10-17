@@ -2,7 +2,8 @@ use super::*;
 
 #[test]
 fn format_struct_literal_multiline() {
-    let input = "fn module(&self, _db: &dyn DefDatabase) -> ModuleId { ModuleId { krate: self.krate, block: None, local_id: DefMap::ROOT } }";
+    // Newline-terminated, so that `Auto` line endings are `\n` on every platform
+    let input = "fn module(&self, _db: &dyn DefDatabase) -> ModuleId { ModuleId { krate: self.krate, block: None, local_id: DefMap::ROOT } }\n";
     let output = format_source(input);
 
     println!("{}", output);

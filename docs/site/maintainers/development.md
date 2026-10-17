@@ -30,7 +30,8 @@ cargo test --workspace --all-features
 
 `--all-features` includes the measurement-only allocator features (`alloc-jemalloc` and the
 others), which need a C toolchain; jemalloc does not build with MSVC, so on Windows test
-with `--features chloro/cli` instead.
+with `--features chloro/cli` instead, in a checkout made with `core.autocrlf` off: the tests
+compare fixtures, snapshots and generated code byte for byte.
 
 The `Justfile` wraps the usual commands: `just test` (with `cargo nextest`), `just clippy`
 (`-D warnings`, all targets and features), `just check`, `just docs` (rustdoc). Formatting and

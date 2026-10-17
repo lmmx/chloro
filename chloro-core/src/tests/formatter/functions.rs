@@ -31,7 +31,8 @@ fn format_function_params_single_line_multiple_params() {
 #[test]
 fn format_function_params_multi_line_when_too_long() {
     // This should remain multi-line because it exceeds MAX_WIDTH (100)
-    let input = "pub fn very_long_function_name_that_makes_this_exceed_width(self, first_parameter: VeryLongTypeName, second_parameter: AnotherLongType) -> Result<(), Error> {}";
+    // Newline-terminated, so that `Auto` line endings are `\n` on every platform
+    let input = "pub fn very_long_function_name_that_makes_this_exceed_width(self, first_parameter: VeryLongTypeName, second_parameter: AnotherLongType) -> Result<(), Error> {}\n";
     let output = format_source(input);
     // Should have newlines in parameters
     assert!(output.contains(",\n"));
