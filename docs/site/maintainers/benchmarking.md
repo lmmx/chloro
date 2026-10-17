@@ -79,6 +79,20 @@ the real binary behind rustup's proxy).
     sessions on the virtual machine chloro was measured on. Compare tools within one run, never across runs,
     and treat a wall-time change smaller than the run-to-run spread as no change.
 
+## On any Cargo project: `just vs-rustfmt`
+
+```sh
+just vs-rustfmt path/to/project      # chloro, chloro --threads 1 and cargo fmt
+just vs-ruff                         # the same on ruff, in ~/tmp/ruff (cloned if missing)
+just vs-ruff ~/src/ruff 10           # another checkout, 10 runs
+```
+
+These recipes (`.just/bench.just`) give both tools the same files: the list `cargo fmt --all`
+formats, so each file is formatted once. A plain `rustfmt` over every `.rs` file of a
+project formats each module file several times, because rustfmt also formats the modules a
+file declares; on ruff that is 3.6 passes per file. Both tools run in check mode, so use an
+already-formatted tree. They need `hyperfine`.
+
 ## In process: `bench`
 
 ```sh
