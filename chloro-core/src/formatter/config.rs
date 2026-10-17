@@ -19,7 +19,10 @@ pub(crate) static MAX_WIDTH: usize = 100;
 /// Line endings written to the output.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum NewlineStyle {
-    /// Use the line ending of the first newline in the input (`\n` if there is none).
+    /// The line ending of the first newline in the source as rustc reads it, in which `\r\n`
+    /// is already `\n`: so `\n`, and the platform's for a source without a newline. A file
+    /// that differs from its output only in its line endings counts as formatted
+    /// ([`is_unchanged`](crate::is_unchanged)).
     #[default]
     Auto,
     /// `\r\n` on Windows hosts, `\n` elsewhere.

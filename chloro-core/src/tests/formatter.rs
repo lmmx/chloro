@@ -23,6 +23,39 @@ fn format_simple_function() {
 }
 
 #[test]
+fn is_unchanged_compares_as_rustfmt_does() {
+    let auto = crate::Config::default();
+    let mut unix = crate::Config::default();
+    unix.set("newline_style", "Unix").unwrap();
+    let lf = "fn a() {}\nfn b() {}\n";
+    // Under `Auto`, the source as rustc reads it: `\r\n` and a byte order mark do not count.
+    let crlf = "fn a() {}\r\nfn b() {}\r\n";
+    let mixed = "fn a() {}\nfn b() {}\r\n";
+    for source in [crlf, mixed, "\u{feff}fn a() {}\nfn b() {}\n", lf] {
+        let formatted = format_source(source);
+        assert_eq!(formatted, lf);
+        assert!(crate::is_unchanged(source, &formatted, &auto), "{source:?}");
+        let formatted = crate::format_source_with_config(source, &unix);
+        assert_eq!(crate::is_unchanged(source, &formatted, &unix), source == lf);
+    }
+    // A difference other than line endings counts.
+    let unformatted = "fn a(){}\r\nfn b() {}\r\n";
+    assert!(!crate::is_unchanged(
+        unformatted,
+        &format_source(unformatted),
+        &auto
+    ));
+    // An output equal to the source is unchanged under any style.
+    let mut off = unix.clone();
+    off.set("disable_all_formatting", "true").unwrap();
+    assert!(crate::is_unchanged(
+        crlf,
+        &crate::format_source_with_config(crlf, &off),
+        &off
+    ));
+}
+
+#[test]
 fn parse_only_parses_as_formatting_does() {
     let config = crate::Config::default();
     let src = "fn main() {\n    let x = 1;\n}\n";

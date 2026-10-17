@@ -60,7 +60,7 @@ mod width;
 
 use std::borrow::Cow;
 
-use config::{Config, Settings};
+use config::{Config, NewlineStyle, Settings};
 pub use formatting::ParseError;
 pub use unit_cache::{CachedUnit, UnitCache, UnitKey};
 
@@ -96,6 +96,23 @@ pub fn format_source_with_config(source: &str, config: &Config) -> String {
 pub fn try_format_source_with_config(source: &str, config: &Config) -> Result<String, ParseError> {
     format_whole(source, config, format_sequential)
         .or_else(|refused| refused.reason(source, config))
+}
+
+/// Whether rustfmt counts `formatted`, the output of a formatting function for `source`
+/// under `config`, as leaving `source` unchanged: what `--check` reports and whether
+/// overwriting the file rewrites it (rustfmt's `source_file::write_file`).
+///
+/// Under `newline_style = Auto`, rustfmt compares its output with the source as rustc reads
+/// it, without a leading byte order mark and with `\r\n` read as `\n`. A source that differs
+/// from its formatted output only in those, such as a formatted file with `\r\n` line
+/// endings, is therefore already formatted and stays as it is, although the formatted text
+/// has `\n` line endings. Under any other style rustfmt compares with the source's bytes. An
+/// output equal to the source, as for `#![rustfmt::skip]` or `disable_all_formatting`, is
+/// always unchanged.
+pub fn is_unchanged(source: &str, formatted: &str, config: &Config) -> bool {
+    source == formatted
+        || (config.newline_style == NewlineStyle::Auto
+            && formatting::normalize_src(source) == formatted)
 }
 
 /// Parses `source` as [`format_source_with_config`] does before it formats anything, and

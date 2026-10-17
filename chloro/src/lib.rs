@@ -18,14 +18,15 @@
 //! assert_eq!(formatted, "fn main() {\n  let x = 1;\n}\n");
 //! ```
 //!
-//! As in rustfmt, the default `newline_style = "Auto"` keeps the input's line endings, and
-//! gives input with no line break the platform's (`\r\n` on Windows).
+//! As in rustfmt, the output has `\n` line endings under the default `newline_style =
+//! "Auto"` (the platform's for input with no line break, `\r\n` on Windows), and
+//! [`is_unchanged`] tells whether rustfmt counts the output as a change to the file.
 //!
 //! Source that does not parse comes back unchanged; [`try_format_source_with_config`]
 //! returns its [`ParseError`] instead.
 
 // Re-export the core formatting functionality
 pub use chloro_core::{
-    Config, ParseError, chloro_debug, format_source, format_source_with_config,
+    Config, ParseError, chloro_debug, format_source, format_source_with_config, is_unchanged,
     try_format_source_with_config,
 };

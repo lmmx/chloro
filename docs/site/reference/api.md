@@ -22,6 +22,7 @@ each is explained on this site.
 | `format_source_with_unit_cache(source, config, threads, cache: &dyn UnitCache) -> String` | | yes | reuses formatted items; [guide](../guide/library.md#a-cache-of-formatted-items) |
 | `try_format_source_with_config(source, config) -> Result<String, ParseError>` | yes | yes | the same text, or the syntax error; [guide](../guide/library.md#parse-errors) |
 | `try_format_source_with_config_parallel(source, config, threads)`, `try_format_source_with_unit_cache(source, config, threads, cache)` | | yes | the same for the parallel and cached functions |
+| `is_unchanged(source, formatted, config) -> bool` | yes | yes | whether rustfmt counts `formatted` as a change to `source` (line endings, byte order mark); [guide](../guide/library.md#format-a-string) |
 | `ParseError` | yes | yes | `message()`, `line()`, `column()` (from 1, in characters), `width()`; `Display` as `line:column: message` |
 | `parse_only(source, config) -> Option<usize>` | | yes | the parse alone; [guide](../guide/library.md#parse-without-formatting) |
 

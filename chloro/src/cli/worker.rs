@@ -5,7 +5,7 @@ use super::trace;
 use super::units::Units;
 use crate::vlog;
 use chloro_core::{
-    format_source_with_config, try_format_source_with_config,
+    format_source_with_config, is_unchanged, try_format_source_with_config,
     try_format_source_with_config_parallel, try_format_source_with_unit_cache,
 };
 use std::fs;
@@ -117,14 +117,18 @@ pub fn format_file(
         }
     };
 
-    let changed = original != formatted;
+    // As rustfmt decides: under `newline_style = Auto`, a file whose only difference from the
+    // output is its `\r\n` line endings or a byte order mark is formatted, and left as it is.
+    let changed = !is_unchanged(&original, &formatted, &config);
     let original_len = original.len();
     let formatted_len = formatted.len();
 
-    // Unchanged content is a fixed point by observation. Content this run writes is recorded
-    // only when a second pass leaves it unchanged, so every recorded digest was observed to
-    // be a fixed point; the check costs one more format of each rewritten file.
-    let mut fixed_point = if changed { None } else { digest };
+    // Content the formatter returns byte for byte is a fixed point by observation (a file left
+    // unchanged only by `is_unchanged`'s line-ending rule is not: a cache hit prints the
+    // content itself as the output). Content this run writes is recorded only when a second
+    // pass leaves it unchanged, so every recorded digest was observed to be a fixed point; the
+    // check costs one more format of each rewritten file.
+    let mut fixed_point = if original == formatted { digest } else { None };
 
     // Handle output based on mode
     if args.write {

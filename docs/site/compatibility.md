@@ -119,9 +119,6 @@ Six cases are recorded and open in the [conformance ledger][ledger]:
 | 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro's output matches rustfmt's at every pass. |
 | 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro reports a parse error and leaves the file unchanged. |
 
-Also open, as an issue: in a file whose line endings are mixed, rustfmt keeps a stray `\r\n`
-where chloro writes `\n` ([#97](https://github.com/lmmx/chloro/issues/97)).
-
 A difference not listed here is a bug: please [open an issue](https://github.com/lmmx/chloro/issues)
 with the input, the options, and the rustfmt version.
 
