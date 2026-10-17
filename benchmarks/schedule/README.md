@@ -22,6 +22,7 @@ what else the host is running.
 | `report.py` | the record's tables from a `collect.sh` directory (`d1` measured, `d2` reconstructed, `d4` phases) |
 | `cpu_split.py` | user and system CPU, faults and context switches at 1 thread on one core, 4 threads on one core and 4 threads on four cores, interleaved |
 | `identity.sh` | a CLI's output against another's (`--check`, `--write`, print; 1, 2 and 4 threads; crates, raw crates and the fixtures tree) |
+| `identity_start.sh` | the written trees of a CLI older than `--threads` and `--no-cache` (the programme's start, `884f9c9`) against a current CLI's at 1, 2 and 4 threads; prints the differing files |
 
 ## Run
 
