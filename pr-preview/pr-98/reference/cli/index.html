@@ -1182,6 +1182,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-version-v" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--version</kbd></span> / <span class="keys"><kbd>-V</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-help-h" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1467,6 +1478,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-version-v" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--version</kbd></span> / <span class="keys"><kbd>-V</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-help-h" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1546,6 +1568,7 @@ Options:
       --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the
                      user cache directory, e.g. ~/.cache/chloro)
       --threads N    Threads to use (default: one per core)
+  -V, --version      Print the version and exit
   -h, --help         Show this help message
 
 Examples:
@@ -1609,6 +1632,10 @@ else the platform's user cache directory (<code>~/.cache/chloro</code>, <code>~/
 <h3 id="-verbose-v"><span class="keys"><kbd>--verbose</kbd></span> / <span class="keys"><kbd>-v</kbd></span><a class="headerlink" href="#-verbose-v" title="Permanent link">&para;</a></h3>
 <p>Report, on standard error, the sources and mode, the cache file and its size, the number of
 files and threads, each file as it is processed, and a summary at the end.</p>
+<h3 id="-version-v"><span class="keys"><kbd>--version</kbd></span> / <span class="keys"><kbd>-V</kbd></span><a class="headerlink" href="#-version-v" title="Permanent link">&para;</a></h3>
+<p>Print the version and exit. A binary installed with <code>just reinstall</code> from a checkout also
+prints its build ID, <code>chloro 0.8.0 (build &lt;id&gt;)</code>, a hash of the source it was built from
+(<a href="../../maintainers/benchmarking/#on-any-cargo-project-just-vs-rustfmt">Benchmarking</a>).</p>
 <h3 id="-help-h"><span class="keys"><kbd>--help</kbd></span> / <span class="keys"><kbd>-h</kbd></span><a class="headerlink" href="#-help-h" title="Permanent link">&para;</a></h3>
 <p>Print the help text and exit.</p>
 <h2 id="exit-status">Exit status<a class="headerlink" href="#exit-status" title="Permanent link">&para;</a></h2>

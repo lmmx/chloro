@@ -1435,6 +1435,13 @@ formats, so each file is formatted once. A plain <code>rustfmt</code> over every
 project formats each module file several times, because rustfmt also formats the modules a
 file declares; on ruff that is 3.6 passes per file. Both tools run in check mode, so use an
 already-formatted tree. They need <code>hyperfine</code>.</p>
+<p>They time the <code>chloro</code> on your <code>PATH</code>, first making sure it was built from this checkout.
+<code>just reinstall</code> installs the CLI with a build ID baked in, which <code>chloro --version</code>
+prints; <code>just build-id</code> computes the ID of the checkout as it is on disk, from the content
+of every file that goes into the binary (committed or not), <code>Cargo.lock</code>, the toolchain and
+the install command. When the two match, the benchmark starts at once without running
+Cargo; when they differ, or the installed <code>chloro</code> has no build ID, the recipe runs
+<code>just reinstall</code> first, outside the timed runs.</p>
 <h2 id="in-process-bench">In process: <code>bench</code><a class="headerlink" href="#in-process-bench" title="Permanent link">&para;</a></h2>
 <div class="language-sh highlight"><pre><span></span><code>cargo<span class="w"> </span>run<span class="w"> </span>--release<span class="w"> </span>-p<span class="w"> </span>chloro-core<span class="w"> </span>--example<span class="w"> </span>bench<span class="w"> </span>--<span class="w"> </span>-n<span class="w"> </span><span class="m">5</span><span class="w">                </span><span class="c1"># MB/s on the corpus</span>
 cargo<span class="w"> </span>run<span class="w"> </span>--release<span class="w"> </span>-p<span class="w"> </span>chloro-core<span class="w"> </span>--example<span class="w"> </span>bench<span class="w"> </span>--<span class="w"> </span>--root<span class="w"> </span>~/.cargo/registry/src
