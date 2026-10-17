@@ -1302,10 +1302,6 @@ the Rust compiler. It comes as a 2 MB command-line tool and as a library.</p>
 <div class="chl-bench">
 <p class="chl-bench-kicker">Controlled benchmark</p>
 <p class="chl-bench-title">Nine crates <span>vs rustfmt 1.9.0</span></p>
-<p class="chl-bench-note">hir, hir-ty, ide-db, syntax and parser from rust-analyzer, and
-tokio, regex-syntax, clap_builder and winnow from crates.io: 215 KB–2.9 MB each.
-An idle four-core Linux VM, 30 runs per cell, one-core runs pinned. Ranges span the
-nine crates.</p>
 <table class="chl-bench-table">
 <thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
 <tbody>
@@ -1314,13 +1310,14 @@ nine crates.</p>
 <tr><th>chloro, 4 cores</th><td><span class="chl-meter" title="8–17% of rustfmt's wall time, per crate: 6.1–13× as fast"><span class="chl-fill" style="width:7.7%"></span><span class="chl-spread" style="left:7.7%;width:8.8%"></span></span>6.1–13×</td><td>5–23 MiB</td></tr>
 </tbody>
 </table>
+<p class="chl-bench-note">hir, hir-ty, ide-db, syntax and parser from rust-analyzer, and
+tokio, regex-syntax, clap_builder and winnow from crates.io: 215 KB–2.9 MB each.
+An idle four-core Linux VM, 30 runs per cell, one-core runs pinned. Ranges span the
+nine crates.</p>
 </div>
 <div class="chl-bench">
 <p class="chl-bench-kicker">A large real-world workspace</p>
 <p class="chl-bench-title">ruff <span>vs <code>cargo fmt</code></span></p>
-<p class="chl-bench-note">The whole <a href="https://github.com/astral-sh/ruff">ruff</a>
-repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
-5 runs each (<code>just vs-ruff</code>).</p>
 <table class="chl-bench-table">
 <thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
 <tbody>
@@ -1329,6 +1326,9 @@ repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 
 <tr><th>chloro, 20 threads</th><td><span class="chl-meter" title="0.21 s against 5.63 s: 26.5× as fast"><span class="chl-fill" style="width:3.8%"></span></span>26.5×</td><td>90 MiB</td></tr>
 </tbody>
 </table>
+<p class="chl-bench-note">The whole <a href="https://github.com/astral-sh/ruff">ruff</a>
+repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
+5 runs each (<code>just vs-ruff</code>).</p>
 </div>
 </div>
 
