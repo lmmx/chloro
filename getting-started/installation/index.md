@@ -56,4 +56,4 @@ Both crates have no default features. The [Library guide](<https://lmmx.github.i
 
 ## Run-time requirements
 
-chloro has no run-time dependencies. It does not call `rustfmt`, `rustc` or `cargo`, and it reads no configuration file: options come from `--config` on the command line or from `Config` in the library. Apart from the files it formats, the only file it writes is its [cache](<https://lmmx.github.io/chloro/guide/caching/index.md>), which lives in the user cache directory by default.
+chloro has no run-time dependencies. It does not call `rustfmt`, `rustc` or `cargo`. The command line reads the `rustfmt.toml` and `Cargo.toml` files that rustfmt and `cargo fmt` read for a file ([Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>)); the library reads no files. Apart from the files it formats, the only file it writes is its [cache](<https://lmmx.github.io/chloro/guide/caching/index.md>), which lives in the user cache directory by default.

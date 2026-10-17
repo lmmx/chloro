@@ -1,6 +1,6 @@
 # Quickstart
 
-How to check and format a crate with chloro, and how to run the check in CI. Each command gives the same result as `rustfmt` at edition 2024 with default options.
+How to check and format a crate with chloro, and how to run the check in CI. Each command gives the same result as `cargo fmt`: chloro reads the crate's `rustfmt.toml` and edition as it does.
 
 ## Check
 
@@ -49,7 +49,7 @@ $ chloro --config wrap_comments=true src/
 Error: invalid --config: `wrap_comments` is an unstable rustfmt option; only its default `false` is supported
 ```
 
-chloro does not read `rustfmt.toml`. If your project has one, translate its stable options into `--config`; [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists every option chloro accepts.
+A `rustfmt.toml` in the project applies as it does for `cargo fmt`, under `--config`; [Configuration](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) has the rules and every option chloro accepts.
 
 ## Use it in CI
 

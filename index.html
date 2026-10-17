@@ -1373,12 +1373,13 @@ chloro<span class="w"> </span>--write<span class="w"> </span>src/<span class="w"
 code it comes from. Any output that differs from rustfmt's is a bug; the
 <a href="compatibility/#known-differences">known differences</a> are listed.</p>
 <p>It takes rustfmt's stable options under their rustfmt names (<code>max_width</code>, <code>tab_spaces</code>,
-<code>use_small_heuristics</code>, <code>edition</code>, <code>style_edition</code> and the rest), either as
-<code>--config key=value</code> on the command line or on a <code>Config</code> in the library. Unstable options
+<code>use_small_heuristics</code>, <code>edition</code>, <code>style_edition</code> and the rest), from <code>rustfmt.toml</code> and
+<code>--config key=value</code> on the command line or on a <code>Config</code> in the library, and takes each
+crate's edition from its <code>Cargo.toml</code> as <code>cargo fmt</code> does. Unstable options
 keep their default values. By default it reproduces rustfmt 1.9.0; with
 <code>rustfmt_version = "1.8.0"</code> it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.</p>
-<p>The command line is not a replacement for the <code>rustfmt</code> binary: chloro does not read
-<code>rustfmt.toml</code>, has no <code>--emit</code> modes, and does not format standard input.
+<p>The command line is not a replacement for the <code>rustfmt</code> binary: chloro has no <code>--emit</code>
+modes, and does not format standard input.
 <a href="compatibility/#what-is-not-covered">rustfmt compatibility</a> lists the other differences.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <div class="chl-cards">

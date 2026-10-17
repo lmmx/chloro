@@ -1474,8 +1474,18 @@ text.</p>
 </tr>
 <tr>
 <td><code>--config OPTS</code></td>
-<td>rustfmt options as <code>key=value,key=value</code></td>
+<td>rustfmt options as <code>key=value,key=value</code>, over the configuration file's</td>
 <td><a href="../configuration/">Configuration</a></td>
+</tr>
+<tr>
+<td><code>--config-path PATH</code></td>
+<td>the <code>rustfmt.toml</code> for every file, or a directory holding one</td>
+<td><a href="../configuration/#configuration-files">Configuration files</a></td>
+</tr>
+<tr>
+<td><code>--isolated</code></td>
+<td>read no <code>rustfmt.toml</code> and no <code>Cargo.toml</code>: only <code>--config</code> applies</td>
+<td><a href="../configuration/#configuration-files">Configuration files</a></td>
 </tr>
 <tr>
 <td><code>--threads N</code></td>
@@ -1509,12 +1519,6 @@ text.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">The default source in <code>--help</code></p>
-<p>The help text describes the default source as <code>'src'</code>; the default is in fact the
-current directory (<code>.</code>), as described above
-(<a href="https://github.com/lmmx/chloro/issues/91">#91</a>).</p>
-</div>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1553,8 +1557,8 @@ current directory (<code>.</code>), as described above
   line endings that does need formatting is written with <code>\n</code> ones. Under the other styles,
   any difference in the bytes counts.</li>
 </ul>
-<p>A few things rustfmt does that chloro does not (reading <code>rustfmt.toml</code>, <code>--emit</code>, formatting
-standard input) are listed under
+<p>A few things rustfmt does that chloro does not (<code>--emit</code>, formatting standard input) are
+listed under
 <a href="../../compatibility/#what-is-not-covered">rustfmt compatibility</a>.</p>
 
 

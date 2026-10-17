@@ -1132,6 +1132,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-config-path-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--config-path PATH</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-isolated" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--isolated</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-threads-n" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1428,6 +1450,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-config-path-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--config-path PATH</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-isolated" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--isolated</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-threads-n" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1573,7 +1617,11 @@ Options:
   -c, --check        Check if files need formatting (exit 1 if so)
   -w, --write        Write formatted output back to files
   -v, --verbose      Show verbose output
-      --config OPTS  rustfmt options as comma-separated key=value pairs
+      --config OPTS  rustfmt options as comma-separated key=value pairs, over
+                     the configuration file's
+      --config-path PATH
+                     The rustfmt.toml for every file, or a directory holding one
+      --isolated     Read no rustfmt.toml and no Cargo.toml edition
       --no-cache     Format every file; do not read or write the caches
       --unit-cache   Also cache each formatted top-level item, so that a changed
                      file formats only the items not seen before (off by default)
@@ -1599,6 +1647,12 @@ Examples:
   # Format with rustfmt options
   chloro --config max_width=80,tab_spaces=2 src/lib.rs
 
+Configuration:
+  As rustfmt, chloro reads each file's nearest .rustfmt.toml or rustfmt.toml
+  (else the one in the home or the user configuration directory), and, as cargo
+  fmt, takes the edition from the nearest Cargo.toml's [package]. --config
+  overrides both.
+
 Cache:
   chloro records the content hash of every file it finds already formatted,
   keyed by the chloro binary and the --config options, and skips formatting
@@ -1622,8 +1676,18 @@ Cache:
 <code>--write</code>, every formatted file is printed to standard output.</p>
 <h3 id="-config-opts"><span class="keys"><kbd>--config OPTS</kbd></span><a class="headerlink" href="#-config-opts" title="Permanent link">&para;</a></h3>
 <p>rustfmt options as comma-separated <code>key=value</code> pairs, with rustfmt's names and value
-spellings, plus <code>rustfmt_version</code>. An invalid option is an error before any file is read.
+spellings, plus <code>rustfmt_version</code>, applied over each file's <code>rustfmt.toml</code> and edition. An
+invalid option is an error before any file is read.
 <a href="../../guide/configuration/">Configuration</a> lists them.</p>
+<h3 id="-config-path-path"><span class="keys"><kbd>--config-path PATH</kbd></span><a class="headerlink" href="#-config-path-path" title="Permanent link">&para;</a></h3>
+<p>The <code>rustfmt.toml</code> for every file, or a directory whose <code>.rustfmt.toml</code> or <code>rustfmt.toml</code> it
+is, in place of each file's nearest one. A path that does not exist, or a directory without
+one, is an error. The edition still comes from each file's <code>Cargo.toml</code>.
+<a href="../../guide/configuration/#configuration-files">Configuration files</a>.</p>
+<h3 id="-isolated"><span class="keys"><kbd>--isolated</kbd></span><a class="headerlink" href="#-isolated" title="Permanent link">&para;</a></h3>
+<p>Read no <code>rustfmt.toml</code> (the nearest, the home directory's or the user configuration
+directory's) and take no edition from a <code>Cargo.toml</code>: every file is formatted with the
+defaults and <code>--config</code>. Cannot be combined with <code>--config-path</code>.</p>
 <h3 id="-threads-n"><span class="keys"><kbd>--threads N</kbd></span><a class="headerlink" href="#-threads-n" title="Permanent link">&para;</a></h3>
 <p>The number of worker threads. The default, or <code>0</code>, is one per core. Files of 128 KiB and
 more also have their top-level items formatted on this many threads.

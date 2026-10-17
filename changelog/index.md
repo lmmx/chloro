@@ -10,9 +10,12 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 
 - `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
 - `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
+- The command line reads each file's configuration as `cargo fmt` does ([\#105](<https://github.com/lmmx/chloro/issues/105>)): the nearest `.rustfmt.toml` or `rustfmt.toml` (else the home or user configuration directory's), with rustfmt's warnings for unstable and unknown options and its refusal of an invalid value, and the edition of the crate's `Cargo.toml` (`edition.workspace = true` included), which overrides the file's. `--config` applies over both, `--config-path` names the file for every file, and `--isolated` reads neither. The fixed-point and unit caches are kept per configuration.
+- `Config::set_from_file` and `FileValue`: one option of a configuration file, applied with rustfmt's types and warnings.
 
 ### Changed
 
+- A choice is read in any case, as rustfmt reads it: `newline_style=unix` is `Unix`.
 - A directory walk skips hidden entries (`.git/`, `.hidden.rs`) and cache directories, those with a `CACHEDIR.TAG` file such as Cargo's `target/`, so `chloro --check` at the root of a project no longer formats its build output ([\#90](<https://github.com/lmmx/chloro/issues/90>)). A path named on the command line is always used.
 
 ### Fixed

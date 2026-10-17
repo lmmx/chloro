@@ -18,7 +18,11 @@ Options:
   -c, --check        Check if files need formatting (exit 1 if so)
   -w, --write        Write formatted output back to files
   -v, --verbose      Show verbose output
-      --config OPTS  rustfmt options as comma-separated key=value pairs
+      --config OPTS  rustfmt options as comma-separated key=value pairs, over
+                     the configuration file's
+      --config-path PATH
+                     The rustfmt.toml for every file, or a directory holding one
+      --isolated     Read no rustfmt.toml and no Cargo.toml edition
       --no-cache     Format every file; do not read or write the caches
       --unit-cache   Also cache each formatted top-level item, so that a changed
                      file formats only the items not seen before (off by default)
@@ -43,6 +47,12 @@ Examples:
 
   # Format with rustfmt options
   chloro --config max_width=80,tab_spaces=2 src/lib.rs
+
+Configuration:
+  As rustfmt, chloro reads each file's nearest .rustfmt.toml or rustfmt.toml
+  (else the one in the home or the user configuration directory), and, as cargo
+  fmt, takes the edition from the nearest Cargo.toml's [package]. --config
+  overrides both.
 
 Cache:
   chloro records the content hash of every file it finds already formatted,
@@ -71,7 +81,15 @@ Write each file whose formatted text differs from its contents. Without `--check
 
 ### <kbd>--config OPTS</kbd>
 
-rustfmt options as comma-separated `key=value` pairs, with rustfmt's names and value spellings, plus `rustfmt_version`. An invalid option is an error before any file is read. [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists them.
+rustfmt options as comma-separated `key=value` pairs, with rustfmt's names and value spellings, plus `rustfmt_version`, applied over each file's `rustfmt.toml` and edition. An invalid option is an error before any file is read. [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists them.
+
+### <kbd>--config-path PATH</kbd>
+
+The `rustfmt.toml` for every file, or a directory whose `.rustfmt.toml` or `rustfmt.toml` it is, in place of each file's nearest one. A path that does not exist, or a directory without one, is an error. The edition still comes from each file's `Cargo.toml`. [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>).
+
+### <kbd>--isolated</kbd>
+
+Read no `rustfmt.toml` (the nearest, the home directory's or the user configuration directory's) and take no edition from a `Cargo.toml`: every file is formatted with the defaults and `--config`. Cannot be combined with `--config-path`.
 
 ### <kbd>--threads N</kbd>
 

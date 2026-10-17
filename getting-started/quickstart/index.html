@@ -1348,8 +1348,8 @@
 
 <h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
 <p class="lede">How to check and format a crate with chloro, and how to run the check in CI.
-Each command gives the same result as <code>rustfmt</code> at edition 2024 with default
-options.</p>
+Each command gives the same result as <code>cargo fmt</code>: chloro reads the crate's
+<code>rustfmt.toml</code> and edition as it does.</p>
 
 <h2 id="check">Check<a class="headerlink" href="#check" title="Permanent link">&para;</a></h2>
 <p>From the root of a crate:</p>
@@ -1389,8 +1389,9 @@ default stops the run before any file is read:</p>
 <div class="language-console highlight"><pre><span></span><code><span class="gp">$ </span>chloro<span class="w"> </span>--config<span class="w"> </span><span class="nv">wrap_comments</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>src/
 <span class="go">Error: invalid --config: `wrap_comments` is an unstable rustfmt option; only its default `false` is supported</span>
 </code></pre></div>
-<p>chloro does not read <code>rustfmt.toml</code>. If your project has one, translate its stable options
-into <code>--config</code>; <a href="../../guide/configuration/">Configuration</a> lists every option chloro accepts.</p>
+<p>A <code>rustfmt.toml</code> in the project applies as it does for <code>cargo fmt</code>, under <code>--config</code>;
+<a href="../../guide/configuration/#configuration-files">Configuration</a> has the rules and every
+option chloro accepts.</p>
 <h2 id="use-it-in-ci">Use it in CI<a class="headerlink" href="#use-it-in-ci" title="Permanent link">&para;</a></h2>
 <p>A GitHub Actions job that fails when a file is not formatted:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span class="nt">jobs</span><span class="p">:</span>

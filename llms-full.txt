@@ -60,9 +60,9 @@ assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 
 chloro's formatting modules follow rustfmt's source files (`items`, `expr`, `chains`, `lists`, `comment` and so on), so each formatting decision can be checked against the rustfmt code it comes from. Any output that differs from rustfmt's is a bug; the [known differences](<https://lmmx.github.io/chloro/compatibility/#known-differences>) are listed.
 
-It takes rustfmt's stable options under their rustfmt names (`max_width`, `tab_spaces`, `use_small_heuristics`, `edition`, `style_edition` and the rest), either as `--config key=value` on the command line or on a `Config` in the library. Unstable options keep their default values. By default it reproduces rustfmt 1.9.0; with `rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
+It takes rustfmt's stable options under their rustfmt names (`max_width`, `tab_spaces`, `use_small_heuristics`, `edition`, `style_edition` and the rest), from `rustfmt.toml` and `--config key=value` on the command line or on a `Config` in the library, and takes each crate's edition from its `Cargo.toml` as `cargo fmt` does. Unstable options keep their default values. By default it reproduces rustfmt 1.9.0; with `rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
 
-The command line is not a replacement for the `rustfmt` binary: chloro does not read `rustfmt.toml`, has no `--emit` modes, and does not format standard input. [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>) lists the other differences.
+The command line is not a replacement for the `rustfmt` binary: chloro has no `--emit` modes, and does not format standard input. [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>) lists the other differences.
 
 ## Documentation
 
@@ -128,11 +128,11 @@ Both crates have no default features. The [Library guide](<https://lmmx.github.i
 
 ## Run-time requirements
 
-chloro has no run-time dependencies. It does not call `rustfmt`, `rustc` or `cargo`, and it reads no configuration file: options come from `--config` on the command line or from `Config` in the library. Apart from the files it formats, the only file it writes is its [cache](<https://lmmx.github.io/chloro/guide/caching/index.md>), which lives in the user cache directory by default.
+chloro has no run-time dependencies. It does not call `rustfmt`, `rustc` or `cargo`. The command line reads the `rustfmt.toml` and `Cargo.toml` files that rustfmt and `cargo fmt` read for a file ([Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>)); the library reads no files. Apart from the files it formats, the only file it writes is its [cache](<https://lmmx.github.io/chloro/guide/caching/index.md>), which lives in the user cache directory by default.
 
 # Quickstart
 
-How to check and format a crate with chloro, and how to run the check in CI. Each command gives the same result as `rustfmt` at edition 2024 with default options.
+How to check and format a crate with chloro, and how to run the check in CI. Each command gives the same result as `cargo fmt`: chloro reads the crate's `rustfmt.toml` and edition as it does.
 
 ## Check
 
@@ -181,7 +181,7 @@ $ chloro --config wrap_comments=true src/
 Error: invalid --config: `wrap_comments` is an unstable rustfmt option; only its default `false` is supported
 ```
 
-chloro does not read `rustfmt.toml`. If your project has one, translate its stable options into `--config`; [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists every option chloro accepts.
+A `rustfmt.toml` in the project applies as it does for `cargo fmt`, under `--config`; [Configuration](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) has the rules and every option chloro accepts.
 
 ## Use it in CI
 
@@ -278,19 +278,15 @@ The flags are summarised here; the [CLI reference](<https://lmmx.github.io/chlor
 | `-c`, `--check` | exit 1 if any file would change; write nothing | [above](<#modes>) |
 | `-w`, `--write` | write formatted files in place | [above](<#modes>) |
 | `-v`, `--verbose` | report each file, the cache in use, the thread count and a summary, on standard error |  |
-| `--config OPTS` | rustfmt options as `key=value,key=value` | [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) |
+| `--config OPTS` | rustfmt options as `key=value,key=value`, over the configuration file's | [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) |
+| `--config-path PATH` | the `rustfmt.toml` for every file, or a directory holding one | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
+| `--isolated` | read no `rustfmt.toml` and no `Cargo.toml`: only `--config` applies | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
 | `--threads N` | worker threads (default: one per core) | [Parallelism](<https://lmmx.github.io/chloro/guide/parallelism/index.md>) |
 | `--no-cache` | neither read nor write the caches | [Caching](<https://lmmx.github.io/chloro/guide/caching/index.md>) |
 | `--unit-cache` | also cache each formatted top-level item | [Caching](<https://lmmx.github.io/chloro/guide/caching/#the-unit-cache>) |
 | `--cache-dir DIR` | where the caches live | [Caching](<https://lmmx.github.io/chloro/guide/caching/#where-the-cache-lives>) |
 | `-V`, `--version` | print the version, marked `-dev` unless built from the release | [Reference](<https://lmmx.github.io/chloro/reference/cli/#-version-v>) |
 | `-h`, `--help` | print the help text |  |
-
-> [!NOTE]
->
-> **The default source in `--help`**
->
-> The help text describes the default source as `'src'`; the default is in fact the current directory (`.`), as described above ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
 
 ## Environment variables
 
@@ -308,13 +304,13 @@ chloro handles both as rustfmt does:
 - The output's line endings follow the `newline_style` option. `Unix` and `Windows` force `\n` or `\r\n`, and `Native` uses the platform's. The default, `Auto`, takes the style of the first line ending of the text as rustc reads it, in which `\r\n` is already `\n`: so the output has `\n` line endings (the platform's for a file without a line break).
 - Whether a file needs formatting is decided as rustfmt decides it. Under `Auto`, a file that differs from its formatted output only in its `\r\n` line endings or a byte order mark is formatted: `--check` passes and `--write` leaves it as it is. A file with `\r\n` line endings that does need formatting is written with `\n` ones. Under the other styles, any difference in the bytes counts.
 
-A few things rustfmt does that chloro does not (reading `rustfmt.toml`, `--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
+A few things rustfmt does that chloro does not (`--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
 
 # Configuration
 
 chloro accepts rustfmt's stable options, with the same names, value spellings and defaults. It adds one option, `rustfmt_version`, which selects the rustfmt release to reproduce.
 
-With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfmt.toml`.
+The command line reads each file's `rustfmt.toml` and its crate's edition as `cargo fmt` does ([below](<#configuration-files>)), and `--config` over both. With none of them, and in the library, chloro formats as `rustfmt --edition 2024` does with no `rustfmt.toml`.
 
 ## Setting options
 
@@ -322,7 +318,7 @@ With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfm
 chloro --config max_width=80,use_small_heuristics=Max --write src/
 ```
 
-`--config` takes comma-separated `key=value` pairs, as rustfmt's `--config` does. Values may be quoted (`edition="2021"`).
+`--config` takes comma-separated `key=value` pairs, as rustfmt's `--config` does. Values may be quoted (`edition="2021"`), and a choice may be written in any case (`newline_style=unix`), as rustfmt reads it.
 
 ```rust
 let mut config = chloro::Config::default();
@@ -344,7 +340,13 @@ let formatted = chloro::format_source_with_config("fn main() {}\n", &config);
 
 Every stable option is a public field of `Config`. The enum-valued fields (`newline_style`, `edition`, …) take types from `chloro_core::formatter::config`.
 
-chloro does not read `rustfmt.toml` or `.rustfmt.toml`. A project that has one can pass its stable options through `--config`:
+## Configuration files
+
+The command line finds the configuration of each file as `cargo fmt` does:
+
+1. **`rustfmt.toml`.** The nearest `.rustfmt.toml` or `rustfmt.toml` (in that order in each directory), in the file's directory or one of its parents, as rustfmt reads it. Without one, the home directory's, then the one in `rustfmt/` under the user configuration directory (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `~/Library/Application Support` on macOS, `%APPDATA%` on Windows).
+2. **The edition.** `cargo fmt` passes each crate's edition to rustfmt, so chloro takes it from the nearest `Cargo.toml` that has a `[package]`: its `edition`, the workspace's `[workspace.package] edition` for `edition.workspace = true`, or 2015 when it sets none, as Cargo does. It overrides an `edition` in `rustfmt.toml`; `style_edition` follows it unless `rustfmt.toml` sets one. A file with no package above it keeps the configuration file's edition, or 2024.
+3. **`--config`**, which overrides both.
 
 rustfmt.toml
 
@@ -353,9 +355,19 @@ max_width = 120
 use_field_init_shorthand = true
 ```
 
-```sh
-chloro --config max_width=120,use_field_init_shorthand=true --check src/
+The values have rustfmt's TOML types: an integer for a width or a count, `true` or `false` for a flag, a string for a choice or an edition (`edition = "2021"`). As stable rustfmt does, chloro warns about an unstable or unknown option and ignores it, and a value an option does not take is an error that stops the run before any file is formatted:
+
+```console
+$ chloro --check
+Warning: can't set `imports_granularity = "Crate"`, unstable features are only available in nightly channel.
+$ chloro --check
+The file `/home/me/project/rustfmt.toml` failed to parse.
+Error details: invalid type: string "120", expected usize in `max_width`
 ```
+
+`--config-path PATH` names the configuration file for every file, or a directory that holds one. `--isolated` reads no configuration file and no `Cargo.toml`: every file gets the defaults and `--config`. `--verbose` names each configuration file and edition it uses. The fixed-point cache is kept per configuration, so after an edit to a `rustfmt.toml` its files are formatted again.
+
+The library reads no files: `Config::set_from_file(key, FileValue)` applies one option of a configuration file with these rules, for a tool that reads its own.
 
 ## The options
 
@@ -725,7 +737,11 @@ Options:
   -c, --check        Check if files need formatting (exit 1 if so)
   -w, --write        Write formatted output back to files
   -v, --verbose      Show verbose output
-      --config OPTS  rustfmt options as comma-separated key=value pairs
+      --config OPTS  rustfmt options as comma-separated key=value pairs, over
+                     the configuration file's
+      --config-path PATH
+                     The rustfmt.toml for every file, or a directory holding one
+      --isolated     Read no rustfmt.toml and no Cargo.toml edition
       --no-cache     Format every file; do not read or write the caches
       --unit-cache   Also cache each formatted top-level item, so that a changed
                      file formats only the items not seen before (off by default)
@@ -750,6 +766,12 @@ Examples:
 
   # Format with rustfmt options
   chloro --config max_width=80,tab_spaces=2 src/lib.rs
+
+Configuration:
+  As rustfmt, chloro reads each file's nearest .rustfmt.toml or rustfmt.toml
+  (else the one in the home or the user configuration directory), and, as cargo
+  fmt, takes the edition from the nearest Cargo.toml's [package]. --config
+  overrides both.
 
 Cache:
   chloro records the content hash of every file it finds already formatted,
@@ -778,7 +800,15 @@ Write each file whose formatted text differs from its contents. Without `--check
 
 ### <kbd>--config OPTS</kbd>
 
-rustfmt options as comma-separated `key=value` pairs, with rustfmt's names and value spellings, plus `rustfmt_version`. An invalid option is an error before any file is read. [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists them.
+rustfmt options as comma-separated `key=value` pairs, with rustfmt's names and value spellings, plus `rustfmt_version`, applied over each file's `rustfmt.toml` and edition. An invalid option is an error before any file is read. [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists them.
+
+### <kbd>--config-path PATH</kbd>
+
+The `rustfmt.toml` for every file, or a directory whose `.rustfmt.toml` or `rustfmt.toml` it is, in place of each file's nearest one. A path that does not exist, or a directory without one, is an error. The edition still comes from each file's `Cargo.toml`. [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>).
+
+### <kbd>--isolated</kbd>
+
+Read no `rustfmt.toml` (the nearest, the home directory's or the user configuration directory's) and take no edition from a `Cargo.toml`: every file is formatted with the defaults and `--config`. Cannot be combined with `--config-path`.
 
 ### <kbd>--threads N</kbd>
 
@@ -862,6 +892,8 @@ Every formatting function returns the source unchanged when it does not parse, w
 | --- | --- |
 | `Config` | one public field per stable rustfmt option, plus `rustfmt_version`; `Default` is rustfmt's defaults |
 | `Config::set(&mut self, key: &str, value: &str) -> Result<(), String>` | set an option by rustfmt's name and spelling |
+| `Config::set_from_file(&mut self, key: &str, value: FileValue) -> Result<Option<String>, String>` | apply an option of a `rustfmt.toml` as stable rustfmt does: TOML types checked, unstable and unknown options a warning; [guide](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
+| `FileValue` | a TOML value: `String`, `Integer`, `Boolean`, or `Other` as written |
 | `chloro_core::formatter::config::{NewlineStyle, Heuristics, Edition, StyleEdition, MatchArmLeadingPipe, Density, RustfmtVersion}` | the enum-valued options |
 
 [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) lists every option and its default.
@@ -937,9 +969,9 @@ rustfmt 1.7.0 and earlier are refused: 1.7.0 has no 2024 Style Guide rules, and 
 
 ## What is not covered
 
-- **`rustfmt.toml`.** chloro reads no configuration file. Options come from `--config` or `Config`.
+- **Configuration files.** chloro reads `rustfmt.toml` and each crate's edition as `cargo fmt` does ([Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>)), but not `rust-toolchain.toml`, which selects the rustfmt that `cargo fmt` runs: choose the release with `rustfmt_version`.
 - **Unstable options.** chloro always uses rustfmt's defaults for them, and setting one to another value is an error ([Configuration](<https://lmmx.github.io/chloro/guide/configuration/#unstable-rustfmt-options>)).
-- **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or standard input modes; `--check` reports a count, not a diff. Editions are set with `--config edition=…`.
+- **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or standard input modes; `--check` reports a count, not a diff. An edition comes from the crate's `Cargo.toml` or from `--config edition=…`.
 - **Out-of-line modules.** rustfmt formats the files a crate's `mod` declarations lead to; chloro formats the files and directories you name, whatever modules they declare.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's parser and rebuilds the tree for the cases where rustc's parser accepts something rust-analyzer rejects. Two such constructs remain (below).
 - **Error reporting.** Both tools leave a file that does not parse unchanged, print its error and exit with status 1. chloro's message is rust-analyzer's parser's, worded like rustc's where its tokens allow, at the position rustc reports for most errors; it prints the first error of a file only, without rustc's notes and suggestions ([command line](<https://lmmx.github.io/chloro/guide/cli/#exit-status>)). Where rustfmt fails with an internal error but still writes output, chloro writes the same output and reports no error.
@@ -1090,9 +1122,12 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 
 - `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
 - `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
+- The command line reads each file's configuration as `cargo fmt` does ([\#105](<https://github.com/lmmx/chloro/issues/105>)): the nearest `.rustfmt.toml` or `rustfmt.toml` (else the home or user configuration directory's), with rustfmt's warnings for unstable and unknown options and its refusal of an invalid value, and the edition of the crate's `Cargo.toml` (`edition.workspace = true` included), which overrides the file's. `--config` applies over both, `--config-path` names the file for every file, and `--isolated` reads neither. The fixed-point and unit caches are kept per configuration.
+- `Config::set_from_file` and `FileValue`: one option of a configuration file, applied with rustfmt's types and warnings.
 
 ### Changed
 
+- A choice is read in any case, as rustfmt reads it: `newline_style=unix` is `Unix`.
 - A directory walk skips hidden entries (`.git/`, `.hidden.rs`) and cache directories, those with a `CACHEDIR.TAG` file such as Cargo's `target/`, so `chloro --check` at the root of a project no longer formats its build output ([\#90](<https://github.com/lmmx/chloro/issues/90>)). A path named on the command line is always used.
 
 ### Fixed
@@ -1592,7 +1627,7 @@ The script times rustfmt and chloro with hyperfine on the same files: nine crate
 
 - **the bytes:** both tools read copies of the same files, by default formatted by rustfmt first, because rustfmt's `--check` builds a diff of every file that would change;
 - **the file set:** taken from rustfmt's own list of the files it formats, then verified;
-- **the configuration:** defaults for both, with an empty config file for rustfmt;
+- **the configuration:** defaults for both, with an empty config file for rustfmt and `--isolated` for chloro;
 - **the order:** the command order is reversed in alternate rounds;
 - **the output:** before timing, each command runs once and must succeed; whether the two outputs agree is recorded per workload.
 

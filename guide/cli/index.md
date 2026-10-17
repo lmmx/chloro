@@ -61,19 +61,15 @@ The flags are summarised here; the [CLI reference](<https://lmmx.github.io/chlor
 | `-c`, `--check` | exit 1 if any file would change; write nothing | [above](<#modes>) |
 | `-w`, `--write` | write formatted files in place | [above](<#modes>) |
 | `-v`, `--verbose` | report each file, the cache in use, the thread count and a summary, on standard error |  |
-| `--config OPTS` | rustfmt options as `key=value,key=value` | [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) |
+| `--config OPTS` | rustfmt options as `key=value,key=value`, over the configuration file's | [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) |
+| `--config-path PATH` | the `rustfmt.toml` for every file, or a directory holding one | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
+| `--isolated` | read no `rustfmt.toml` and no `Cargo.toml`: only `--config` applies | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
 | `--threads N` | worker threads (default: one per core) | [Parallelism](<https://lmmx.github.io/chloro/guide/parallelism/index.md>) |
 | `--no-cache` | neither read nor write the caches | [Caching](<https://lmmx.github.io/chloro/guide/caching/index.md>) |
 | `--unit-cache` | also cache each formatted top-level item | [Caching](<https://lmmx.github.io/chloro/guide/caching/#the-unit-cache>) |
 | `--cache-dir DIR` | where the caches live | [Caching](<https://lmmx.github.io/chloro/guide/caching/#where-the-cache-lives>) |
 | `-V`, `--version` | print the version, marked `-dev` unless built from the release | [Reference](<https://lmmx.github.io/chloro/reference/cli/#-version-v>) |
 | `-h`, `--help` | print the help text |  |
-
-> [!NOTE]
->
-> **The default source in `--help`**
->
-> The help text describes the default source as `'src'`; the default is in fact the current directory (`.`), as described above ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
 
 ## Environment variables
 
@@ -91,4 +87,4 @@ chloro handles both as rustfmt does:
 - The output's line endings follow the `newline_style` option. `Unix` and `Windows` force `\n` or `\r\n`, and `Native` uses the platform's. The default, `Auto`, takes the style of the first line ending of the text as rustc reads it, in which `\r\n` is already `\n`: so the output has `\n` line endings (the platform's for a file without a line break).
 - Whether a file needs formatting is decided as rustfmt decides it. Under `Auto`, a file that differs from its formatted output only in its `\r\n` line endings or a byte order mark is formatted: `--check` passes and `--write` leaves it as it is. A file with `\r\n` line endings that does need formatting is written with `\n` ones. Under the other styles, any difference in the bytes counts.
 
-A few things rustfmt does that chloro does not (reading `rustfmt.toml`, `--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
+A few things rustfmt does that chloro does not (`--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).

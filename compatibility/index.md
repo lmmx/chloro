@@ -53,9 +53,9 @@ rustfmt 1.7.0 and earlier are refused: 1.7.0 has no 2024 Style Guide rules, and 
 
 ## What is not covered
 
-- **`rustfmt.toml`.** chloro reads no configuration file. Options come from `--config` or `Config`.
+- **Configuration files.** chloro reads `rustfmt.toml` and each crate's edition as `cargo fmt` does ([Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>)), but not `rust-toolchain.toml`, which selects the rustfmt that `cargo fmt` runs: choose the release with `rustfmt_version`.
 - **Unstable options.** chloro always uses rustfmt's defaults for them, and setting one to another value is an error ([Configuration](<https://lmmx.github.io/chloro/guide/configuration/#unstable-rustfmt-options>)).
-- **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or standard input modes; `--check` reports a count, not a diff. Editions are set with `--config edition=…`.
+- **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or standard input modes; `--check` reports a count, not a diff. An edition comes from the crate's `Cargo.toml` or from `--config edition=…`.
 - **Out-of-line modules.** rustfmt formats the files a crate's `mod` declarations lead to; chloro formats the files and directories you name, whatever modules they declare.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's parser and rebuilds the tree for the cases where rustc's parser accepts something rust-analyzer rejects. Two such constructs remain (below).
 - **Error reporting.** Both tools leave a file that does not parse unchanged, print its error and exit with status 1. chloro's message is rust-analyzer's parser's, worded like rustc's where its tokens allow, at the position rustc reports for most errors; it prints the first error of a file only, without rustc's notes and suggestions ([command line](<https://lmmx.github.io/chloro/guide/cli/#exit-status>)). Where rustfmt fails with an internal error but still writes output, chloro writes the same output and reports no error.

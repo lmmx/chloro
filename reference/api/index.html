@@ -1421,6 +1421,14 @@ two cases. All of them return the same text for the same source and configuratio
 <td>set an option by rustfmt's name and spelling</td>
 </tr>
 <tr>
+<td><code>Config::set_from_file(&amp;mut self, key: &amp;str, value: FileValue) -&gt; Result&lt;Option&lt;String&gt;, String&gt;</code></td>
+<td>apply an option of a <code>rustfmt.toml</code> as stable rustfmt does: TOML types checked, unstable and unknown options a warning; <a href="../../guide/configuration/#configuration-files">guide</a></td>
+</tr>
+<tr>
+<td><code>FileValue</code></td>
+<td>a TOML value: <code>String</code>, <code>Integer</code>, <code>Boolean</code>, or <code>Other</code> as written</td>
+</tr>
+<tr>
 <td><code>chloro_core::formatter::config::{NewlineStyle, Heuristics, Edition, StyleEdition, MatchArmLeadingPipe, Density, RustfmtVersion}</code></td>
 <td>the enum-valued options</td>
 </tr>

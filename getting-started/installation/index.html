@@ -1362,9 +1362,10 @@ links to docs.rs.</p>
 each change is in, and <code>chloro --version</code> which version you have.</p>
 </div>
 <h2 id="run-time-requirements">Run-time requirements<a class="headerlink" href="#run-time-requirements" title="Permanent link">&para;</a></h2>
-<p>chloro has no run-time dependencies. It does not call <code>rustfmt</code>, <code>rustc</code> or <code>cargo</code>, and it
-reads no configuration file: options come from <code>--config</code> on the command line or from
-<code>Config</code> in the library. Apart from the files it formats, the only file it writes is its
+<p>chloro has no run-time dependencies. It does not call <code>rustfmt</code>, <code>rustc</code> or <code>cargo</code>. The
+command line reads the <code>rustfmt.toml</code> and <code>Cargo.toml</code> files that rustfmt and <code>cargo fmt</code>
+read for a file (<a href="../../guide/configuration/#configuration-files">Configuration files</a>); the
+library reads no files. Apart from the files it formats, the only file it writes is its
 <a href="../../guide/caching/">cache</a>, which lives in the user cache directory by default.</p>
 
 

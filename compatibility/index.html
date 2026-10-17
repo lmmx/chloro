@@ -1537,13 +1537,15 @@ editions 2021 and 2024, is in <code>chloro-core/tests/conformance/rustfmt-versio
 compared.</p>
 <h2 id="what-is-not-covered">What is not covered<a class="headerlink" href="#what-is-not-covered" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><code>rustfmt.toml</code>.</strong> chloro reads no configuration file. Options come from <code>--config</code> or
-  <code>Config</code>.</li>
+<li><strong>Configuration files.</strong> chloro reads <code>rustfmt.toml</code> and each crate's edition as
+  <code>cargo fmt</code> does (<a href="../guide/configuration/#configuration-files">Configuration files</a>), but
+  not <code>rust-toolchain.toml</code>, which selects the rustfmt that <code>cargo fmt</code> runs: choose the
+  release with <code>rustfmt_version</code>.</li>
 <li><strong>Unstable options.</strong> chloro always uses rustfmt's defaults for them, and setting one to
   another value is an error (<a href="../guide/configuration/#unstable-rustfmt-options">Configuration</a>).</li>
 <li><strong>rustfmt's command line.</strong> There are no <code>--emit</code>, <code>--files-with-diff</code>, <code>--edition</code> or
-  standard input modes; <code>--check</code> reports a count, not a diff. Editions are set with
-  <code>--config edition=…</code>.</li>
+  standard input modes; <code>--check</code> reports a count, not a diff. An edition comes from the
+  crate's <code>Cargo.toml</code> or from <code>--config edition=…</code>.</li>
 <li><strong>Out-of-line modules.</strong> rustfmt formats the files a crate's <code>mod</code> declarations lead to;
   chloro formats the files and directories you name, whatever modules they declare.</li>
 <li><strong>Syntax rust-analyzer's parser cannot represent.</strong> chloro parses with rust-analyzer's

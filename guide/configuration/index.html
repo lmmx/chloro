@@ -522,6 +522,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Configuration files
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1306,6 +1317,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Configuration files
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1407,7 +1429,9 @@
 and defaults. It adds one option, <code>rustfmt_version</code>, which selects the rustfmt
 release to reproduce.</p>
 
-<p>With no options, chloro formats as <code>rustfmt --edition 2024</code> does with no <code>rustfmt.toml</code>.</p>
+<p>The command line reads each file's <code>rustfmt.toml</code> and its crate's edition as <code>cargo fmt</code>
+does (<a href="#configuration-files">below</a>), and <code>--config</code> over both. With none of them, and in
+the library, chloro formats as <code>rustfmt --edition 2024</code> does with no <code>rustfmt.toml</code>.</p>
 <h2 id="setting-options">Setting options<a class="headerlink" href="#setting-options" title="Permanent link">&para;</a></h2>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">CLI</label><label for="__tabbed_1_2">By name</label><label for="__tabbed_1_3">By field</label></div>
 <div class="tabbed-content">
@@ -1415,7 +1439,8 @@ release to reproduce.</p>
 <div class="language-sh highlight"><pre><span></span><code>chloro<span class="w"> </span>--config<span class="w"> </span><span class="nv">max_width</span><span class="o">=</span><span class="m">80</span>,use_small_heuristics<span class="o">=</span>Max<span class="w"> </span>--write<span class="w"> </span>src/
 </code></pre></div>
 <p><code>--config</code> takes comma-separated <code>key=value</code> pairs, as rustfmt's <code>--config</code> does. Values
-may be quoted (<code>edition="2021"</code>).</p>
+may be quoted (<code>edition="2021"</code>), and a choice may be written in any case
+(<code>newline_style=unix</code>), as rustfmt reads it.</p>
 </div>
 <div class="tabbed-block">
 <div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">Config</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
@@ -1439,13 +1464,42 @@ message for an unknown option or an invalid value.</p>
 </div>
 </div>
 </div>
-<p>chloro does not read <code>rustfmt.toml</code> or <code>.rustfmt.toml</code>. A project that has one can pass its
-stable options through <code>--config</code>:</p>
+<h2 id="configuration-files">Configuration files<a class="headerlink" href="#configuration-files" title="Permanent link">&para;</a></h2>
+<p>The command line finds the configuration of each file as <code>cargo fmt</code> does:</p>
+<ol>
+<li><strong><code>rustfmt.toml</code>.</strong> The nearest <code>.rustfmt.toml</code> or <code>rustfmt.toml</code> (in that order in each
+   directory), in the file's directory or one of its parents, as rustfmt reads it. Without
+   one, the home directory's, then the one in <code>rustfmt/</code> under the user configuration
+   directory (<code>$XDG_CONFIG_HOME</code> or <code>~/.config</code> on Linux, <code>~/Library/Application Support</code> on
+   macOS, <code>%APPDATA%</code> on Windows).</li>
+<li><strong>The edition.</strong> <code>cargo fmt</code> passes each crate's edition to rustfmt, so chloro takes it
+   from the nearest <code>Cargo.toml</code> that has a <code>[package]</code>: its <code>edition</code>, the workspace's
+   <code>[workspace.package] edition</code> for <code>edition.workspace = true</code>, or 2015 when it sets none, as
+   Cargo does. It overrides an <code>edition</code> in <code>rustfmt.toml</code>; <code>style_edition</code> follows it unless
+   <code>rustfmt.toml</code> sets one. A file with no package above it keeps the configuration file's
+   edition, or 2024.</li>
+<li><strong><code>--config</code></strong>, which overrides both.</li>
+</ol>
 <div class="language-toml highlight"><span class="filename">rustfmt.toml</span><pre><span></span><code><span class="n">max_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
 <span class="n">use_field_init_shorthand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div>
-<div class="language-sh highlight"><pre><span></span><code>chloro<span class="w"> </span>--config<span class="w"> </span><span class="nv">max_width</span><span class="o">=</span><span class="m">120</span>,use_field_init_shorthand<span class="o">=</span><span class="nb">true</span><span class="w"> </span>--check<span class="w"> </span>src/
+<p>The values have rustfmt's TOML types: an integer for a width or a count, <code>true</code> or <code>false</code>
+for a flag, a string for a choice or an edition (<code>edition = "2021"</code>). As stable rustfmt
+does, chloro warns about an unstable or unknown option and ignores it, and a value an option
+does not take is an error that stops the run before any file is formatted:</p>
+<div class="language-console highlight"><pre><span></span><code><span class="gp">$ </span>chloro<span class="w"> </span>--check
+<span class="go">Warning: can't set `imports_granularity = "Crate"`, unstable features are only available in nightly channel.</span>
+<span class="gp">$ </span>chloro<span class="w"> </span>--check
+<span class="go">The file `/home/me/project/rustfmt.toml` failed to parse.</span>
+<span class="go">Error details: invalid type: string "120", expected usize in `max_width`</span>
 </code></pre></div>
+<p><code>--config-path PATH</code> names the configuration file for every file, or a directory that holds
+one. <code>--isolated</code> reads no configuration file and no <code>Cargo.toml</code>: every file gets the
+defaults and <code>--config</code>. <code>--verbose</code> names each configuration file and edition it uses. The
+fixed-point cache is kept per configuration, so after an edit to a <code>rustfmt.toml</code> its files
+are formatted again.</p>
+<p>The library reads no files: <code>Config::set_from_file(key, FileValue)</code> applies one option of a
+configuration file with these rules, for a tool that reads its own.</p>
 <h2 id="the-options">The options<a class="headerlink" href="#the-options" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
