@@ -158,16 +158,15 @@ fn multi_line_or_unicode_str_width(s: &str) -> usize {
     // at a time: `(found >> 7)` holds 0 or 1 per byte, and the multiplication sums the
     // bytes into the top byte.
     const ONES: u64 = 0x0101_0101_0101_0101;
-    let mut chunks = bytes.chunks_exact(8);
+    let (chunks, rest) = bytes.as_chunks::<8>();
     let mut newlines = 0;
     let mut carriage_returns = 0;
-    for chunk in &mut chunks {
-        let w = u64::from_le_bytes(chunk.try_into().unwrap());
+    for chunk in chunks {
+        let w = u64::from_le_bytes(*chunk);
         let found = newline_or_non_ascii(w);
         newlines += ((found >> 7).wrapping_mul(ONES) >> 56) as usize;
         carriage_returns |= newline_or_non_ascii(w ^ 0x0707_0707_0707_0707);
     }
-    let rest = chunks.remainder();
     if carriage_returns == 0 && !rest.contains(&b'\r') {
         return bytes.len() - newlines - rest.iter().filter(|&&b| b == b'\n').count();
     }
@@ -193,19 +192,17 @@ fn newline_or_non_ascii(w: u64) -> u64 {
 
 /// The position of the first byte that is `\n` or non-ASCII, eight bytes at a time.
 fn first_newline_or_non_ascii(bytes: &[u8]) -> Option<usize> {
-    let mut chunks = bytes.chunks_exact(8);
+    let (chunks, rest) = bytes.as_chunks::<8>();
     let mut pos = 0;
-    for chunk in &mut chunks {
+    for chunk in chunks {
         // Read little-endian, the lowest flag is the first byte.
-        let found = newline_or_non_ascii(u64::from_le_bytes(chunk.try_into().unwrap()));
+        let found = newline_or_non_ascii(u64::from_le_bytes(*chunk));
         if found != 0 {
             return Some(pos + (found.trailing_zeros() / 8) as usize);
         }
         pos += 8;
     }
-    chunks
-        .remainder()
-        .iter()
+    rest.iter()
         .position(|&b| b == b'\n' || !b.is_ascii())
         .map(|i| pos + i)
 }
@@ -236,11 +233,11 @@ fn is_ascii_single_line(bytes: &[u8]) -> bool {
         return bytes.iter().all(|&b| b < 0x80 && b != b'\n');
     }
     let mut acc = 0;
-    let mut chunks = bytes.chunks_exact(8);
-    for chunk in &mut chunks {
-        acc |= flags(u64::from_ne_bytes(chunk.try_into().unwrap()));
+    let (chunks, rest) = bytes.as_chunks::<8>();
+    for chunk in chunks {
+        acc |= flags(u64::from_ne_bytes(*chunk));
     }
-    if !chunks.remainder().is_empty() {
+    if !rest.is_empty() {
         // The last eight bytes overlap bytes already tested, which leaves `acc` as it is.
         let last = &bytes[bytes.len() - 8..];
         acc |= flags(u64::from_ne_bytes(last.try_into().unwrap()));
@@ -295,14 +292,14 @@ pub(crate) fn count_newline_bytes(bytes: &[u8]) -> usize {
     const WORD_ONES: u64 = 0x0001_0001_0001_0001;
     let mut count = 0;
     for block in bytes.chunks(8 * 255) {
-        let mut words = block.chunks_exact(8);
+        let (words, rest) = block.as_chunks::<8>();
         let mut lanes = 0;
-        for word in &mut words {
-            lanes += newline_flags(u64::from_le_bytes(word.try_into().unwrap())) >> 7;
+        for word in words {
+            lanes += newline_flags(u64::from_le_bytes(*word)) >> 7;
         }
         let pairs = (lanes & BYTE_LANES) + ((lanes >> 8) & BYTE_LANES);
         count += (pairs.wrapping_mul(WORD_ONES) >> 48) as usize;
-        count += words.remainder().iter().filter(|&&b| b == b'\n').count();
+        count += rest.iter().filter(|&&b| b == b'\n').count();
     }
     count
 }

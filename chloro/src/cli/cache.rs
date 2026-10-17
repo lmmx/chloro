@@ -554,7 +554,7 @@ fn parse(bytes: &[u8], key: &Digest) -> Option<(u32, HashMap<Digest, u32>)> {
         return None;
     }
     let mut entries = HashMap::with_capacity(body.len() / RECORD_LEN);
-    for record in body.chunks_exact(RECORD_LEN) {
+    for record in body.as_chunks::<RECORD_LEN>().0 {
         let digest: Digest = record[..32].try_into().ok()?;
         let seen = u32::from_le_bytes(record[32..].try_into().ok()?);
         entries.insert(digest, seen);

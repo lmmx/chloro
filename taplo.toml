@@ -1,6 +1,7 @@
 # The site's nav and feature lists are ordered by hand: taplo's array and key sorting
-# would rearrange the site's navigation. target/ holds generated manifests.
-exclude = ["target/**", "zensical.toml"]
+# would rearrange the site's navigation. target/ holds generated manifests, and the
+# journal's files are records, kept as they were written.
+exclude = ["docs/journal/**", "target/**", "zensical.toml"]
 
 [formatting]
 reorder_arrays = true

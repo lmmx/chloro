@@ -527,29 +527,33 @@ impl<'a> FmtVisitor<'a> {
                 Some(parts) => self.visit_static(&parts),
                 None => self.push_rewrite(span, None),
             },
-            ast::Item::Const(c) if let Some(block) = const_block_item(c) => {
-                // rustfmt formats `ItemKind::ConstBlock` with `get_context`, not
-                // `with_context`: a macro failure inside the block is not this visitor's.
-                let context = self.get_context();
-                let offset = self.block_indent;
-                let shape = Shape::legacy(context.budget(offset.block_indent), offset.block_only());
-                let const_span = c
-                    .const_token()
-                    .map(|t| mk_sp(token_span(t).lo(), span.hi()))
-                    .unwrap_or(span);
-                let rewrite = context
-                    .run
-                    .block_of(&block)
-                    .and_then(|b| rewrite_block(&b, None, None, &context, shape))
-                    .map(|rhs| {
-                        recover_comment_removed(format!("const {rhs}"), const_span, &context)
-                    });
-                self.push_rewrite(span, rewrite);
+            ast::Item::Const(c) => {
+                if let Some(block) = const_block_item(c) {
+                    // rustfmt formats `ItemKind::ConstBlock` with `get_context`, not
+                    // `with_context`: a macro failure inside the block is not this visitor's.
+                    let context = self.get_context();
+                    let offset = self.block_indent;
+                    let shape =
+                        Shape::legacy(context.budget(offset.block_indent), offset.block_only());
+                    let const_span = c
+                        .const_token()
+                        .map(|t| mk_sp(token_span(t).lo(), span.hi()))
+                        .unwrap_or(span);
+                    let rewrite = context
+                        .run
+                        .block_of(&block)
+                        .and_then(|b| rewrite_block(&b, None, None, &context, shape))
+                        .map(|rhs| {
+                            recover_comment_removed(format!("const {rhs}"), const_span, &context)
+                        });
+                    self.push_rewrite(span, rewrite);
+                } else {
+                    match StaticParts::from_const(c) {
+                        Some(parts) => self.visit_static(&parts),
+                        None => self.push_rewrite(span, None),
+                    }
+                }
             }
-            ast::Item::Const(c) => match StaticParts::from_const(c) {
-                Some(parts) => self.visit_static(&parts),
-                None => self.push_rewrite(span, None),
-            },
             ast::Item::Fn(f) => {
                 if f.body().is_some() {
                     self.visit_fn(f, span);
