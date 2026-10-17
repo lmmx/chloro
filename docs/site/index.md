@@ -40,18 +40,29 @@ tokio, regex-syntax, clap_builder and winnow from crates.io: 215 KB–2.9 MB eac
 An idle four-core Linux VM, 30 runs per cell, one-core runs pinned. Ranges span the
 nine crates.</p>
 </div>
+<div class="chl-bench">
+<p class="chl-bench-kicker">A large real-world workspace</p>
+<p class="chl-bench-title">ruff <span>vs <code>cargo fmt</code></span></p>
+<table class="chl-bench-table">
+<thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
+<tbody>
+<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt's wall time, 5.63 s: the baseline"><span class="chl-fill" style="width:100%"></span></span>1×</td><td>194 MiB</td></tr>
+<tr><th>chloro, 1 thread</th><td><span class="chl-meter" title="1.60 s against 5.63 s: 3.5× as fast"><span class="chl-fill" style="width:28.4%"></span></span>3.5×</td><td>16 MiB</td></tr>
+<tr><th>chloro, 20 threads</th><td><span class="chl-meter" title="0.21 s against 5.63 s: 26.5× as fast"><span class="chl-fill" style="width:3.8%"></span></span>26.5×</td><td>90 MiB</td></tr>
+</tbody>
+</table>
+<p class="chl-bench-note">The whole <a href="https://github.com/astral-sh/ruff">ruff</a>
+repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
+5 runs each (<code>just vs-ruff</code>).</p>
+</div>
 </div>
 
-<p class="chl-stats-caption">The speedup is rustfmt's wall time divided by chloro's. rustfmt
-formats on one thread, so the one-core row compares the two formatters like for like; the
-four-core row adds chloro's parallelism. Each bar is wall time, rustfmt's as the full bar,
-and spans the nine crates. The method, every workload and the limits of these numbers are on
-the <a href="performance/">Performance</a> page.</p>
-
-On a whole workspace, measured once: chloro checked the 2,008 files of
-[ruff](https://github.com/astral-sh/ruff) 3.5 times as fast as `cargo fmt` on one thread, and
-26.5 times as fast on a 20-core machine. That `cargo fmt` used rustfmt 1.10.0, the version
-ruff's toolchain pins ([details](performance.md#a-large-workspace-ruff)).
+<p class="chl-stats-caption">The speedup is rustfmt's wall time divided by chloro's, checking
+already-formatted files. rustfmt formats on one thread, so the one-core and one-thread rows
+compare the two formatters like for like; the last row of each adds chloro's parallelism.
+Each bar is wall time, the baseline's as the full bar; the nine crates' bars show their
+spread. The method, every workload and the limits of these numbers are on the
+<a href="performance/">Performance</a> page.</p>
 
 ## Getting started
 

@@ -189,6 +189,9 @@
 
 /* Benchmarks: one panel per benchmark, one row per core count, each with its conditions */
 .chl-benches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
   margin: 0 0 0.6rem;
 }
 
@@ -507,6 +510,11 @@
   }
 }
 
+@media screen and (max-width: 56em) {
+  .chl-benches {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
 /* ---------------------------------------------------------------- focus */
 
