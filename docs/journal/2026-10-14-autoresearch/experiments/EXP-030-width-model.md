@@ -131,6 +131,12 @@ first-line endings of two multi-line candidates.
 | bound scans (`min_width_up_to` calls, base profile) | 113 | 20 |
 | their cost (replay) | 195,124 (0.09%) | 39,627 (0.01%) |
 
+On the cliff shape the scans weigh more (base and `2c6bc21` alike, `run.sh` profiles):
+closures-expr at depth 8, 64 scans for 8 nests, 206,224 `Ir` (3.70% of that run); at depth 16, 120
+scans, 387,328 (6.80%). Each scan stops once the sum passes the width, so a scan costs about the
+same at any depth (3.2 K); a per-node cache removes only the scans of a node made again, which
+the samples' totals bound at 0.09% / 0.01%.
+
 A memo keyed without the block indent is not exact (**read**): list items are rendered at
 `nested_shape`, block indent plus `tab_spaces`, so an attempt that fails at a deep block indent
 because an argument does not fit there can succeed at a shallower one with a narrower width
