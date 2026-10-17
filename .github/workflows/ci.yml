@@ -45,12 +45,20 @@ jobs:
       matrix:
         # x86-64 runs the SSE2 byte search in formatter/comment.rs; the arm64 macOS runner
         # runs the portable one that every other release target uses.
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            features: --all-features
+          - os: macos-latest
+            features: --all-features
+          # The measurement-only allocator features (alloc-*) do not build with MSVC
+          # (jemalloc), so Windows tests the CLI's features.
+          - os: windows-latest
+            features: --features chloro/cli,chloro-core/alloc-timing
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --workspace --all-features
+      - run: cargo test --workspace ${{ matrix.features }}
 
   windows-arm:
     name: build (aarch64-pc-windows-msvc)
