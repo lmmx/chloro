@@ -91,10 +91,17 @@ pub mod cli {
         }
 
         if args.version {
-            // `just reinstall` records the checkout's build ID (`just build-id`) at compile time
-            match option_env!("CHLORO_BUILD_ID") {
-                Some(id) => println!("chloro {} (build {id})", env!("CARGO_PKG_VERSION")),
-                None => println!("chloro {}", env!("CARGO_PKG_VERSION")),
+            // `build.rs` sets the version (`-dev` unless the source is the tagged release) and
+            // its details; `just reinstall` records the checkout's build ID (`just build-id`)
+            let mut details: Vec<&str> = env!("CHLORO_VERSION_DETAILS")
+                .split(", ")
+                .filter(|d| !d.is_empty())
+                .collect();
+            let build = option_env!("CHLORO_BUILD_ID").map(|id| format!("build {id}"));
+            details.extend(build.as_deref());
+            match details.is_empty() {
+                true => println!("chloro {}", env!("CHLORO_VERSION")),
+                false => println!("chloro {} ({})", env!("CHLORO_VERSION"), details.join(", ")),
             }
             std::process::exit(0);
         }

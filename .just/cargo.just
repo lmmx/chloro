@@ -30,7 +30,7 @@ reinstall:
     CHLORO_BUILD_ID="$(just --justfile '{{ justfile() }}' build-id)" {{ install_cmd }}
 
 # The files that go into the CLI binary (git pathspecs)
-build_inputs := "chloro/src chloro/Cargo.toml chloro-core/src chloro-core/Cargo.toml Cargo.toml Cargo.lock .cargo"
+build_inputs := "chloro/build.rs chloro/src chloro/Cargo.toml chloro-core/src chloro-core/Cargo.toml Cargo.toml Cargo.lock .cargo"
 
 # A hash of the install command, the toolchain, and the path and content of every file that
 # goes into the CLI binary, as they are on disk (committed or not).
@@ -45,6 +45,9 @@ build-id:
     {
         echo "{{ install_cmd }}"
         rustc -vV
+        # the commit and its tags, which `chloro --version` reports
+        git rev-parse HEAD
+        git tag --points-at HEAD
         paste -d ' ' <(printf '%s\n' "$files" | git hash-object --stdin-paths) <(printf '%s\n' "$files")
     } | git hash-object --stdin
 
@@ -54,7 +57,7 @@ chloro-fresh:
     #!/usr/bin/env bash
     set -euo pipefail
     want=$(just --justfile "{{ justfile() }}" build-id)
-    installed_id() { chloro --version 2>/dev/null | sed -n 's/^chloro .* (build \([0-9a-f]*\))$/\1/p' || true; }
+    installed_id() { chloro --version 2>/dev/null | sed -n 's/^chloro .*build \([0-9a-f]*\))$/\1/p' || true; }
     have=$(installed_id)
     if [ "$have" != "$want" ]; then
         echo "chloro on PATH is not built from this checkout; reinstalling" >&2

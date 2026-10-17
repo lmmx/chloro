@@ -32,6 +32,9 @@ are described on the [Performance](https://lmmx.github.io/chloro/performance/) p
   as 1.9.0, the default: `--config rustfmt_version=1.8.0`.
 - `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]` are honoured.
 - `CHLORO_TRACE=FILE` writes a per-worker timeline of a command-line run.
+- `-V`/`--version` prints the version. A build from anything but the release's tagged commit
+  is marked as a development build, with its commit and whether it had uncommitted changes:
+  `chloro 0.8.0-dev (2f9b060, dirty)`.
 - `chloro-core` library functions: `format_source_with_config_parallel` (one file's items on
   several threads), `format_source_with_unit_cache` with the `UnitCache` trait, `UnitKey` and
   `CachedUnit` (reuse formatted items across calls), and `parse_only`. The existing
