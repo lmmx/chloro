@@ -1439,7 +1439,7 @@ threads.</p>
 <p><code>chloro</code> re-exports these items from <code>chloro-core</code>, so both crates use the same <code>Config</code> type.
 The examples on this page that use only <code>format_source*</code> and <code>Config</code> work with either.</p>
 <h2 id="format-a-string">Format a string<a class="headerlink" href="#format-a-string" title="Permanent link">&para;</a></h2>
-<div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">formatted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="s">"fn main(){let x=1;}"</span><span class="p">);</span>
+<div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">formatted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="s">"fn main(){let x=1;}</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
 <span class="fm">assert_eq!</span><span class="p">(</span><span class="n">formatted</span><span class="p">,</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\n</span><span class="s">    let x = 1;</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
 </code></pre></div>
 <p><code>format_source</code> formats with rustfmt's defaults at edition 2024, the same as

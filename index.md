@@ -41,7 +41,7 @@ chloro --write src/            # format in place
 ```
 
 ```rust
-let formatted = chloro::format_source("fn main(){let x=1;}");
+let formatted = chloro::format_source("fn main(){let x=1;}\n");
 assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 ```
 

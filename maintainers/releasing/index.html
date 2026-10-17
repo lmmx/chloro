@@ -1367,30 +1367,38 @@ the <code>chloro</code> release builds the binaries.</p>
 <div class="language-sh highlight"><pre><span></span><code>just<span class="w"> </span>ship<span class="w">            </span><span class="c1"># release-plz picks the version from the commits</span>
 just<span class="w"> </span>ship<span class="w"> </span><span class="m">0</span>.9.0<span class="w">      </span><span class="c1"># or set it</span>
 </code></pre></div>
-<p><code>just ship</code> refuses to run unless master is checked out and up to date with <code>origin/master</code>.
-It then:</p>
+<p><code>just ship</code> refuses to run unless master is checked out, clean and up to date with
+<code>origin/master</code>. It then:</p>
 <ol>
 <li>dry-runs the publish (<code>release-plz release --dry-run</code>);</li>
-<li>bumps the versions of <code>chloro</code> and <code>chloro-core</code> and updates each crate's
-   <code>CHANGELOG.md</code> from the Conventional Commit messages (<code>release-plz update</code>, grouped by
-   <code>release-plz.toml</code>);</li>
-<li>runs <code>just prepush</code> (check, clippy, rustdoc) and commits the bump;</li>
+<li>runs <code>just prepush</code> (check, clippy, rustdoc) and <code>just precommit</code> (formatting, lints, the
+   README badges) on the tree as it is, and stops if either fails or changes a file, before
+   anything is modified;</li>
+<li>bumps the versions of <code>chloro</code> and <code>chloro-core</code> (<code>release-plz set-version</code>, or
+   <code>release-plz update</code> to pick the version from the commits), checks that <code>CHANGELOG.md</code>
+   has a section for the new version, and commits the bump; a failure in this step resets
+   the tree to where it started;</li>
 <li>pushes, and runs <code>release-plz release</code>, which publishes both crates to crates.io and
-   creates the tags (<code>chloro-v&lt;version&gt;</code>, <code>chloro-core-v&lt;version&gt;</code>) and GitHub releases.</li>
+   creates the tags (<code>chloro-v&lt;version&gt;</code>, <code>chloro-core-v&lt;version&gt;</code>) and GitHub releases;</li>
+<li>sets both releases' notes from the version's section of <code>CHANGELOG.md</code>
+   (<code>just release-notes-publish &lt;version&gt;</code>; <code>just release-notes &lt;version&gt;</code> prints them).</li>
 </ol>
+<p>The root <code>CHANGELOG.md</code> is the only changelog: release-plz does not update the per-crate
+ones (<code>changelog_update = false</code>), which end at 0.7.5. Its <code>set-version</code> used to rename their
+newest heading instead of adding an entry, which gave 0.8.0 and 0.9.0 the 0.7.5 notes.</p>
 <p><code>just ship-manual</code> is a fallback for when release-plz is not working.</p>
 <h2 id="before-a-release">Before a release<a class="headerlink" href="#before-a-release" title="Permanent link">&para;</a></h2>
-<p>The repository has no CI workflow that runs the tests on pull requests, so the release
-commit must be checked by hand:</p>
+<p>CI (<code>.github/workflows/ci.yml</code>) runs on every pull request and push to master: formatting,
+clippy, the tests on Linux, macOS (arm64) and Windows, a build of the Windows arm64 target,
+<code>cargo check</code> on the minimum Rust version, and <code>conform -i</code> at both rustfmt releases.</p>
 <ul>
-<li>[ ] <code>cargo test --workspace --all-features</code> and <code>just clippy</code> pass.</li>
-<li>[ ] The conformance checks pass: <code>conform -i</code> at 1.9.0 and 1.8.0 (1220 of 1220, none
-      non-idempotent) and <code>config_matrix -n 1220</code> (<a href="../development/#conformance">Development</a>).</li>
+<li>[ ] CI is green on the commit to be released.</li>
+<li>[ ] <code>config_matrix -n 1220</code> (against a live rustfmt, so not in CI) is identical on every
+      value (<a href="../development/#conformance">Development</a>).</li>
 <li>[ ] If <code>ra_ap_parser</code> changed since the last release, the
       <a href="../parser-upgrades/">parser harnesses</a> were run.</li>
 <li>[ ] The root <code>CHANGELOG.md</code>: move the <em>Unreleased</em> entries under the new version and date.
-      The per-crate changelogs are written by release-plz; the root one is written by hand
-      for users.</li>
+      <code>just ship</code> stops if the section is missing, and the release notes are taken from it.</li>
 <li>[ ] The README badges (dependency count, binary size) are current: <code>just emblazon</code>.</li>
 <li>[ ] <code>README.md</code> and <code>chloro/README.md</code> are identical (<code>just docs-match</code>); the second is
       what crates.io shows.</li>
@@ -1399,9 +1407,9 @@ commit must be checked by hand:</p>
 </ul>
 <h2 id="binaries">Binaries<a class="headerlink" href="#binaries" title="Permanent link">&para;</a></h2>
 <p>Publishing the GitHub release for a <code>chloro-v*</code> tag runs <code>.github/workflows/binaries.yml</code>,
-which builds the CLI for each target and attaches the archives to the release. Their names
-match the <code>[package.metadata.binstall]</code> section of <code>chloro/Cargo.toml</code>, which is how
-<code>cargo binstall chloro</code> finds them.</p>
+which builds the CLI for each target and attaches the archives to the release
+(<code>chloro-core-v*</code> releases have none). Their names match the <code>[package.metadata.binstall]</code>
+section of <code>chloro/Cargo.toml</code>, which is how <code>cargo binstall chloro</code> finds them.</p>
 <table>
 <thead>
 <tr>
@@ -1418,13 +1426,13 @@ match the <code>[package.metadata.binstall]</code> section of <code>chloro/Cargo
 </tr>
 <tr>
 <td><code>x86_64-apple-darwin</code></td>
-<td><code>macos-13</code></td>
-<td>profile-guided</td>
+<td><code>macos-latest</code> (arm64)</td>
+<td>plain (cross-compiled)</td>
 </tr>
 <tr>
 <td><code>aarch64-apple-darwin</code></td>
-<td><code>macos-13</code></td>
-<td>plain (cross-compiled)</td>
+<td><code>macos-latest</code> (arm64)</td>
+<td>profile-guided</td>
 </tr>
 <tr>
 <td><code>x86_64-pc-windows-msvc</code></td>
@@ -1438,9 +1446,16 @@ match the <code>[package.metadata.binstall]</code> section of <code>chloro/Cargo
 </tr>
 </tbody>
 </table>
-<p>Each target's job may fail without failing the others. The 0.8.0 release has archives only
-for the Linux and Windows targets; check whether the <code>macos-13</code> runner is still available
-before relying on macOS binaries.</p>
+<p>A target that fails does not stop the others, and fails the run. The 0.8.0 and 0.9.0
+releases have no macOS archives (their jobs waited for the retired <code>macos-13</code> runner until
+cancelled), and 0.9.0 none for <code>aarch64-pc-windows-msvc</code> (an <code>unused_mut</code> warning on
+non-x86 targets, made an error by <code>-D warnings</code>, which release builds no longer set).</p>
+<p>The workflow can be run by hand for an existing tag, from the Actions tab or with
+<code>gh workflow run binaries.yml -f tag=chloro-v0.9.0</code>. By default it is a dry run, which
+builds and archives every target and uploads nothing; with <code>-f dry-run=false</code> it uploads the
+archives to that tag's release, replacing any of the same name, so name the missing targets
+with <code>-f targets="x86_64-apple-darwin aarch64-apple-darwin"</code>. The build checks out the tag,
+so <code>chloro --version</code> prints the release's plain version.</p>
 <h3 id="profile-guided-builds">Profile-guided builds<a class="headerlink" href="#profile-guided-builds" title="Permanent link">&para;</a></h3>
 <p><code>benchmarks/pgo.sh</code> builds chloro with profile-guided optimisation: it compiles an
 instrumented binary (<code>-Cprofile-generate</code>), runs it over the conformance corpus with
@@ -1455,13 +1470,10 @@ natively and sets <code>RUSTFLAGS</code> so the upload step's build uses the pro
 target, or one whose training fails, gets the plain build with a warning in the log. On the
 measurements, the profile-guided build executed 16% fewer instructions than the plain one
 and ran in 0.80–0.95 of its wall time, with identical output.</p>
-<div class="admonition warning">
-<p class="admonition-title">Not yet exercised by a release</p>
-<p>The profile-guided step was added after 0.8.0 and has been validated by running its
-commands locally on <code>x86_64-unknown-linux-gnu</code>, not by a release run. On the first
-release that uses it, read each target's log for <code>PGO skipped</code>, <code>PGO training failed</code>,
-and <code>no profile data available</code> warnings from the compiler.</p>
-</div>
+<p>0.9.0 was the first release built this way: the <code>x86_64-unknown-linux-gnu</code> job trained a
+1.09 MB profile and built with it, with no <code>no profile data available</code> warnings. On later
+releases, read each target's log for <code>PGO skipped</code>, <code>PGO training failed</code> and those
+warnings.</p>
 <h2 id="versions">Versions<a class="headerlink" href="#versions" title="Permanent link">&para;</a></h2>
 <p>Both crates share a version (0.9.0 at the latest release). <code>chloro</code> depends on
 <code>chloro-core</code> at the same version through the workspace's <code>[workspace.dependencies]</code>.

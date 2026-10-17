@@ -1420,6 +1420,10 @@ say so; any other change must leave every output byte unchanged.</p>
 <div class="language-sh highlight"><pre><span></span><code>cargo<span class="w"> </span>build<span class="w"> </span>--workspace<span class="w"> </span>--all-features
 cargo<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--workspace<span class="w"> </span>--all-features
 </code></pre></div>
+<p><code>--all-features</code> includes the measurement-only allocator features (<code>alloc-jemalloc</code> and the
+others), which need a C toolchain; jemalloc does not build with MSVC, so on Windows test
+with <code>--features chloro/cli</code> instead, in a checkout made with <code>core.autocrlf</code> off: the tests
+compare fixtures, snapshots and generated code byte for byte.</p>
 <p>The <code>Justfile</code> wraps the usual commands: <code>just test</code> (with <code>cargo nextest</code>), <code>just clippy</code>
 (<code>-D warnings</code>, all targets and features), <code>just check</code>, <code>just docs</code> (rustdoc). Formatting and
 lint hooks run through <a href="https://github.com/j178/prek">prek</a> or pre-commit: <code>just
@@ -1459,6 +1463,11 @@ cargo<span class="w"> </span>run<span class="w"> </span>--release<span class="w"
 <code>docs/journal/2026-10-14-autoresearch/corpus/registry-manifest.toml</code>, fetched into the cargo
 registry.</p>
 <h2 id="checks-for-a-change">Checks for a change<a class="headerlink" href="#checks-for-a-change" title="Permanent link">&para;</a></h2>
+<p>CI (<code>.github/workflows/ci.yml</code>) runs on every pull request: <code>cargo fmt --check</code>, clippy with
+warnings denied, the tests on Linux, macOS (arm64) and Windows, a build of the
+<code>aarch64-pc-windows-msvc</code> release target, <code>cargo check</code> on Rust 1.88 (the workspace's
+<code>rust-version</code>), and <code>conform -i</code> at both rustfmt releases. The arm64 runner matters: the byte
+search in <code>formatter/comment.rs</code> has an SSE2 path on x86-64 and a portable one elsewhere.</p>
 <p>A change that is meant to leave the output alone (a performance change, a refactor) must
 show that it does. In order, cheapest first:</p>
 <ol>
