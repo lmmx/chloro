@@ -203,10 +203,9 @@ fn rewrite_closure_expr(
         || context.config.force_multiline_blocks();
     // Under the veto only a one-line rewrite is kept. When a one-line rewrite of `expr` is at
     // most a column wider than `shape` and every one-line rendering of it is wider than that,
-    // or when `expr` is never one line (it renders a `match` with arms, or it is a chain
-    // wider than `chain_width`; `width.rs`), no rewrite can be one line, so the attempt fails
-    // whatever it renders; it is not made where its effects on the run cannot reach the
-    // output. Debug builds make it and check.
+    // or when `expr` renders a `match` with arms, which is never one line (`width.rs`), no
+    // rewrite can be one line, so the attempt fails whatever it renders; it is not made
+    // where its effects on the run cannot reach the output. Debug builds make it and check.
     // Both tests are made only for a body whose source is longer than the shape is wide: the
     // source length bounds the width bound from above, and a shorter body mostly fits, so
     // the source length spares the scans where they would rarely find anything.
@@ -214,11 +213,7 @@ fn rewrite_closure_expr(
         && context.may_skip_dead_candidates()
         && expr.syntax().text_range().len() as usize > shape.width + 1
         && (one_line_fits_checked_and_exceeds(expr.syntax(), shape.width)
-            || never_one_line(
-                expr.syntax(),
-                context.config.chain_width(),
-                context.config.tab_spaces(),
-            ));
+            || never_one_line(expr.syntax()));
     #[cfg(not(debug_assertions))]
     if skip {
         return None;
