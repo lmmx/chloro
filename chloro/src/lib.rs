@@ -20,6 +20,12 @@
 //!
 //! As in rustfmt, the default `newline_style = "Auto"` keeps the input's line endings, and
 //! gives input with no line break the platform's (`\r\n` on Windows).
+//!
+//! Source that does not parse comes back unchanged; [`try_format_source_with_config`]
+//! returns its [`ParseError`] instead.
 
 // Re-export the core formatting functionality
-pub use chloro_core::{Config, chloro_debug, format_source, format_source_with_config};
+pub use chloro_core::{
+    Config, ParseError, chloro_debug, format_source, format_source_with_config,
+    try_format_source_with_config,
+};

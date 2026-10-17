@@ -1,10 +1,12 @@
 use super::args::Args;
 use super::cache::{Cache, Digest, content_digest};
+use super::report::render_parse_error;
 use super::trace;
 use super::units::Units;
 use crate::vlog;
 use chloro_core::{
-    format_source_with_config, format_source_with_config_parallel, format_source_with_unit_cache,
+    format_source_with_config, try_format_source_with_config,
+    try_format_source_with_config_parallel, try_format_source_with_unit_cache,
 };
 use std::fs;
 use std::io::{self, Write};
@@ -24,6 +26,13 @@ pub enum ProcessResult {
         /// Digest of content observed to be a fixed point of the formatter in this run (the
         /// content on disk after this run), for the cache to record.
         fixed_point: Option<Digest>,
+    },
+    /// The file does not parse. rustfmt reports the error and neither prints nor writes the
+    /// file, and so does chloro; it is not a fixed point for the cache either.
+    ParseError {
+        path: String,
+        /// The error as rustfmt prints it ([`render_parse_error`]).
+        diagnostic: String,
     },
     /// File formatting failed
     Error(String),
@@ -92,13 +101,21 @@ pub fn format_file(
     };
     let split = threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES;
     let formatted = if let Some(units) = units {
-        format_source_with_unit_cache(&original, &config, threads, units.store())
+        try_format_source_with_unit_cache(&original, &config, threads, units.store())
     } else if split {
-        format_source_with_config_parallel(&original, &config, threads)
+        try_format_source_with_config_parallel(&original, &config, threads)
     } else {
-        format_source_with_config(&original, &config)
+        try_format_source_with_config(&original, &config)
     };
     trace::stamp_formatted(split);
+    let formatted = match formatted {
+        Ok(formatted) => formatted,
+        Err(e) => {
+            let path = file_path.display().to_string();
+            let diagnostic = render_parse_error(&path, &original, &e);
+            return ProcessResult::ParseError { path, diagnostic };
+        }
+    };
 
     let changed = original != formatted;
     let original_len = original.len();
