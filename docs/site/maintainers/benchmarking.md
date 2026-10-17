@@ -93,6 +93,14 @@ project formats each module file several times, because rustfmt also formats the
 file declares; on ruff that is 3.6 passes per file. Both tools run in check mode, so use an
 already-formatted tree. They need `hyperfine`.
 
+They time the `chloro` on your `PATH`, first making sure it was built from this checkout.
+`just reinstall` installs the CLI with a build ID baked in, which `chloro --version`
+prints; `just build-id` computes the ID of the checkout as it is on disk, from the content
+of every file that goes into the binary (committed or not), `Cargo.lock`, the toolchain and
+the install command. When the two match, the benchmark starts at once without running
+Cargo; when they differ, or the installed `chloro` has no build ID, the recipe runs
+`just reinstall` first, outside the timed runs.
+
 ## In process: `bench`
 
 ```sh

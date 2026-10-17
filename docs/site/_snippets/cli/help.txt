@@ -16,6 +16,7 @@ Options:
       --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the
                      user cache directory, e.g. ~/.cache/chloro)
       --threads N    Threads to use (default: one per core)
+  -V, --version      Print the version and exit
   -h, --help         Show this help message
 
 Examples:

@@ -21,8 +21,50 @@ clippy:
 clippy-fix:
     cargo clippy --fix --workspace --all-targets --all-features --target-dir target/clippy-all-features -- -D warnings
 
+install_cmd := "cargo install --path chloro -F cli --target-dir target/install"
+
+# Its own target directory keeps the recorded ID from invalidating other release builds.
+#
+# Install the CLI from this checkout, with `just build-id` in its `chloro --version`
 reinstall:
-    cargo install --path chloro -F cli
+    CHLORO_BUILD_ID="$(just --justfile '{{ justfile() }}' build-id)" {{ install_cmd }}
+
+# The files that go into the CLI binary (git pathspecs)
+build_inputs := "chloro/src chloro/Cargo.toml chloro-core/src chloro-core/Cargo.toml Cargo.toml Cargo.lock .cargo"
+
+# A hash of the install command, the toolchain, and the path and content of every file that
+# goes into the CLI binary, as they are on disk (committed or not).
+#
+# The build ID of this checkout
+build-id:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd "{{ justfile_directory() }}"
+    files=$(git ls-files --cached --others --exclude-standard -- {{ build_inputs }} \
+        | LC_ALL=C sort -u | while IFS= read -r f; do if [ -f "$f" ]; then printf '%s\n' "$f"; fi; done)
+    {
+        echo "{{ install_cmd }}"
+        rustc -vV
+        paste -d ' ' <(printf '%s\n' "$files" | git hash-object --stdin-paths) <(printf '%s\n' "$files")
+    } | git hash-object --stdin
+
+# Reinstall chloro unless the `chloro` on PATH reports the current build ID
+[private]
+chloro-fresh:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    want=$(just --justfile "{{ justfile() }}" build-id)
+    installed_id() { chloro --version 2>/dev/null | sed -n 's/^chloro .* (build \([0-9a-f]*\))$/\1/p' || true; }
+    have=$(installed_id)
+    if [ "$have" != "$want" ]; then
+        echo "chloro on PATH is not built from this checkout; reinstalling" >&2
+        just --justfile "{{ justfile() }}" reinstall
+        have=$(installed_id)
+        if [ "$have" != "$want" ]; then
+            echo "error: the chloro on PATH ($(command -v chloro || echo none)) is not the one just installed; put cargo's bin directory first on PATH" >&2
+            exit 1
+        fi
+    fi
 
 test *args:
     cargo nextest run {{args}} --no-fail-fast --all-features

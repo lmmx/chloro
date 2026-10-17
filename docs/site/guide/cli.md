@@ -69,6 +69,7 @@ text.
 | `--no-cache` | neither read nor write the caches | [Caching](caching.md) |
 | `--unit-cache` | also cache each formatted top-level item | [Caching](caching.md#the-unit-cache) |
 | `--cache-dir DIR` | where the caches live | [Caching](caching.md#where-the-cache-lives) |
+| `-V`, `--version` | print the version | |
 | `-h`, `--help` | print the help text | |
 
 !!! note "The default source in `--help`"

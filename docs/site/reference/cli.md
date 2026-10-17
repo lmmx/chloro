@@ -59,6 +59,12 @@ else the platform's user cache directory (`~/.cache/chloro`, `~/Library/Caches/c
 Report, on standard error, the sources and mode, the cache file and its size, the number of
 files and threads, each file as it is processed, and a summary at the end.
 
+### ++"--version"++ / ++"-V"++
+
+Print the version and exit. A binary installed with `just reinstall` from a checkout also
+prints its build ID, `chloro 0.8.0 (build <id>)`, a hash of the source it was built from
+([Benchmarking](../maintainers/benchmarking.md#on-any-cargo-project-just-vs-rustfmt)).
+
 ### ++"--help"++ / ++"-h"++
 
 Print the help text and exit.

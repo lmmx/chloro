@@ -43,6 +43,10 @@ pub struct Args {
     /// Show this help message
     #[facet(named, short = 'h', long, default)]
     pub help: bool,
+
+    /// Print the version (and the build ID `just reinstall` records) and exit
+    #[facet(named, short = 'V', long, default)]
+    pub version: bool,
 }
 
 pub fn print_usage() {
@@ -64,6 +68,7 @@ pub fn print_usage() {
     println!("      --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the");
     println!("                     user cache directory, e.g. ~/.cache/chloro)");
     println!("      --threads N    Threads to use (default: one per core)");
+    println!("  -V, --version      Print the version and exit");
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");

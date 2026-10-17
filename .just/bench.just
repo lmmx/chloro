@@ -3,12 +3,12 @@
 # also builds a diff of every file that would change. cargo fmt reads the project's
 # rustfmt.toml and rust-toolchain.toml; chloro reads neither. Needs hyperfine.
 #
-# Time chloro (all cores, then one thread) against `cargo fmt` on the Cargo project in DIR
-vs-rustfmt dir="." runs="5":
+# Time the installed chloro (reinstalled first if it is not built from this checkout; all
+# cores, then one thread) against `cargo fmt` on the Cargo project in DIR
+vs-rustfmt dir="." runs="5": chloro-fresh
     #!/usr/bin/env bash
     set -euo pipefail
-    cargo build --release -p chloro --features cli --manifest-path "{{ justfile_directory() }}/Cargo.toml"
-    chloro="{{ justfile_directory() }}/target/release/chloro"
+    chloro=$(command -v chloro)
     cd "{{ dir }}"
     files=$(mktemp)
     trap 'rm -f "$files"' EXIT

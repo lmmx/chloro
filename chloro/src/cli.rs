@@ -90,6 +90,15 @@ pub mod cli {
             std::process::exit(0);
         }
 
+        if args.version {
+            // `just reinstall` records the checkout's build ID (`just build-id`) at compile time
+            match option_env!("CHLORO_BUILD_ID") {
+                Some(id) => println!("chloro {} (build {id})", env!("CARGO_PKG_VERSION")),
+                None => println!("chloro {}", env!("CARGO_PKG_VERSION")),
+            }
+            std::process::exit(0);
+        }
+
         let config = match args.formatting_config() {
             Ok(config) => config,
             Err(e) => {
