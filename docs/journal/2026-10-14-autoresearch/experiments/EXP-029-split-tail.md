@@ -446,17 +446,56 @@ whose target is a large file's chain (Follow-up 2):
 
 ## Gates
 
-Status at this revision: the gates below were run on `fc29026`, whose Rust code is `03c61be`'s
-(the revert restores `parallel.rs` byte for byte); the rest of the protocol's list is run on
-the final head and reported in the next revision of this record.
+All on the head `efd781c` (its `chloro-core` and `chloro/src` are `03c61be`'s byte for byte:
+`git diff 03c61be efd781c -- chloro chloro-core` is empty), run on 2026-10-17 after the
+reboot; the release CLI and `bench` rebuilt there have the base's sha256 (`f48f3593…0bde00`,
+`6816ff8a…a32fa7`). Each built lever was checked for output before it was measured.
 
 | gate | command | result |
 |---|---|---|
 | format | `cargo fmt --all --check` | clean |
 | lint | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | clean |
-| tests | `cargo test --workspace --all-features` | 308 passed, 0 failed (`parallel_equivalence` 1, `unit_cache_equivalence` 1, `cli_trace` 3, the CLI's 24 unit tests, `chloro-core`'s 208, conformance 19, and the rest) |
-| lever (a)'s output | `benchmarks/schedule/identity.sh chloro-base chloro-a <out>` | 0 of 193 comparisons differ |
-| binaries | `sha256sum` | the head's CLI and `bench` equal the base's (`f48f3593…`, `6816ff8a…`) |
+| tests | `cargo test --workspace --all-features` | 308 passed, 0 failed: the CLI's 24 unit tests, `cli_cache` 11, `cli_files` 5, `cli_trace` 3, `cli_unit_cache` 3; `chloro-core`'s 208, `basic` 4, conformance 19, `dead_candidates` 5, `nodes` 10, `parallel_equivalence` 1, `rustfmt_version` 10, `unit_cache_equivalence` 1, `width_bound` 3 (also 308 at `fc29026`) |
+| goldens, fixtures | `target/release/examples/bench -n 1 --check $GOLDEN/fixtures-e8d87c2.tsv --root /home/user/chloro/chloro-core/tests/conformance/fixtures`, and with `--threads 4` | 0 of 1238 outputs changed; at 4 threads also 0 of 1238 differ from `format_source` |
+| goldens, registry | `target/release/examples/bench -n 1 --check $GOLDEN/registry-e8d87c2.tsv --root /root/.cargo/registry/src` | 0 of 25,077 outputs changed (20,850 recorded, 4,227 present and not recorded, reported and not counted) |
+| conformance | `target/release/examples/conform -i`; `conform -i -V 1.8.0` | 1220/1220 identical, 0 not idempotent, at 1.9.0 and at 1.8.0 |
+| CLI identity, the base | `benchmarks/schedule/identity.sh $E29/bin/chloro-base target/release/chloro $OUT` | 0 of 193 comparisons differ (and 0 of 193 for `chloro-a` and for `chloro-b`) |
+| CLI identity, the start | `identity.sh` cannot run against `/home/user/wt/base/target/release/chloro` (`884f9c9`, sha256 `26d25ca9…610c1b7c`): that CLI has no `--threads` and no `--no-cache` and exits 1 with "Could not parse CLI arguments" on every comparison. Run instead: `benchmarks/schedule/identity_start.sh /home/user/wt/base/target/release/chloro target/release/chloro $OUT` (the start's `--write` against the head's `--write --no-cache --threads N`, N = 1, 2, 4, on the nine formatted and raw crates and the fixtures, written trees compared) | 57 tree comparisons, 3 differing lines, 1 file: `rust-analyzer/parser/test_data/parser/err/0024_many_type_parens.rs` at each thread count, the R2 fixture fix; the 12 registry files of R2 are not in these trees |
+| instructions, fixture sample | `benchmarks/profile.sh --core 3 --runs 2 --per-file --bench $E29/bin/bench-head` | 220,957,335 and 220,957,563 (min 220,957,335); per file 236,243,340 over 49 processes, empty process 316,072, net 220,755,812; cross-file term −114,549. `bench-head` is byte-identical to `bench-base`, so the base's count is the same binary's; the record of the BKG (`e96b530`): 220,958,649–220,958,706, per file 220,755,045 net |
+| instructions, registry sample | `benchmarks/profile.sh --core 3 --runs 2 --per-file --bench $E29/bin/bench-head --sample-list benchmarks/samples/registry49.txt` | 299,933,904 and 299,933,794 (min 299,933,794); per file 314,321,965, net 298,834,437; cross-file term +783,285; the BKG's: 299,933,504, per file 298,833,058 net |
+| CPU at 4 threads | `hyperfine -N -i -w 2 -r 10 --metrics time_user,time_system`, base and head in both orders, nine crates (load 9.1–9.5, provisional) | head/base CPU 0.886–1.181 for two byte-identical binaries (below): the noise floor of this window; the CPU is the base's by construction |
+
+The fixture count is 246 above M5's for the same code (220,957,089, `03c61be`'s commit
+message) and 1.3 K below the BKG's record taken at the E25 merge; the registry count is 290
+above that record; the per-file figures are 767 and 1,379 above it. All within or near the
+run-to-run spread, for a `bench` built from the formatter code of the base: the sequential
+path is untouched.
+
+CPU at 4 threads, head against base (hyperfine, n = 20 per build per crate):
+
+| crate | n per build | base wall min / mean ± σ | head wall min / mean ± σ | base CPU mean | head CPU mean | head/base CPU |
+|---|---|---|---|---|---|---|
+| fx-hir | 20 | 48.3 / 71.1 ± 13.4 | 44.0 / 61.8 ± 9.9 | 103.7 | 97.3 | 0.938 |
+| fx-hir-ty | 20 | 134.8 / 184.3 ± 41.5 | 132.2 / 158.8 ± 22.1 | 269.5 | 278.6 | 1.034 |
+| fx-ide-db | 20 | 53.1 / 70.5 ± 13.1 | 50.5 / 68.2 ± 10.3 | 84.7 | 86.4 | 1.019 |
+| fx-syntax | 20 | 30.4 / 44.4 ± 11.4 | 28.5 / 41.6 ± 8.5 | 51.0 | 49.6 | 0.972 |
+| fx-parser | 20 | 21.2 / 29.5 ± 6.5 | 17.5 / 31.1 ± 8.7 | 33.8 | 34.2 | 1.013 |
+| reg-tokio | 20 | 9.6 / 21.7 ± 6.5 | 8.2 / 21.5 ± 11.0 | 22.7 | 20.1 | 0.886 |
+| reg-regex-syntax | 20 | 89.0 / 141.3 ± 28.4 | 104.1 / 143.8 ± 22.0 | 191.8 | 196.3 | 1.024 |
+| reg-clap-builder | 20 | 45.2 / 64.8 ± 14.1 | 37.5 / 58.1 ± 11.5 | 83.3 | 81.3 | 0.976 |
+| reg-winnow | 20 | 47.9 / 71.8 ± 15.7 | 46.2 / 79.4 ± 18.4 | 81.8 | 96.6 | 1.181 |
+
+CPU of the two levers (hyperfine, two rounds in reversed order, n = 30 per build, load 9.1–9.3,
+provisional):
+
+| crate | build | n | wall min / mean ± σ ms | CPU (user+sys) mean ms | CPU vs base |
+|---|---|---|---|---|---|
+| fx-hir | base | 30 | 44.2 / 63.6 ± 10.8 | 104.5 | +0.0% |
+| fx-hir | a | 30 | 49.1 / 63.7 ± 11.3 | 101.0 | -3.4% |
+| fx-hir | b | 30 | 48.0 / 67.3 ± 11.8 | 95.9 | -8.3% |
+| fx-ide-db | base | 30 | 44.9 / 58.7 ± 8.8 | 94.0 | +0.0% |
+| fx-ide-db | a | 30 | 39.5 / 58.5 ± 10.2 | 94.4 | +0.4% |
+| fx-ide-db | b | 30 | 39.1 / 59.2 ± 10.0 | 89.4 | -4.9% |
 
 ## Decision
 
