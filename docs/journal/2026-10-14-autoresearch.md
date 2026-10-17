@@ -741,7 +741,9 @@ here for the owner's decision; nothing of it is built.
 
 ## Handoff for the next session
 
-Superseded on 2026-10-17: the live handoff is the "Handoff (overnight run)" section of
+Superseded on 2026-10-17: the handoff for the whole branch, written in plain language with a
+glossary of the codes, is [2026-10-17-handoff.md](2026-10-17-handoff.md); the running handoff
+of the day-2 and day-3 work is the "Handoff (overnight run)" section of
 [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md), which carries waves 3–5
 and M6. State at 2026-10-17 09:30 UTC: branch `claude/chloro-perf-research-swarm-nrscj8` at
 `df30b2a` (code head `96c9abc`), working tree clean, everything pushed, PR #88 open; no agent,
