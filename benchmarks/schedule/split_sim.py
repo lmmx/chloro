@@ -73,10 +73,13 @@ def split_parts(path):
         fc = cpu.get(f['start'], 0)
         mine = lambda k: [i for i in items if i['kind'] == k and (i['n'] // M == src if k != 1 else i['n'] == src)]
         parse = sum(i['cpu'] for i in mine(1))
-        ph2 = sum(i['cpu'] for i in mine(2)) - sum(i['cpu'] for i in mine(5))
+        own = sum(i['cpu'] for i in mine(5))  # lever (a)'s build: the worker's own units
+        ph2 = sum(i['cpu'] for i in mine(2))  # the units phase on the worker (its own units included)
         stitch = sum(i['cpu'] for i in mine(3))
         units = sorted((i['cpu'] for i in mine(4)), reverse=True)
         iw = sum(i['cpu'] for i in mine(0))
+        fc -= own
+        ph2 -= own
         out.append(dict(bytes=src, file_cpu=fc / 1e6, parse=parse / 1e6, rest=(fc - parse - ph2 - stitch) / 1e6,
                         join_phase=ph2 / 1e6, stitch=stitch / 1e6, nunits=len(units), units=sum(units) / 1e6,
                         u1=units[0] / 1e6 if units else 0, u2=units[1] / 1e6 if len(units) > 1 else 0,
