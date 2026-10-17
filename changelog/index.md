@@ -6,6 +6,14 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 
 ## [Unreleased](<https://github.com/lmmx/chloro/compare/chloro-v0.9.0...HEAD>)
 
+### Added
+
+- `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
+
+### Fixed
+
+- A file that does not parse, or that contains syntax rustc's parser rejects, is reported as rustfmt reports it: its first error is printed in rustc's layout, nothing is printed or written for the file, and the exit status is 1, in every mode ([\#87](<https://github.com/lmmx/chloro/issues/87>)). It was left unchanged as before, but silently and with exit status 0, and recorded in the cache as formatted.
+
 ## [0.9.0](<https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0>) - 2026-10-17
 
 The performance and conformance work of [\#88](<https://github.com/lmmx/chloro/pull/88>). Every output is identical to 0.8.0's except for the conformance fixes listed under *Fixed*. The measurements behind the figures below are described on the [Performance](<https://lmmx.github.io/chloro/performance/>) page.

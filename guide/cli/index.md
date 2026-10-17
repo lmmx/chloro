@@ -36,9 +36,19 @@ With both `--check` and `--write`, files are written and the exit status reports
 | status | when |
 | --- | --- |
 | 0 | every file was processed; with `--check`, none needs formatting |
-| 1 | `--check` found files that need formatting; or a file could not be read or written; or a source path does not exist; or `--config` was invalid; or the arguments could not be parsed |
+| 1 | `--check` found files that need formatting; or a file does not parse; or a file could not be read or written; or a source path does not exist; or `--config` was invalid; or the arguments could not be parsed |
 
-A file that does not parse, or that contains syntax rustc's parser rejects, is left unchanged, as rustfmt leaves it. Unlike rustfmt, which prints the parse error and exits with status 1, chloro does not report such a file, even with `--verbose`, and counts it as formatted; that is a known issue ([\#87](<https://github.com/lmmx/chloro/issues/87>)). A file with an inner `#![rustfmt::skip]` attribute is also left unchanged.
+A file that does not parse, or that contains syntax rustc's parser rejects, is reported as rustfmt reports it, in every mode: its error is printed to standard error in rustc's layout, nothing is printed or written for it, and the exit status is 1. The other files are formatted as usual.
+
+```text
+error: expected expression, found `;`
+ --> /home/me/project/src/main.rs:2:13
+  |
+2 |     let x = ;
+  |             ^
+```
+
+The position is where rustc reports most syntax errors. The message is rust-analyzer's parser's, worded like rustc's where its tokens allow (as in "expected `;`, found keyword `let`"), or, for syntax that rust-analyzer's parser accepts and rustc's rejects, "rustc's parser rejects this syntax"; rustc's own messages, notes and suggestions are not reproduced. Only the first error of a file is reported. The errors are printed after the run, in path order, `--verbose` counts the files in its summary ("Files that do not parse"), and such a file is never recorded in the cache. A file with an inner `#![rustfmt::skip]` attribute is left unchanged, and is not an error.
 
 ## Options
 

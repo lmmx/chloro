@@ -1368,6 +1368,24 @@ each is explained on this site.</p>
 <td>reuses formatted items; <a href="../../guide/library/#a-cache-of-formatted-items">guide</a></td>
 </tr>
 <tr>
+<td><code>try_format_source_with_config(source, config) -&gt; Result&lt;String, ParseError&gt;</code></td>
+<td>yes</td>
+<td>yes</td>
+<td>the same text, or the syntax error; <a href="../../guide/library/#parse-errors">guide</a></td>
+</tr>
+<tr>
+<td><code>try_format_source_with_config_parallel(source, config, threads)</code>, <code>try_format_source_with_unit_cache(source, config, threads, cache)</code></td>
+<td></td>
+<td>yes</td>
+<td>the same for the parallel and cached functions</td>
+</tr>
+<tr>
+<td><code>ParseError</code></td>
+<td>yes</td>
+<td>yes</td>
+<td><code>message()</code>, <code>line()</code>, <code>column()</code> (from 1, in characters), <code>width()</code>; <code>Display</code> as <code>line:column: message</code></td>
+</tr>
+<tr>
 <td><code>parse_only(source, config) -&gt; Option&lt;usize&gt;</code></td>
 <td></td>
 <td>yes</td>
@@ -1377,8 +1395,8 @@ each is explained on this site.</p>
 </table>
 <p>Every formatting function returns the source unchanged when it does not parse, when rustc's
 parser would reject it, when it has an inner <code>#![rustfmt::skip]</code>, or when
-<code>disable_all_formatting</code> is set. All of them return the same text for the same source and
-configuration.</p>
+<code>disable_all_formatting</code> is set; the <code>try_</code> functions return the error instead in the first
+two cases. All of them return the same text for the same source and configuration.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

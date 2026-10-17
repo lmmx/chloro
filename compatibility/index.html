@@ -1549,11 +1549,12 @@ compared.</p>
 <li><strong>Syntax rust-analyzer's parser cannot represent.</strong> chloro parses with rust-analyzer's
   parser and rebuilds the tree for the cases where rustc's parser accepts something
   rust-analyzer rejects. Two such constructs remain (below).</li>
-<li><strong>Error reporting.</strong> Both tools leave a file that does not parse unchanged, but rustfmt
-  prints the parse error and exits with status 1, while chloro reports nothing and exits
-  with 0 (<a href="https://github.com/lmmx/chloro/issues/87">#87</a>). Where rustfmt fails with an
-  internal error but still writes output, chloro writes the same output and reports no
-  error; the library has no error channel.</li>
+<li><strong>Error reporting.</strong> Both tools leave a file that does not parse unchanged, print its
+  error and exit with status 1. chloro's message is rust-analyzer's parser's, worded like
+  rustc's where its tokens allow, at the position rustc reports for most errors; it prints
+  the first error of a file only, without rustc's notes and suggestions
+  (<a href="../guide/cli/#exit-status">command line</a>). Where rustfmt fails with an internal error but
+  still writes output, chloro writes the same output and reports no error.</li>
 </ul>
 <h2 id="known-differences">Known differences<a class="headerlink" href="#known-differences" title="Permanent link">&para;</a></h2>
 <p>Six cases are recorded and open in the <a href="https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-14-autoresearch/conformance-ledger.md">conformance ledger</a>:</p>
@@ -1574,7 +1575,7 @@ compared.</p>
 <tr>
 <td>20</td>
 <td>Edition-2015 trait methods with anonymous parameters, <code>fn f(usize);</code>, which rust-analyzer's parser rejects.</td>
-<td>chloro returns the file unchanged; rustfmt formats it.</td>
+<td>chloro reports a parse error and leaves the file unchanged; rustfmt formats it.</td>
 </tr>
 <tr>
 <td>21</td>
@@ -1594,7 +1595,7 @@ compared.</p>
 <tr>
 <td>24</td>
 <td>Minor forms: a trailing comma in <code>builtin # offset_of(…)</code>, which rust-analyzer rejects.</td>
-<td>chloro returns the file unchanged.</td>
+<td>chloro reports a parse error and leaves the file unchanged.</td>
 </tr>
 </tbody>
 </table>

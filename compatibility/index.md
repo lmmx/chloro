@@ -58,7 +58,7 @@ rustfmt 1.7.0 and earlier are refused: 1.7.0 has no 2024 Style Guide rules, and 
 - **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or standard input modes; `--check` reports a count, not a diff. Editions are set with `--config edition=…`.
 - **Out-of-line modules.** rustfmt formats the files a crate's `mod` declarations lead to; chloro formats the files and directories you name, whatever modules they declare.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's parser and rebuilds the tree for the cases where rustc's parser accepts something rust-analyzer rejects. Two such constructs remain (below).
-- **Error reporting.** Both tools leave a file that does not parse unchanged, but rustfmt prints the parse error and exits with status 1, while chloro reports nothing and exits with 0 ([\#87](<https://github.com/lmmx/chloro/issues/87>)). Where rustfmt fails with an internal error but still writes output, chloro writes the same output and reports no error; the library has no error channel.
+- **Error reporting.** Both tools leave a file that does not parse unchanged, print its error and exit with status 1. chloro's message is rust-analyzer's parser's, worded like rustc's where its tokens allow, at the position rustc reports for most errors; it prints the first error of a file only, without rustc's notes and suggestions ([command line](<https://lmmx.github.io/chloro/guide/cli/#exit-status>)). Where rustfmt fails with an internal error but still writes output, chloro writes the same output and reports no error.
 
 ## Known differences
 
@@ -67,11 +67,11 @@ Six cases are recorded and open in the [conformance ledger](<https://github.com/
 |  | what | effect |
 | --- | --- | --- |
 | 19 | A doc comment before an expression in an argument list, array, `let` or statement position: rustc treats it as an attribute of the expression and rustfmt formats it with the expression; chloro leaves it where it is. | Layout differs around the comment. No registry file is affected; rustc warns about such comments (`unused_doc_comments`). |
-| 20 | Edition-2015 trait methods with anonymous parameters, `fn f(usize);`, which rust-analyzer's parser rejects. | chloro returns the file unchanged; rustfmt formats it. |
+| 20 | Edition-2015 trait methods with anonymous parameters, `fn f(usize);`, which rust-analyzer's parser rejects. | chloro reports a parse error and leaves the file unchanged; rustfmt formats it. |
 | 21 | rustfmt's internal error on one file of rustyline 14.0.0. | rustfmt exits with an error and writes the output chloro writes. |
 | 22 | rustfmt's run time on a 47 KB generated file of pest\_meta 2.9.2. | rustfmt takes over nine minutes and chloro 0.2 s, for identical output. |
 | 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro's output matches rustfmt's at every pass. |
-| 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro returns the file unchanged. |
+| 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro reports a parse error and leaves the file unchanged. |
 
 Also open, as an issue: in a file whose line endings are mixed, rustfmt keeps a stray `\r\n` where chloro writes `\n` ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
 

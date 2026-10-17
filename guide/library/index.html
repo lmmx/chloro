@@ -614,6 +614,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#parse-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Parse errors
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1322,6 +1333,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#parse-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Parse errors
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1428,7 +1450,7 @@ threads.</p>
 <tbody>
 <tr>
 <td><a href="https://docs.rs/chloro"><code>chloro</code></a></td>
-<td><code>format_source</code>, <code>format_source_with_config</code>, <code>Config</code>; and the command line behind the <code>cli</code> feature</td>
+<td><code>format_source</code>, <code>format_source_with_config</code>, <code>try_format_source_with_config</code>, <code>Config</code>, <code>ParseError</code>; and the command line behind the <code>cli</code> feature</td>
 </tr>
 <tr>
 <td><a href="https://docs.rs/chloro-core"><code>chloro-core</code></a></td>
@@ -1444,10 +1466,11 @@ The examples on this page that use only <code>format_source*</code> and <code>Co
 </code></pre></div>
 <p><code>format_source</code> formats with rustfmt's defaults at edition 2024, the same as
 <code>format_source_with_config(source, &amp;Config::default())</code>.</p>
-<p>The formatting functions do not return errors. Source that does not parse, or that rustc's parser would reject,
-comes back unchanged, as rustfmt leaves such a file alone; so does a file with an inner
-<code>#![rustfmt::skip]</code> attribute, or any file when <code>disable_all_formatting</code> is set. To find out
-whether anything changed, compare the output with the input:</p>
+<p>The formatting functions return text, not errors. Source that does not parse, or that
+rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so
+does a file with an inner <code>#![rustfmt::skip]</code> attribute, or any file when
+<code>disable_all_formatting</code> is set (<a href="#parse-errors">parse errors</a> tells the first case from
+the others). To find out whether anything changed, compare the output with the input:</p>
 <div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\n</span><span class="s">    let x = 1;</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
 <span class="kd">let</span><span class="w"> </span><span class="n">needs_formatting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">source</span><span class="p">;</span>
 <span class="fm">assert!</span><span class="p">(</span><span class="o">!</span><span class="n">needs_formatting</span><span class="p">);</span>
@@ -1459,6 +1482,31 @@ whether anything changed, compare the output with the input:</p>
 <p>As in rustfmt, a byte order mark is dropped and <code>\r\n</code> in the input reads as <code>\n</code>; the
 output's line endings are set by <code>newline_style</code> (by default, those of the input's first
 line).</p>
+<h2 id="parse-errors">Parse errors<a class="headerlink" href="#parse-errors" title="Permanent link">&para;</a></h2>
+<p><code>try_format_source_with_config</code> returns the same text as <code>format_source_with_config</code>, or
+the syntax error for which that returns the source unchanged: the error rustfmt reports for
+a file it leaves alone, which the command line prints
+(<a href="../cli/#exit-status">exit status</a>).</p>
+<div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">Config</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\n</span><span class="s">    let x = ;</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">try_format_source_with_config</span><span class="p">(</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">).</span><span class="n">unwrap_err</span><span class="p">();</span>
+<span class="fm">assert_eq!</span><span class="p">((</span><span class="n">error</span><span class="p">.</span><span class="n">line</span><span class="p">(),</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="n">column</span><span class="p">()),</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">));</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">error</span><span class="p">.</span><span class="n">message</span><span class="p">(),</span><span class="w"> </span><span class="s">"expected expression, found `;`"</span><span class="p">);</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">error</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span><span class="w"> </span><span class="s">"2:13: expected expression, found `;`"</span><span class="p">);</span>
+
+<span class="c1">// Left unchanged, but not an error.</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">skipped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"#![rustfmt::skip]</span><span class="se">\n</span><span class="s">fn main(){}</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">chloro</span><span class="p">::</span><span class="n">try_format_source_with_config</span><span class="p">(</span><span class="n">skipped</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">).</span><span class="n">as_deref</span><span class="p">(),</span><span class="w"> </span><span class="nb">Ok</span><span class="p">(</span><span class="n">skipped</span><span class="p">));</span>
+</code></pre></div>
+<p>The position is where rustc reports most syntax errors: the line, and the column in
+characters, both from 1, on the source with any byte order mark dropped and <code>\r\n</code> read as
+<code>\n</code>. <code>width()</code> is the number of characters the error covers on its line. The message is
+rust-analyzer's parser's, worded like rustc's where its tokens allow, or for syntax that
+rust-analyzer's parser accepts and rustc's rejects, "rustc's parser rejects this syntax".
+The error is found by parsing the source again once it has been refused, so the <code>try_</code>
+functions cost no more than the others on a source that parses. <code>chloro-core</code> has
+<code>try_format_source_with_config_parallel</code> and <code>try_format_source_with_unit_cache</code> for the
+entry points below.</p>
 <h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
 <div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">Config</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
 <span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">"max_width"</span><span class="p">,</span><span class="w"> </span><span class="s">"80"</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>

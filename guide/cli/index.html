@@ -1419,15 +1419,28 @@ any needed formatting.</p>
 </tr>
 <tr>
 <td>1</td>
-<td><code>--check</code> found files that need formatting; or a file could not be read or written; or a source path does not exist; or <code>--config</code> was invalid; or the arguments could not be parsed</td>
+<td><code>--check</code> found files that need formatting; or a file does not parse; or a file could not be read or written; or a source path does not exist; or <code>--config</code> was invalid; or the arguments could not be parsed</td>
 </tr>
 </tbody>
 </table>
-<p>A file that does not parse, or that contains syntax rustc's parser rejects, is left
-unchanged, as rustfmt leaves it. Unlike rustfmt, which prints the parse error and exits with
-status 1, chloro does not report such a file, even with <code>--verbose</code>, and counts it as
-formatted; that is a known issue (<a href="https://github.com/lmmx/chloro/issues/87">#87</a>). A file
-with an inner <code>#![rustfmt::skip]</code> attribute is also left unchanged.</p>
+<p>A file that does not parse, or that contains syntax rustc's parser rejects, is reported as
+rustfmt reports it, in every mode: its error is printed to standard error in rustc's layout,
+nothing is printed or written for it, and the exit status is 1. The other files are
+formatted as usual.</p>
+<div class="language-text highlight"><pre><span></span><code>error: expected expression, found `;`
+ --&gt; /home/me/project/src/main.rs:2:13
+  |
+2 |     let x = ;
+  |             ^
+</code></pre></div>
+<p>The position is where rustc reports most syntax errors. The message is rust-analyzer's
+parser's, worded like rustc's where its tokens allow (as in "expected <code>;</code>, found keyword
+<code>let</code>"), or, for syntax that rust-analyzer's parser accepts and rustc's rejects, "rustc's
+parser rejects this syntax"; rustc's own messages, notes and suggestions are not
+reproduced. Only the first error of a file is reported. The errors are printed after the
+run, in path order, <code>--verbose</code> counts the files in its summary ("Files that do not
+parse"), and such a file is never recorded in the cache. A file with an inner
+<code>#![rustfmt::skip]</code> attribute is left unchanged, and is not an error.</p>
 <h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
 <p>The flags are summarised here; the <a href="../../reference/cli/">CLI reference</a> has the full help
 text.</p>

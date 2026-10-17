@@ -12,9 +12,12 @@ The Rust API is documented on docs.rs. This page lists the public entry points a
 | `format_source_with_config(source: &str, config: &Config) -> String` | yes | yes | any options |
 | `format_source_with_config_parallel(source, config, threads) -> String` |  | yes | top-level items on up to `threads` threads; [guide](<https://lmmx.github.io/chloro/guide/library/#one-large-file-on-several-threads>) |
 | `format_source_with_unit_cache(source, config, threads, cache: &dyn UnitCache) -> String` |  | yes | reuses formatted items; [guide](<https://lmmx.github.io/chloro/guide/library/#a-cache-of-formatted-items>) |
+| `try_format_source_with_config(source, config) -> Result<String, ParseError>` | yes | yes | the same text, or the syntax error; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-errors>) |
+| `try_format_source_with_config_parallel(source, config, threads)`, `try_format_source_with_unit_cache(source, config, threads, cache)` |  | yes | the same for the parallel and cached functions |
+| `ParseError` | yes | yes | `message()`, `line()`, `column()` (from 1, in characters), `width()`; `Display` as `line:column: message` |
 | `parse_only(source, config) -> Option<usize>` |  | yes | the parse alone; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-without-formatting>) |
 
-Every formatting function returns the source unchanged when it does not parse, when rustc's parser would reject it, when it has an inner `#![rustfmt::skip]`, or when `disable_all_formatting` is set. All of them return the same text for the same source and configuration.
+Every formatting function returns the source unchanged when it does not parse, when rustc's parser would reject it, when it has an inner `#![rustfmt::skip]`, or when `disable_all_formatting` is set; the `try_` functions return the error instead in the first two cases. All of them return the same text for the same source and configuration.
 
 ## Configuration
 
