@@ -89,19 +89,15 @@ text.
 | `-c`, `--check` | exit 1 if any file would change; write nothing | [above](#modes) |
 | `-w`, `--write` | write formatted files in place | [above](#modes) |
 | `-v`, `--verbose` | report each file, the cache in use, the thread count and a summary, on standard error | |
-| `--config OPTS` | rustfmt options as `key=value,key=value` | [Configuration](configuration.md) |
+| `--config OPTS` | rustfmt options as `key=value,key=value`, over the configuration file's | [Configuration](configuration.md) |
+| `--config-path PATH` | the `rustfmt.toml` for every file, or a directory holding one | [Configuration files](configuration.md#configuration-files) |
+| `--isolated` | read no `rustfmt.toml` and no `Cargo.toml`: only `--config` applies | [Configuration files](configuration.md#configuration-files) |
 | `--threads N` | worker threads (default: one per core) | [Parallelism](parallelism.md) |
 | `--no-cache` | neither read nor write the caches | [Caching](caching.md) |
 | `--unit-cache` | also cache each formatted top-level item | [Caching](caching.md#the-unit-cache) |
 | `--cache-dir DIR` | where the caches live | [Caching](caching.md#where-the-cache-lives) |
 | `-V`, `--version` | print the version, marked `-dev` unless built from the release | [Reference](../reference/cli.md#-version-v) |
 | `-h`, `--help` | print the help text | |
-
-!!! note "The default source in `--help`"
-
-    The help text describes the default source as `'src'`; the default is in fact the
-    current directory (`.`), as described above
-    ([#91](https://github.com/lmmx/chloro/issues/91)).
 
 ## Environment variables
 
@@ -127,6 +123,6 @@ chloro handles both as rustfmt does:
   line endings that does need formatting is written with `\n` ones. Under the other styles,
   any difference in the bytes counts.
 
-A few things rustfmt does that chloro does not (reading `rustfmt.toml`, `--emit`, formatting
-standard input) are listed under
+A few things rustfmt does that chloro does not (`--emit`, formatting standard input) are
+listed under
 [rustfmt compatibility](../compatibility.md#what-is-not-covered).

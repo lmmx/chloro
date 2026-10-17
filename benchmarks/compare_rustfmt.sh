@@ -305,7 +305,7 @@ agreement() {
     else
       (cd "$W/agree_r" && xargs -a "$W/files.txt" "${RF[@]}" >/dev/null 2>&1) || true
     fi
-    "$CHLORO" $(cache_flag "$CHLORO") --write "$W/agree_c" >/dev/null 2>&1 || true
+    "$CHLORO" $(cache_flag "$CHLORO") $(isolated_flag "$CHLORO") --write "$W/agree_c" >/dev/null 2>&1 || true
     local n differ
     n=$(wc -l < "$W/files.txt")
     differ=$(diff -rq "$W/agree_r" "$W/agree_c" | wc -l || true)
@@ -371,6 +371,15 @@ cache_flag() {
   return 0
 }
 
+# isolated_flag BIN: "--isolated" when BIN accepts it, so that chloro, like the rustfmt
+# command (an empty --config-path), reads no rustfmt.toml and takes no edition from a
+# Cargo.toml: both format with the defaults at edition 2024. A build without the flag reads
+# no configuration file anyway.
+isolated_flag() {
+  if "$1" --help 2>&1 | grep -q -- '--isolated'; then echo "--isolated"; fi
+  return 0
+}
+
 chloro_bins() { # role -> "label path" lines for chloro and the optional baseline
   echo "chloro $1"
   [ -n "$BASELINE" ] && echo "chloro-base $2"
@@ -389,7 +398,7 @@ run_crate_or_files() {
   fi
   if [ "$MODE" = check ]; then ccmd_args="--check $W/tree"; else ccmd_args="$W/tree"; fi
   local -a pairs=(rustfmt "$rcmd")
-  while read -r label bin; do pairs+=("$label" "$bin $(cache_flag "$bin") $ccmd_args"); done \
+  while read -r label bin; do pairs+=("$label" "$bin $(cache_flag "$bin") $(isolated_flag "$bin") $ccmd_args"); done \
     < <(chloro_bins "$CHLORO" "$BASELINE/chloro")
   cp "$W/meta" "$OUT/$name.$variant.meta"
   { echo "variant=$variant"; echo "mode=$MODE"; echo "pin=${pin:-none}"; } >> "$OUT/$name.$variant.meta"

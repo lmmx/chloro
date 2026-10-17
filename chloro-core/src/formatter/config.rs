@@ -489,26 +489,28 @@ impl Config {
                 .map_err(|_| format!("`{key}` expects an unsigned integer, got `{value}`"))
         };
         let bad = || format!("unsupported value `{value}` for `{key}`");
+        // rustfmt reads a choice case-insensitively (`config_type`'s `FromStr`).
+        let choice = |variants: &[&str]| {
+            variants
+                .iter()
+                .position(|v| v.eq_ignore_ascii_case(value))
+                .ok_or_else(bad)
+        };
         match key {
             "max_width" => self.max_width = usize_()?,
             "hard_tabs" => self.hard_tabs = bool_()?,
             "tab_spaces" => self.tab_spaces = usize_()?,
             "newline_style" => {
-                self.newline_style = match value {
-                    "Auto" => NewlineStyle::Auto,
-                    "Native" => NewlineStyle::Native,
-                    "Unix" => NewlineStyle::Unix,
-                    "Windows" => NewlineStyle::Windows,
-                    _ => return Err(bad()),
-                }
+                self.newline_style = [
+                    NewlineStyle::Auto,
+                    NewlineStyle::Native,
+                    NewlineStyle::Unix,
+                    NewlineStyle::Windows,
+                ][choice(&["Auto", "Native", "Unix", "Windows"])?]
             }
             "use_small_heuristics" => {
-                self.use_small_heuristics = match value {
-                    "Default" => Heuristics::Default,
-                    "Max" => Heuristics::Max,
-                    "Off" => Heuristics::Off,
-                    _ => return Err(bad()),
-                }
+                self.use_small_heuristics = [Heuristics::Default, Heuristics::Max, Heuristics::Off]
+                    [choice(&["Default", "Max", "Off"])?]
             }
             "fn_call_width" => self.fn_call_width = Some(usize_()?),
             "attr_fn_like_width" => self.attr_fn_like_width = Some(usize_()?),
@@ -527,20 +529,15 @@ impl Config {
                 self.short_array_element_width_threshold = usize_()?
             }
             "match_arm_leading_pipes" => {
-                self.match_arm_leading_pipes = match value {
-                    "Always" => MatchArmLeadingPipe::Always,
-                    "Never" => MatchArmLeadingPipe::Never,
-                    "Preserve" => MatchArmLeadingPipe::Preserve,
-                    _ => return Err(bad()),
-                }
+                self.match_arm_leading_pipes = [
+                    MatchArmLeadingPipe::Always,
+                    MatchArmLeadingPipe::Never,
+                    MatchArmLeadingPipe::Preserve,
+                ][choice(&["Always", "Never", "Preserve"])?]
             }
             "fn_params_layout" | "fn_args_layout" => {
-                self.fn_params_layout = match value {
-                    "Compressed" => Density::Compressed,
-                    "Tall" => Density::Tall,
-                    "Vertical" => Density::Vertical,
-                    _ => return Err(bad()),
-                }
+                self.fn_params_layout = [Density::Compressed, Density::Tall, Density::Vertical]
+                    [choice(&["Compressed", "Tall", "Vertical"])?]
             }
             "match_block_trailing_comma" => self.match_block_trailing_comma = bool_()?,
             "edition" | "style_edition" => {
@@ -592,6 +589,148 @@ impl Config {
         Ok(())
     }
 }
+
+/// A value of an option in a configuration file, typed as TOML types it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileValue<'a> {
+    /// A string, without its quotes.
+    String(&'a str),
+    /// An integer.
+    Integer(i64),
+    /// A boolean.
+    Boolean(bool),
+    /// Any other value (a float, a date, an array or a table), as written.
+    Other(&'a str),
+}
+
+impl FileValue<'_> {
+    /// The value with its type, as rustfmt names a value of the wrong type.
+    fn described(&self) -> String {
+        match self {
+            FileValue::String(s) => format!("string {s:?}"),
+            FileValue::Integer(n) => format!("integer `{n}`"),
+            FileValue::Boolean(b) => format!("boolean `{b}`"),
+            FileValue::Other(text) => format!("`{text}`"),
+        }
+    }
+}
+
+impl std::fmt::Display for FileValue<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FileValue::String(s) => write!(f, "{s:?}"),
+            FileValue::Integer(n) => write!(f, "{n}"),
+            FileValue::Boolean(b) => write!(f, "{b}"),
+            FileValue::Other(text) => f.write_str(text),
+        }
+    }
+}
+
+impl Config {
+    /// Apply `key = value` from a configuration file (`rustfmt.toml`) as stable rustfmt does.
+    /// The value must have the option's TOML type: an integer for a width or a count, a
+    /// boolean for a flag, a string for a choice or an edition. An unstable option is ignored
+    /// with rustfmt's warning whatever its value, and so is an unknown one; unlike
+    /// [`Config::set`], neither is an error.
+    ///
+    /// Returns the warning to print, if any.
+    ///
+    /// # Errors
+    ///
+    /// A message naming the option when the value has the wrong type or is not one the
+    /// option takes: rustfmt then refuses the whole file.
+    pub fn set_from_file(
+        &mut self,
+        key: &str,
+        value: FileValue<'_>,
+    ) -> Result<Option<String>, String> {
+        let expected = match key {
+            "max_width"
+            | "tab_spaces"
+            | "fn_call_width"
+            | "attr_fn_like_width"
+            | "struct_lit_width"
+            | "struct_variant_width"
+            | "array_width"
+            | "chain_width"
+            | "single_line_if_else_max_width"
+            | "single_line_let_else_max_width"
+            | "short_array_element_width_threshold" => "usize",
+            "hard_tabs"
+            | "reorder_imports"
+            | "reorder_modules"
+            | "remove_nested_parens"
+            | "match_block_trailing_comma"
+            | "merge_derives"
+            | "use_try_shorthand"
+            | "use_field_init_shorthand"
+            | "force_explicit_abi"
+            | "disable_all_formatting"
+            | "print_misformatted_file_names" => "a boolean",
+            "newline_style"
+            | "use_small_heuristics"
+            | "match_arm_leading_pipes"
+            | "fn_params_layout"
+            | "fn_args_layout"
+            | "edition"
+            | "style_edition"
+            | "rustfmt_version" => "string",
+            _ if UNSTABLE_DEFAULTS.iter().any(|(k, _)| *k == key)
+                || UNSTABLE_FILE_OPTIONS.contains(&key) =>
+            {
+                return Ok(Some(format!(
+                    "can't set `{key} = {value}`, unstable features are only available in \
+                     nightly channel."
+                )));
+            }
+            _ => return Ok(Some(format!("Unknown configuration option `{key}`"))),
+        };
+        let text = match (expected, value) {
+            ("usize", FileValue::Integer(n)) if n >= 0 => n.to_string(),
+            ("usize", FileValue::Integer(n)) => {
+                return Err(format!(
+                    "invalid value: integer `{n}`, expected usize in `{key}`"
+                ));
+            }
+            ("a boolean", FileValue::Boolean(b)) => b.to_string(),
+            ("string", FileValue::String(s)) => s.to_owned(),
+            (expected, value) => {
+                return Err(format!(
+                    "invalid type: {}, expected {expected} in `{key}`",
+                    value.described()
+                ));
+            }
+        };
+        // Stable, and without effect on the formatted text.
+        if key == "print_misformatted_file_names" {
+            return Ok(None);
+        }
+        self.set(key, &text)?;
+        Ok((key == "fn_args_layout").then(|| {
+            "the `fn_args_layout` option is deprecated. Use `fn_params_layout`. instead".to_owned()
+        }))
+    }
+}
+
+/// rustfmt's unstable options that do not change the formatted text, or that chloro does
+/// not implement (`file_lines`), as `rustfmt.toml` may set them.
+const UNSTABLE_FILE_OPTIONS: &[&str] = &[
+    "version",
+    "required_version",
+    "unstable_features",
+    "skip_children",
+    "show_parse_errors",
+    "hide_parse_errors",
+    "error_on_line_overflow",
+    "error_on_unformatted",
+    "ignore",
+    "emit_mode",
+    "make_backup",
+    "color",
+    "verbose",
+    "file_lines",
+    "generated_marker_line_search_limit",
+];
 
 /// rustfmt's unstable options and the default value chloro always applies.
 const UNSTABLE_DEFAULTS: &[(&str, &str)] = &[
@@ -947,5 +1086,101 @@ mod tests {
             Settings::new(&config).style_edition(),
             StyleEdition::Edition2024
         );
+    }
+
+    #[test]
+    fn choices_are_read_case_insensitively_as_rustfmt_reads_them() {
+        let mut config = Config::default();
+        config.set("newline_style", "unix").unwrap();
+        config.set("use_small_heuristics", "MAX").unwrap();
+        config.set("fn_params_layout", "vertical").unwrap();
+        config.set("match_arm_leading_pipes", "always").unwrap();
+        assert_eq!(config.newline_style, NewlineStyle::Unix);
+        assert_eq!(config.use_small_heuristics, Heuristics::Max);
+        assert_eq!(config.fn_params_layout, Density::Vertical);
+        assert_eq!(config.match_arm_leading_pipes, MatchArmLeadingPipe::Always);
+        assert!(config.set("newline_style", "unixy").is_err());
+    }
+
+    #[test]
+    fn a_file_option_takes_its_toml_type() {
+        let mut config = Config::default();
+        assert_eq!(
+            config.set_from_file("max_width", FileValue::Integer(80)),
+            Ok(None)
+        );
+        assert_eq!(
+            config.set_from_file("hard_tabs", FileValue::Boolean(true)),
+            Ok(None)
+        );
+        assert_eq!(
+            config.set_from_file("edition", FileValue::String("2021")),
+            Ok(None)
+        );
+        assert_eq!(
+            config.set_from_file("newline_style", FileValue::String("unix")),
+            Ok(None)
+        );
+        assert_eq!(
+            (config.max_width, config.hard_tabs, config.edition),
+            (80, true, Edition::Edition2021)
+        );
+        assert_eq!(config.newline_style, NewlineStyle::Unix);
+        // As rustfmt refuses them: a string for a width, an integer for an edition, a
+        // negative width, a float, a value the option does not take.
+        for (key, value) in [
+            ("max_width", FileValue::String("100")),
+            ("hard_tabs", FileValue::String("true")),
+            ("edition", FileValue::Integer(2021)),
+            ("max_width", FileValue::Integer(-1)),
+            ("max_width", FileValue::Other("100.0")),
+            ("newline_style", FileValue::String("Sideways")),
+        ] {
+            let e = config.set_from_file(key, value).unwrap_err();
+            assert!(e.contains(&format!("`{key}`")), "{e}");
+        }
+        assert_eq!(
+            config.set_from_file("max_width", FileValue::String("100")),
+            Err("invalid type: string \"100\", expected usize in `max_width`".to_owned())
+        );
+    }
+
+    #[test]
+    fn unstable_and_unknown_file_options_are_warnings() {
+        let mut config = Config::default();
+        let before = config.key_bytes();
+        let warning = |key, value| {
+            Config::default()
+                .set_from_file(key, value)
+                .unwrap()
+                .unwrap()
+        };
+        // Whatever the value, as stable rustfmt warns about any unstable option.
+        assert_eq!(
+            warning("imports_granularity", FileValue::String("Crate")),
+            "can't set `imports_granularity = \"Crate\"`, unstable features are only \
+             available in nightly channel."
+        );
+        assert!(warning("wrap_comments", FileValue::Boolean(false)).starts_with("can't set"));
+        assert!(warning("version", FileValue::String("Two")).starts_with("can't set"));
+        assert!(warning("ignore", FileValue::Other("[]")).starts_with("can't set"));
+        assert_eq!(
+            warning("no_such_option", FileValue::Integer(1)),
+            "Unknown configuration option `no_such_option`"
+        );
+        // Neither changes the configuration; a stable option without effect on the output
+        // is accepted silently.
+        assert_eq!(
+            config.set_from_file("print_misformatted_file_names", FileValue::Boolean(true)),
+            Ok(None)
+        );
+        config
+            .set_from_file("imports_granularity", FileValue::String("Crate"))
+            .unwrap();
+        assert_eq!(config.key_bytes(), before);
+        // The deprecated name is applied, with rustfmt's warning.
+        let warned = config.set_from_file("fn_args_layout", FileValue::String("Vertical"));
+        assert!(warned.unwrap().unwrap().contains("deprecated"));
+        assert_eq!(config.fn_params_layout, Density::Vertical);
     }
 }

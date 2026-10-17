@@ -4,7 +4,8 @@
 //! is neither read nor written.
 #![cfg(feature = "cli")]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -52,7 +53,7 @@ impl Run {
 
 /// Run `chloro -v <args>` with the cache under `cache_dir`.
 fn chloro(cache_dir: &Path, args: &[&str]) -> Run {
-    let output = cargo_bin_cmd!("chloro")
+    let output = common::chloro()
         .env("CHLORO_CACHE_DIR", cache_dir)
         .arg("-v")
         .args(args)
@@ -348,7 +349,7 @@ fn check_output_and_exit_code_are_unchanged_without_verbose() {
     let src = tree(2, 1);
     let path = src.path().to_str().unwrap();
     let run = |args: &[&str]| {
-        cargo_bin_cmd!("chloro")
+        common::chloro()
             .env("CHLORO_CACHE_DIR", cache.path())
             .args(args)
             .output()

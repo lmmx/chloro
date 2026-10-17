@@ -385,6 +385,26 @@ pub fn resolve_dir(option: &str) -> Option<PathBuf> {
     Some(home.join(".cache").join("chloro"))
 }
 
+/// The running executable's identity for the caches under a directory, taken once at the
+/// start of a run (as soon after start-up as possible) for every configuration's cache.
+pub struct Tool {
+    dir: PathBuf,
+    key: Digest,
+    exe_stamp: Option<ExeStamp>,
+}
+
+impl Tool {
+    /// The identity of the running executable for the caches under `dir`, or `None` when the
+    /// executable cannot be read.
+    pub fn identify(dir: &Path) -> Option<Tool> {
+        Some(Tool {
+            dir: dir.to_path_buf(),
+            key: tool_key_in(dir)?,
+            exe_stamp: exe_stamp(),
+        })
+    }
+}
+
 /// The set of content digests known to be fixed points of one (tool, config) pair.
 pub struct Cache {
     path: PathBuf,
@@ -400,20 +420,25 @@ impl Cache {
     /// Read the cache file for `config` under `dir`. A missing, unreadable, or malformed file
     /// gives an empty cache at the same path.
     pub fn open(dir: &Path, config: &Config) -> Option<Self> {
-        let tool = tool_key_in(dir)?;
-        let key = file_key(&tool, config);
-        let path = dir.join(file_name_of(&key));
+        Some(Cache::open_for(&Tool::identify(dir)?, config))
+    }
+
+    /// Read the cache file for `config` of the executable `tool` identified. A missing,
+    /// unreadable, or malformed file gives an empty cache at the same path.
+    pub fn open_for(tool: &Tool, config: &Config) -> Self {
+        let key = file_key(&tool.key, config);
+        let path = tool.dir.join(file_name_of(&key));
         let (generation, entries) = fs::read(&path)
             .ok()
             .and_then(|bytes| parse(&bytes, &key))
             .unwrap_or_default();
-        Some(Cache {
+        Cache {
             path,
             key,
             generation,
             entries,
-            exe_stamp: exe_stamp(),
-        })
+            exe_stamp: tool.exe_stamp,
+        }
     }
 
     /// Path of the cache file.

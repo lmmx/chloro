@@ -17,6 +17,9 @@ facet = "0.30.0"
 facet-args = "0.30.0"
 insta = "1.0"
 tempfile = "3"
+# `rustfmt.toml` and `Cargo.toml` (the CLI's configuration discovery): the parser alone,
+# without serde, into spanned tables.
+toml = { version = "1.1.8", default-features = false, features = ["parse", "std"] }
 
 # Alternative global allocators, off by default (EXP-014): the `alloc-*` features of
 # `chloro` (the CLI) and of `chloro-core` (its `bench` example only).

@@ -5,12 +5,20 @@ use super::trace;
 use super::units::Units;
 use crate::vlog;
 use chloro_core::{
-    format_source_with_config, is_unchanged, try_format_source_with_config,
+    Config, format_source_with_config, is_unchanged, try_format_source_with_config,
     try_format_source_with_config_parallel, try_format_source_with_unit_cache,
 };
 use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
+
+/// What formats the files of one configuration: the configuration, and its fixed-point and
+/// unit caches when they are on.
+pub struct Setup {
+    pub config: Config,
+    pub cache: Option<Cache>,
+    pub units: Option<Units>,
+}
 
 /// Result of processing a single file
 #[derive(Debug)]
@@ -18,6 +26,8 @@ pub enum ProcessResult {
     /// File was formatted successfully
     Formatted {
         path: String,
+        /// The index of the file's [`Setup`], whose cache records `fixed_point`.
+        config: usize,
         changed: bool,
         original_len: usize,
         formatted_len: usize,
@@ -46,18 +56,19 @@ pub enum ProcessResult {
 /// `docs/journal/2026-10-14-autoresearch/experiments/EXP-001-parallel-items.md`).
 pub const PARALLEL_ITEMS_MIN_BYTES: usize = 128 * 1024;
 
-/// Process a single Rust source file: a cache hit is reported without formatting; otherwise
-/// the file is formatted, its items on up to `threads` threads when it is large enough, and
-/// with the unit cache `units` when there is one (only the items it does not hold are
-/// formatted).
+/// Process a single Rust source file under `setup`, the [`Setup`] of index `config`: a cache
+/// hit is reported without formatting; otherwise the file is formatted, its items on up to
+/// `threads` threads when it is large enough, and with the setup's unit cache when there is
+/// one (only the items it does not hold are formatted).
 pub fn format_file(
     file_path: &Path,
     args: &Args,
-    cache: Option<&Cache>,
-    units: Option<&Units>,
+    config_index: usize,
+    setup: &Setup,
     threads: usize,
 ) -> ProcessResult {
     vlog!(args, {"Processing: {}", file_path.display()});
+    let (config, cache, units) = (&setup.config, setup.cache.as_ref(), setup.units.as_ref());
 
     // Read the file
     let original = match fs::read_to_string(file_path) {
@@ -86,6 +97,7 @@ pub fn format_file(
         }
         return ProcessResult::Formatted {
             path: file_path.display().to_string(),
+            config: config_index,
             changed: false,
             original_len: original.len(),
             formatted_len: original.len(),
@@ -94,18 +106,13 @@ pub fn format_file(
         };
     }
 
-    // Format it. `--config` was validated before any file was processed.
-    let config = match args.formatting_config() {
-        Ok(config) => config,
-        Err(e) => return ProcessResult::Error(format!("Invalid --config: {e}")),
-    };
     let split = threads > 1 && original.len() >= PARALLEL_ITEMS_MIN_BYTES;
     let formatted = if let Some(units) = units {
-        try_format_source_with_unit_cache(&original, &config, threads, units.store())
+        try_format_source_with_unit_cache(&original, config, threads, units.store())
     } else if split {
-        try_format_source_with_config_parallel(&original, &config, threads)
+        try_format_source_with_config_parallel(&original, config, threads)
     } else {
-        try_format_source_with_config(&original, &config)
+        try_format_source_with_config(&original, config)
     };
     trace::stamp_formatted(split);
     let formatted = match formatted {
@@ -119,7 +126,7 @@ pub fn format_file(
 
     // As rustfmt decides: under `newline_style = Auto`, a file whose only difference from the
     // output is its `\r\n` line endings or a byte order mark is formatted, and left as it is.
-    let changed = !is_unchanged(&original, &formatted, &config);
+    let changed = !is_unchanged(&original, &formatted, config);
     let original_len = original.len();
     let formatted_len = formatted.len();
 
@@ -141,7 +148,7 @@ pub fn format_file(
                 ));
             }
             vlog!(args, { "  Wrote formatted output" });
-            if cache.is_some() && format_source_with_config(&formatted, &config) == formatted {
+            if cache.is_some() && format_source_with_config(&formatted, config) == formatted {
                 fixed_point = Some(content_digest(formatted.as_bytes()));
             }
         } else {
@@ -156,6 +163,7 @@ pub fn format_file(
 
     ProcessResult::Formatted {
         path: file_path.display().to_string(),
+        config: config_index,
         changed,
         original_len,
         formatted_len,

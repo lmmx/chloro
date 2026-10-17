@@ -65,7 +65,8 @@ large files through standard input, and in-process runs. For each workload it ho
 - **the bytes:** both tools read copies of the same files, by default formatted by rustfmt
   first, because rustfmt's `--check` builds a diff of every file that would change;
 - **the file set:** taken from rustfmt's own list of the files it formats, then verified;
-- **the configuration:** defaults for both, with an empty config file for rustfmt;
+- **the configuration:** defaults for both, with an empty config file for rustfmt and
+  `--isolated` for chloro;
 - **the order:** the command order is reversed in alternate rounds;
 - **the output:** before timing, each command runs once and must succeed; whether the two
   outputs agree is recorded per workload.

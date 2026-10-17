@@ -34,7 +34,7 @@ pkg-url = "https://github.com/lmmx/chloro/releases/download/chloro-v{ version }/
 alloc-jemalloc = ["cli", "dep:tikv-jemallocator"]
 alloc-mimalloc = ["cli", "dep:mimalloc"]
 alloc-snmalloc = ["cli", "dep:snmalloc-rs"]
-cli = ["dep:blake3", "dep:facet", "dep:facet-args"]
+cli = ["dep:blake3", "dep:facet", "dep:facet-args", "dep:toml"]
 default = []
 
 [dependencies]
@@ -44,6 +44,7 @@ chloro-core = { workspace = true }
 blake3 = { optional = true, workspace = true }
 facet = { optional = true, workspace = true }
 facet-args = { optional = true, workspace = true }
+toml = { optional = true, workspace = true }
 
 # Optional global allocators for the `alloc-*` features
 mimalloc = { optional = true, workspace = true }
