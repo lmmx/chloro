@@ -82,7 +82,7 @@ alternate_style = true
 
 [project.theme]
 favicon = "assets/images/chloro.svg"
-logo = "assets/images/chloro.svg"
+logo = "assets/images/chloro-small.svg"
 variant = "modern"
 language = "en"
 features = [
