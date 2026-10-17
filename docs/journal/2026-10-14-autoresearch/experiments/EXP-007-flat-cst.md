@@ -9,7 +9,7 @@ builds below), **read** (from source), **derived** (arithmetic on measured numbe
 
 | field | value |
 |---|---|
-| branch | `20261014-flat-cst`, from `4cd6336` (head of `claude/chloro-perf-research-swarm-nrscj8`; formatter code of BKG `884f9c9`) |
+| branch | `20261014-flat-cst`, from `8b93cba` (was `4cd6336`) (head of `claude/chloro-perf-research-swarm-nrscj8`; formatter code of BKG `884f9c9`) |
 | formatter code changed | none; `format_source` does not call anything added here |
 | lineage | the design is option 2 of [../../2026-10-10-change-of-direction.md](../../2026-10-10-change-of-direction.md) (flat-array CST with a typed accessor layer and an arena for macro fragments), measured as a substrate without a typed layer in [../../2026-10-10-representations.md](../../2026-10-10-representations.md) (X3/X4) and deferred in [../../2026-10-11-phase-2-close.md](../../2026-10-11-phase-2-close.md); this record supplies the typed layer and the formatter-level bound those entries named as missing |
 | additions | `chloro-core/examples/flat_cst/` (`cst.rs` substrate, `ast.rs` generated typed layer, `gen_ast.py` generator, `ext.rs` hand-written accessors, `workload.rs`, `main.rs` harness); this file |
@@ -413,7 +413,7 @@ stored handle for `Rc`); the green-read helpers (5.16 M, assumed cost-neutral as
 | `cargo fmt --all -- --check` | exit 0 |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | exit 0 (the example is one of the targets) |
 | `cargo test --workspace --all-features` | exit 0; every suite passes (146 tests, 0 failed) |
-| `bench --check golden/fixtures-4cd6336.tsv` (recorded from the unmodified build at `4cd6336`) | 0 of 1,238 outputs changed |
+| `bench --check golden/fixtures-4cd6336.tsv` (recorded from the unmodified build at `8b93cba` (was `4cd6336`)) | 0 of 1,238 outputs changed |
 | `conform -i` | 1,219/1,220 identical, 0 not idempotent (BKG: 1,219/1,220, 0) |
 
 ## 9. Decision (facts)

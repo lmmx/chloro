@@ -19,13 +19,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `d2f6fa0` (the integration branch after the E19–E28 merges; docs-only commits above the E25 merge `e96b530`, the ledger's best-known-good, same code; the formatter code is M4's `e640fbf` plus E20, E22, E19, E27, E23, E28, E26 and E25; E21 stays on its branch and E24 was rejected) |
+| `head` | `d1cf9cf` (was `d2f6fa0`) (the integration branch after the E19–E28 merges; docs-only commits above the E25 merge `a26b460` (was `e96b530`), the ledger's best-known-good, same code; the formatter code is M4's `f4be63e` (was `e640fbf`) plus E20, E22, E19, E27, E23, E28, E26 and E25; E21 stays on its branch and E24 was rejected) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`; the script also builds the profile-guided `bench`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `d2f6fa06cc8c2511cdb59ca6b3a589d95818172b` (worktree clean,
+- **Commits:** `head` `d1cf9cf313b4727b74a94924be227513eeb5b87a` (was `d2f6fa06cc8c2511cdb59ca6b3a589d95818172b`) (worktree clean,
   `worktree_dirty=0`; `git diff --stat 830345e HEAD` touches 12 files: E25's merge, the
   ledger, the handoff and `Cargo.lock`; `git diff --stat e640fbf HEAD`, M4's code, touches 69
   files); `base` `884f9c93f735676a752c67fab91d08959f410430` (`git worktree add
@@ -48,7 +48,7 @@ Labels used throughout:
 
 - The four `base` hashes and the rustfmt hash equal the ones recorded in M1–M4: the
   default-profile build of `884f9c9` reproduces byte for byte on this toolchain.
-- The `head` chloro binary is 2,196,120 bytes against 2,147,536 for M4's `6b78728` build and
+- The `head` chloro binary is 2,196,120 bytes against 2,147,536 for M4's `e39a54a` (was `6b78728`) build and
   2,516,048 for `base` (0.873x base; 1.023x M4's head: the CLI gained the trace timeline, the
   width bound, the arena and `bumpalo`); `head-pgo` is 2,921,072 bytes (1.161x base; M4's
   2,924,784).
@@ -449,7 +449,7 @@ the next, EXP-020). The registry sample is `benchmarks/samples/registry49.txt` (
   head-pgo 182,602,721 (−68.94%; 0.8264x head); two runs of each agree to within 10 (base),
   1,710 (head) and 64 (head-pgo). The base count equals M4's run 1 (587,989,243) to within 76,
   M3's to within 120 and M2's 587,989,243 to within 76; the head count's run 2 is 1,560 below
-  the 220,958,649 the ledger records for `e96b530` (the same code). The profile-guided ratio
+  the 220,958,649 the ledger records for `a26b460` (was `e96b530`) (the same code). The profile-guided ratio
   is this training run's: M3's PGO read 0.7825x its head, M4's 0.8337x, here 0.8264x.
 - Per file, net of the empty process, the fixture sample reads 581,626,432 (base),
   220,754,884 (head, 0.3795x) and 182,500,927 (head-pgo, 0.3138x); the cross-file term is
@@ -585,7 +585,7 @@ Empty file (the fixed cost of a `bench` process): base 340,400, head 324,816, he
   cannot fit. The profile-guided build is 0.81–0.87x the head at every depth.
 - Every output is identical to rustfmt's on all three builds (12 of 12 comparisons;
   rustfmt exit 0 on every file).
-- The ledger's cliff figures (5,617,971 at depth 8 and 5,736,051 at depth 16 at `830345e`)
+- The ledger's cliff figures (5,617,971 at depth 8 and 5,736,051 at depth 16 at `2fefa5a` (was `830345e`))
   were taken with E27's path staging by `run.sh`'s own invocation; this run's 5,570,698 and
   5,691,015 are E25's merge on top (−0.8%).
 
@@ -705,14 +705,14 @@ chloro build reads above rustfmt, in mean, minimum, CPU or peak RSS (`head-pgo` 
 
 ## Against M4
 
-M4 ([m4-quiet-host.md](m4-quiet-host.md)) measured `6b78728` (the code of `e640fbf`, the
-E12–E18 head) on the 2.80 GHz host class; this record measures `d2f6fa0` (the code of
-`e96b530`: M4's head plus E20, E22, E19, E27, E23, E28, E26 and E25) on the same host class
+M4 ([m4-quiet-host.md](m4-quiet-host.md)) measured `e39a54a` (was `6b78728`) (the code of `f4be63e` (was `e640fbf`), the
+E12–E18 head) on the 2.80 GHz host class; this record measures `d1cf9cf` (was `d2f6fa0`) (the code of
+`a26b460` (was `e96b530`): M4's head plus E20, E22, E19, E27, E23, E28, E26 and E25) on the same host class
 (same `model name`, `nproc`, `MemTotal` and kernel) in a slower window (Load). Protocol §3
 keeps absolute figures within one window, so the two records' ratios are set side by side and
 the absolute figures are not; `base` is the same binary (same sha256) in both:
 
-| ratio (means) | M4, `6b78728` | M5, `d2f6fa0` |
+| ratio (means) | M4, `e39a54a` (was `6b78728`) | M5, `d1cf9cf` (was `d2f6fa0`) |
 |---|---|---|
 | crates, `mc`, head/base | 0.25–0.52 | 0.219–0.441 |
 | crates, `1c`, head/base (wall; CPU) | 0.38–0.60; 0.38–0.59 | 0.294–0.462; 0.297–0.470 |
@@ -759,7 +759,7 @@ the absolute figures are not; `base` is the same binary (same sha256) in both:
   --no-cache` in `env.txt`) and no flag to `base`, which rejects it. The flag also turns off
   the opt-in unit cache. The `--rustfmt` and `--registry` defaults resolved without being
   passed.
-- The `identical outputs` figure is now the binary's own: since `bf05b31` (the fix M4 owed)
+- The `identical outputs` figure is now the binary's own: since `6b4a9d7` (was `bf05b31`) (the fix M4 owed)
   the harness recomputes the agreement whenever a copy is reused by a binary other than the
   one that made it and records the binary's hash beside it (`agreement_chloro=<sha16>` in the
   copy's `meta`: `f48f3593…` for head's 22 workload copies, `908c2176…` for the five stdin
@@ -775,7 +775,7 @@ the absolute figures are not; `base` is the same binary (same sha256) in both:
   compiled-in default is the base worktree's copy; same count and size, 1238 files, 13.9 MB).
   The harness's own `inproc-bench` rows use each binary's compiled-in root, as in M3 and M4.
 - `profile.sh` is E27's: the binary and the sample are staged under a fixed-length path, so
-  the counts are comparable with the ledger's from E27 on (the ledger's `e96b530` count,
+  the counts are comparable with the ledger's from E27 on (the ledger's `a26b460` (was `e96b530`) count,
   220,958,649, was taken by the same script on the same code before this chain; this
   record's two runs read 220,957,089 and 220,958,799). `--per-file` runs 50 `bench` processes
   per run (49 files and the empty sample); the per-file section took 15 minutes for the ten

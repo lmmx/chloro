@@ -17,14 +17,14 @@ source), **derived**.
 
 | field | value |
 |---|---|
-| branch | `20261015-width` from `e312e39` (integration branch; its code is the best-known-good `05ab7b4`), worktree `/home/user/wt/width` |
-| kept commits | `ee62a16` (the bound, the fit predicate, the harness, and the closure-body pre-check), `c915da4` (the one-line `if`/`else` pre-check), `9006503` (the punctuation every rendering writes, counted); then this record |
+| branch | `20261015-width` from `1fe04fc` (was `e312e39`) (integration branch; its code is the best-known-good `dcbb43d` (was `05ab7b4`)), worktree `/home/user/wt/width` |
+| kept commits | `76a3550` (was `ee62a16`) (the bound, the fit predicate, the harness, and the closure-body pre-check), `b7fb26e` (was `c915da4`) (the one-line `if`/`else` pre-check), `9b30d02` (was `9006503`) (the punctuation every rendering writes, counted); then this record |
 | rejected | the one-line block pre-check (`rewrite_single_line_block`), reverted, diff in `scratchpad/e26/block-precheck.patch`; the first fit claim (one-line rewrites no wider than their shape), refuted by the harness on the registry and replaced by a one-column claim before the commits above were made (the superseded commits `a9d5858`, `f621dff`, `2f7a89d` are not on the branch); a pre-check order scanning the bound before the fit predicate (replaced) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `rustfmt 1.9.0`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz, shared with other experiments throughout (load average 4–25). `Ir` is unaffected by load; no wall-clock figure is claimed |
 | `Ir` command | `benchmarks/profile.sh --core 3 --bench /home/user/wt/width/bench-XXXX --sample /tmp/chloro-bench/widthx49 --out <dir>`: a private sample path of the default's length, every binary copied to a path of one length (`bench-base`, `bench-A2xx`, `bench-B2xx`, `bench-D2xx`) |
 | co-metrics | the parser's growth term: inclusive cost of the call arcs from `ra_ap_*` functions into `RawVec` growth (`finish_grow`, `grow_one`, `grow_amortized`, `do_reserve_and_handle`, `reserve`), from `callgrind_annotate --tree=caller` (script `scratchpad/e26/scripts/parsergrow.py`), and `Ir` net of it (EXP-020's heap-layout term); the per-file sum (each of the 49 sample files formatted by its own `bench -n 1` process under the same `valgrind` invocation, `scripts/perfile.sh`, as in EXP-019); `profile.sh --sim` |
-| base | `bench-base`, built at `e312e39` in this worktree before any change: 232,047,989 `Ir`; parser growth 8,295,998; per-file sum 243,317,824 |
+| base | `bench-base`, built at `1fe04fc` (was `e312e39`) in this worktree before any change: 232,047,989 `Ir`; parser growth 8,295,998; per-file sum 243,317,824 |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (25,024 registry files present, 20,850 recorded) |
 
 ## Hypothesis and falsifiers
@@ -125,7 +125,7 @@ The token-only bound is about two thirds of a nested call's width (`run_1(|a_1| 
 columns, of which `run_1` and `a_1` are 8), so at depth 8 it rejects a quarter of the failing
 attempts; at depth 12 the nests are wide enough for it to reject almost all of them.
 
-### The same measurement on the final code (`9006503`; measured)
+### The same measurement on the final code (`9b30d02` (was `9006503`); measured)
 
 | run | attempts S1 / S3 | rejected S1 / S3 | bound rejects S1 / S3 | rejected renders S1 / S3 | renders the bound rejects S1 / S3 |
 |---|---|---|---|---|---|
@@ -153,12 +153,12 @@ rendering contains each counted token whole and side by side, so its width is at
 | lifetimes | yes, less 2 for `'r#` | copied as written; 1.8.0 writes `'r#a` as `'a` |
 | keywords (`SELF_TYPE_KW`..=`YEET_KW`) | yes | every keyword a rewrite reads is written back (closure `for`/`const`/`static`/`async`/`gen`/`move`/`use` via `has_token`; `&mut`, `&raw const`; control flow; `as`; jump keywords; `true`/`false`; path keywords; type keywords, `force_explicit_abi` only adds). The one keyword the formatter drops, the `in` of `pub(in crate)` (`format_visibility`), only occurs in visibilities, which are in uncounted subtrees |
 | literals | yes | copied from the source: `format_strings` off, `hex_literal_case` and `float_literal_trailing_zero` fixed at `Preserve` |
-| argument-list parentheses | yes, 2 (`9006503`) | `overflow::rewrite_with_parens` writes `(` and `)` on every path, for calls and method calls |
-| closure pipes | yes, 2 (`9006503`) | `rewrite_closure_fn_decl` writes `"|" + params + "|"` |
-| `.` of a method call, field, `.await`; `?` of a try | yes, 1 (`9006503`) | `ChainItem::rewrite` |
-| `&` of a reference, a prefix operator | yes, 1 (`9006503`) | `format_expr`, `op_token().text()` |
-| a binary operator | yes, its length (`9006503`) | `bin_op_text`, written by `rewrite_pair`, `rewrite_all_pairs`, `rewrite_assignment` |
-| index, tuple and array brackets | yes, 2 (`9006503`) | `rewrite_index`; `overflow` (`(`/`)`, `[`/`]`); a repeat array through `rewrite_pair` |
+| argument-list parentheses | yes, 2 (`9b30d02` (was `9006503`)) | `overflow::rewrite_with_parens` writes `(` and `)` on every path, for calls and method calls |
+| closure pipes | yes, 2 (`9b30d02` (was `9006503`)) | `rewrite_closure_fn_decl` writes `"|" + params + "|"` |
+| `.` of a method call, field, `.await`; `?` of a try | yes, 1 (`9b30d02` (was `9006503`)) | `ChainItem::rewrite` |
+| `&` of a reference, a prefix operator | yes, 1 (`9b30d02` (was `9006503`)) | `format_expr`, `op_token().text()` |
+| a binary operator | yes, its length (`9b30d02` (was `9006503`)) | `bin_op_text`, written by `rewrite_pair`, `rewrite_all_pairs`, `rewrite_assignment` |
+| index, tuple and array brackets | yes, 2 (`9b30d02` (was `9006503`)) | `rewrite_index`; `overflow` (`(`/`)`, `[`/`]`); a repeat array through `rewrite_pair` |
 | other punctuation, `_` | no | trailing commas dropped on one line, `remove_nested_parens`, closure/match-arm/`use`-list braces removed, `...` written `..=`, `try!(e)` written `e?`, leading match-arm pipes follow `match_arm_leading_pipes` |
 | whitespace | no | the formatter's own |
 | comments | no bound | the brief's rule (a lost comment brings the source back, which would keep every token, but the rule is kept) |
@@ -203,18 +203,18 @@ figure in § 4 is of the rebuilt commits.
 
 | commit | change | `Ir` before | `Ir` after | change | parser growth change | net of it | per-file sum change | measured cost the bound rejects | net / cost | per-file / cost | decision |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `ee62a16` | closure body pre-check (S1) | 232,047,989 | 231,121,947 | −926,042 (−0.40%) | +212,783 | −1,138,825 | −1,066,548 | 1,671,113 (S1a + S1b, step 1) | 68% (total 55%) | 64% | kept |
-| `c915da4` | one-line `if`/`else` pre-check (S3) | 231,121,947 | 228,847,625 | −2,274,322 (−0.98%) | −1,923,868 | −350,454 | −342,827 | 389,848 | 90% | 88% | kept |
-| `9006503` | punctuation counted | 228,847,625 | 230,281,855 | +1,434,230 (+0.63%) | +1,779,274 | −345,044 | −493,533 | 618,959 more (2,679,920 final S1 + S3 against 2,060,961) | 56% | 80% | kept, see below |
+| `76a3550` (was `ee62a16`) | closure body pre-check (S1) | 232,047,989 | 231,121,947 | −926,042 (−0.40%) | +212,783 | −1,138,825 | −1,066,548 | 1,671,113 (S1a + S1b, step 1) | 68% (total 55%) | 64% | kept |
+| `b7fb26e` (was `c915da4`) | one-line `if`/`else` pre-check (S3) | 231,121,947 | 228,847,625 | −2,274,322 (−0.98%) | −1,923,868 | −350,454 | −342,827 | 389,848 | 90% | 88% | kept |
+| `9b30d02` (was `9006503`) | punctuation counted | 228,847,625 | 230,281,855 | +1,434,230 (+0.63%) | +1,779,274 | −345,044 | −493,533 | 618,959 more (2,679,920 final S1 + S3 against 2,060,961) | 56% | 80% | kept, see below |
 | — | one-line block pre-check (S4), on the pre-correction `f621dff` | 228,830,884 | 230,065,900 | +1,235,016 | +1,395,290 | −160,274 | −331,175 | 29,522 | — | — | rejected |
 | **head against base** | | 232,047,989 | 230,281,855 | **−1,766,134 (−0.76%)** | +68,189 | **−1,834,323 (−0.79%)** | **−1,902,908 (−0.78%)** | | | | |
 
 - The gate runs read 231,121,947, 228,847,625 and 230,281,855; the same code before the commit
   messages were rewritten read the same (the trees are identical).
-- `c915da4` and `9006503` move the parser's vector growth by −1.92 M and +1.78 M: the heap layout
+- `b7fb26e` (was `c915da4`) and `9b30d02` (was `9006503`) move the parser's vector growth by −1.92 M and +1.78 M: the heap layout
   the formatter leaves decides whether the parser's `Vec<Event>` grows in place on the next file
   (EXP-020). Their total `Ir` changes are that term, not the levers; net of it and per file, both
-  levers move by more than half their measured cost. `9006503` reads +1.43 M in total `Ir` and is
+  levers move by more than half their measured cost. `9b30d02` (was `9006503`) reads +1.43 M in total `Ir` and is
   kept on the net and per-file figures and the cliff (§ 6); against the head's base the term has
   returned to +68 K, and the three commits together remove 1.83 M net (0.79%), 1.90 M per file.
 - The bound costs 165,663 `Ir` in `min_width_up_to` over 113 scans on the sample at the head, plus
@@ -261,17 +261,17 @@ Branch mispredictions are flat; instruction-cache misses fall with the work remo
 
 `benchmarks/cliffs/run.sh --shapes closures-expr --scales 1,2,3,4,5,6,7,8` (depths 2–16, 8
 nests per file), callgrind as `profile.sh` runs it; every file identical to rustfmt's output at
-`ee62a16` and `9006503` (`compare.tsv`).
+`76a3550` (was `ee62a16`) and `9b30d02` (was `9006503`) (`compare.tsv`).
 
 | depth | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16 |
 |---|---|---|---|---|---|---|---|---|
 | base `Ir` | 1,000,328 | 1,414,371 | 3,784,530 | 14,923,797 | 29,772,404 | 50,856,618 | 72,289,247 | 105,449,815 |
-| `ee62a16` | 999,510 | 1,415,977 | 3,787,427 | 14,388,302 | 21,284,725 | 9,629,967 | 5,987,173 | 6,234,843 |
-| `c915da4` | 1,001,024 | 1,415,933 | 3,787,486 | 14,330,691 | 21,124,582 | 9,542,709 | 5,918,373 | 6,155,352 |
-| `9006503` | 996,916 | 1,412,081 | 3,784,889 | 5,636,285 | 4,982,605 | 3,977,609 | 4,773,800 | 5,809,881 |
+| `76a3550` (was `ee62a16`) | 999,510 | 1,415,977 | 3,787,427 | 14,388,302 | 21,284,725 | 9,629,967 | 5,987,173 | 6,234,843 |
+| `b7fb26e` (was `c915da4`) | 1,001,024 | 1,415,933 | 3,787,486 | 14,330,691 | 21,124,582 | 9,542,709 | 5,918,373 | 6,155,352 |
+| `9b30d02` (was `9006503`) | 996,916 | 1,412,081 | 3,784,889 | 5,636,285 | 4,982,605 | 3,977,609 | 4,773,800 | 5,809,881 |
 | base memo misses (8 nests) | 40 | 72 | 360 | 1,640 | 3,256 | 5,376 | 7,320 | 10,288 |
-| `ee62a16`, `c915da4` | 40 | 72 | 360 | 1,504 | 2,088 | 784 | 352 | 296 |
-| `9006503` | 40 | 72 | 360 | 496 | 368 | 200 | 232 | 264 |
+| `76a3550` (was `ee62a16`), `b7fb26e` (was `c915da4`) | 40 | 72 | 360 | 1,504 | 2,088 | 784 | 352 | 296 |
+| `9b30d02` (was `9006503`) | 40 | 72 | 360 | 496 | 368 | 200 | 232 | 264 |
 
 Memo misses are the calls of `format_expr_uncached` from `memoize` in the callgrind profiles;
 the base figures are EXP-019's (5, 9, 45, 205, 407, 672, 915, 1,286 per nest).
@@ -279,8 +279,8 @@ the base figures are EXP-019's (5, 9, 45, 205, 407, 672, 915, 1,286 per nest).
 | fit (`gen.py fit`) | k_net | p (`a + b n^p`) | p against output bytes | local slopes (net) |
 |---|---|---|---|---|
 | base | 2.687 | 3.623 | 1.330 | 0.692 2.855 5.007 3.145 2.962 2.294 2.838 |
-| `ee62a16` | 1.349 | 0.930 (a < 0) | 0.301 | 0.696 2.853 4.874 1.789 −4.455 −3.224 0.321 |
-| `9006503` | 1.023 | 0.715 (a < 0) | 0.301 | 0.694 2.855 1.490 −0.589 −1.333 1.279 1.568 |
+| `76a3550` (was `ee62a16`) | 1.349 | 0.930 (a < 0) | 0.301 | 0.696 2.853 4.874 1.789 −4.455 −3.224 0.321 |
+| `9b30d02` (was `9006503`) | 1.023 | 0.715 (a < 0) | 0.301 | 0.694 2.855 1.490 −0.589 −1.333 1.279 1.568 |
 
 - The curve is no longer monotone, so a power law describes it badly (the constant comes out
   negative). Read by depth: with the token bound the cliff ends at depth 10 (the nest is then
@@ -299,7 +299,7 @@ the base figures are EXP-019's (5, 9, 45, 205, 407, 672, 915, 1,286 per nest).
 
 ## Gates (measured)
 
-| gate | scope | `ee62a16` | `c915da4` | `9006503` |
+| gate | scope | `76a3550` (was `ee62a16`) | `b7fb26e` (was `c915da4`) | `9b30d02` (was `9006503`) |
 |---|---|---|---|---|
 | `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean | clean | clean |
 | `cargo test --workspace --all-features` | | 302 passed, 0 failed | 302 passed | 302 passed |
@@ -314,7 +314,7 @@ the base figures are EXP-019's (5, 9, 45, 205, 407, 672, 915, 1,286 per nest).
 
 ## Decision
 
-Kept on the branch, for the integrator: `ee62a16`, `c915da4`, `9006503`. Together −1.77 M `Ir`
+Kept on the branch, for the integrator: `76a3550` (was `ee62a16`), `b7fb26e` (was `c915da4`), `9b30d02` (was `9006503`). Together −1.77 M `Ir`
 (−0.76%), −1.83 M net of the parser's growth term, −1.90 M per file on the sample, no output
 change on either corpus or any option value; the nested-closure cliff bent from 105.4 M to 5.8 M
 `Ir` at depth 16. Rejected: the block pre-check (below resolution), the first fit claim (refuted

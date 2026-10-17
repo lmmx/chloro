@@ -12,8 +12,8 @@ Labels as in the journal: **measured**, **read**, **hypothesis**.
 | field | value |
 |---|---|
 | branch | `20261014-cli-build` |
-| base | `d797292` (head of `claude/chloro-perf-research-swarm-nrscj8`; `884f9c9` plus the programme's journal entry) |
-| commits | `0bb8e06` release profile, `d10c1e3` `benchmarks/pgo.sh`, plus this record (the scheduler commit `6c55740` was measured, then dropped by rebase; see E2d) |
+| base | `8f6b2b0` (was `d797292`) (head of `claude/chloro-perf-research-swarm-nrscj8`; `884f9c9` plus the programme's journal entry) |
+| commits | `75a64a6` (was `0bb8e06`) release profile, `668026f` (was `d10c1e3`) `benchmarks/pgo.sh`, plus this record (the scheduler commit `6c55740` was measured, then dropped by rebase; see E2d) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, LLVM 22.1.6, `cargo 1.97.0`, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, `llvm-tools-preview` for `llvm-profdata` |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.10GHz" (1 thread per core, L2 8 MiB, L3 260 MiB), 15.7 GB, Linux 6.18.44; a different host from the 2.80GHz one in the programme entry, so no figure here compares with figures there |
 | hyperfine | 2.0.0 (`cargo install hyperfine`), `-N -i -w 2 -r 5`, three blocks per workload with the commands interleaved block by block, 15 runs per command per workload; peak RSS from hyperfine's `memory_peak_resident` |
@@ -28,13 +28,13 @@ only for the kept variant.
 
 | variant | source | build | binary size |
 |---|---|---|---|
-| `base` | `d797292` | `cargo build --release -p chloro --features cli` (no `[profile.release]`: `opt-level = 3`, 16 codegen units, thin local LTO, `panic = "unwind"`) | 2,516,048 B |
-| `lto` | `d797292` | `CARGO_PROFILE_RELEASE_LTO=fat CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1` | 1,855,680 B |
-| `lto-abort` | `d797292` | `lto` plus `CARGO_PROFILE_RELEASE_PANIC=abort` (headroom only; see E2a) | 1,655,456 B |
-| `native` | `d797292` | `lto` plus `RUSTFLAGS="-C target-cpu=native"` (headroom only; not shippable, the release binaries run on any x86-64) | 1,862,064 B |
-| `pgo` | `d797292` | `benchmarks/pgo.sh /home/user/tgt cli` on the default profile: instrumented build, training on `chloro --check chloro-core/tests/conformance/fixtures` and `bench -n 1`, `llvm-profdata merge`, `-Cprofile-use` build | 3,234,792 B |
-| `mimalloc` | `d797292` plus the `cli-mimalloc` feature | `cargo build --release -p chloro --features cli-mimalloc` (default profile; `mimalloc 0.1.52`, `default-features = false`, so no `secure` mode) | 2,678,256 B |
-| `sched` | `d797292` plus the work-queue scheduler | `cargo build --release -p chloro --features cli` (default profile) | 2,538,816 B |
+| `base` | `8f6b2b0` (was `d797292`) | `cargo build --release -p chloro --features cli` (no `[profile.release]`: `opt-level = 3`, 16 codegen units, thin local LTO, `panic = "unwind"`) | 2,516,048 B |
+| `lto` | `8f6b2b0` (was `d797292`) | `CARGO_PROFILE_RELEASE_LTO=fat CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1` | 1,855,680 B |
+| `lto-abort` | `8f6b2b0` (was `d797292`) | `lto` plus `CARGO_PROFILE_RELEASE_PANIC=abort` (headroom only; see E2a) | 1,655,456 B |
+| `native` | `8f6b2b0` (was `d797292`) | `lto` plus `RUSTFLAGS="-C target-cpu=native"` (headroom only; not shippable, the release binaries run on any x86-64) | 1,862,064 B |
+| `pgo` | `8f6b2b0` (was `d797292`) | `benchmarks/pgo.sh /home/user/tgt cli` on the default profile: instrumented build, training on `chloro --check chloro-core/tests/conformance/fixtures` and `bench -n 1`, `llvm-profdata merge`, `-Cprofile-use` build | 3,234,792 B |
+| `mimalloc` | `8f6b2b0` (was `d797292`) plus the `cli-mimalloc` feature | `cargo build --release -p chloro --features cli-mimalloc` (default profile; `mimalloc 0.1.52`, `default-features = false`, so no `secure` mode) | 2,678,256 B |
+| `sched` | `8f6b2b0` (was `d797292`) plus the work-queue scheduler | `cargo build --release -p chloro --features cli` (default profile) | 2,538,816 B |
 | `combined` | the branch head | `cargo build --release -p chloro --features cli-mimalloc` with the committed `[profile.release]`, then `benchmarks/pgo.sh` on top | see E2 combined |
 
 `opt-level` stays at 3 in every variant: the default release profile already uses 3, so a
@@ -243,7 +243,7 @@ hot paths (the rewrite dispatch in `expr`, the comment scanner, `rowan` node cre
 by measured branch and call frequencies, lowering wall time beyond what LTO alone gives.
 Refuted if the PGO binary's minima are not below `base`'s on most workloads.
 
-**Commands** (`benchmarks/pgo.sh`, run here from a worktree at `d797292` with the
+**Commands** (`benchmarks/pgo.sh`, run here from a worktree at `8f6b2b0` (was `d797292`) with the
 default profile, `benchmarks/pgo.sh /home/user/tgt cli`):
 
 ```text
@@ -282,7 +282,7 @@ sets one) lowers the 22% of instructions that the allocator family takes on the 
 seen in E2e. Refuted if wall time does not move outside the spread or if peak RSS grows
 by more than the time it saves is worth.
 
-**Change measured** (in a worktree at `d797292`, not committed):
+**Change measured** (in a worktree at `8f6b2b0` (was `d797292`), not committed):
 
 ```toml
 # chloro/Cargo.toml
@@ -520,8 +520,8 @@ pairs above each overlap `base`.
 
 ### Decision
 
-Kept at this point: the release profile (`0bb8e06`), the scheduler (`6c55740`, later
-dropped, see E2d), the PGO script (`8efd333`, now `d10c1e3` after the rebase). Rejected: `mimalloc` (not committed), `panic = "abort"` and
+Kept at this point: the release profile (`75a64a6` (was `0bb8e06`)), the scheduler (`6c55740`, later
+dropped, see E2d), the PGO script (`8efd333`, now `668026f` (was `d10c1e3`) after the rebase). Rejected: `mimalloc` (not committed), `panic = "abort"` and
 `target-cpu=native` (headroom only). Against rustfmt on identical file sets with all
 four cores, the `combined` build's mean wall time is 1/9.9 of rustfmt's on `hir`, 1/9.1
 on `hir-ty`, 1/11.6 on `ide`, 1/6.0 on `ide-db`, 1/6.2 on `syntax`, and 1/2.5 to 1/14.7
@@ -606,8 +606,8 @@ includes the scheduler that E1 supplies.
 
 ### Decision (final)
 
-Kept and committed on the branch: the release profile (`0bb8e06`) and the PGO script
-(`d10c1e3`). Dropped: the scheduler commit (E1 carries the same design). Rejected:
+Kept and committed on the branch: the release profile (`75a64a6` (was `0bb8e06`)) and the PGO script
+(`668026f` (was `d10c1e3`)). Dropped: the scheduler commit (E1 carries the same design). Rejected:
 `mimalloc` (not committed), `panic = "abort"` and `target-cpu=native` (headroom only).
 Release binaries from `binaries.yml` get the profile with no workflow change; PGO needs
 the proposed step below.

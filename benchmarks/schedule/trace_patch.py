@@ -12,7 +12,7 @@ and every unit, as `item` lines (kind 1 parse, 2 units phase, 3 stitch, 0 item w
 `cargo build --release -p chloro --features cli` after applying, copy the binary out, then
 `git checkout chloro-core chloro/src` to drop the patch. sim.py reads these traces.
 
-`owner` is for a checkout of 0a6080c (EXP-029's lever (a), reverted), whose split-file worker
+`owner` is for a checkout of 68889e1 (was 0a6080c) (EXP-029's lever (a), reverted), whose split-file worker
 formats units itself beside `threads - 1` spawned ones: the same records, plus an `item 5` line
 with that worker's share of the units (its CPU is also in the file's; split_sim.py takes it out
 of the file's sequential part)."""

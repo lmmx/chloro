@@ -9,8 +9,8 @@ Ledger row E19 in [../experiments.md](../experiments.md); procedure and gates in
 
 | field | value |
 |---|---|
-| branch | `20261015-cliffs` from `8ebd3bb` (integration branch; its code is the BKG `e640fbf`, the commits above it are documentation), worktree `/home/user/wt/cliffs` |
-| kept commits | `d17cb74` (else-if chain buffer, a cliff), `9c43d8c` (use-segment comparison, a cliff), `a4b51d5` (`rustc_span` and leading attributes from the first child), `774559d` (`definitive_tactic` stops at the deciding item), `f18dac3` (`write_list` last-line width only for post-comments), `25b1bf9` (token-tree tokens from the tree, not lexed again); `f81f9ca` (the generator) and this record |
+| branch | `20261015-cliffs` from `73f8a85` (was `8ebd3bb`) (integration branch; its code is the BKG `f4be63e` (was `e640fbf`), the commits above it are documentation), worktree `/home/user/wt/cliffs` |
+| kept commits | `de2c229` (was `d17cb74`) (else-if chain buffer, a cliff), `339c42a` (was `9c43d8c`) (use-segment comparison, a cliff), `ab342c2` (was `a4b51d5`) (`rustc_span` and leading attributes from the first child), `6a0fe4e` (was `774559d`) (`definitive_tactic` stops at the deciding item), `8704724` (was `f18dac3`) (`write_list` last-line width only for post-comments), `daee9b5` (was `25b1bf9`) (token-tree tokens from the tree, not lexed again); `6419b33` (was `f81f9ca`) (the generator) and this record |
 | rejected, reverted | none of the commits; levers considered and not built are under *Not built* |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Intel Xeon @ 2.80GHz, 15 GB; other experiments built and ran throughout (load average 2.7–17.8 during this run). `Ir` is unaffected by load; every wall-clock figure is **provisional** (protocol § 6) |
@@ -65,7 +65,7 @@ benchmarks/cliffs/run.sh --core 3 --work /tmp/chloro-bench/cliffs-ce --no-compar
 (exit 0, nothing on stderr) and chloro's output is identical to rustfmt's on every one, at
 the base and at the branch head. No conformance finding.
 
-### Shapes at scales 1–8 (measured; base `8ebd3bb` and branch head `25b1bf9`)
+### Shapes at scales 1–8 (measured; base `73f8a85` (was `8ebd3bb`) and branch head `daee9b5` (was `25b1bf9`))
 
 | shape | n = | Ir s1 | Ir s2 | Ir s4 | Ir s8 | k (raw) | k (net) | k vs output bytes | last local slope | head Ir s8 | head k (net) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -103,7 +103,7 @@ Exponents below 1 at small scales are the per-file costs that do not scale with 
 ### The additive-constant fit, and the exponent acted on (measured)
 
 `Ir = a + b n^p`, `p` against the scale (`n` = 1, 2, 4, 8) and against output bytes, base
-`8ebd3bb` and branch head `25b1bf9`; the last column is the same fit over the longer series:
+`73f8a85` (was `8ebd3bb`) and branch head `daee9b5` (was `25b1bf9`); the last column is the same fit over the longer series:
 scales 8–64 for the count shapes (base, and head where a lever changed it), the eight depths
 2, 4, …, 16 for the depth shapes measured there. `a` comes out at 0.2–1.1 M against the empty
 file's 0.33 M: the shape's own fixed part (the enclosing item, the first nesting levels) is in
@@ -178,7 +178,7 @@ names or items, 131 KB of string literal).
 | enum | 4,362,621 | 8,596,224 | 16,575,949 | 32,686,772 | 0.998 | 1.035 0.975 0.994 |
 | attrs | 2,942,151 | 5,525,902 | 10,801,444 | 21,423,513 | 1.005 | 0.991 1.011 1.010 |
 
-At the head (`f18dac3`, same scales): **if-else** 2,841,888 / 5,291,730 / 10,338,724 /
+At the head (`8704724` (was `f18dac3`), same scales): **if-else** 2,841,888 / 5,291,730 / 10,338,724 /
 20,332,636, k 0.999 (local slopes 0.981, 1.012, 0.999); **use-list** 4,346,049 / 8,896,286 /
 19,470,061 / 41,206,002, k 1.120 (1.092, 1.160, 1.095).
 
@@ -219,13 +219,13 @@ The jump at depth 6–8 is where the nest stops fitting on one line.
   That is the width model of T7/E26; a "one-line only" mode is not exact (a `None` instead of a
   multi-line candidate changes which tactic the enclosing list takes). See *Follow-up*.
 
-**if-else: a cliff, fixed by `d17cb74` (measured).** The local slope rose to 1.218 at 512
+**if-else: a cliff, fixed by `de2c229` (was `d17cb74`) (measured).** The local slope rose to 1.218 at 512
 branches; `memcpy` was 22.7% of the run at 512 branches (6,146,654 `Ir`), 5,495,831 of it
 called from `ControlFlow::rewrite`: each link of the chain appended the rest of the chain to
 its own result (rustfmt's recursion), copying O(n²) bytes. After the fix the fit over 64–512
 branches (scales 8–64) is 0.999 (local slopes 0.981, 1.012, 0.999), against 1.111.
 
-**use-list: n log n with an expensive comparator, cut by `9c43d8c` (measured).** 26,029
+**use-list: n log n with an expensive comparator, cut by `339c42a` (was `9c43d8c`) (measured).** 26,029
 `UseTree::cmp` calls for 2,048 names (≈ n log2 n), 80.5 M of the run's 99.4 M; each compare of
 two different names compared them a second time on `remove_alias()` copies (a `String` clone
 each, a deep clone for nested lists) and built four `StrSearcher`s for `trim_start_matches
@@ -242,7 +242,7 @@ multi-line items). One component of nested-macros does grow faster than its inpu
 `LexedStr::new` runs about three times per macro call over the remaining interior (`MacroTokens::new` for the token
 tree, `prefix_parse_window` per argument), 65, 113, 209, 401 calls and 235,810, 549,594,
 1,583,587, 5,083,169 `Ir` (17%, 21%, 28%, 31% of the run) at depths 2, 4, 8, 16 — quadratic
-lexing; rustc lexes a file once and nested token trees are not lexed again. `25b1bf9` removes
+lexing; rustc lexes a file once and nested token trees are not lexed again. `daee9b5` (was `25b1bf9`) removes
 the first of those lexings (the token tree's interior, taken from the tree): 12,847,590 `Ir`
 at depth 16 (−15.5%), k 1.242; the per-argument window lexing remains (*Follow-up*).
 
@@ -267,17 +267,17 @@ at depth 16 (−15.5%), k 1.242; the per-argument window lexing remains (*Follow
 
 | fact | calls | distinct inputs | per input | Ir self / incl | share | stored once? | outcome |
 |---|---|---|---|---|---|---|---|
-| `rustc_span` (node start after leading trivia) | 70,312 | 23,388 nodes | 3.0 | 3,626,493 / 3,635,663 | 1.46% | a leading-trivia length in a side array would answer in O(1), but 69,987 of the 70,312 calls stop at the first child: the cost is the out-of-line call and loop set-up, not the scan | **lever 3** (`a4b51d5`): first child decided inline |
+| `rustc_span` (node start after leading trivia) | 70,312 | 23,388 nodes | 3.0 | 3,626,493 / 3,635,663 | 1.46% | a leading-trivia length in a side array would answer in O(1), but 69,987 of the 70,312 calls stop at the first child: the cost is the out-of-line call and loop set-up, not the scan | **lever 3** (`ab342c2` (was `a4b51d5`)): first child decided inline |
 | `outer_attributes` / `has_leading_attrs` | 43,807 / 87,614 | 18,548 nodes | 2.4 | 2,441,955 / 2,879,845 | 0.98% / 1.16% | as above; 86,960 of 87,614 `has_leading_attrs` calls stop at the first child; 2,340 calls find an attribute | **lever 3** |
-| list widths in `definitive_tactic` (`total_item_width`, `is_multiline`) | 21,637 / 10,184 + 1,848 | 9,643 item strings (by address and length: a lower bound) | 2.2 | 2,703,255 + 224,653 (widths), 442,458 + 102,243 (newlines), incl. 1,576,685 of whole-string widths of multi-line items | 1.4% | widths stored on `ListItem` would need every one of 45 assignment sites to keep them; most of the cost is not needed for the answer at all | **lever 4** (`774559d`): stop at the deciding item |
-| `write_list`'s last-line width per item | 14,171 `is_multiline` + reverse searches + width scans | read only for items with a post-comment | — | 968,167 (`is_multiline`) + memrchr, reverse char search, memcmp | ≈1.5% (realized) | computed for every item, read by `rewrite_post_comment` only | **lever 5** (`f18dac3`): computed where read |
+| list widths in `definitive_tactic` (`total_item_width`, `is_multiline`) | 21,637 / 10,184 + 1,848 | 9,643 item strings (by address and length: a lower bound) | 2.2 | 2,703,255 + 224,653 (widths), 442,458 + 102,243 (newlines), incl. 1,576,685 of whole-string widths of multi-line items | 1.4% | widths stored on `ListItem` would need every one of 45 assignment sites to keep them; most of the cost is not needed for the answer at all | **lever 4** (`6a0fe4e` (was `774559d`)): stop at the deciding item |
+| `write_list`'s last-line width per item | 14,171 `is_multiline` + reverse searches + width scans | read only for items with a post-comment | — | 968,167 (`is_multiline`) + memrchr, reverse char search, memcmp | ≈1.5% (realized) | computed for every item, read by `rewrite_post_comment` only | **lever 5** (`8704724` (was `f18dac3`)): computed where read |
 | `recover_comment_removed` (comment check after each expression rewrite) | 23,115 | 15,528 spans | 1.5 | 2,598,960 / 5,433,412 | 2.19% | no: the answer depends on the fresh rewrite; in 21,026 calls (91%) the rewrite equals the source and the cost is the comparison | not a lever |
 | `span_before`/`span_after` (`opt_span_before`, `find_uncommented`) | 20,589 | 14,182 (span, needle) | 1.45 | 2,123,641 incl (`find_uncommented`) | 0.86% (repeats ≈ 0.27%) | the repeated share is below 0.5% | not built |
 | `contains_skip` | 29,074 | 2,188 attributes in all | — | 710,638 / 1,385,720 | 0.56% incl | mostly empty slices: call overhead, ≤ 0.29% | not built |
 | `OverflowableItem::span` (twice per item per list: lo and hi) | 33,349 | — | 2 | 530,660 / 2,240,550 | 0.90% incl; after lever 3 1,355,481 self | half avoidable by one span per item (≈ 0.28%) | not built |
 | `format_expr_uncached` (renders of one expression) | 20,359 | 14,076 nodes | 1.45 | — | — | the memo's domain (shape differs per render; 315 hits of 9,766 `memoize` calls) | E24/E26, not here |
 | literal fit (`filtered_str_fits` from `rewrite_literal`) | 1,938 | 1,746 literals | 1.11 | 2,208,877 incl | 0.89% | no: the cost sits in the 1,501 renders of 1,444 multi-line raw and other non-`Str` literals (4% repeats); it is one scan per literal | not a lever |
-| macro token-tree interiors lexed again (`MacroTokens::new` → `LexedStr::new`) | 702 | 702 token trees, every byte already lexed with the file | 1 (2 with the file's lexing) | 1,834,877 | 0.74% | yes: the tree holds the tokens | **lever 6** (`25b1bf9`) |
+| macro token-tree interiors lexed again (`MacroTokens::new` → `LexedStr::new`) | 702 | 702 token trees, every byte already lexed with the file | 1 (2 with the file's lexing) | 1,834,877 | 0.74% | yes: the tree holds the tokens | **lever 6** (`daee9b5` (was `25b1bf9`)) |
 | macro argument windows lexed again (`prefix_parse_window`) | 995 | windows inside the interiors | — | 1,664,995 | 0.67% | the parser needs a `LexedStr` (private fields) for its input and the tree build; not without a token-source abstraction in `TreeBuilder` | not built |
 | `parent()` | 116 | 110 | 1.05 | — | ~0 | E17 removed the hot ones | — |
 | `RunState::line_of` | 776 | — | — | 418,742 / 488,243 | 0.20% | | — |
@@ -298,22 +298,22 @@ Each commit message states the mechanism, the exactness argument, the test and t
 
 | commit | lever | sample `Ir` before → after | change | per-file sum before → after | change | predicted | decision |
 |---|---|---|---|---|---|---|---|
-| `d17cb74` | else-if chain into one buffer (cliff) | 248,195,929 → 248,671,306 | +475,377 (+0.19%) | 261,502,370 → 261,500,623 | −1,747 | shape: the quadratic copy gone; sample: no change (few long chains) | kept: if-else k 1.111 → 0.999 (64–512 branches), 27.07 M → 20.33 M at 512 branches; the sample's +0.19% is heap layout (below) |
-| `9c43d8c` | use-segment comparison without copies or `StrSearcher` (cliff) | 248,671,306 → 249,257,968 | +586,662 (+0.24%) | 261,500,623 → 260,716,168 | −784,455 (−0.30%) | shape: compares 2–4x cheaper; sample: −0.3 to −0.4% (`UseTree::cmp` 0.43% incl) | kept: use-list 99.4 M → 41.2 M at 2,048 names; the sample's +0.24% is heap layout |
-| `a4b51d5` | `rustc_span`, `has_leading_attrs`, `outer_attributes` decided from the first child inline | 249,257,968 → 246,009,335 | −3,248,633 (−1.30%) | 260,716,168 → 257,475,192 | −3,240,976 | −4 M (2.5 M + 1.5 M) | kept (81% of the prediction) |
-| `774559d` | `definitive_tactic` stops at the first multi-line item or at a prefix over the limit | 246,009,335 → 243,970,939 | −2,038,396 (−0.83%) | 257,475,192 → 255,443,984 | −2,031,208 | −1 to −2 M | kept |
-| `f18dac3` | `write_list` computes an item's last-line width only for its post-comment | 243,970,939 → 240,329,974 | −3,640,965 (−1.49%) | 255,443,984 → 251,692,904 | −3,751,080 | ≈ −1.5 M (`is_multiline` 0.97 M plus the scans) | kept (more than predicted: the reverse searches and indent comparisons went too) |
-| `25b1bf9` | token-tree tokens taken from the tree | 240,329,974 → 236,799,223 | −3,530,751 (−1.47%) | 251,692,904 → 249,968,643 | −1,724,261 (−0.69%) | −1.5 M (the 1.83 M lexing less the walk) | kept: the lexer and its allocations −1.8 M; the sample's further −1.67 M is realloc's `memcpy` at 339 fewer calls (heap layout, this time in favour) |
+| `de2c229` (was `d17cb74`) | else-if chain into one buffer (cliff) | 248,195,929 → 248,671,306 | +475,377 (+0.19%) | 261,502,370 → 261,500,623 | −1,747 | shape: the quadratic copy gone; sample: no change (few long chains) | kept: if-else k 1.111 → 0.999 (64–512 branches), 27.07 M → 20.33 M at 512 branches; the sample's +0.19% is heap layout (below) |
+| `339c42a` (was `9c43d8c`) | use-segment comparison without copies or `StrSearcher` (cliff) | 248,671,306 → 249,257,968 | +586,662 (+0.24%) | 261,500,623 → 260,716,168 | −784,455 (−0.30%) | shape: compares 2–4x cheaper; sample: −0.3 to −0.4% (`UseTree::cmp` 0.43% incl) | kept: use-list 99.4 M → 41.2 M at 2,048 names; the sample's +0.24% is heap layout |
+| `ab342c2` (was `a4b51d5`) | `rustc_span`, `has_leading_attrs`, `outer_attributes` decided from the first child inline | 249,257,968 → 246,009,335 | −3,248,633 (−1.30%) | 260,716,168 → 257,475,192 | −3,240,976 | −4 M (2.5 M + 1.5 M) | kept (81% of the prediction) |
+| `6a0fe4e` (was `774559d`) | `definitive_tactic` stops at the first multi-line item or at a prefix over the limit | 246,009,335 → 243,970,939 | −2,038,396 (−0.83%) | 257,475,192 → 255,443,984 | −2,031,208 | −1 to −2 M | kept |
+| `8704724` (was `f18dac3`) | `write_list` computes an item's last-line width only for its post-comment | 243,970,939 → 240,329,974 | −3,640,965 (−1.49%) | 255,443,984 → 251,692,904 | −3,751,080 | ≈ −1.5 M (`is_multiline` 0.97 M plus the scans) | kept (more than predicted: the reverse searches and indent comparisons went too) |
+| `daee9b5` (was `25b1bf9`) | token-tree tokens taken from the tree | 240,329,974 → 236,799,223 | −3,530,751 (−1.47%) | 251,692,904 → 249,968,643 | −1,724,261 (−0.69%) | −1.5 M (the 1.83 M lexing less the walk) | kept: the lexer and its allocations −1.8 M; the sample's further −1.67 M is realloc's `memcpy` at 339 fewer calls (heap layout, this time in favour) |
 | **total** | | 248,195,929 → 236,799,223 | **−11,396,706 (−4.59%)** | 261,502,370 → 249,968,643 | **−11,533,727 (−4.41%)** | | |
 
 Errata in commit messages (the figures in this record are the consistent ones):
 
-- `d17cb74` gives the if-else exponent as "over 8..512 branches 1.111 -> 0.971": the first
+- `de2c229` (was `d17cb74`) gives the if-else exponent as "over 8..512 branches 1.111 -> 0.971": the first
   figure is the fit over 64–512 branches (scales 8–64), the second over 8–512 (scales 1–64).
   Over the same range, 64–512 branches, the head reads 0.999.
-- `9c43d8c` gives the use-list exponent as "over 256..2,048 names 1.162 -> 1.101": the second
-  figure is over 32–2,048 names. Over 256–2,048 names the head (`f18dac3`) reads 1.120.
-- `a4b51d5` gives its per-file change as 260,732,104 → 257,482,737; the first figure was taken
+- `339c42a` (was `9c43d8c`) gives the use-list exponent as "over 256..2,048 names 1.162 -> 1.101": the second
+  figure is over 32–2,048 names. Over 256–2,048 names the head (`8704724` (was `f18dac3`)) reads 1.120.
+- `ab342c2` (was `a4b51d5`) gives its per-file change as 260,732,104 → 257,482,737; the first figure was taken
   with the per-file directory under a path of another length.
 
 The per-file figures above are all from one path length (`/tmp/chloro-bench/1f-bench-<x>`,
@@ -323,13 +323,13 @@ binaries at `/tmp/chloro-bench/bin/bench-<x>`); two runs of the same binary diff
 ### Heap layout (measured)
 
 The first two levers raised the sample's count while removing instructions from the code they
-change. The per-function difference shows where (`d17cb74` against the base): `memcpy`
+change. The per-function difference shows where (`de2c229` (was `d17cb74`) against the base): `memcpy`
 +551,402 at 139 fewer calls, all of it in `_int_realloc`'s copy (`0x48a26b0` → `memcpy`
 3,437,663 → 3,989,262 at 13,571 → 13,449 calls), and the parser's `Vec<Event>` growth
 (`RawVec<Event>::grow_one` → `grow_amortized`) +634,373 at the same 3,211 calls: event
 vectors of later files that used to grow in place at the top of the heap now move, because
 the formatter's allocations for an earlier file left the heap in another state. The same
-happened for `9c43d8c` (`memcpy` +1,181,307 at 739 fewer calls) while its own functions fell
+happened for `339c42a` (was `9c43d8c`) (`memcpy` +1,181,307 at 739 fewer calls) while its own functions fell
 by 0.75 M. EXP-016 recorded the same effect (S10, the second S7 round) and named the
 parser's event vector as the likely source. With one process per file the coupling between
 files disappears and both levers show what their code does: −1,747 and −784,455. The protocol's
@@ -340,7 +340,7 @@ its favour. Over the six levers the two metrics agree within 0.14 M (−11.40 M 
 
 ## Wall clock (measured, provisional)
 
-`bench -n 5` on the 1238 fixtures (13.9 MB), best of 5 rounds, the base binary (`8ebd3bb`,
+`bench -n 5` on the 1238 fixtures (13.9 MB), best of 5 rounds, the base binary (`73f8a85` (was `8ebd3bb`),
 built in this worktree before the first change) and each commit's binary interleaved, three
 pairs each, `taskset -c 3` and later `taskset -c 1`. Each binary holds every lever up to its
 commit. Core 3 was shared with another experiment's process (`chloro-e21b`, pinned there
@@ -348,50 +348,50 @@ during the second set); the halved rounds (3.4–4.2 s) are that contention.
 
 | binary (levers up to) | core | pair | load at start–end | base s, MB/s | lever s, MB/s | base / lever time |
 |---|---|---|---|---|---|---|
-| `d17cb74` | 3 | 1 | 6.33–5.22 | 2.006, 6.93 | 2.008, 6.92 | 0.999 |
-| `d17cb74` | 3 | 2 | 5.22–4.31 | 1.974, 7.04 | 1.878, 7.40 | 1.051 |
-| `d17cb74` | 3 | 3 | 4.31–3.52 | 1.943, 7.16 | 1.950, 7.13 | 0.996 |
-| `9c43d8c` | 3 | 1 | 3.52–3.16 | 2.022, 6.88 | 1.835, 7.58 | 1.102 |
-| `9c43d8c` | 3 | 2 | 3.16–2.83 | 1.920, 7.24 | 1.829, 7.60 | 1.050 |
-| `9c43d8c` | 3 | 3 | 2.83–2.60 | 1.916, 7.26 | 1.924, 7.23 | 0.996 |
-| `a4b51d5` | 3 | 1 | 2.60–2.51 | 1.964, 7.08 | 1.843, 7.54 | 1.066 |
-| `a4b51d5` | 3 | 2 | 2.51–2.37 | 1.807, 7.69 | 1.932, 7.19 | 0.935 |
-| `a4b51d5` | 3 | 3 | 2.37–2.34 | 1.827, 7.61 | 2.238, 6.21 | 0.816 |
-| `774559d` | 3 | 1 | 2.34–2.38 | 2.100, 6.62 | 2.019, 6.89 | 1.040 |
-| `774559d` | 3 | 2 | 2.38–2.62 | 1.994, 6.97 | 1.971, 7.05 | 1.012 |
-| `774559d` | 3 | 3 | 2.62–2.92 | 2.022, 6.87 | 1.748, 7.95 | 1.157 |
-| `f18dac3` | 3 | 1 | 2.92–3.55 | 2.008, 6.92 | 3.719, 3.74 | 0.540 |
-| `f18dac3` | 3 | 2 | 3.55–4.27 | 3.703, 3.75 | 1.942, 7.16 | 1.907 |
-| `f18dac3` | 3 | 3 | 4.27–6.53 | 2.102, 6.61 | 1.959, 7.09 | 1.073 |
-| `25b1bf9` | 3 | 1 | 6.53–7.79 | 1.999, 6.95 | 1.939, 7.17 | 1.031 |
-| `25b1bf9` | 3 | 2 | 7.79–8.42 | 2.049, 6.78 | 1.934, 7.19 | 1.059 |
-| `25b1bf9` | 3 | 3 | 8.42–9.16 | 1.986, 7.00 | 1.824, 7.62 | 1.089 |
-| `a4b51d5` | 3 | 1 | 7.77–7.38 | 1.929, 7.21 | 1.983, 7.01 | 0.973 |
-| `a4b51d5` | 3 | 2 | 7.38–6.86 | 2.074, 6.70 | 1.890, 7.36 | 1.097 |
-| `a4b51d5` | 3 | 3 | 6.86–6.92 | 1.995, 6.97 | 1.915, 7.26 | 1.042 |
-| `f18dac3` | 3 | 1 | 6.92–6.64 | 4.194, 3.31 | 3.412, 4.07 | 1.229 |
-| `f18dac3` | 3 | 2 | 6.64–6.80 | 4.070, 3.42 | 3.620, 3.84 | 1.124 |
-| `f18dac3` | 3 | 3 | 6.80–5.60 | 3.691, 3.77 | 1.733, 8.02 | 2.130 |
-| `25b1bf9` | 3 | 1 | 5.60–4.80 | 1.819, 7.64 | 1.778, 7.82 | 1.023 |
-| `25b1bf9` | 3 | 2 | 4.80–3.98 | 1.802, 7.72 | 1.869, 7.44 | 0.964 |
-| `25b1bf9` | 3 | 3 | 3.98–3.52 | 2.070, 6.71 | 1.669, 8.33 | 1.240 |
-| `25b1bf9` | 1 | 1 | 3.13–2.96 | 1.594, 8.72 | 1.563, 8.89 | 1.020 |
-| `25b1bf9` | 1 | 2 | 2.96–2.98 | 1.632, 8.52 | 1.548, 8.98 | 1.054 |
-| `25b1bf9` | 1 | 3 | 2.98–3.50 | 1.802, 7.71 | 1.714, 8.11 | 1.051 |
-| `774559d` | 1 | 1 | 3.50–3.52 | 1.517, 9.17 | 1.593, 8.72 | 0.952 |
-| `774559d` | 1 | 2 | 3.52–3.68 | 1.616, 8.60 | 1.543, 9.01 | 1.047 |
-| `774559d` | 1 | 3 | 3.68–4.42 | 1.651, 8.42 | 1.607, 8.65 | 1.027 |
+| `de2c229` (was `d17cb74`) | 3 | 1 | 6.33–5.22 | 2.006, 6.93 | 2.008, 6.92 | 0.999 |
+| `de2c229` (was `d17cb74`) | 3 | 2 | 5.22–4.31 | 1.974, 7.04 | 1.878, 7.40 | 1.051 |
+| `de2c229` (was `d17cb74`) | 3 | 3 | 4.31–3.52 | 1.943, 7.16 | 1.950, 7.13 | 0.996 |
+| `339c42a` (was `9c43d8c`) | 3 | 1 | 3.52–3.16 | 2.022, 6.88 | 1.835, 7.58 | 1.102 |
+| `339c42a` (was `9c43d8c`) | 3 | 2 | 3.16–2.83 | 1.920, 7.24 | 1.829, 7.60 | 1.050 |
+| `339c42a` (was `9c43d8c`) | 3 | 3 | 2.83–2.60 | 1.916, 7.26 | 1.924, 7.23 | 0.996 |
+| `ab342c2` (was `a4b51d5`) | 3 | 1 | 2.60–2.51 | 1.964, 7.08 | 1.843, 7.54 | 1.066 |
+| `ab342c2` (was `a4b51d5`) | 3 | 2 | 2.51–2.37 | 1.807, 7.69 | 1.932, 7.19 | 0.935 |
+| `ab342c2` (was `a4b51d5`) | 3 | 3 | 2.37–2.34 | 1.827, 7.61 | 2.238, 6.21 | 0.816 |
+| `6a0fe4e` (was `774559d`) | 3 | 1 | 2.34–2.38 | 2.100, 6.62 | 2.019, 6.89 | 1.040 |
+| `6a0fe4e` (was `774559d`) | 3 | 2 | 2.38–2.62 | 1.994, 6.97 | 1.971, 7.05 | 1.012 |
+| `6a0fe4e` (was `774559d`) | 3 | 3 | 2.62–2.92 | 2.022, 6.87 | 1.748, 7.95 | 1.157 |
+| `8704724` (was `f18dac3`) | 3 | 1 | 2.92–3.55 | 2.008, 6.92 | 3.719, 3.74 | 0.540 |
+| `8704724` (was `f18dac3`) | 3 | 2 | 3.55–4.27 | 3.703, 3.75 | 1.942, 7.16 | 1.907 |
+| `8704724` (was `f18dac3`) | 3 | 3 | 4.27–6.53 | 2.102, 6.61 | 1.959, 7.09 | 1.073 |
+| `daee9b5` (was `25b1bf9`) | 3 | 1 | 6.53–7.79 | 1.999, 6.95 | 1.939, 7.17 | 1.031 |
+| `daee9b5` (was `25b1bf9`) | 3 | 2 | 7.79–8.42 | 2.049, 6.78 | 1.934, 7.19 | 1.059 |
+| `daee9b5` (was `25b1bf9`) | 3 | 3 | 8.42–9.16 | 1.986, 7.00 | 1.824, 7.62 | 1.089 |
+| `ab342c2` (was `a4b51d5`) | 3 | 1 | 7.77–7.38 | 1.929, 7.21 | 1.983, 7.01 | 0.973 |
+| `ab342c2` (was `a4b51d5`) | 3 | 2 | 7.38–6.86 | 2.074, 6.70 | 1.890, 7.36 | 1.097 |
+| `ab342c2` (was `a4b51d5`) | 3 | 3 | 6.86–6.92 | 1.995, 6.97 | 1.915, 7.26 | 1.042 |
+| `8704724` (was `f18dac3`) | 3 | 1 | 6.92–6.64 | 4.194, 3.31 | 3.412, 4.07 | 1.229 |
+| `8704724` (was `f18dac3`) | 3 | 2 | 6.64–6.80 | 4.070, 3.42 | 3.620, 3.84 | 1.124 |
+| `8704724` (was `f18dac3`) | 3 | 3 | 6.80–5.60 | 3.691, 3.77 | 1.733, 8.02 | 2.130 |
+| `daee9b5` (was `25b1bf9`) | 3 | 1 | 5.60–4.80 | 1.819, 7.64 | 1.778, 7.82 | 1.023 |
+| `daee9b5` (was `25b1bf9`) | 3 | 2 | 4.80–3.98 | 1.802, 7.72 | 1.869, 7.44 | 0.964 |
+| `daee9b5` (was `25b1bf9`) | 3 | 3 | 3.98–3.52 | 2.070, 6.71 | 1.669, 8.33 | 1.240 |
+| `daee9b5` (was `25b1bf9`) | 1 | 1 | 3.13–2.96 | 1.594, 8.72 | 1.563, 8.89 | 1.020 |
+| `daee9b5` (was `25b1bf9`) | 1 | 2 | 2.96–2.98 | 1.632, 8.52 | 1.548, 8.98 | 1.054 |
+| `daee9b5` (was `25b1bf9`) | 1 | 3 | 2.98–3.50 | 1.802, 7.71 | 1.714, 8.11 | 1.051 |
+| `6a0fe4e` (was `774559d`) | 1 | 1 | 3.50–3.52 | 1.517, 9.17 | 1.593, 8.72 | 0.952 |
+| `6a0fe4e` (was `774559d`) | 1 | 2 | 3.52–3.68 | 1.616, 8.60 | 1.543, 9.01 | 1.047 |
+| `6a0fe4e` (was `774559d`) | 1 | 3 | 3.68–4.42 | 1.651, 8.42 | 1.607, 8.65 | 1.027 |
 
 No single lever's pairs separate: the cumulative `Ir` change up to each commit is −0.0%, −0.3%,
 −1.5%, −2.3%, −3.8% and −4.4% (per-file sum), inside the ±4% spread of `bench` on this host
-under load 2.3–9.2. For the branch head (`25b1bf9`) the first set on core 3 gave ranges apart
+under load 2.3–9.2. For the branch head (`daee9b5` (was `25b1bf9`)) the first set on core 3 gave ranges apart
 (base 6.78–7.00 MB/s, head 7.17–7.62), the second set on core 3 and the set on core 1 (load
 3.0–3.5; head faster in each pair, 1.02x–1.05x) overlap. The `Ir` figures are the claim; a
 quiet-host measurement is owed (protocol § 6).
 
 ## Gates (measured)
 
-| gate | corpus | `d17cb74` | `9c43d8c` | `a4b51d5` | `774559d` | `f18dac3` | `25b1bf9` |
+| gate | corpus | `de2c229` (was `d17cb74`) | `339c42a` (was `9c43d8c`) | `ab342c2` (was `a4b51d5`) | `6a0fe4e` (was `774559d`) | `8704724` (was `f18dac3`) | `daee9b5` (was `25b1bf9`) |
 |---|---|---|---|---|---|---|---|
 | `cargo fmt --all --check` | | clean | clean | clean | clean | clean | clean |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean | clean | clean | clean | clean | clean |
@@ -403,7 +403,7 @@ quiet-host measurement is owed (protocol § 6).
 | `conform -i -V 1.8.0` | 1220 fixtures, rustfmt 1.8.0 | 1220/1220, 0 not idempotent | same | same | same | same | same |
 | cliff shapes against rustfmt | 108 generated files | — | — | — | — | 108/108 identical | 108/108 identical |
 
-The `25b1bf9` column ran on `f81f9ca`, which adds only `benchmarks/` files to it. `clippy` and
+The `daee9b5` (was `25b1bf9`) column ran on `6419b33` (was `f81f9ca`), which adds only `benchmarks/` files to it. `clippy` and
 the tests ran on an archive of each commit with their own target directory, the
 goldens and `conform` on copies of each commit's release binaries; `config_matrix` and the
 registry `config_matrix` (gates 6–7) were not run: no output changed on either hash corpus.
@@ -421,14 +421,14 @@ registry `config_matrix` (gates 6–7) were not run: no output changed on either
 
 Each was checked against a mutation of the code it covers (the equal-alias condition dropped;
 a comment taken for a significant first token; a separator dropped from the prefix sum;
-comments dropped from the tree path); every mutation failed its test. `d17cb74` and `f18dac3` move code without changing what it
+comments dropped from the tree path); every mutation failed its test. `de2c229` (was `d17cb74`) and `8704724` (was `f18dac3`) move code without changing what it
 computes and rely on the goldens and `conform`.
 
 ## Not built
 
 | idea | why not | bound |
 |---|---|---|
-| closures-expr: skip the expression-body render when no one-line rendering can fit | needs a one-line width lower bound valid for every rewrite and every fallback (T7/E26) | the shape only; on the sample the vetoed renders are few (decide-once-and-exact-reuse.md at `31ce20e`: of 206 expression-body attempts at the outer level, 18 fell back to the block form) |
+| closures-expr: skip the expression-body render when no one-line rendering can fit | needs a one-line width lower bound valid for every rewrite and every fallback (T7/E26) | the shape only; on the sample the vetoed renders are few (decide-once-and-exact-reuse.md at `1b89e4c` (was `31ce20e`): of 206 expression-body attempts at the outer level, 18 fell back to the block form) |
 | a "one-line only" mode under `veto_multiline` | not exact: returning `None` for a multi-line candidate changes the enclosing list's tactic | — |
 | nested macros: parse each argument window from the tree's tokens instead of a new lexing | the parser's input comes from `LexedStr::to_input` and the fragment tree from `TreeBuilder::steps` over a `LexedStr` (private fields): needs a token-source abstraction in the tree builder | `prefix_parse_window`'s lexing, 1,664,995 `Ir` (0.67%) on the sample; the rest of nested-macros' quadratic term |
 | widths cached on `ListItem` | 45 assignment sites of its fields would have to keep the cache; levers 4–5 removed most of the cost without it | ≤ 0.3% after levers 4–5 |
@@ -459,15 +459,15 @@ sample counts with *Heap layout*. The generator and its README stay in `benchmar
 ## Merged with the integration head
 
 At the coordinator's request the branch took the integration head before its own merge:
-`fdcbcd5` merges `9d78713` (E20's sink, E22's `steps_fused` and `profile.sh --sim`) and
-`72df381` the journal commit `2f00988` above it.
+`c20dab9` (was `fdcbcd5`) merges `275690f` (was `9d78713`) (E20's sink, E22's `steps_fused` and `profile.sh --sim`) and
+`b745cbc` (was `72df381`) the journal commit `efc206c` (was `2f00988`) above it.
 
 **Resolution (read).** `lists.rs` conflicted in `write_list` and in the test module. E20's
-`c40a441` moves the item's last-line width into the post-comment branch, as `f18dac3` did, and
-also moves the nested-import test under `formatting.nested`; `f18dac3` adds nothing beyond it,
-so E20's form stands and `f18dac3`'s is dropped. The `definitive_tactic` early stop
-(`774559d`) and its test were re-applied on E20's file unchanged: `lists.rs` at the merged head
-is E20's file plus exactly `774559d`'s 111 added and 4 removed lines. `experiments.md` keeps
+`5ddfd19` (was `c40a441`) moves the item's last-line width into the post-comment branch, as `8704724` (was `f18dac3`) did, and
+also moves the nested-import test under `formatting.nested`; `8704724` (was `f18dac3`) adds nothing beyond it,
+so E20's form stands and `8704724` (was `f18dac3`)'s is dropped. The `definitive_tactic` early stop
+(`6a0fe4e` (was `774559d`)) and its test were re-applied on E20's file unchanged: `lists.rs` at the merged head
+is E20's file plus exactly `6a0fe4e` (was `774559d`)'s 111 added and 4 removed lines. `experiments.md` keeps
 every row (E20, E22, E19). No other file conflicted; the other five E19 levers merged as
 they were.
 
@@ -476,21 +476,21 @@ they were.
 
 | build | binary path | `Ir` |
 |---|---|---|
-| integration head `9d78713` | this worktree's `target/release/examples/bench` | 237,770,134 |
-| integration head `9d78713` | `/tmp/chloro-bench/bin/bench-I` | 237,770,050; 237,768,455 |
-| merged head `72df381` | this worktree's `target/release/examples/bench` (the script's default) | **232,050,549; 232,050,509** |
-| merged head `72df381` | `/tmp/chloro-bench/bin/bench-M` | 232,048,568; 232,050,352 |
+| integration head `275690f` (was `9d78713`) | this worktree's `target/release/examples/bench` | 237,770,134 |
+| integration head `275690f` (was `9d78713`) | `/tmp/chloro-bench/bin/bench-I` | 237,770,050; 237,768,455 |
+| merged head `b745cbc` (was `72df381`) | this worktree's `target/release/examples/bench` (the script's default) | **232,050,549; 232,050,509** |
+| merged head `b745cbc` (was `72df381`) | `/tmp/chloro-bench/bin/bench-M` | 232,048,568; 232,050,352 |
 
 The merged head is −5,719,585 `Ir` (−2.41%) against the integration head at the same paths.
 The per-file sum (one process per sample file, `/tmp/chloro-bench/1f-bench-<x>`): 251,045,466
 → 243,308,946, **−7,736,520 (−3.08%)**, which is the combined E19 effect net of heap layout:
-E19's −11.53 M on its own base less the −3.75 M of `f18dac3`, which E20 had already taken
+E19's −11.53 M on its own base less the −3.75 M of `8704724` (was `f18dac3`), which E20 had already taken
 (−7.78 M expected). The sample's count shows 2.0 M less because realloc's `memcpy` rises
 +1,973,619 at 1,291 fewer calls (the heap-layout term); by function the E19 levers move as
 on their own branch (`rustc_span` −3.63 M, `outer_attributes` −2.44 M, the multi-line width
 scans −1.57 M, `total_item_width` −0.55 M, lexing −0.9 M, `StrSearcher` −0.36 M).
 
-**Gates on `72df381` (measured).**
+**Gates on `b745cbc` (was `72df381`) (measured).**
 
 | gate | result |
 |---|---|
@@ -503,9 +503,9 @@ scans −1.57 M, `total_item_width` −0.55 M, lexing −0.9 M, `StrSearcher` �
 | `profile.sh --core 3`, default sample path | 232,050,509–232,050,549 (above); at the private path `cliffs49` with the `bench-g` copy 232,048,721 |
 | per-file sum, again under the gate script | 243,307,307 (243,308,946 above; run-to-run spread) |
 
-`clippy` and the tests ran on an archive of `72df381` with their own target directory; the
+`clippy` and the tests ran on an archive of `b745cbc` (was `72df381`) with their own target directory; the
 goldens and `conform` on copies of its release binaries.
 
 **Errata** (from § 3, unchanged): the if-else and use-list exponent ranges in the messages of
-`d17cb74` and `9c43d8c`, and the per-file baseline in `a4b51d5`'s message; the figures of this
+`de2c229` (was `d17cb74`) and `339c42a` (was `9c43d8c`), and the per-file baseline in `ab342c2` (was `a4b51d5`)'s message; the figures of this
 record are the consistent ones.

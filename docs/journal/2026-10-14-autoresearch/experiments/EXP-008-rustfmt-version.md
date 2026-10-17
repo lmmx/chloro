@@ -7,10 +7,10 @@ design in [../rustfmt-versions.md](../rustfmt-versions.md) (the matrix), ledger 
 
 ## Identity
 
-- Branch `20261014-rustfmt-version` from `7861cd5` (head of
+- Branch `20261014-rustfmt-version` from `3771338` (was `7861cd5`) (head of
   `claude/chloro-perf-research-swarm-nrscj8` at the time, the matrix commit); the
   integration branch moved during the work (E2's release profile, `codegen-units = 1`
-  and `lto = "fat"`; E4's green-tree reads) and is merged in at `99035f4` (one import
+  and `lto = "fat"`; E4's green-tree reads) and is merged in at `d1705c5` (was `99035f4`) (one import
   conflict in `expr.rs`, one call of `plain_block` that gained a `context` argument in
   `closures.rs`); commits listed under "Commits".
 - Toolchains: `rustc 1.97.0 (2d8144b78 2026-07-07)` with `rustfmt 1.9.0-stable (2d8144b788
@@ -86,7 +86,7 @@ output equals rustfmt 1.8.0's on every one. Rejected files (219 at 2024, 221 at 
 returned unchanged, as rustfmt 1.8.0 writes nothing for them.
 
 The 1.9.0 path (gate 2): `bench --check` 0 of 1238 outputs changed against the golden
-hashes recorded from the base build at `7861cd5`; `conform -i` 1219/1220 identical, 0 not
+hashes recorded from the base build at `3771338` (was `7861cd5`); `conform -i` 1219/1220 identical, 0 not
 idempotent; the batch tests regenerate the 1220 `ra` snapshots byte for byte (no tracked
 snapshot changes).
 
@@ -201,7 +201,7 @@ The matrix names three. Each is measured here against `rustup run 1.88.0 rustfmt
    `cargo test --workspace --all-features`: clean on the merged tree (225 tests pass, 0
    fail; the batch tests regenerate the 1.9.0 snapshots with no tracked change).
 2. 1.9.0 unchanged: `bench --check golden.tsv` (golden recorded from the base build at
-   `7861cd5`; the orchestrator's note confirms no merged change alters an output): 0 of
+   `3771338` (was `7861cd5`); the orchestrator's note confirms no merged change alters an output): 0 of
    1238 changed, before and after the merge; `conform -i`: 1219/1220, 0 not idempotent.
 3. 1.8.0: the matrix above; `conform -V 1.8.0`: 1219/1220, before and after the merge.
 4. Instructions (`benchmarks/profile.sh`, callgrind `Ir` on the 49-file sample, `bench -n 1`,
@@ -209,12 +209,12 @@ The matrix names three. Each is measured here against `rustup run 1.88.0 rustfmt
 
    | build | profile | Ir min | Ir max |
    |---|---|---|---|
-   | best-known-good `aa1e058` (E4 merged) | release (`codegen-units = 1`, `lto = "fat"`) | 519,086,756 | 519,086,767 |
-   | this branch merged (`99035f4`) | the same | 518,880,865 | 518,880,939 |
-   | base `7861cd5` | release before E2 (16 codegen units, no LTO) | 588,231,029 | 588,232,849 |
-   | this branch before the merge (`0e712fc`) | the same | 588,647,548 | (1 run) |
-   | base `7861cd5` + the `Config` field alone | the same | 588,324,599 | 588,324,621 |
-   | base `7861cd5` | `-C codegen-units=1` (1 run each) | 580,805,787 | |
+   | best-known-good `966a7d5` (was `aa1e058`) (E4 merged) | release (`codegen-units = 1`, `lto = "fat"`) | 519,086,756 | 519,086,767 |
+   | this branch merged (`d1705c5` (was `99035f4`)) | the same | 518,880,865 | 518,880,939 |
+   | base `3771338` (was `7861cd5`) | release before E2 (16 codegen units, no LTO) | 588,231,029 | 588,232,849 |
+   | this branch before the merge (`c490889` (was `0e712fc`)) | the same | 588,647,548 | (1 run) |
+   | base `3771338` (was `7861cd5`) + the `Config` field alone | the same | 588,324,599 | 588,324,621 |
+   | base `3771338` (was `7861cd5`) | `-C codegen-units=1` (1 run each) | 580,805,787 | |
    | this branch before the merge | `-C codegen-units=1` | 580,735,451 | |
 
    On the profile the integration branch now builds with, the merged tree runs 205,891
@@ -252,13 +252,13 @@ The matrix names three. Each is measured here against `rustup run 1.88.0 rustfmt
 
 | commit | content |
 |---|---|
-| `875425c` | `feat(config)`: `RustfmtVersion`, `Config.rustfmt_version`, `Config::set`, `Settings::rustfmt_version()`, the CLI cache key |
-| `3259c1d` | `feat(rustc_compat)`: P1, P2, P8; `Walker`; inherent-impl polarity in `format_impl_ref_and_type` |
-| `1f23fd5` | `feat(expr)`: F1 |
-| `98f0559` | `feat(closures)`: F2 |
-| `9298a6a` | `feat(imports)`: F3, F5, `sort_use_trees` |
-| `9dfef1a` | `feat(items)`: F4 |
-| `2279dad` | `feat(missed_spans)`: F6, `RunState.format_failure` |
-| `0e712fc` | `test(conformance)`: snapshots, reproducer suite, unit tests, `conform -V`, `config_matrix --rustfmt` |
-| `99035f4` | merge of `origin/claude/chloro-perf-research-swarm-nrscj8` (`aa1e058`) |
+| `0eac98f` (was `875425c`) | `feat(config)`: `RustfmtVersion`, `Config.rustfmt_version`, `Config::set`, `Settings::rustfmt_version()`, the CLI cache key |
+| `1e891ed` (was `3259c1d`) | `feat(rustc_compat)`: P1, P2, P8; `Walker`; inherent-impl polarity in `format_impl_ref_and_type` |
+| `9215f61` (was `1f23fd5`) | `feat(expr)`: F1 |
+| `cd95765` (was `98f0559`) | `feat(closures)`: F2 |
+| `64d5fa8` (was `9298a6a`) | `feat(imports)`: F3, F5, `sort_use_trees` |
+| `e59ad4c` (was `9dfef1a`) | `feat(items)`: F4 |
+| `28aa21e` (was `2279dad`) | `feat(missed_spans)`: F6, `RunState.format_failure` |
+| `c490889` (was `0e712fc`) | `test(conformance)`: snapshots, reproducer suite, unit tests, `conform -V`, `config_matrix --rustfmt` |
+| `d1705c5` (was `99035f4`) | merge of `origin/claude/chloro-perf-research-swarm-nrscj8` (`966a7d5` (was `aa1e058`)) |
 | the branch head | `docs`: this record, the README conformance section, ledger row E8 |

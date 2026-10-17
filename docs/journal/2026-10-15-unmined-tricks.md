@@ -17,7 +17,7 @@ each trick names a precedent with its source. §6 is the precedent catalogue. §
 that becomes the next experiment wave, under the unchanged
 [protocol](2026-10-14-autoresearch/protocol.md): conformance, correctness and engineering
 integrity are hard gates, instructions on the sample the primary metric, every claim measured
-against the best-known-good (`e640fbf`), every result in the
+against the best-known-good (`f4be63e` (was `e640fbf`)), every result in the
 [ledger](2026-10-14-autoresearch/experiments.md).
 
 ## 1. What the floor is made of (measured)
@@ -27,7 +27,7 @@ Everything below is from the records; nothing is new measurement.
 | quantity | value | where |
 |---|---|---|
 | instructions, 49-file sample, final head | 248,202,137 (0.4221 of the start); 206,922,054 profile-guided | M4 |
-| component shares at `31ce20e` (312.7 M): formatter / parser+lexer / allocator / core+std / flat tree / libc | 39.9% / 28.0% / 15.1% / 7.9% / 5.4% / 3.4% | extensions-theory §"The final head, measured" |
+| component shares at `1b89e4c` (was `31ce20e`) (312.7 M): formatter / parser+lexer / allocator / core+std / flat tree / libc | 39.9% / 28.0% / 15.1% / 7.9% / 5.4% / 3.4% | extensions-theory §"The final head, measured" |
 | glibc malloc's share of one thread's time, measured directly | 13–16% | EXP-014 |
 | L1 instruction-cache misses | 5,233,543, 1.67% of instructions; `write_list` 266 K, `overflow::Context::rewrite` 372 K, `_int_malloc` 152 K, `rewrite_chain_from` 225 K, `memoize` 95 K | cache simulation, same section |
 | conditional branches / mispredicted | 49.6 M / 3.85 M (7.8%) | same |
@@ -533,7 +533,7 @@ on reproduced gates.
 ## Current State
 
 - This entry compiles the owner's two ChatGPT passes and this session's pass with 20
-  precedents and their sources; wave 3 (E19–E22) was launched on worktrees from `bf05b31` as
+  precedents and their sources; wave 3 (E19–E22) was launched on worktrees from `6b4a9d7` (was `bf05b31`) as
   the entry was committed, wave 4 (E23–E28) followed, wave 5 (E29–E31) ran on 2026-10-17.
 - Where the ten tricks of §5 went (the ledger has each result): T1 E22 (co-metric kept, layout
   levers closed), T2 E24 (closed at 0.16%) and E28 (depth gate kept), T3 E23 and E29 (both

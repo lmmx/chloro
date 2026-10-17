@@ -55,7 +55,7 @@ fit against output bytes is the one to read for them.
 
 ## Results
 
-The first run (base `8ebd3bb` and head `f18dac3`) is in EXP-019: one shape above the 1.1
+The first run (base `73f8a85` (was `8ebd3bb`) and head `8704724` (was `f18dac3`)) is in EXP-019: one shape above the 1.1
 threshold remains, `closures-expr` (k 2.57: distinct shapes per nesting level, the memo cannot
 merge them); `if-else` (a quadratic copy) and `use-list` (copies inside the sort comparator)
 were fixed; the depth shapes whose exponent exceeds 1.1 against the scale stay below 1

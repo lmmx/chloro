@@ -12,10 +12,10 @@ on the unit definition of [EXP-001](EXP-001-parallel-items.md) and the independe
 | field | value |
 |---|---|
 | branch | `20261015-item-cache`, worktree `/home/user/wt/item-cache` |
-| base | `b69e00f` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good `bdfb9d1`) |
-| commits | `07cab15` (core), `a4db417` (CLI), `8114d8b`, `c000c66` and `2f14ffa` (tests, harness), this record |
+| base | `2b3c761` (was `b69e00f`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good `bd9c768` (was `bdfb9d1`)) |
+| commits | `fa71ec5` (was `07cab15`) (core), `a167552` (was `a4db417`) (CLI), `02ad66d` (was `8114d8b`), `5fb36c5` (was `c000c66`) and `7e64238` (was `2f14ffa`) (tests, harness), this record |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`; release profile of the workspace (fat LTO, one codegen unit); `cargo build --release -p chloro --features cli` and `-p chloro-core --example bench --example conform --example unit_cache` |
-| base binaries | built in the same worktree at `b69e00f` before any change and copied aside (`chloro` 2,017,472 B; new `chloro` 2,088,808 B, +71 KB) |
+| base binaries | built in the same worktree at `2b3c761` (was `b69e00f`) before any change and copied aside (`chloro` 2,017,472 B; new `chloro` 2,088,808 B, +71 KB) |
 | host | 4 vCPU, Linux 6.18.44, hyperfine 2.0.0, shared with other agents' builds and runs (load average 2.1–4.5 during the measurements). Ratios between binaries measured in one window are the claim; absolute times are not quiet-host figures and are not comparable with [M3](../measurements/m3-quiet-host.md) |
 
 ## Hypothesis and falsification
@@ -95,13 +95,13 @@ it), written (temporary file, rename) only when a unit was stored and the execut
 and modification time are those taken at open, bounded to 64 MiB of records (least recently
 seen dropped), and swept with the other stale cache files after 30 days.
 
-Flags (as of `cafc1e8`): the unit cache is **opt-in**. `--unit-cache` turns it on; `--no-cache`
+Flags (as of `d672456` (was `cafc1e8`)): the unit cache is **opt-in**. `--unit-cache` turns it on; `--no-cache`
 turns both caches off and overrides `--unit-cache`. Reason: a run that finds nothing in it pays
 for hashing and storing every unit and writing the file, +10–15% wall time and +4.6%
 instructions on a cold `--check` of the fixture tree (gate 4 below, and again on the merged
 branch in the follow-up section), which is not acceptable as a default for cold CI runs until a
 resident process or a cheaper cold path amortises it. The first measurements below were taken
-at `c000c66`, where the unit cache rode the fixed-point cache by default and `--no-unit-cache`
+at `5fb36c5` (was `c000c66`), where the unit cache rode the fixed-point cache by default and `--no-unit-cache`
 turned it off; that flag is gone. `-v` prints the units looked up, found and stored, the file read and
 the record bytes held.
 
@@ -109,15 +109,15 @@ the record bytes held.
 
 | commit | change | test |
 |---|---|---|
-| `07cab15` | `unit_cache.rs` (trait, key, value, rebasing, serialisation), `parallel.rs` (`CacheUse`, `format_units_cached`, `format_units` over a subset with the calling-thread case, `stitch`), `Config::key_bytes`, `SkipContext::write_key`, `format_source_with_unit_cache` | 6 unit tests: cold/warm at 1 and 4 threads; the key covers the configuration and the skip names; records are relative and rebased (a record from one position equals the record of the same unit 40 bytes and 3 lines further down, and replays at the new `lo`); a tail is checked, a gap before the source start refused; skipped ranges pin the record to its line; every record round-trips through bytes and every truncation, extension and unknown flag is refused |
-| `a4db417` | the CLI's unit store, `--no-unit-cache`, the verbose report; `Cache::key`, `Cache::executable_unchanged`; the stale sweep covers `.chloro-units`; `cli_cache.rs`'s `cache_files` counts fixed-point files only | 3 unit tests in `units.rs`: stored units read back and found, another key reads nothing; a corrupt file is ignored; a save after the executable changed writes nothing |
-| `8114d8b` | `chloro-core/tests/unit_cache_equivalence.rs` (every 11th fixture, default and no-reordering, 1 and 4 threads: cold, warm with no unit formatted, moved down a line); `chloro/tests/cli_unit_cache.rs` (a 167 KB fixture edited in one item: `--check` and `--write` equal the sequential formatter, `-v` reports `(104, 103, 1)`; the flags leave the unit cache alone; an unchanged tree never reads it); `examples/unit_cache.rs` | the tests |
-| `c000c66` | harness options `--every`, `--blank-max-bytes`, edit unit sizes | — |
-| `2f14ffa` | harness counts records with a tail or a moved gap | — |
+| `fa71ec5` (was `07cab15`) | `unit_cache.rs` (trait, key, value, rebasing, serialisation), `parallel.rs` (`CacheUse`, `format_units_cached`, `format_units` over a subset with the calling-thread case, `stitch`), `Config::key_bytes`, `SkipContext::write_key`, `format_source_with_unit_cache` | 6 unit tests: cold/warm at 1 and 4 threads; the key covers the configuration and the skip names; records are relative and rebased (a record from one position equals the record of the same unit 40 bytes and 3 lines further down, and replays at the new `lo`); a tail is checked, a gap before the source start refused; skipped ranges pin the record to its line; every record round-trips through bytes and every truncation, extension and unknown flag is refused |
+| `a167552` (was `a4db417`) | the CLI's unit store, `--no-unit-cache`, the verbose report; `Cache::key`, `Cache::executable_unchanged`; the stale sweep covers `.chloro-units`; `cli_cache.rs`'s `cache_files` counts fixed-point files only | 3 unit tests in `units.rs`: stored units read back and found, another key reads nothing; a corrupt file is ignored; a save after the executable changed writes nothing |
+| `02ad66d` (was `8114d8b`) | `chloro-core/tests/unit_cache_equivalence.rs` (every 11th fixture, default and no-reordering, 1 and 4 threads: cold, warm with no unit formatted, moved down a line); `chloro/tests/cli_unit_cache.rs` (a 167 KB fixture edited in one item: `--check` and `--write` equal the sequential formatter, `-v` reports `(104, 103, 1)`; the flags leave the unit cache alone; an unchanged tree never reads it); `examples/unit_cache.rs` | the tests |
+| `5fb36c5` (was `c000c66`) | harness options `--every`, `--blank-max-bytes`, edit unit sizes | — |
+| `7e64238` (was `2f14ffa`) | harness counts records with a tail or a moved gap | — |
 
 ## Gates
 
-**1. fmt, clippy, tests** (on `8114d8b`'s tree; `c000c66` and `2f14ffa` change only the example, rechecked with `cargo fmt --all --check` and a release build):
+**1. fmt, clippy, tests** (on `02ad66d` (was `8114d8b`)'s tree; `5fb36c5` (was `c000c66`) and `7e64238` (was `2f14ffa`) change only the example, rechecked with `cargo fmt --all --check` and a release build):
 
 | command | result |
 |---|---|
@@ -140,7 +140,7 @@ kept, cached and uncached):
 | registry, 24,582 files (the corpus has grown since the golden's 20,850) | `unit_cache --root ~/.cargo/registry/src --shift --threads 1` | 1,895,787 units looked up cold, 1,135,986 found cold (equal units in other files and crate versions), 759,801 stored, 1,895,786 found warm (1 file with a warm miss, below); shifted: 21,309 files (files starting with `#!` or a BOM left out), 1,861,861 units, 1,780,353 used (81,508 line-pinned records refused); peak 482 MB held by the exact cache; **0 differences** (cold, warm, shifted); 137.9 s |
 | registry | the same with `--threads 4` | the same counts; **0 differences**; 153.5 s |
 | registry, every 4th file (6,146), blanked check on files ≤ 64 KiB | `unit_cache --root ~/.cargo/registry/src --blank --blank-max-bytes 65536 --every 4` | 483,004 units looked up, 483,004 found warm; 86,512 units checked with the rest of the file blanked (the units each file stored, in files of at most 64 KiB without `\r` or a BOM), all found; **0 differences** |
-| registry, all files, record shapes | `unit_cache --root ~/.cargo/registry/src` (harness at `2f14ffa`) | 0 of 759,442 stored records have a tail or a gap position other than the unit's start; the same on the fixtures (0 of 13,280); 0 differences |
+| registry, all files, record shapes | `unit_cache --root ~/.cargo/registry/src` (harness at `7e64238` (was `2f14ffa`)) | 0 of 759,442 stored records have a tail or a gap position other than the unit's start; the same on the fixtures (0 of 13,280); 0 differences |
 
 The one registry file with a warm miss is `zerocopy-derive-0.8.63/tests/enum_to_bytes.rs`: it
 holds `util_assert_impl_all!(HasData: imp::IntoBytes);` twice (lines 124 and 136), a macro
@@ -327,11 +327,11 @@ fixed-point cache) in every edit cell (1.11x–2.04x on minima) and 3.3x on a re
 of an unformatted tree, at +4–7% on a cold run against the fixed-point cache alone (+10–15%
 against `--no-cache`) and an 8.6 MB cache file for the fixture tree. It stays on its branch for
 the integrator. Following the review of this record, the CLI's unit cache is opt-in
-(`--unit-cache`, `cafc1e8`), and the branch carries the integration head with E12 (the
+(`--unit-cache`, `d672456` (was `cafc1e8`)), and the branch carries the integration head with E12 (the
 executable's digest recorded under its identity instead of hashed every run); the re-measured
 numbers are in the next section.
 
-## Follow-up on the merged branch (`cafc1e8`: integration head `7b53917` with E12 and E13 merged, unit cache opt-in)
+## Follow-up on the merged branch (`d672456` (was `cafc1e8`): integration head `21b91c5` (was `7b53917`) with E12 and E13 merged, unit cache opt-in)
 
 Gates: `cargo fmt --all --check` clean; `cargo clippy --workspace --all-targets --all-features
 -- -D warnings` clean; `cargo test --workspace --all-features` all pass (chloro 24 unit,

@@ -1,0 +1,130 @@
+[project]
+site_name = "chloro"
+site_url = "https://lmmx.github.io/chloro/"
+site_description = "A Rust code formatter that reproduces rustfmt's output, byte for byte, without the compiler"
+site_author = "Louis Maddox"
+docs_dir = "docs/site"
+repo_name = "lmmx/chloro"
+repo_url = "https://github.com/lmmx/chloro"
+copyright = "chloro is dual-licensed under MIT or Apache-2.0"
+nav = [
+  {"Home" = "index.md"},
+  {"Getting started" = [
+    "getting-started/installation.md",
+    "getting-started/quickstart.md"
+  ]},
+  {"Guide" = [
+    "guide/cli.md",
+    "guide/configuration.md",
+    "guide/parallelism.md",
+    "guide/caching.md",
+    "guide/library.md"
+  ]},
+  {"rustfmt compatibility" = "compatibility.md"},
+  {"Performance" = "performance.md"},
+  {"How it works" = [
+    "architecture/overview.md",
+    "architecture/parsing.md",
+    "architecture/formatting.md",
+    "architecture/concurrency.md"
+  ]},
+  {"Maintainers" = [
+    "maintainers/development.md",
+    "maintainers/parser-upgrades.md",
+    "maintainers/benchmarking.md",
+    "maintainers/releasing.md",
+    "maintainers/documentation.md"
+  ]},
+  {"Reference" = [
+    "reference/cli.md",
+    "reference/api.md"
+  ]},
+  {"Changelog" = "changelog.md"},
+  {"Project history" = "history.md"}
+]
+extra_css = ["assets/stylesheets/extra.css"]
+
+[project.markdown_extensions.abbr]
+
+[project.markdown_extensions.admonition]
+
+[project.markdown_extensions.attr_list]
+
+[project.markdown_extensions.def_list]
+
+[project.markdown_extensions.footnotes]
+
+[project.markdown_extensions.md_in_html]
+
+[project.markdown_extensions.tables]
+
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions.pymdownx.details]
+
+[project.markdown_extensions.pymdownx.highlight]
+pygments_lang_class = true
+
+[project.markdown_extensions.pymdownx.inlinehilite]
+
+[project.markdown_extensions.pymdownx.keys]
+
+[project.markdown_extensions.pymdownx.snippets]
+check_paths = true
+
+[project.markdown_extensions.pymdownx.superfences]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+[project.plugins.search]
+
+[project.theme]
+favicon = "assets/images/chloro.svg"
+logo = "assets/images/chloro.svg"
+variant = "modern"
+language = "en"
+features = [
+  "content.code.copy",
+  "content.tabs.link",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.top",
+  "search.highlight",
+  "search.suggest",
+  "toc.follow"
+]
+font.text = "Work Sans"
+font.code = "JetBrains Mono"
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
+
+# Follow the system's appearance, with a toggle to override it
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to light mode"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/lmmx/chloro"
+name = "chloro on GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/rust"
+link = "https://crates.io/crates/chloro"
+name = "chloro on crates.io"

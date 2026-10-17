@@ -13,8 +13,8 @@ initialisation-cost caution of
 
 | field | value |
 |---|---|
-| branch | `20261015-memo-array` from `2f00988` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/memo` |
-| base BKG | `9d78713`; `2f00988` adds only documentation after it |
+| branch | `20261015-memo-array` from `efc206c` (was `2f00988`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/memo` |
+| base BKG | `275690f` (was `9d78713`); `efc206c` (was `2f00988`) adds only documentation after it |
 | kept commits | none in code; this file and the ledger row |
 | rejected, reverted | the memo as a node-indexed side array in four forms (v1–v4), a two-word `MemoKey` hash (v5), the table sized per item (v6); the block cache's side array not attempted. Patches: `scratchpad/e24/memo-side-array-v4.patch` (v4 with its test), `scratchpad/e24/memo-hash-v5.patch` |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, hyperfine 2.0.0; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
@@ -346,7 +346,7 @@ head reset; each fails the test.
 
 ## Gates (measured)
 
-No code is kept: the branch's code is `2f00988`'s (`git diff 2f00988 HEAD -- chloro chloro-core`
+No code is kept: the branch's code is `efc206c` (was `2f00988`)'s (`git diff 2f00988 HEAD -- chloro chloro-core`
 is empty). The gates were run on the v4 form to show that its rejection is on performance
 only.
 

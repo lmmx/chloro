@@ -12,8 +12,8 @@ Ledger row E17 in [../experiments.md](../experiments.md); procedure and gates in
 | field | value |
 |---|---|
 | branch | `20261015-parse-floor` |
-| base | `d179b50` (integration head; `chloro-core` is the code of `bdfb9d1`, the best-known-good's formatter) |
-| commits | `d8b066e` (P8), `0479cbc` (P5), `d14d259` (P1), then this record |
+| base | `7001c6a` (was `d179b50`) (integration head; `chloro-core` is the code of `bd9c768` (was `bdfb9d1`), the best-known-good's formatter) |
+| commits | `c9a8863` (was `d8b066e`) (P8), `f9c7799` (was `0479cbc`) (P5), `a908a7b` (was `d14d259`) (P1), then this record |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `ra_ap_parser` 0.0.307 |
 | host | 4 vCPU Intel Xeon @ 2.80GHz; other experiments ran on the host throughout (load average 3.4–7.4). `Ir` is unaffected by load; the wall-time figures below are not quiet-host figures |
 | build | `cargo build --release -p chloro-core --example bench --example conform` (the workspace's fat-LTO, one-codegen-unit profile) |
@@ -36,9 +36,9 @@ every macro fragment before any output gate.
 
 | commit | lever | `Ir` before | `Ir` after | change | of the start |
 |---|---|---|---|---|---|
-| `d8b066e` | P8: `in_trait` passed to `visit_assoc_item` | 312,732,995 | 310,877,081 | −1,855,914 | −0.59% |
-| `0479cbc` | P5: Expr/Ty fragments built from the prefix parse | 310,877,081 | 304,645,699 | −6,231,382 | −1.99% |
-| `d14d259` | P1: the tree built from `Output` in one pass | 304,645,699 | 290,493,311 | −14,152,388 | −4.53% |
+| `c9a8863` (was `d8b066e`) | P8: `in_trait` passed to `visit_assoc_item` | 312,732,995 | 310,877,081 | −1,855,914 | −0.59% |
+| `f9c7799` (was `0479cbc`) | P5: Expr/Ty fragments built from the prefix parse | 310,877,081 | 304,645,699 | −6,231,382 | −1.99% |
+| `a908a7b` (was `d14d259`) | P1: the tree built from `Output` in one pass | 304,645,699 | 290,493,311 | −14,152,388 | −4.53% |
 | total | | 312,732,995 | 290,493,311 | −22,239,684 | **−7.11%** |
 
 Per file (P8's own gate, then the head):
@@ -48,7 +48,7 @@ Per file (P8's own gate, then the head):
 | `hir/src/lib.rs` | 213,902,439 | 204,281,608 (−4.50%) | 192,036,537 (−10.22%) |
 | `config.rs` | 85,447,231 | 79,833,401 (−6.57%) | 74,950,567 (−12.29%) |
 
-### P8: `visit_assoc_item` (`d8b066e`)
+### P8: `visit_assoc_item` (`c9a8863` (was `d8b066e`))
 
 - Before: `visit_assoc_item` called `parent()` twice (item → `ASSOC_ITEM_LIST` → `TRAIT` or
   `IMPL`); `parent()` scans backwards over the preceding siblings' subtrees, so an impl with
@@ -62,7 +62,7 @@ Per file (P8's own gate, then the head):
 - Measured: −1,855,914 against a bound of 1,962,731 (95%); the two large files lose
   4.50% and 6.57%, against bounds of 4.55% and 6.62% on their formatted copies.
 
-### P5: macro arguments parsed once (`0479cbc`)
+### P5: macro arguments parsed once (`f9c7799` (was `0479cbc`))
 
 - Before (read, `macro_args.rs`): each argument window was lexed and prefix-parsed to
   find its end, then the consumed tokens were lexed, converted to parser input and parsed
@@ -88,7 +88,7 @@ Per file (P8's own gate, then the head):
   closures, casts with a trailing comment, `>>`, ranges, references to arrays, `async`
   blocks), trees built both ways compared element by element.
 
-### P1: interspersal fused with the tree build (`d14d259`)
+### P1: interspersal fused with the tree build (`a908a7b` (was `d14d259`))
 
 - Before (read): `TreeBuilder::steps` ran `LexedStr::intersperse_trivia` with a `dyn FnMut`
   sink; each step was decoded from `Output`, each token's text sliced (`range_text`, with
@@ -153,7 +153,7 @@ were not run: no output changed on either hash corpus.
 
 ## `bench -n 5` pairs (measured, loaded host)
 
-`taskset -c 3`, base binary built from `d179b50` (kept as `bencB`), interleaved, load
+`taskset -c 3`, base binary built from `7001c6a` (was `d179b50`) (kept as `bencB`), interleaved, load
 average 5.1–6.9 during the run, so the absolute figures are about half of M3's quiet-host
 9.4 MB/s and are not comparable to them:
 
@@ -184,7 +184,7 @@ figure to cite.
 
 ## Decision
 
-Kept: `d8b066e`, `0479cbc`, `d14d259`. Branch `20261015-parse-floor`, for the integrator's
+Kept: `c9a8863` (was `d8b066e`), `f9c7799` (was `0479cbc`), `a908a7b` (was `d14d259`). Branch `20261015-parse-floor`, for the integrator's
 gates 1–5 on the merged tree; not merged.
 
 ## Follow-up

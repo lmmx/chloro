@@ -15,7 +15,7 @@ what else the host is running.
 |---|---|
 | `collect.sh` | runs `diag.py` on the nine crate workloads in six configurations (4 threads and 1 pinned thread; no cache, cold cache, `--write` on raw copies) |
 | `diag.py` | runs a traced binary N times, keeps the traces, derives the wall view per run and prints the medians |
-| `trace_patch.py` | the diagnostic build's patch (thread CPU clocks, parse/units/stitch/unit records in `parallel.rs`); applied to a scratch worktree, never committed; variant `owner` for EXP-029's lever (a) at `0a6080c` |
+| `trace_patch.py` | the diagnostic build's patch (thread CPU clocks, parse/units/stitch/unit records in `parallel.rs`); applied to a scratch worktree, never committed; variant `owner` for EXP-029's lever (a) at `68889e1` (was `0a6080c`) |
 | `sim.py` | from patched traces: today's scheduler under processor sharing (A), a unit queue across files (B) and the work-conserving bound (C), all from on-CPU costs |
 | `split_sim.py` | EXP-029: from patched traces, a split file's parts (parse, the rest of its worker's time, units, stitch) and the replay of the levers on its own schedule (the worker formats units, capped or dynamic item threads, units cut below the item, a parallel parse); `--blind` recomputes the wall view without the item workers, as an unpatched trace sees it; `--compare` reads `collect_ab.sh` |
 | `collect_ab.sh` | several traced binaries on the nine crates, interleaved in blocks (same load window) |

@@ -17,9 +17,9 @@ the per-file figure and the registry sample are [EXP-027](EXP-027-harness.md)'s.
 
 | field | value |
 |---|---|
-| branch | `20261015-arena` from `4f1b9d9` (integration branch; its code is the BKG `05ab7b4`, the commits above it are documentation) with `origin/20261015-harness` merged (`21042dc`: E27's `profile.sh --per-file`, `--sample-list`, `bench --phase parse`), worktree `/home/user/wt/arena` |
-| base | `21042dc`: the BKG's formatter with E27's `bench`; `bench-base` (sha256 `0be68d2cb0d7a9f2`) and `chloro-base` (`4ddf33f7a0b1aa33`) copied before the first change; the head's are `c15b5ab3259cf7cf` and `8123fab448c1448f` |
-| commits | `368add0` (the arena, `formatter/scratch.rs`, and chains' lists and strings in it), `a61d975` (overflow's list items), `6a3df77` (types), `eaab530` (this file and the ledger row); the follow-up: `b2dd419` (the arena keeps pointers; a formatting test sized for Miri), `224870a` (the arena on `bumpalo`), then the section *Soundness and the safe variant* |
+| branch | `20261015-arena` from `33866dc` (was `4f1b9d9`) (integration branch; its code is the BKG `dcbb43d` (was `05ab7b4`), the commits above it are documentation) with `origin/20261015-harness` merged (`ed26a34` (was `21042dc`): E27's `profile.sh --per-file`, `--sample-list`, `bench --phase parse`), worktree `/home/user/wt/arena` |
+| base | `ed26a34` (was `21042dc`): the BKG's formatter with E27's `bench`; `bench-base` (sha256 `0be68d2cb0d7a9f2`) and `chloro-base` (`4ddf33f7a0b1aa33`) copied before the first change; the head's are `c15b5ab3259cf7cf` and `8123fab448c1448f` |
+| commits | `6ff63fb` (was `368add0`) (the arena, `formatter/scratch.rs`, and chains' lists and strings in it), `fc316e3` (was `a61d975`) (overflow's list items), `5d3b903` (was `6a3df77`) (types), `bc4a7b6` (was `eaab530`) (this file and the ledger row); the follow-up: `104493f` (was `b2dd419`) (the arena keeps pointers; a formatting test sized for Miri), `2a5beba` (was `224870a`) (the arena on `bumpalo`), then the section *Soundness and the safe variant* |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, hyperfine 2.0.0, glibc 2.39; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz; other agents built and ran callgrind throughout (load average 6.1–24.5 during this experiment). `Ir` is unaffected; wall-clock figures are **measured, provisional** (protocol § 6) |
 | `Ir` commands | `benchmarks/profile.sh --core 3 --bench <bin> --runs 3 --per-file` (fixture sample) and the same with `--sample-list benchmarks/samples/registry49.txt`; `--sim` for the co-metric (on core 2, alongside; the counts do not depend on the core) |
@@ -230,7 +230,7 @@ measured), which puts it near 3.2%.
 
 ## Step 2: what was built (read)
 
-### The arena (`368add0`, `formatter/scratch.rs`)
+### The arena (`6ff63fb` (was `368add0`), `formatter/scratch.rs`)
 
 - A bump arena per thread (`thread_local!`, `const` initialised). An allocation bumps a
   pointer in the current chunk (16 KiB first, doubling to 1 MiB, larger when one request needs
@@ -260,9 +260,9 @@ measured), which puts it near 3.2%.
 
 | commit | path | malloc/free pairs removed (fixture sample) |
 |---|---|---|
-| `368add0` | chains: the sub-expression list, `rev_children` (consumed with `pop`/`last`) and the chain's `children`, a method call's generic and value arguments, the shared formatter's `rewrites`, a method call's callee string, `trim_tries`'s result and line buffer | 18,607 |
-| `a61d975` | overflow: `Context::rewrite_items`'s list items (`write_list_into` and `write_list_capacity` take the slice, the `&[ListItem]` instantiation `reorder.rs` already uses) | 6,858 |
-| `6a3df77` | types: `path_segments` (room for four) and `rewrite_segment`'s text | 6,963 |
+| `6ff63fb` (was `368add0`) | chains: the sub-expression list, `rev_children` (consumed with `pop`/`last`) and the chain's `children`, a method call's generic and value arguments, the shared formatter's `rewrites`, a method call's callee string, `trim_tries`'s result and line buffer | 18,607 |
+| `fc316e3` (was `a61d975`) | overflow: `Context::rewrite_items`'s list items (`write_list_into` and `write_list_capacity` take the slice, the `&[ListItem]` instantiation `reorder.rs` already uses) | 6,858 |
+| `5d3b903` (was `6a3df77`) | types: `path_segments` (room for four) and `rewrite_segment`'s text | 6,963 |
 
 Not converted, with the reason: `push_rewrite_inner` makes no allocation of its own (its cost is
 the output buffer's growth and the frees of other modules' strings); `types::single_ident_path`,
@@ -284,14 +284,14 @@ step and its parent, without the `memcpy` inside `_int_realloc` (the heap-layout
 
 | step | fixture whole | fixture per-file net | change, per-file | site cost (pairs removed) | per-file / site | registry whole | registry per-file net | change, per-file | registry site cost | per-file / site | decision |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| base `21042dc` | 232,051,557 | 230,136,129 | | | | 305,873,581 | 304,433,417 | | | | |
-| `368add0` arena, chains | 229,262,911 | 228,311,993 | −1,824,136 (−0.79%) | 2,655,224 (18,607) | 69% | 304,728,718 | 303,558,119 | −875,298 (−0.29%) | 1,290,185 (9,489) | 68% | kept |
-| `a61d975` overflow | 227,938,553 | 227,394,246 | −917,747 (−0.40%) | 895,199 (6,858) | 103% | 304,519,318 | 303,087,234 | −470,885 (−0.16%) | 546,260 (4,197) | 86% | kept |
-| `6a3df77` types | 228,741,632 | 226,446,273 | −947,973 (−0.42%) | 1,094,985 (6,963) | 87% | 302,919,449 | 301,988,902 | −1,098,332 (−0.36%) | 1,242,963 (7,707) | 88% | kept |
+| base `ed26a34` (was `21042dc`) | 232,051,557 | 230,136,129 | | | | 305,873,581 | 304,433,417 | | | | |
+| `6ff63fb` (was `368add0`) arena, chains | 229,262,911 | 228,311,993 | −1,824,136 (−0.79%) | 2,655,224 (18,607) | 69% | 304,728,718 | 303,558,119 | −875,298 (−0.29%) | 1,290,185 (9,489) | 68% | kept |
+| `fc316e3` (was `a61d975`) overflow | 227,938,553 | 227,394,246 | −917,747 (−0.40%) | 895,199 (6,858) | 103% | 304,519,318 | 303,087,234 | −470,885 (−0.16%) | 546,260 (4,197) | 86% | kept |
+| `5d3b903` (was `6a3df77`) types | 228,741,632 | 226,446,273 | −947,973 (−0.42%) | 1,094,985 (6,963) | 87% | 302,919,449 | 301,988,902 | −1,098,332 (−0.36%) | 1,242,963 (7,707) | 88% | kept |
 | **head against base** | **−3,309,925 (−1.43%)** | **−3,689,856 (−1.60%)** | | 4,645,408 (32,428) | 79% | **−2,954,132 (−0.97%)** | **−2,444,515 (−0.80%)** | | 3,079,408 (21,393) | 79% | |
 
-`a61d975`'s tree is the one measured as "overflow and chains" before the commits were reordered
-(identical binary, sha256 `38d742f933cda627`), and `6a3df77`'s the one measured as the head
+`fc316e3` (was `a61d975`)'s tree is the one measured as "overflow and chains" before the commits were reordered
+(identical binary, sha256 `38d742f933cda627`), and `5d3b903` (was `6a3df77`)'s the one measured as the head
 (`c15b5ab3259cf7cf`); see *Rejected attempts* for the reorder.
 
 Full rows (per-file sums, empty sample, cross-file term):
@@ -300,12 +300,12 @@ Full rows (per-file sums, empty sample, cross-file term):
 |---|---|---|---|---|---|
 | base | fixtures | 245,724,303 | 318,126 | 231,733,431 | +1,597,302 |
 | base | registry | 320,021,591 | 318,126 | 305,555,455 | +1,122,038 |
-| `368add0` | fixtures | 243,907,223 | 318,270 | 228,944,641 | +632,648 |
-| `368add0` | registry | 319,153,349 | 318,270 | 304,410,448 | +852,329 |
-| `a61d975` | fixtures | 242,989,476 | 318,270 | 227,620,283 | +226,037 |
-| `a61d975` | registry | 318,682,464 | 318,270 | 304,201,048 | +1,113,814 |
-| `6a3df77` | fixtures | 242,040,915 | 318,258 | 228,423,374 | +1,977,101 |
-| `6a3df77` | registry | 317,583,544 | 318,258 | 302,601,191 | +612,289 |
+| `6ff63fb` (was `368add0`) | fixtures | 243,907,223 | 318,270 | 228,944,641 | +632,648 |
+| `6ff63fb` (was `368add0`) | registry | 319,153,349 | 318,270 | 304,410,448 | +852,329 |
+| `fc316e3` (was `a61d975`) | fixtures | 242,989,476 | 318,270 | 227,620,283 | +226,037 |
+| `fc316e3` (was `a61d975`) | registry | 318,682,464 | 318,270 | 304,201,048 | +1,113,814 |
+| `5d3b903` (was `6a3df77`) | fixtures | 242,040,915 | 318,258 | 228,423,374 | +1,977,101 |
+| `5d3b903` (was `6a3df77`) | registry | 317,583,544 | 318,258 | 302,601,191 | +612,289 |
 
 The whole-sample figure of the types step rose by 0.80 M while its per-file figure fell by 0.95 M:
 the `memcpy` inside `_int_realloc` rose by 1.76 M (EXP-020's heap-layout term: the parse's vectors
@@ -362,7 +362,7 @@ worker); `lints-t4` unpinned with `--threads 4` (item-level threads, an arena pe
 over the ten runs, MiB; the base column is the head's invocation (the base read within ±0.6% in
 the other two, `lints-t4` within ±4%). 14:14 UTC (head) and 14:43 UTC, load 11–15.
 
-| workload | base | `368add0` | `a61d975` | `6a3df77` (head) | head / base |
+| workload | base | `6ff63fb` (was `368add0`) | `fc316e3` (was `a61d975`) | `5d3b903` (was `6a3df77`) (head) | head / base |
 |---|---|---|---|---|---|
 | `stdin-lints` (`ide-db/src/generated/lints.rs`, 639,689 B) | 9.95 | 9.95 | 9.95 | 9.89 | 0.995 |
 | `lints`, `--threads 4` | 14.62 | 14.33 | 14.75 | 14.48 | 0.990 |
@@ -373,7 +373,7 @@ the other two, `lints-t4` within ±4%). 14:14 UTC (head) and 14:43 UTC, load 11�
 | `fx-hir-ty` (`/tmp/chloro-bench/formatted/fx-hir-ty/tree`, 122 files) | 8.08 | 8.06 | 7.84 | 7.82 | 0.967 |
 
 Every commit is within 0.967–1.043x of the base in its own invocation (the largest, `lints-t4` at
-`a61d975`, 14.75 against 14.14 MiB, is the run-to-run spread of the four-thread run: the base read
+`fc316e3` (was `a61d975`), 14.75 against 14.14 MiB, is the run-to-run spread of the four-thread run: the base read
 14.14–14.72 across the three invocations); far inside the 1.2x rule. The arena holds at most
 192 KiB (above), which is what the table shows: nothing.
 
@@ -387,10 +387,10 @@ shared the host and core 3 throughout; none of these is a speedup claim.
 | binary (per-file `Ir` against the base) | window UTC, load (1, 5, 15 min) at start | base MB/s per pair | commit MB/s per pair | commit / base per pair | ranges |
 |---|---|---|---|---|---|
 | overflow alone (the pre-reorder `f358c6f`, −0.41%) | 14:31–14:33, 13.84 11.67 12.78 | 5.14, 6.65, 6.16 | 6.17, 6.69, 6.41 | 1.200, 1.006, 1.041 | overlap |
-| `368add0` (−0.79%) | 14:57–14:58, 12.17 14.32 14.27 | 8.08, 7.10, 6.58 | 8.68, 8.59, 6.62 | 1.074, 1.210, 1.006 | overlap |
-| `a61d975` (−1.19%) | 14:33–14:34, 13.00 11.92 12.78 | 6.25, 6.61, 8.00 | 7.48, 7.32, 7.08 | 1.197, 1.107, 0.885 | overlap |
-| `a61d975` again | 14:59–15:00, 13.88 14.06 14.16 | 7.86, 7.69, 7.83 | 7.85, 6.72, 6.78 | 0.999, 0.874, 0.866 | overlap |
-| `6a3df77`, head (−1.60%) | 14:30–14:31, 13.08 10.82 12.63 | 6.59, 6.55, 5.90 | 5.56, 5.89, 6.53 | 0.844, 0.899, 1.107 | overlap |
+| `6ff63fb` (was `368add0`) (−0.79%) | 14:57–14:58, 12.17 14.32 14.27 | 8.08, 7.10, 6.58 | 8.68, 8.59, 6.62 | 1.074, 1.210, 1.006 | overlap |
+| `fc316e3` (was `a61d975`) (−1.19%) | 14:33–14:34, 13.00 11.92 12.78 | 6.25, 6.61, 8.00 | 7.48, 7.32, 7.08 | 1.197, 1.107, 0.885 | overlap |
+| `fc316e3` (was `a61d975`) again | 14:59–15:00, 13.88 14.06 14.16 | 7.86, 7.69, 7.83 | 7.85, 6.72, 6.78 | 0.999, 0.874, 0.866 | overlap |
+| `5d3b903` (was `6a3df77`), head (−1.60%) | 14:30–14:31, 13.08 10.82 12.63 | 6.59, 6.55, 5.90 | 5.56, 5.89, 6.53 | 0.844, 0.899, 1.107 | overlap |
 | head again | 14:34–14:35, 11.63 11.63 12.61 | 4.56, 5.99, 6.56 | 8.60, 6.04, 7.23 | 1.886, 1.008, 1.102 | overlap |
 | head again | 14:58–14:59, 12.68 14.02 14.16 | 8.10, 8.23, 7.15 | 7.92, 7.56, 6.57 | 0.978, 0.919, 0.919 | overlap |
 | head, six pairs | 15:01–15:03, 14.16 14.08 14.16 | 7.65, 7.40, 7.21, 7.76, 7.72, 7.05 | 7.59, 7.50, 7.75, 7.66, 7.57, 8.08 | 0.992, 1.014, 1.075, 0.987, 0.981, 1.146 | overlap |
@@ -404,12 +404,12 @@ is not resolved by wall clock on this host. A quiet-host run is owed (binaries:
 
 | gate | corpus | result |
 |---|---|---|
-| `cargo fmt --all --check` | | clean at `368add0`, `a61d975` and `6a3df77` |
-| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean at `368add0`, `a61d975` and `6a3df77` |
-| `cargo test --workspace --all-features` | | 303 passed, 0 failed, 1 ignored at `368add0` and at `6a3df77`'s tree; and at `a61d975` (six tests added in `scratch.rs`) |
+| `cargo fmt --all --check` | | clean at `6ff63fb` (was `368add0`), `fc316e3` (was `a61d975`) and `5d3b903` (was `6a3df77`) |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean at `6ff63fb` (was `368add0`), `fc316e3` (was `a61d975`) and `5d3b903` (was `6a3df77`) |
+| `cargo test --workspace --all-features` | | 303 passed, 0 failed, 1 ignored at `6ff63fb` (was `368add0`) and at `5d3b903` (was `6a3df77`)'s tree; and at `fc316e3` (was `a61d975`) (six tests added in `scratch.rs`) |
 | `bench --check`, sequential and `--threads 4` | 1238 fixtures against `fixtures-e8d87c2.tsv` | 0 changed, 0 differ between 4 threads and `format_source`, at each commit |
 | `bench --check` | registry against `registry-e8d87c2.tsv` (20,850 recorded of 25,024) | 0 changed, at each commit |
-| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220, 0 not idempotent, at both versions, at `6a3df77`'s tree |
+| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220, 0 not idempotent, at both versions, at `5d3b903` (was `6a3df77`)'s tree |
 | peak RSS | the table above | 0.967–1.043x of the base at every commit |
 
 `config_matrix` (gates 6 and 7) was not run: no output changed on either hash corpus.
@@ -421,7 +421,7 @@ is not resolved by wall clock on this host. A quiet-host run is owed (binaries:
 | the pool of `String` buffers | not built | step 1: per-string cost 82–88 `Ir` against the arena's 8–13 and glibc's ≈ 170; bound 1.53–2.35% (fixture) on the hot paths, strings only, both ends of each life converted | not built |
 | the arena's first form: `with_capacity` and the first growth out of line (`set_capacity`), `collect` through `new` + `extend` with the first slot taken by the cold `grow_for` | overflow alone: per-file −1,281,327 (fixture), −615,743 (registry); whole −1,997,995 | `set_capacity` ≈ 29 `Ir` and `grow_for` ≈ 45 per first allocation (9,435 and 6,912 calls over the three paths); the list's collect loop was inlined into `Context::rewrite` by accident of size | replaced before the commits |
 | `collect` as `Vec`'s (first element, then room for `max(4, lower + 1)`) | whole +202,098 against the first form with all three paths | the collect became an out-of-line function (1.72 M, as `Vec`'s `from_iter` is in the base) | replaced by an `extend` that takes room for four on the first element, and `#[inline(always)]` on the bump, the first allocation and the release |
-| the commits in the order overflow, chains, types (`f358c6f`, `e53685f`, `9699ba1`, not pushed) | overflow first: per-file −951,027 (fixture), −401,863 (registry) against the base; the later two trees are `a61d975`'s and `6a3df77`'s | the first commit failed clippy `-D warnings`: with overflow as the only user, `ScratchString` and three `ScratchVec` methods were dead code | reordered so that the arena arrives with chains, which uses all of it; only `368add0` was measured anew |
+| the commits in the order overflow, chains, types (`f358c6f`, `e53685f`, `9699ba1`, not pushed) | overflow first: per-file −951,027 (fixture), −401,863 (registry) against the base; the later two trees are `fc316e3` (was `a61d975`)'s and `5d3b903` (was `6a3df77`)'s | the first commit failed clippy `-D warnings`: with overflow as the only user, `ScratchString` and three `ScratchVec` methods were dead code | reordered so that the arena arrives with chains, which uses all of it; only `6ff63fb` (was `368add0`) was measured anew |
 
 Overflow measured first (−951,027) and second (−917,747) agree within 4%; the first form's
 −1,281,327 for the same step is the collect loop's inlining, not the arena.
@@ -439,7 +439,7 @@ compile time that no scratch value outlives its scope) keep the gain.
 - Installed with `rustup component add miri rust-src --toolchain nightly-2026-05-10` (through
   the proxy, under two minutes) and `cargo +nightly-2026-05-10 miri setup` (sysroot built in
   1 min 31 s).
-- **Run 1**, `6a3df77`'s `scratch.rs`, Miri's defaults (Stacked Borrows, permissive
+- **Run 1**, `5d3b903` (was `6a3df77`)'s `scratch.rs`, Miri's defaults (Stacked Borrows, permissive
   provenance), `cargo +nightly-2026-05-10 miri test -p chloro-core --lib scratch`:
   `test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in
   173.32s`. No undefined behaviour reported. Two warnings, verbatim heads:
@@ -448,20 +448,20 @@ compile time that no scratch value outlives its scope) keep the gain.
   `scratch.rs:182:25` (`Arena::drop`). The arena kept its pointers as `usize` addresses and
   cast them back; under permissive provenance Miri gives such pointers wildcard provenance and
   cannot check their accesses precisely, so run 1 was weak evidence.
-- **Fix, `b2dd419`:** the arena's current pointer, chunk start and end, and its chunk list are
+- **Fix, `104493f` (was `b2dd419`):** the arena's current pointer, chunk start and end, and its chunk list are
   `*mut u8` derived from each chunk's allocation (`with_addr` for the aligned bump, `add`
   elsewhere); no integer-to-pointer cast is left. The bump arithmetic is the same: per-file
   `Ir` +26,688 (+0.012%) on the fixture sample and +20,157 (+0.007%) on the registry sample
-  against `6a3df77` (226,472,961 and 302,009,059).
+  against `5d3b903` (was `6a3df77`) (226,472,961 and 302,009,059).
 - The snapshot test chosen first (`tests::formatter::method_chains::struct_literal_receiver_in_call_arg`,
   a chain, an overflowed call and a two-segment path) cannot run under Miri: `error:
   unsupported operation: 'open' not available when isolation is enabled`, from `insta`'s
-  `env.rs`, which spawns `cargo metadata` before comparing. `b2dd419` adds
+  `env.rs`, which spawns `cargo metadata` before comparing. `104493f` (was `b2dd419`) adds
   `scratch::tests::formatting_through_the_arena_users`: one input through all three users
   (a broken chain with generic method calls, an overflowed argument list, multi-segment paths
   with generic arguments), compared with rustfmt's output by `assert_eq!`, and checks that the
   arena was used and is empty afterwards.
-- **Final runs on `b2dd419`**, the seven `scratch` tests:
+- **Final runs on `104493f` (was `b2dd419`)**, the seven `scratch` tests:
   - `MIRIFLAGS=-Zmiri-strict-provenance` (Stacked Borrows): `test result: ok. 7 passed; 0
     failed; 0 ignored; 0 measured; 203 filtered out; finished in 178.23s`;
   - `MIRIFLAGS="-Zmiri-strict-provenance -Zmiri-tree-borrows"`: `test result: ok. 7 passed; 0
@@ -476,7 +476,7 @@ compile time that no scratch value outlives its scope) keep the gain.
 
 ### The safe variant: `bumpalo`
 
-`224870a` replaces the hand-written arena by `bumpalo` 3.20.3 (feature `collections`, no
+`2a5beba` (was `224870a`) replaces the hand-written arena by `bumpalo` 3.20.3 (feature `collections`, no
 default features, no transitive dependency; it was already in the registry):
 
 - `scratch.rs` (74 lines, no `unsafe`): a `RefCell<Bump>` per thread; `with_scratch(|bump| ..)`
@@ -484,7 +484,7 @@ default features, no transitive dependency; it was already in the registry):
   compile time not to outlive the closure; `reset_scratch()` takes the bump mutably through
   `try_borrow_mut` and so can only reset when no closure holds it.
 - The sites use `bumpalo::collections::{Vec, String}` (`with_capacity_in`, `from_iter_in`,
-  `new_in`, `.bump()`), the same allocations as `6a3df77`. Entry points: `rewrite_chain_from`,
+  `new_in`, `.bump()`), the same allocations as `5d3b903` (was `6a3df77`). Entry points: `rewrite_chain_from`,
   `overflow::Context::rewrite`, `types::rewrite_path` (and the two `path_segments` readers in
   `types.rs` and `patterns.rs`). The `'bump` lifetime is the existing `'a` of `ChainItemKind`,
   `Chain` and `ChainFormatterShared` (the syntax handles are covariant, so they shorten to the
@@ -495,18 +495,18 @@ default features, no transitive dependency; it was already in the registry):
 
 `Ir` (per-file net; whole in brackets), three runs each, `--core 3`, 15:50–16:02 UTC at load 1–4:
 
-| build | fixture sample | against base | against `6a3df77` | registry sample | against base | against `6a3df77` |
+| build | fixture sample | against base | against `5d3b903` (was `6a3df77`) | registry sample | against base | against `5d3b903` (was `6a3df77`) |
 |---|---|---|---|---|---|---|
-| base `21042dc` | 230,136,129 (232,051,557) | | | 304,433,417 (305,873,581) | | |
-| hand-written, `6a3df77` | 226,446,273 (228,741,632) | −1.603% | | 301,988,902 (302,919,449) | −0.803% | |
-| hand-written, pointers, `b2dd419` | 226,472,961 (228,767,736) | −1.592% | +0.012% | 302,009,059 (302,943,310) | −0.796% | +0.007% |
+| base `ed26a34` (was `21042dc`) | 230,136,129 (232,051,557) | | | 304,433,417 (305,873,581) | | |
+| hand-written, `5d3b903` (was `6a3df77`) | 226,446,273 (228,741,632) | −1.603% | | 301,988,902 (302,919,449) | −0.803% | |
+| hand-written, pointers, `104493f` (was `b2dd419`) | 226,472,961 (228,767,736) | −1.592% | +0.012% | 302,009,059 (302,943,310) | −0.796% | +0.007% |
 | `bumpalo` A (reset at unit boundaries) | 226,509,274 (227,605,075) | −1.576% | +0.028% | 301,985,671 (305,880,171) | −0.804% | −0.001% |
-| **`bumpalo` B, `224870a`** | **226,560,329** (227,577,469) | **−1.554%** | +0.050% | **302,021,415** (304,929,947) | **−0.792%** | +0.011% |
+| **`bumpalo` B, `2a5beba` (was `224870a`)** | **226,560,329** (227,577,469) | **−1.554%** | +0.050% | **302,021,415** (304,929,947) | **−0.792%** | +0.011% |
 
 B keeps 97% of the hand-written arena's per-file gain on the fixture sample (3.58 M of 3.69 M)
 and 99% on the registry sample (2.41 M of 2.44 M). The whole-sample figures move with the
 heap-layout term in both directions (cross-file terms of 0.70 M and 2.59 M for B against
-1.98 M and 0.61 M for `6a3df77`): `bumpalo`'s retained chunk is another size than the
+1.98 M and 0.61 M for `5d3b903` (was `6a3df77`)): `bumpalo`'s retained chunk is another size than the
 hand-written arena's, and the parser's vectors of the next file meet another heap. On the
 registry sample A's whole figure reads +6,590 over the base while its per-file figure reads
 −0.80%; by E27's rule the per-file figure is the lever's own effect.
@@ -532,7 +532,7 @@ the very last allocation on drop, so with resets at unit boundaries alone the sc
 `impl` stays until its end. B resets as often as the hand-written arena did and stays within
 0.989–1.019x.
 
-Gates on `224870a`: `cargo fmt --check`; clippy `-D warnings`; `cargo test --workspace
+Gates on `2a5beba` (was `224870a`): `cargo fmt --check`; clippy `-D warnings`; `cargo test --workspace
 --all-features` 298 passed, 0 failed, 1 ignored (the six tests of the hand-written types go with
 them, the formatting test stays); 0 of 1238 fixtures changed, sequential and `--threads 4`, 0
 differ between the two; 0 of the registry hashes changed (25,077 files present); `conform -i`
@@ -543,18 +543,18 @@ finished in 6.37s`, no warning. The CLI's text section: base 1,886,122 bytes, ha
 
 Wall clock (`pairs.sh`, measured, provisional; load 0.9–1.4, the quietest window of the day):
 
-| pair | base or `b2dd419` MB/s | other MB/s | ratio per pair | ranges |
+| pair | base or `104493f` (was `b2dd419`) MB/s | other MB/s | ratio per pair | ranges |
 |---|---|---|---|---|
-| base, `b2dd419` (three, then six pairs) | 7.79, 9.51, 8.01; 8.57, 9.39, 8.89, 10.16, 9.37, 9.84 | 9.22, 9.25, 9.30; 9.11, 9.50, 9.07, 8.96, 10.56, 9.79 | 1.184, 0.973, 1.161; 1.063, 1.012, 1.020, 0.882, 1.127, 0.995 | overlap |
+| base, `104493f` (was `b2dd419`) (three, then six pairs) | 7.79, 9.51, 8.01; 8.57, 9.39, 8.89, 10.16, 9.37, 9.84 | 9.22, 9.25, 9.30; 9.11, 9.50, 9.07, 8.96, 10.56, 9.79 | 1.184, 0.973, 1.161; 1.063, 1.012, 1.020, 0.882, 1.127, 0.995 | overlap |
 | base, B (three, then six pairs) | 9.86, 9.57, 9.04; 8.28, 8.10, 8.64, 9.92, 8.42, 9.99 | 9.23, 10.01, 8.77; 9.57, 9.39, 9.32, 10.44, 8.95, 9.44 | 0.936, 1.046, 0.970; 1.156, 1.159, 1.079, 1.052, 1.063, 0.945 | overlap |
-| `b2dd419`, B | 8.98, 9.01, 8.96 | 9.01, 8.92, 9.38 | 1.003, 0.990, 1.047 | overlap |
+| `104493f` (was `b2dd419`), B | 8.98, 9.01, 8.96 | 9.01, 8.92, 9.38 | 1.003, 0.990, 1.047 | overlap |
 
 Neither arena's wall-clock effect is resolved on this host; the two are indistinguishable from
 each other.
 
 ### Recommendation
 
-**`bumpalo`, variant B (`224870a`, the branch head).** It keeps 97–99% of the gain (per-file
+**`bumpalo`, variant B (`2a5beba` (was `224870a`), the branch head).** It keeps 97–99% of the gain (per-file
 −1.55% and −0.79% against −1.60% and −0.80%), has no `unsafe` of chloro's own, turns the
 hand-written arena's dynamic `live`-count invariant into a compile-time one (no scratch value
 outlives `with_scratch`'s closure) plus a `RefCell` check on reset that cannot fire wrongly,
@@ -562,7 +562,7 @@ and passes the RSS rule. Its costs: a dependency (`bumpalo`, no transitive depen
 measured reason in the table above), `with_scratch` closures at three entry points, a
 `&Bump` parameter through the chain and path helpers, and resets at two places (a unit boundary
 and the outermost return) that must stay together: A shows that the unit boundary alone is not
-enough. The hand-written arena (`b2dd419`) is the fallback if the dependency is refused: it is
+enough. The hand-written arena (`104493f` (was `b2dd419`)) is the fallback if the dependency is refused: it is
 Miri-clean under strict provenance with both aliasing models on its tests, 0.05% faster on the
 fixture sample, and keeps its sixteen `unsafe` blocks. Neither is the answer if a 1.6% / 0.8%
 instruction lever with no resolved wall-clock gain does not justify touching `chains.rs` while
@@ -603,10 +603,10 @@ the registry sample falls at every step; peak RSS 0.967–1.043x; no output chan
 tests in `scratch.rs`). Whether that is worth the module is the integrator's call; the wall-clock
 pairs above do not settle it on this host.
 
-Follow-up (*Soundness and the safe variant*): the branch head is now `224870a`, the same three
+Follow-up (*Soundness and the safe variant*): the branch head is now `2a5beba` (was `224870a`), the same three
 paths on `bumpalo` with a reset when the outermost borrower returns: per-file −1.55% and
 −0.79%, peak RSS within 1.02x, no `unsafe` of chloro's own; recommended over the hand-written
-arena, which stays reachable at `b2dd419` (Miri-clean under strict provenance with both aliasing
+arena, which stays reachable at `104493f` (was `b2dd419`) (Miri-clean under strict provenance with both aliasing
 models on its tests).
 
 Merge notes: E26 edits `chains.rs`, `overflow.rs` and `expr.rs` (width pre-checks): the arena
@@ -616,7 +616,7 @@ function of `overflow.rs` (`rewrite_items` and its two callers' arguments); E28 
 `context.rs`, which this branch does not touch. Not to be measured together with the sink
 (E20's remaining sites are the same allocations).
 
-Merged at `e96b530` (the `bumpalo` variant) after the integrator reproduced the gates on the
+Merged at `a26b460` (was `e96b530`) (the `bumpalo` variant) after the integrator reproduced the gates on the
 merged tree (E26 and E28 merged above this branch's base): 0 of 1238 fixture hashes changed,
 sequential and at 4 threads, 0 of 25,077 registry hashes; `conform -i` 1220/1220 at 1.9.0 and
 1.8.0; `Ir` 220,958,649 on the fixture sample (-1.62% against the E26 merge's

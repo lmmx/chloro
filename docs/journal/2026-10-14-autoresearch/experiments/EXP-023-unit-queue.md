@@ -38,12 +38,12 @@ an earlier record), **derived** (arithmetic on the above).
 
 | field | value |
 |---|---|
-| branch | `20261015-unit-queue` from `9135c62` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/queue` |
-| base BKG | `05ab7b4` (232,047,700–232,050,590 `Ir`); `9135c62` adds only documentation after it |
-| commits | `a1a7cf3` (the `CHLORO_TRACE` timeline and its test), `22a4b14` (`benchmarks/schedule/`), then this record and the ledger row |
+| branch | `20261015-unit-queue` from `d4e3069` (was `9135c62`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/queue` |
+| base BKG | `dcbb43d` (was `05ab7b4`) (232,047,700–232,050,590 `Ir`); `d4e3069` (was `9135c62`) adds only documentation after it |
+| commits | `c4d041e` (was `a1a7cf3`) (the `CHLORO_TRACE` timeline and its test), `8357c37` (was `22a4b14`) (`benchmarks/schedule/`), then this record and the ledger row |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, hyperfine 2.0.0, valgrind 3.22.0; release profile of the workspace (fat LTO, one codegen unit) |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz" (KVM guest, 1 thread per core as the guest sees it, 33 MiB L3), 15.7 GiB, Linux 6.18.44-fc-v114. Other agents ran experiments throughout: the 1-minute load average read 3.5–26 during this work and 3.5–10.3 during the measurements below. Every multi-core wall figure measured here is **provisional** (protocol §6) |
-| binaries | `chloro-base`: `9135c62`'s CLI, sha256 `e587ba96…3d12`, 2,167,656 bytes; `bench-base`: `f193784e…6198`; the CPU-clock diagnostic build `chloro-diag-base` (`9135c62` plus the kept trace plus `benchmarks/schedule/trace_patch.py`): `f058c9d2…ce4ce`; the kept head's CLI: `19073fff…1971`, 2,176,000 bytes |
+| binaries | `chloro-base`: `d4e3069` (was `9135c62`)'s CLI, sha256 `e587ba96…3d12`, 2,167,656 bytes; `bench-base`: `f193784e…6198`; the CPU-clock diagnostic build `chloro-diag-base` (`d4e3069` (was `9135c62`) plus the kept trace plus `benchmarks/schedule/trace_patch.py`): `f058c9d2…ce4ce`; the kept head's CLI: `19073fff…1971`, 2,176,000 bytes |
 | workloads | the harness's copies `/tmp/chloro-bench/formatted/<crate>/tree` (M4's), and `/tmp/chloro-bench/raw/<crate>/tree` for `--write` |
 
 ## Hypothesis, falsifiers, stop rule

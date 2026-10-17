@@ -13,9 +13,9 @@ documentation), **not observed** (only a release run can show it).
 
 | field | value |
 |---|---|
-| branch | `20261015-pgo-ci` from `400ed53` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/pgo-ci` |
-| base BKG | `92fdef0` (`400ed53` adds only documentation after it) |
-| commits | `c2a2739` (workflow step, `pgo.sh` phases and `--target`), the following commit (this file, ledger row, the two READMEs) |
+| branch | `20261015-pgo-ci` from `a168b72` (was `400ed53`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/pgo-ci` |
+| base BKG | `397159b` (was `92fdef0`) (`a168b72` (was `400ed53`) adds only documentation after it) |
+| commits | `8e5de88` (was `c2a2739`) (workflow step, `pgo.sh` phases and `--target`), the following commit (this file, ledger row, the two READMEs) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, LLVM 22.1.6, host `x86_64-unknown-linux-gnu`; `llvm-tools-preview` installed by the step's own `rustup component add` (6.4 s here) |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz", Linux 6.18.44, shared with other builds: load 2.3–4.3 during the builds, 3.2–3.4 during the timings. Wall times are **measured, provisional** (protocol § 6); only within-window ratios of interleaved runs are used |
 | tools | hyperfine 2.0.0, valgrind 3.22.0; `actionlint` is not installed on this host |

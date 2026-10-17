@@ -12,14 +12,14 @@ source), **derived**.
 
 | field | value |
 |---|---|
-| branch | `20261015-width-model` from `03c61be` (integration head; its code is the best-known-good `e96b530`), worktree `/home/user/wt/width-model` |
-| kept commits | `2c6bc21` (a closure body that renders a `match` arm is never one line: the S1 pre-check skips it), `5274f96` (a line reference in its documentation; the release `bench` is byte-identical); then this record |
-| rejected | the chain-width rule (a chain wider than `chain_width` is never one line): committed as `3d471d9`, reverted in `d6b4d73` on the registry condition (also `scratchpad/e30/chain-width-rule.patch`) |
+| branch | `20261015-width-model` from `4ad3b54` (was `03c61be`) (integration head; its code is the best-known-good `a26b460` (was `e96b530`)), worktree `/home/user/wt/width-model` |
+| kept commits | `9b2a6d2` (was `2c6bc21`) (a closure body that renders a `match` arm is never one line: the S1 pre-check skips it), `288b1e8` (was `5274f96`) (a line reference in its documentation; the release `bench` is byte-identical); then this record |
+| rejected | the chain-width rule (a chain wider than `chain_width` is never one line): committed as `94b0c6b` (was `3d471d9`), reverted in `b8ba4b5` (was `d6b4d73`) on the registry condition (also `scratchpad/e30/chain-width-rule.patch`) |
 | not built | the exact width `W(n)` and its three uses, the negative memo, the bound cache: every one has a measured bound under the brief's 0.3% (§ 1) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU, shared with E29 and E31 throughout; the session was interrupted from 2026-10-15 18:31 to 2026-10-17 06:31 UTC (account rate limit, host reboot); every binary's sha256 was checked after the reboot. `Ir` is load-independent; no wall-clock figure is claimed |
 | `Ir` command | `benchmarks/profile.sh --core 3 --runs 2|3 --per-file --bench <bin> [--sample-list benchmarks/samples/registry49.txt]` |
-| binaries (`bench` sha256) | base `85110ac371288350` (built at `03c61be` in this worktree before any change), commit `2c6bc21` `287ea8261aa476d2`, chain-width rule `4a6dab74795d0d40` |
+| binaries (`bench` sha256) | base `85110ac371288350` (built at `4ad3b54` (was `03c61be`) in this worktree before any change), commit `9b2a6d2` (was `2c6bc21`) `287ea8261aa476d2`, chain-width rule `4a6dab74795d0d40` |
 | base | fixtures 220,957,398 whole, 220,754,624 per file net of the empty process (316,079); registry 299,933,776 whole, 298,832,156 per file (minimum of 3 runs; 298,834,408 of 2) |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (25,077 registry files present) |
 
@@ -131,7 +131,7 @@ first-line endings of two multi-line candidates.
 | bound scans (`min_width_up_to` calls, base profile) | 113 | 20 |
 | their cost (replay) | 195,124 (0.09%) | 39,627 (0.01%) |
 
-On the cliff shape the scans weigh more (base and `2c6bc21` alike, `run.sh` profiles):
+On the cliff shape the scans weigh more (base and `9b2a6d2` (was `2c6bc21`) alike, `run.sh` profiles):
 closures-expr at depth 8, 64 scans for 8 nests, 206,224 `Ir` (3.70% of that run); at depth 16, 120
 scans, 387,328 (6.80%). Each scan stops once the sum passes the width, so a scan costs about the
 same at any depth (3.2 K); a per-node cache removes only the scans of a node made again, which
@@ -187,9 +187,9 @@ the result is `None` (E26's checks).
 
 ## 3. Commits (measured)
 
-### `2c6bc21`: rule M at the S1 site (kept)
+### `9b2a6d2` (was `2c6bc21`): rule M at the S1 site (kept)
 
-| sample | base | `2c6bc21` | change |
+| sample | base | `9b2a6d2` (was `2c6bc21`) | change |
 |---|---|---|---|
 | fixtures, whole | 220,957,398 | 220,264,955 | −692,443 (−0.313%) |
 | fixtures, per file net (base 2 runs, head 3) | 220,754,624 | 219,952,841 | **−801,783 (−0.363%)** |
@@ -211,9 +211,9 @@ the result is `None` (E26's checks).
   commit) −801,783 / −2,718. Each step removes cost on the registry bodies that cannot have an
   arm; the fixture gain is the 14 renders either way.
 
-### The chain-width rule on top of `2c6bc21` (rejected)
+### The chain-width rule on top of `9b2a6d2` (was `2c6bc21`) (rejected)
 
-| sample | `2c6bc21` | with rule C | change |
+| sample | `9b2a6d2` (was `2c6bc21`) | with rule C | change |
 |---|---|---|---|
 | fixtures, whole | 220,264,955 | 219,616,465 | −648,490 |
 | fixtures, per file net (3 runs) | 219,952,841 | 219,264,365 | −688,476 (87% of its 786,803) |
@@ -223,8 +223,8 @@ the result is `None` (E26's checks).
 - A repeat of both registry measurements read 298,830,247 and 298,844,884 (+14,637): the rise is
   a stable property of this binary, above the run-to-run spread of the minimum-of-3 figure
   (1.8–2.3 K, two measurements of one binary; single runs of one binary differ by 10–14 K), so
-  protocol § 3 does not keep it, whatever the fixture gain: committed as `3d471d9` and reverted in
-  `d6b4d73`.
+  protocol § 3 does not keep it, whatever the fixture gain: committed as `94b0c6b` (was `3d471d9`) and reverted in
+  `b8ba4b5` (was `d6b4d73`).
 - Decomposition (whole-sample exclusive `Ir`): the formatter +805 (`rewrite_closure_expr` +726,
   `Node::first_child` +96), libc +5,887 (`memcmp` +3,591; `vfscanf`, `strtoul`, `getdelim` at
   startup, glibc reading `/proc/self/maps`, whose cost follows the binary's mappings; the empty
@@ -235,7 +235,7 @@ the result is `None` (E26's checks).
   processes' callgrind profile, net of the empty process, mean of the three runs): the formatter,
   parser and std code −678, libc +8,100, `bench`'s own timing output −2,679. The startup term
   (glibc reading `/proc/self/maps`, +2,273 per process) is the same in the empty and the real
-  processes and nets out. The same split puts `2c6bc21`'s own code at +3,819 per file on the
+  processes and nets out. The same split puts `9b2a6d2` (was `2c6bc21`)'s own code at +3,819 per file on the
   registry (whole-sample +3,178), offset by libc −3,779: the kept commit's registry figure is
   flattered by the same kind of term that sinks rule C's. Function-order shuffling (`--shuffle`)
   would not separate it (the term is in data layout, not code order) and was not run.
@@ -251,7 +251,7 @@ the result is `None` (E26's checks).
 - A release build with debug assertions (`CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS=true`, LTO off,
   `target-da`) runs the same tests and `CHLORO_WIDTH_BOUND_ROOT` over the registry (25,077
   `.rs` files) and over the 109 files of the cliff generator (`gen.py`, scales 1, 2, 4, 8): 0
-  failures for `2c6bc21` (68.9 s for the fixtures and the registry) and 0 for `3d471d9` (63.8 s;
+  failures for `9b2a6d2` (was `2c6bc21`) (68.9 s for the fixtures and the registry) and 0 for `94b0c6b` (was `3d471d9`) (63.8 s;
   and 154.8 s for an earlier build of rule C with a full bound scan). Mismatches: 0 (every check
   is an assertion; the first failure would stop the run).
 - Unit tests in `width.rs`: rule M with and without arms, comments, attributes, macro calls,
@@ -265,9 +265,9 @@ the result is `None` (E26's checks).
 
 `benchmarks/cliffs/run.sh --core 2|3 --shapes 'closures-expr closures-block chain-closures
 generic-calls nested-blocks'` (scales 1, 2, 4, 8; closures-expr depths 2, 4, 8, 16): all 20
-files identical to rustfmt's output for the base and `2c6bc21`.
+files identical to rustfmt's output for the base and `9b2a6d2` (was `2c6bc21`).
 
-| shape | base `Ir` at scale 8 | `2c6bc21` | base k_net / p | `2c6bc21` k_net / p |
+| shape | base `Ir` at scale 8 | `9b2a6d2` (was `2c6bc21`) | base k_net / p | `9b2a6d2` (was `2c6bc21`) k_net / p |
 |---|---|---|---|---|
 | closures-expr | 5,692,353 | 5,690,780 | 1.143 / 1.046 | 1.143 / 1.046 |
 | closures-block | 10,734,214 | 10,734,089 | 1.040 / 1.309 | 1.040 / 1.308 |
@@ -282,7 +282,7 @@ not change. The shapes have no `match` in a closure body, so the rule only costs
 
 ## Gates (measured)
 
-| gate | scope | `2c6bc21` (kept) | `3d471d9` (rule C, reverted) |
+| gate | scope | `9b2a6d2` (was `2c6bc21`) (kept) | `94b0c6b` (was `3d471d9`) (rule C, reverted) |
 |---|---|---|---|
 | `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean | clean |
 | `cargo test --workspace --all-features` | | 309 passed, 0 failed | 310 passed, 0 failed |
@@ -296,9 +296,9 @@ not change. The shapes have no `match` in a closure body, so the rule only costs
 
 ## Decision
 
-Kept on the branch, for the integrator: `2c6bc21`, −801,783 `Ir` per file on the fixture sample
+Kept on the branch, for the integrator: `9b2a6d2` (was `2c6bc21`), −801,783 `Ir` per file on the fixture sample
 (−0.363%), −2,718 on the registry sample, no output change on either corpus or any option value.
-Rejected: the chain-width rule (`3d471d9`, reverted in `d6b4d73`; −688,476 per file on the
+Rejected: the chain-width rule (`94b0c6b` (was `3d471d9`), reverted in `b8ba4b5` (was `d6b4d73`); −688,476 per file on the
 fixtures, +10,135 and +14,637 on the registry in two measurements, a layout term by its
 decomposition but above the spread). Not built: the exact width `W(n)` and its uses at S1, S3
 and `choose_rhs`, the negative memo and the bound cache, each under 0.3% by step 1. The
@@ -306,7 +306,7 @@ hypothesis is falsified: the kept total is under 1.0%, and step 1 put the ceilin
 width-decidable attempt at 0.28% of the fixture run and 0.39% of the registry run before the
 model's own cost; the volume beyond E26's bound is structural, not a matter of width.
 
-Merged at `96c9abc` (rule M only) after the integrator reproduced the gates on the merged tree,
+Merged at `2e1bc8f` (was `96c9abc`) (rule M only) after the integrator reproduced the gates on the merged tree,
 which carries E31's lexer front end above this branch's base: 0 of 1238 fixture hashes changed
 (sequential and 4 threads), 0 of 25,077 registry hashes; `conform -i` 1220/1220 at 1.9.0 and
 1.8.0; `Ir` 202,822,327–202,822,529 on the fixture sample over three runs (−0.162% against

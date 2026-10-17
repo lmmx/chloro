@@ -2,88 +2,98 @@
 
 [![crates.io](https://img.shields.io/crates/v/chloro.svg)](https://crates.io/crates/chloro)
 [![documentation](https://docs.rs/chloro/badge.svg)](https://docs.rs/chloro)
-[![MIT/Apache-2.0 licensed](https://img.shields.io/crates/l/chloro.svg)](./LICENSE)
+[![site](https://img.shields.io/badge/docs-lmmx.github.io%2Fchloro-2f9a57)](https://lmmx.github.io/chloro/)
+[![MIT/Apache-2.0 licensed](https://img.shields.io/crates/l/chloro.svg)](https://github.com/lmmx/chloro#license)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/chloro/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/chloro/master)
 [![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn)<!-- blazon -->
-[![Dependencies: 32](https://img.shields.io/badge/cargo%20tree-32-blue)](https://crates.io/crates/chloro)
-[![Binary Size: 1.7M](https://img.shields.io/badge/build%20size-1.7M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
+[![Dependencies: 33](https://img.shields.io/badge/cargo%20tree-33-blue)](https://crates.io/crates/chloro)
+[![Binary Size: 2.5M](https://img.shields.io/badge/build%20size-2.5M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
 
-chloro is a minimal Rust code formatter.
+chloro is a Rust code formatter that produces rustfmt's output, byte for byte, without
+depending on the compiler. It is a module-for-module port of rustfmt 1.9.0's formatting
+logic onto the syntax trees of rust-analyzer's parser, available as a command-line tool and
+as a library.
 
-## Motivation
+**Documentation: [lmmx.github.io/chloro](https://lmmx.github.io/chloro/)**
 
-For when you want to format two source files in a consistent way, as fast as possible.
+## Why
 
-## How it works
+- **rustfmt's output.** Identical to rustfmt 1.9.0 on all 1220 files of the rust-analyzer
+  conformance corpus, on 31 non-default values of 24 stable options across four editions,
+  and on all 20,540 files of a 577-crate registry corpus that rustfmt formats; identical to
+  rustfmt 1.8.0 with `rustfmt_version = "1.8.0"`. [What is compared, and what is not](https://lmmx.github.io/chloro/compatibility/).
+- **Fast.** 0.21–0.35 of rustfmt's wall time on one core and 0.08–0.17 on four, checking nine
+  crates of 215 KB to 2.9 MB; a warm `--check` of 1238 unchanged files in 16 ms.
+  [Method and conditions](https://lmmx.github.io/chloro/performance/).
+- **Small.** 4–23 MiB of peak memory where rustfmt takes 43–86 MiB, and a runtime dependency
+  tree of 18 crates, free of `syn`.
 
-Using [rowan][rowan] from the rust-analyzer project, which can give both green and red trees.
-The latter are notoriously expensive, but a formatter should only need the former.
-
-Proof of concept library/CLI to explore a fast and low memory code formatter [WIP],
-with use cases of code diffing in mind.
-
-[rowan]: https://github.com/rust-analyzer/rowan
-
-## Rustfmt Conformance
-
-Diff 'leaderboard' for how well formatting with chloro matches rustfmt,
-as tested on rust-analyzer's [crates][ra-crates]:
-
-[ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
+These figures are measured on x86-64 Linux, with the method and the commands to reproduce
+them on the [Performance](https://lmmx.github.io/chloro/performance/) page; none is a claim of equivalence with rustfmt
+beyond the tested matrix.
 
 <!-- just: conf-md -->
-**Summary:** +111,690 / -25,543
+**Summary:** +0 / -0
 
-| **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
-|---|---|
-| `- )` × 252<br>`- );` × 207<br>`- },` × 180<br>`- }` × 146<br>`- r#"` × 140<br> | `+ }` × 164<br>`+ },` × 106<br>`+"#)` × 104<br>`+ }` × 84<br>`+ check(r#"` × 79<br> |
-
-### Top 20 Most Impacted Files
-
-| Rank | Size Rank | Diff Rank | Impact |   +   |    -    | File |
-|------|-----------|-----------|--------|-------|---------|------|
-| 1 | 2 | 1 | 17.4% | 1,135 | 6,538 | [`hir/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_lib.diff) |
-| 2 | 10 | 2 | 23.6% | 829 | 3,517 | [`hir_def/src_expr_store_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_expr_store_lower.diff) |
-| 3 | 3 | 7 | 8.1% | 498 | 6,120 | [`ide_assists/src_handlers_extract_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_function.diff) |
-| 4 | 1 | 69 | 1.4% | 155 | 11,163 | [`ide/src_hover_tests`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_hover_tests.diff) |
-| 5 | 21 | 4 | 24.0% | 626 | 2,605 | [`hir_def/src_nameres_collector`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_nameres_collector.diff) |
-| 6 | 7 | 12 | 10.8% | 417 | 3,870 | [`ide/src_goto_definition`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_goto_definition.diff) |
-| 7 | 5 | 17 | 8.8% | 364 | 4,156 | [`rust_analyzer/src_config`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_config.diff) |
-| 8 | 27 | 5 | 23.4% | 575 | 2,454 | [`hir/src_semantics`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_semantics.diff) |
-| 9 | 18 | 8 | 17.0% | 453 | 2,672 | [`rust_analyzer/src_handlers_request`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_handlers_request.diff) |
-| 10 | 12 | 14 | 12.4% | 391 | 3,163 | [`hir_ty/src_mir_eval`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_mir_eval.diff) |
-| 11 | 56 | 3 | 45.7% | 706 | 1,544 | [`hir_expand/src_builtin_derive_macro`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_expand/src_builtin_derive_macro.diff) |
-| 12 | 8 | 23 | 8.8% | 336 | 3,799 | [`ide/src_rename`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_rename.diff) |
-| 13 | 22 | 9 | 17.7% | 452 | 2,551 | [`hir_ty/src_infer_expr`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_infer_expr.diff) |
-| 14 | 13 | 20 | 11.5% | 359 | 3,118 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
-| 15 | 15 | 19 | 11.9% | 362 | 3,030 | [`rust_analyzer/src_lsp_to_proto`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_lsp_to_proto.diff) |
-| 16 | 30 | 13 | 17.8% | 410 | 2,302 | [`hir_ty/src_mir_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_mir_lower.diff) |
-| 17 | 11 | 40 | 6.8% | 222 | 3,271 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
-| 18 | 26 | 18 | 14.8% | 363 | 2,461 | [`ide/src_highlight_related`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_highlight_related.diff) |
-| 19 | 34 | 15 | 17.7% | 387 | 2,184 | [`hir_ty/src_lower`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_lower.diff) |
-| 20 | 109 | 6 | 54.3% | 557 | 1,026 | [`rust_analyzer/src_reload`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_reload.diff) |
+1220 of 1220 files identical.
 <!-- /just: conf-md -->
 
-## Installation
+## Install
 
-Add chloro to your `Cargo.toml`:
-```toml
-[dependencies]
-chloro = "0.7"
+```sh
+cargo binstall chloro                 # a pre-built binary, where the release has one
+cargo install chloro --features cli   # or build it
 ```
 
-#### CLI Installation
+As a library:
 
-- pre-built binary: `cargo binstall chloro` (requires [cargo-binstall][cargo-binstall]),
-- build from source: `cargo install chloro --features cli`
+```toml
+[dependencies]
+chloro = "0.8"
+```
 
-[cargo-binstall]: https://github.com/cargo-bins/cargo-binstall
+## Use
+
+```sh
+chloro --check src/ tests/            # exit 1 if any file would change
+chloro --write src/ tests/            # format in place
+chloro --config max_width=80,edition=2021 --write src/
+```
+
+chloro walks every directory it is given, `target/` included, and reads no `rustfmt.toml`:
+name your source directories and pass options with `--config`. See the
+[command-line guide](https://lmmx.github.io/chloro/guide/cli/).
+
+```rust
+let formatted = chloro::format_source("fn main(){let x=1;}");
+assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
+
+let mut config = chloro::Config::default();
+config.set("max_width", "80").unwrap();
+let formatted = chloro::format_source_with_config("fn main(){}", &config);
+```
+
+See the [library guide](https://lmmx.github.io/chloro/guide/library/) for the parallel and cached entry points of
+`chloro-core`, and [docs.rs](https://docs.rs/chloro) for the API.
+
+## Learn more
+
+- [How it works](https://lmmx.github.io/chloro/architecture/overview/): the parser, the flat syntax tree, the ported
+  formatter, and parallel execution.
+- [Changelog](https://github.com/lmmx/chloro/blob/master/CHANGELOG.md): what changed in each
+  release, and what is not released yet.
+- [Maintainers' guide](https://lmmx.github.io/chloro/maintainers/development/): building, testing, conformance,
+  benchmarking and releasing.
+- [The journal](https://github.com/lmmx/chloro/tree/master/docs/journal): the design records,
+  experiments and measurements behind all of the above;
+  [the 2026-10-17 handoff](https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-17-handoff.md) summarises the performance and
+  conformance programme.
 
 ## License
 
 This project is licensed under either of:
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+- Apache License, Version 2.0, ([LICENSE-APACHE](https://github.com/lmmx/chloro/blob/master/LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](https://github.com/lmmx/chloro/blob/master/LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.

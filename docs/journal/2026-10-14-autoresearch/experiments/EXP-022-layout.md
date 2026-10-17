@@ -12,15 +12,15 @@ figures).
 
 | field | value |
 |---|---|
-| branch | `20261015-layout` from `8ebd3bb` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/layout` |
-| base BKG | `e640fbf`; `8ebd3bb` adds only documentation after it |
-| kept commits | `cbbf081` (`profile.sh --sim`, the co-metric), `4365e53` (`steps_fused` without the per-step exit state); then this file and the ledger row |
+| branch | `20261015-layout` from `73f8a85` (was `8ebd3bb`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/layout` |
+| base BKG | `f4be63e` (was `e640fbf`); `73f8a85` (was `8ebd3bb`) adds only documentation after it |
+| kept commits | `12af32d` (was `cbbf081`) (`profile.sh --sim`, the co-metric), `832fd8e` (was `4365e53`) (`steps_fused` without the per-step exit state); then this file and the ledger row |
 | rejected, reverted | hot/cold splits of `write_list`; of `overflow::Context` and `ChainItem::rewrite`; a kind flag table in front of `Expr`/`Pat`/`Type::cast` (details under *Rejected*) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, LLVM 22.1.6, linker LLD 22.1.6 (rustc's default on this target; `readelf -p .comment`); workspace profile fat LTO, one codegen unit |
 | tools | valgrind 3.22.0 (callgrind's simulator: I1 and D1 32 KB 8-way 64 B lines, LL 34 MB 17-way, as detected); `llvm-bolt` 20.1.2 from Ubuntu's `bolt-20` package; hyperfine 2.0.0 |
 | host | 4 vCPU Xeon @ 2.80GHz, Linux 6.18.44. Other experiments (E19–E21) built and ran throughout, load average 2–13; their callgrind runs are pinned to core 3, which is time-shared with them for most of the window. Wall figures are **measured, provisional** (protocol §6) and carry their load |
 | `Ir` command | `benchmarks/profile.sh --core 3 --sample /tmp/chloro-bench/layout22 [--sim]`: the script's sample at a private path of the default's length (`sample49` is shared and rebuilt by each run) |
-| `Ir` of the base | 248,197,787 for `8ebd3bb` built in this worktree (`target/release/examples/bench`), against the BKG's 248,202,094–248,203,822 at `/home/user/chloro`: the count moves with the length of the binary's path (E3, *Identity*); every comparison below is between binaries at paths of equal length |
+| `Ir` of the base | 248,197,787 for `73f8a85` (was `8ebd3bb`) built in this worktree (`target/release/examples/bench`), against the BKG's 248,202,094–248,203,822 at `/home/user/chloro`: the count moves with the length of the binary's path (E3, *Identity*); every comparison below is between binaries at paths of equal length |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (20,850 recorded registry files; 25,024 present, the others reported as not recorded) |
 
 ## Hypothesis and falsification
@@ -54,7 +54,7 @@ The relink reproduces cargo's binary byte for byte without `--shuffle-sections` 
 base and every candidate), so a shuffled binary differs from the shipped one only in the order
 of its functions.
 
-## The co-metric (T10, kept: `cbbf081`)
+## The co-metric (T10, kept: `12af32d` (was `cbbf081`))
 
 `benchmarks/profile.sh --sim` runs the same pinned `env -i`, `setarch -R` callgrind invocation
 with `--cache-sim=yes --branch-sim=yes` and prints, per run, `Ir`, `Bc`, `Bcm`, `Bi`, `Bim`,
@@ -69,7 +69,7 @@ global history; indirect branches from a 512-entry table of last targets indexed
 alone. Current x86 cores predict indirect branches from history as well, so `Bim` overstates
 their cost on this host's hardware; `Bcm` and `I1mr` are closer models.
 
-### Baseline (measured, `8ebd3bb`)
+### Baseline (measured, `73f8a85` (was `8ebd3bb`))
 
 | run | binary path | `Ir` | `Bc` | `Bcm` | `Bi` | `Bim` | `I1mr` | `D1mr` | `D1mw` |
 |---|---|---|---|---|---|---|---|---|---|
@@ -181,10 +181,10 @@ base, kf1's against st1, on which it was built.
 
 | candidate | `Ir` cargo order / random mean | `Bcm` cargo / random | `Bim` cargo / random | `I1mr` cargo / random | decision |
 |---|---|---|---|---|---|
-| base `8ebd3bb` | 248,196,781 / 248,202,186 | 3,229,913 / 3,265,552 | 713,287 / 694,345 | 4,863,031 / 4,995,118 | — |
+| base `73f8a85` (was `8ebd3bb`) | 248,196,781 / 248,202,186 | 3,229,913 / 3,265,552 | 713,287 / 694,345 | 4,863,031 / 4,995,118 | — |
 | wl1: `write_list`'s pre-comment, horizontal and vertical post-comment arms in three `#[cold] #[inline(never)]` helpers | 247,873,146 / 247,879,436 (−0.13%) | 3,230,317 / 3,246,370 (−19 K) | 707,339 / 701,092 (+7 K) | 4,888,011 / 4,963,926 (−31 K) | rejected |
 | oc1: `overflow::Context`'s special-macro/mixed vertical tactic and control-flow last argument, `ChainItem::rewrite`'s parenthesised parent, as cold helpers | 248,268,061 / 248,266,828 (+0.03%) | 3,227,440 / 3,265,325 (0) | 687,257 / 705,434 (+11 K) | 4,938,437 / 5,028,695 (+34 K) | rejected |
-| st1 `4365e53`: `steps_fused` finishes a node at its `Exit`, defers only the root's | 247,936,645 / 247,955,053 (−0.10%) | 3,132,768 / 3,198,762 (**−67 K, −2.0%**) | 725,663 / 697,610 (+3 K) | 5,003,944 / 4,994,183 (−1 K) | **kept** |
+| st1 `832fd8e` (was `4365e53`): `steps_fused` finishes a node at its `Exit`, defers only the root's | 247,936,645 / 247,955,053 (−0.10%) | 3,132,768 / 3,198,762 (**−67 K, −2.0%**) | 725,663 / 697,610 (+3 K) | 5,003,944 / 4,994,183 (−1 K) | **kept** |
 | kf1 on st1: `kind_flags.rs` table answers non-members before `Expr`/`Pat`/`Type::cast`'s jump table | 247,997,967 / 248,021,858 (+0.027%) | 3,145,900 / 3,199,776 (+1 K) | 705,176 / 676,576 (**−21 K, −3.0%**) | 5,018,891 / 4,976,652 (−18 K) | rejected (`Ir` up) |
 
 At `target/release/examples/bench` (`profile.sh`, the gate's path): base 248,197,787, wl1
@@ -218,7 +218,7 @@ Spread of the random-order means (s.d. of four orders): `Bcm` 11–22 K, `Bim` 1
   insert) both run on most calls; `_int_malloc` is libc. No candidate was large enough to
   measure against the spread, so none was built.
 
-### `steps_fused` (kept, `4365e53`)
+### `steps_fused` (kept, `832fd8e` (was `4365e53`))
 
 The ported state machine deferred every `Exit` to the next step. Nothing is written between an
 `Exit` and the next step's handling of the deferred exit, and trivia is only written by a token,
@@ -247,7 +247,7 @@ the archive), under 5 minutes in all, through the configured proxy; binaries
 `/usr/bin/llvm-bolt-20`, `merge-fdata-20`, `perf2bolt-20`, the instrumentation runtime
 `/usr/lib/llvm-20/lib/libbolt_rt_instr.a`. BOLT 20 rewrites LLVM 22 output without complaint.
 
-**Build.** The base code (`8ebd3bb`, exported to a scratch directory so the worktree could keep
+**Build.** The base code (`73f8a85` (was `8ebd3bb`), exported to a scratch directory so the worktree could keep
 changing) with `RUSTFLAGS="-C link-args=-Wl,--emit-relocs" benchmarks/pgo.sh <root> cli`
 (13 raw profiles merged, 4.1 MB, as `pgo.sh` without `--target`): `chloro` and
 `examples/bench`, profile-guided, with `.rela.text` kept. `-Wl,-q` was not needed.
@@ -328,8 +328,8 @@ puts BOLT at −1.6% against PGO.
 
 ## Wall clock (measured, provisional)
 
-`bench -n 5` on the 1238 fixtures (13.9 MB), base (`8ebd3bb`, copied before the first
-change) and head (`4365e53`), four pairs per window with the order alternating, MB/s:
+`bench -n 5` on the 1238 fixtures (13.9 MB), base (`73f8a85` (was `8ebd3bb`), copied before the first
+change) and head (`832fd8e` (was `4365e53`)), four pairs per window with the order alternating, MB/s:
 
 | window | base | head | head/base per pair | ranges |
 |---|---|---|---|---|
@@ -367,12 +367,12 @@ top of PGO by −1.6%.
 
 | gate | corpus | result |
 |---|---|---|
-| `cargo fmt --all --check` | | clean at `4365e53` |
-| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean at `4365e53` |
-| `cargo test --workspace --all-features` | | all pass at `4365e53` (lib 196, every integration and doc test; debug builds compare `steps_fused` with `steps_interspersed` on every parse) |
-| `bench --check`, sequential and `--threads 4` | 1238 fixtures, `fixtures-e8d87c2.tsv` | 0 changed; 0 differ between 4 threads and `format_source` (`4365e53`, and every candidate sequentially) |
-| `bench --check` | 25,024 registry files (20,850 recorded), `registry-e8d87c2.tsv` | 0 changed (`4365e53`; the BOLT binary as well) |
-| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220 identical, 0 not idempotent, at both versions (`4365e53`) |
+| `cargo fmt --all --check` | | clean at `832fd8e` (was `4365e53`) |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean at `832fd8e` (was `4365e53`) |
+| `cargo test --workspace --all-features` | | all pass at `832fd8e` (was `4365e53`) (lib 196, every integration and doc test; debug builds compare `steps_fused` with `steps_interspersed` on every parse) |
+| `bench --check`, sequential and `--threads 4` | 1238 fixtures, `fixtures-e8d87c2.tsv` | 0 changed; 0 differ between 4 threads and `format_source` (`832fd8e` (was `4365e53`), and every candidate sequentially) |
+| `bench --check` | 25,024 registry files (20,850 recorded), `registry-e8d87c2.tsv` | 0 changed (`832fd8e` (was `4365e53`); the BOLT binary as well) |
+| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220 identical, 0 not idempotent, at both versions (`832fd8e` (was `4365e53`)) |
 | `benchmarks/profile.sh` | 49-file sample | head 247,935,964 and 247,936,083 (two runs) against 248,197,787 for the base at the same path (−0.105%); the BKG range 248,202,094–248,203,822 is at another path length |
 | `config_matrix` | | not run: no output changed on either hash corpus |
 
@@ -404,8 +404,8 @@ top of PGO by −1.6%.
 
 ## Decision
 
-Kept on the branch, for the integrator: `cbbf081` (the co-metric; a harness change) and
-`4365e53` (`steps_fused`: `Ir` −0.105%, `Bcm` −2.0% over random orders and −3.0% in cargo's,
+Kept on the branch, for the integrator: `12af32d` (was `cbbf081`) (the co-metric; a harness change) and
+`832fd8e` (was `4365e53`) (`steps_fused`: `Ir` −0.105%, `Bcm` −2.0% over random orders and −3.0% in cargo's,
 output identical on both corpora, conform at both versions). It is kept on the primary metric
 and the co-metric; no wall gain is claimed: the brief's falsifier ("fall without a wall gain in
 three interleaved pairs") cannot be applied today, since the pairs on this host resolve nothing
