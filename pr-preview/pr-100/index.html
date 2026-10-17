@@ -1307,11 +1307,11 @@ tokio, regex-syntax, clap_builder and winnow from crates.io: 215 KB–2.9 MB eac
 An idle four-core Linux VM, 30 runs per cell, one-core runs pinned. Ranges span the
 nine crates.</p>
 <table class="chl-bench-table">
-<thead><tr><th></th><th>speed</th><th>peak memory</th></tr></thead>
+<thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
 <tbody>
-<tr class="chl-ref"><th>rustfmt</th><td><span class="chl-meter" title="rustfmt: the baseline, 1×"><span class="chl-fill" style="width:3.8%"></span></span>1×</td><td>43–86 MiB</td></tr>
-<tr><th>chloro, 1 core</th><td><span class="chl-meter" title="2.9–4.7× as fast as rustfmt, per crate"><span class="chl-fill" style="width:10.9%"></span><span class="chl-spread" style="left:10.9%;width:6.8%"></span></span>2.9–4.7×</td><td>4–10 MiB</td></tr>
-<tr><th>chloro, 4 cores</th><td><span class="chl-meter" title="6.1–13× as fast as rustfmt, per crate"><span class="chl-fill" style="width:23.0%"></span><span class="chl-spread" style="left:23.0%;width:26.0%"></span></span>6.1–13×</td><td>5–23 MiB</td></tr>
+<tr class="chl-ref"><th>rustfmt</th><td><span class="chl-meter" title="rustfmt's wall time: the baseline"><span class="chl-fill" style="width:100%"></span></span>1×</td><td>43–86 MiB</td></tr>
+<tr><th>chloro, 1 core</th><td><span class="chl-meter" title="21–35% of rustfmt's wall time, per crate: 2.9–4.7× as fast"><span class="chl-fill" style="width:21.4%"></span><span class="chl-spread" style="left:21.4%;width:13.1%"></span></span>2.9–4.7×</td><td>4–10 MiB</td></tr>
+<tr><th>chloro, 4 cores</th><td><span class="chl-meter" title="8–17% of rustfmt's wall time, per crate: 6.1–13× as fast"><span class="chl-fill" style="width:7.7%"></span><span class="chl-spread" style="left:7.7%;width:8.8%"></span></span>6.1–13×</td><td>5–23 MiB</td></tr>
 </tbody>
 </table>
 </div>
@@ -1322,20 +1322,21 @@ nine crates.</p>
 repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
 5 runs each (<code>just vs-ruff</code>).</p>
 <table class="chl-bench-table">
-<thead><tr><th></th><th>speed</th><th>peak memory</th></tr></thead>
+<thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
 <tbody>
-<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt: the baseline, 1× (5.63 s)"><span class="chl-fill" style="width:3.8%"></span></span>1×</td><td>194 MiB</td></tr>
-<tr><th>chloro, 1 thread</th><td><span class="chl-meter" title="3.5× as fast as cargo fmt (1.60 s against 5.63 s)"><span class="chl-fill" style="width:13.2%"></span></span>3.5×</td><td>16 MiB</td></tr>
-<tr><th>chloro, 20 threads</th><td><span class="chl-meter" title="26.5× as fast as cargo fmt (0.21 s against 5.63 s)"><span class="chl-fill" style="width:100.0%"></span></span>26.5×</td><td>90 MiB</td></tr>
+<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt's wall time, 5.63 s: the baseline"><span class="chl-fill" style="width:100%"></span></span>1×</td><td>194 MiB</td></tr>
+<tr><th>chloro, 1 thread</th><td><span class="chl-meter" title="1.60 s against 5.63 s: 3.5× as fast"><span class="chl-fill" style="width:28.4%"></span></span>3.5×</td><td>16 MiB</td></tr>
+<tr><th>chloro, 20 threads</th><td><span class="chl-meter" title="0.21 s against 5.63 s: 26.5× as fast"><span class="chl-fill" style="width:3.8%"></span></span>26.5×</td><td>90 MiB</td></tr>
 </tbody>
 </table>
 </div>
 </div>
 
-<p class="chl-stats-caption">Speed is rustfmt's wall time divided by chloro's, checking
+<p class="chl-stats-caption">The speedup is rustfmt's wall time divided by chloro's, checking
 already-formatted files. rustfmt formats on one thread, so the one-core and one-thread rows
 compare the two formatters like for like; the last row of each adds chloro's parallelism.
-Bars share one scale. The method, every workload and the limits of these numbers are on the
+Each bar is wall time, the baseline's as the full bar; the nine crates' bars show their
+spread. The method, every workload and the limits of these numbers are on the
 <a href="performance/">Performance</a> page.</p>
 
 <h2 id="getting-started">Getting started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
