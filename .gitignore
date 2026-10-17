@@ -7,6 +7,7 @@ chloro-core/tests/conformance/snapshots/ra/syntax/*
 
 docs/initial
 /target
+/site
 points.json
 
 # Byte-compiled / optimized / DLL files
