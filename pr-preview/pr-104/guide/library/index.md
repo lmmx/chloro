@@ -14,7 +14,7 @@ Each of chloro's library functions takes source text and returns formatted text.
 ## Format a string
 
 ```rust
-let formatted = chloro::format_source("fn main(){let x=1;}");
+let formatted = chloro::format_source("fn main(){let x=1;}\n");
 assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 ```
 

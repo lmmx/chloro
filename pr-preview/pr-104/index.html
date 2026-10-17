@@ -1361,7 +1361,7 @@ chloro<span class="w"> </span>--write<span class="w"> </span>src/<span class="w"
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">formatted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="s">"fn main(){let x=1;}"</span><span class="p">);</span>
+<div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">formatted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="s">"fn main(){let x=1;}</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
 <span class="fm">assert_eq!</span><span class="p">(</span><span class="n">formatted</span><span class="p">,</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\n</span><span class="s">    let x = 1;</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
 </code></pre></div>
 </div>
