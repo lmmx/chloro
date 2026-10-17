@@ -790,13 +790,10 @@ impl<'a> CharClasses<'a> {
 /// the flags of the bytes before `pos`; shorter slices, and other targets, are searched
 /// eight bytes at a time.
 #[inline(always)]
-pub(crate) fn find_any_byte<const N: usize>(
-    bytes: &[u8],
-    mut pos: usize,
-    targets: [u8; N],
-) -> usize {
+pub(crate) fn find_any_byte<const N: usize>(bytes: &[u8], pos: usize, targets: [u8; N]) -> usize {
     #[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
     {
+        let mut pos = pos;
         let len = bytes.len();
         if len >= 16 {
             while pos + 16 <= len {

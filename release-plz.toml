@@ -1,5 +1,8 @@
 [workspace]
 git_tag_name = "{{ package }}-v{{ version }}"
+# The root CHANGELOG.md, written by hand, is the changelog and the source of the GitHub
+# release notes (`just release-notes-publish`). The per-crate changelogs stop at 0.7.5.
+changelog_update = false
 
 [changelog]
 commit_parsers = [

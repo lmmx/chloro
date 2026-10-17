@@ -45,7 +45,9 @@ fn parse_only_parses_as_formatting_does() {
 
 #[test]
 fn format_is_idempotent() {
-    let input = "fn foo() { let x = 1; }";
+    // Newline-terminated: with no newline in the input, `newline_style = Auto` takes the
+    // platform's line ending (as rustfmt does), which on Windows is `\r\n`.
+    let input = "fn foo() { let x = 1; }\n";
     let once = format_source(input);
     let twice = format_source(&once);
     assert_eq!(once, twice);

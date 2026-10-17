@@ -3,10 +3,25 @@ name: Release Rust Binaries
 permissions:
   contents: write
 
+# Publishing the GitHub release of a `chloro-v*` tag builds the CLI for each target and
+# attaches the archives to that release. `chloro-core-v*` releases have no binaries.
+# The workflow can also be run by hand for an existing tag: to verify that every target
+# builds (`dry-run`, nothing uploaded), or to add the archives a release run did not make.
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build, e.g. chloro-v0.9.0
+        required: true
+      dry-run:
+        description: Build and archive only; upload nothing
+        type: boolean
+        default: true
+      targets:
+        description: Targets to build, space-separated (empty for all); an upload replaces existing archives
+        default: ""
 
 env:
   BINARY_NAME: chloro
@@ -16,8 +31,10 @@ env:
   CARGO_TERM_COLOR: always
   FEATURES: cli
   RUST_BACKTRACE: 1
-  RUSTFLAGS: -D warnings
+  # No `-D warnings` here: a release build must not fail on a lint a newer compiler adds.
+  # Pull requests are built with warnings denied by ci.yml.
   RUSTUP_MAX_RETRIES: 10
+  TAG: ${{ inputs.tag || github.event.release.tag_name }}
 
 defaults:
   run:
@@ -26,10 +43,11 @@ defaults:
 jobs:
   upload-assets:
     name: ${{ matrix.target }}
-    if: github.repository_owner == 'lmmx'
+    # `startsWith(..., 'chloro')` would also match `chloro-core-v*`
+    if: github.repository_owner == 'lmmx' && startsWith(inputs.tag || github.event.release.tag_name, 'chloro-v')
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
-    continue-on-error: true
+    # One target failing leaves the others running, and fails the run.
     strategy:
       fail-fast: false
       matrix:
@@ -42,10 +60,13 @@ jobs:
           #   os: ubuntu-22.04
           # - target: aarch64-unknown-linux-musl
           #   os: ubuntu-22.04
+          # macos-13, the last Intel image, was retired: jobs on it waited in the queue
+          # until cancelled (0.8.0, 0.9.0). Both macOS targets build on the arm64 runner;
+          # x86_64 is cross-compiled there.
           - target: x86_64-apple-darwin
-            os: macos-13
+            os: macos-latest
           - target: aarch64-apple-darwin
-            os: macos-13
+            os: macos-latest
           - target: x86_64-pc-windows-msvc
             os: windows-2022
           - target: aarch64-pc-windows-msvc
@@ -53,24 +74,39 @@ jobs:
           # - target: x86_64-unknown-freebsd
           #   os: ubuntu-22.04
     steps:
+      - name: Select target
+        id: select
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: |
+          if [[ -z "${TARGETS}" || " ${TARGETS} " == *" ${{ matrix.target }} "* ]]; then
+            echo "build=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "${{ matrix.target }} is not in '${TARGETS}'; skipped"
+          fi
+
       - name: Checkout repository
+        if: steps.select.outputs.build == 'true'
         uses: actions/checkout@v5
+        with:
+          ref: refs/tags/${{ env.TAG }}
 
       - name: Install Rust toolchain
+        if: steps.select.outputs.build == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - uses: taiki-e/setup-cross-toolchain-action@v1
         with:
           target: ${{ matrix.target }}
-        if: startsWith(matrix.os, 'ubuntu') && !contains(matrix.target, '-musl')
+        if: steps.select.outputs.build == 'true' && startsWith(matrix.os, 'ubuntu') && !contains(matrix.target, '-musl')
 
       - uses: taiki-e/install-action@v2
         with:
           tool: cross
-        if: contains(matrix.target, '-musl')
+        if: steps.select.outputs.build == 'true' && contains(matrix.target, '-musl')
 
       - run: echo "RUSTFLAGS=${RUSTFLAGS} -C target-feature=+crt-static" >> "${GITHUB_ENV}"
-        if: endsWith(matrix.target, 'windows-msvc')
+        if: steps.select.outputs.build == 'true' && endsWith(matrix.target, 'windows-msvc')
 
       # Profile-guided build (benchmarks/pgo.sh): where the runner executes the target
       # natively, train an instrumented build on the conformance fixtures and point
@@ -79,7 +115,7 @@ jobs:
       # plain build. The profile is tied to this toolchain and source, so it is made on
       # every run rather than cached.
       - name: Train PGO profile
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, env.BINARY_NAME)
+        if: steps.select.outputs.build == 'true'
         env:
           TARGET: ${{ matrix.target }}
         run: |
@@ -99,11 +135,12 @@ jobs:
           fi
 
       - name: Extract version from tag
+        if: steps.select.outputs.build == 'true'
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#chloro-}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${TAG#chloro-}" >> "${GITHUB_OUTPUT}"
 
       - uses: taiki-e/upload-rust-binary-action@v1
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, env.BINARY_NAME)
+        if: steps.select.outputs.build == 'true'
         with:
           bin: ${{ env.BINARY_NAME }}
           archive: ${{ env.BINARY_NAME }}-${{ matrix.target }}-${{ steps.version.outputs.VERSION }}
@@ -111,4 +148,6 @@ jobs:
           features: ${{ env.FEATURES }}
           tar: all
           zip: windows
+          ref: refs/tags/${{ env.TAG }}
+          dry-run: ${{ inputs.dry-run || false }}
           token: ${{ secrets.GITHUB_TOKEN }}

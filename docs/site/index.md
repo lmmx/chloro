@@ -79,7 +79,7 @@ reproduces, and 1.10.0, the one ruff's toolchain pins. The method, every workloa
 === "Library"
 
     ```rust
-    let formatted = chloro::format_source("fn main(){let x=1;}");
+    let formatted = chloro::format_source("fn main(){let x=1;}\n");
     assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
     ```
 

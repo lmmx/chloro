@@ -142,11 +142,24 @@ mod alloc_timing {
         name
     }
 
+    #[cfg(target_arch = "x86_64")]
     #[inline(always)]
     pub fn now() -> u64 {
         // SAFETY: `rdtsc` reads the time-stamp counter; it has no memory effects and is
         // available on every x86-64 CPU.
         unsafe { core::arch::x86_64::_rdtsc() }
+    }
+
+    /// Without `rdtsc`, nanoseconds since the first call: the report's "cycles" are then
+    /// nanoseconds.
+    #[cfg(not(target_arch = "x86_64"))]
+    #[inline(always)]
+    pub fn now() -> u64 {
+        static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        START
+            .get_or_init(std::time::Instant::now)
+            .elapsed()
+            .as_nanos() as u64
     }
 
     #[inline(always)]

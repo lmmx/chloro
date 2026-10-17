@@ -21,7 +21,7 @@ The examples on this page that use only `format_source*` and `Config` work with 
 ## Format a string
 
 ```rust
-let formatted = chloro::format_source("fn main(){let x=1;}");
+let formatted = chloro::format_source("fn main(){let x=1;}\n");
 assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 ```
 

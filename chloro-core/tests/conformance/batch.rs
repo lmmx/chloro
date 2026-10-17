@@ -84,13 +84,15 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
         .filter(|e| e.path().extension().is_some_and(|ext| ext == "rs"))
     {
         let path = entry.path();
+        // `/`-separated on every platform: the name keys the snapshot files
         let name = path
             .strip_prefix(&fixtures_dir)
             .unwrap()
-            .to_string_lossy()
-            .strip_suffix(".rs")
-            .unwrap_or_default()
-            .to_string();
+            .with_extension("")
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("/");
 
         eprintln!();
         eprintln!("============================================================");
