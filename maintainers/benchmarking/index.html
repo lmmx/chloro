@@ -958,6 +958,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#on-any-cargo-project-just-vs-rustfmt" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        On any Cargo project: <code>just vs-rustfmt</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#in-process-bench" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1284,6 +1295,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#on-any-cargo-project-just-vs-rustfmt" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        On any Cargo project: <code>just vs-rustfmt</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#in-process-bench" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1403,6 +1425,23 @@ the real binary behind rustup's proxy).</p>
 sessions on the virtual machine chloro was measured on. Compare tools within one run, never across runs,
 and treat a wall-time change smaller than the run-to-run spread as no change.</p>
 </div>
+<h2 id="on-any-cargo-project-just-vs-rustfmt">On any Cargo project: <code>just vs-rustfmt</code><a class="headerlink" href="#on-any-cargo-project-just-vs-rustfmt" title="Permanent link">&para;</a></h2>
+<div class="language-sh highlight"><pre><span></span><code>just<span class="w"> </span>vs-rustfmt<span class="w"> </span>path/to/project<span class="w">      </span><span class="c1"># chloro, chloro --threads 1 and cargo fmt</span>
+just<span class="w"> </span>vs-ruff<span class="w">                         </span><span class="c1"># the same on ruff, in ~/tmp/ruff (cloned if missing)</span>
+just<span class="w"> </span>vs-ruff<span class="w"> </span>~/src/ruff<span class="w"> </span><span class="m">10</span><span class="w">           </span><span class="c1"># another checkout, 10 runs</span>
+</code></pre></div>
+<p>These recipes (<code>.just/bench.just</code>) give both tools the same files: the list <code>cargo fmt --all</code>
+formats, so each file is formatted once. A plain <code>rustfmt</code> over every <code>.rs</code> file of a
+project formats each module file several times, because rustfmt also formats the modules a
+file declares; on ruff that is 3.6 passes per file. Both tools run in check mode, so use an
+already-formatted tree. They need <code>hyperfine</code>.</p>
+<p>They time the <code>chloro</code> on your <code>PATH</code>, first making sure it was built from this checkout.
+<code>just reinstall</code> installs the CLI with a build ID baked in, which <code>chloro --version</code>
+prints (<code>chloro 0.8.0-dev (2f9b060, build &lt;id&gt;)</code>); <code>just build-id</code> computes the ID of the checkout as it is on disk, from the content
+of every file that goes into the binary (committed or not), <code>Cargo.lock</code>, the toolchain and
+the install command. When the two match, the benchmark starts at once without running
+Cargo; when they differ, or the installed <code>chloro</code> has no build ID, the recipe runs
+<code>just reinstall</code> first, outside the timed runs.</p>
 <h2 id="in-process-bench">In process: <code>bench</code><a class="headerlink" href="#in-process-bench" title="Permanent link">&para;</a></h2>
 <div class="language-sh highlight"><pre><span></span><code>cargo<span class="w"> </span>run<span class="w"> </span>--release<span class="w"> </span>-p<span class="w"> </span>chloro-core<span class="w"> </span>--example<span class="w"> </span>bench<span class="w"> </span>--<span class="w"> </span>-n<span class="w"> </span><span class="m">5</span><span class="w">                </span><span class="c1"># MB/s on the corpus</span>
 cargo<span class="w"> </span>run<span class="w"> </span>--release<span class="w"> </span>-p<span class="w"> </span>chloro-core<span class="w"> </span>--example<span class="w"> </span>bench<span class="w"> </span>--<span class="w"> </span>--root<span class="w"> </span>~/.cargo/registry/src
