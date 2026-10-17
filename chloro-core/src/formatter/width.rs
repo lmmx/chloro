@@ -95,7 +95,7 @@
 //! `match` with at least one arm is rendered, and which has no comment, no attribute and
 //! no `asm!`:
 //!
-//! - `rewrite_match` (`matches.rs`; rustfmt matches.rs:72) writes `"{\n"` after the
+//! - `rewrite_match` (`matches.rs`; rustfmt matches.rs:73) writes `"{\n"` after the
 //!   condition whenever the arm list is not empty, on every path that returns text; the
 //!   one path that returns the source (`match x { /* c */ }`) has no arm;
 //! - every rewrite of an expression contains the rewrite of each subexpression that the
