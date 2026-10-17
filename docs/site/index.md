@@ -42,7 +42,7 @@ nine crates.</p>
 </div>
 <div class="chl-bench">
 <p class="chl-bench-kicker">A large real-world workspace</p>
-<p class="chl-bench-title">ruff <span>vs <code>cargo fmt</code></span></p>
+<p class="chl-bench-title">ruff <span>vs <code>cargo fmt</code>, rustfmt 1.10.0</span></p>
 <table class="chl-bench-table">
 <thead><tr><th></th><th>wall time, speedup</th><th>peak memory</th></tr></thead>
 <tbody>
@@ -52,8 +52,8 @@ nine crates.</p>
 </tbody>
 </table>
 <p class="chl-bench-note">The whole <a href="https://github.com/astral-sh/ruff">ruff</a>
-repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
-5 runs each (<code>just vs-ruff</code>).</p>
+repository: 2,008 files in one run of each tool, so one figure per row. A 20-core
+workstation, 5 runs each (<code>just vs-ruff</code>).</p>
 </div>
 </div>
 
@@ -61,7 +61,8 @@ repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 
 already-formatted files. rustfmt formats on one thread, so the one-core and one-thread rows
 compare the two formatters like for like; the last row of each adds chloro's parallelism.
 Each bar is wall time, the baseline's as the full bar; the nine crates' bars show their
-spread. The method, every workload and the limits of these numbers are on the
+spread. The panels compare against different rustfmt releases: 1.9.0, the one chloro
+reproduces, and 1.10.0, the one ruff's toolchain pins. The method, every workload and the limits of these numbers are on the
 <a href="performance/">Performance</a> page.</p>
 
 ## Getting started
