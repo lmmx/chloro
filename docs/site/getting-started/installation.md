@@ -14,9 +14,10 @@ itself.</p>
 
     [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) downloads the binary
     attached to the [GitHub release](https://github.com/lmmx/chloro/releases) for your
-    platform. The 0.8.0 release has binaries for `x86_64-unknown-linux-gnu`,
-    `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`; on any other platform
-    `cargo binstall` falls back to building from source.
+    platform. Releases have binaries for `x86_64-unknown-linux-gnu`,
+    `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`, and for macOS where its runner
+    built them (the [release page](https://github.com/lmmx/chloro/releases) lists them); on
+    any other platform `cargo binstall` falls back to building from source.
 
 === "Source"
 
@@ -53,7 +54,7 @@ Add `chloro` to your `Cargo.toml` for the formatting functions and `Config`:
 
 ```toml
 [dependencies]
-chloro = "0.8"
+chloro = "0.9"
 ```
 
 `chloro` re-exports `format_source`, `format_source_with_config` and `Config` from
@@ -62,7 +63,7 @@ chloro = "0.8"
 
 ```toml
 [dependencies]
-chloro-core = "0.8"
+chloro-core = "0.9"
 ```
 
 Both crates have no default features. The [Library guide](../guide/library.md) shows what
@@ -71,9 +72,8 @@ links to docs.rs.
 
 !!! note "Versions"
 
-    The performance work and the rustfmt 1.8.0 support described on this site are on the
-    main branch and not yet in a published release; 0.8.0 is the latest release. The
-    [Changelog](../changelog.md) says which version each change is in.
+    This site describes chloro 0.9.0. The [Changelog](../changelog.md) says which version
+    each change is in, and `chloro --version` which version you have.
 
 ## Run-time requirements
 

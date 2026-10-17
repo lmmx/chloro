@@ -16,6 +16,7 @@ support them, and no recommendations.
 | November–December 2025 | 0.5 to 0.7: a hand-written formatter over rust-analyzer's `rowan` trees, matching rustfmt on 233 of 1220 conformance files | the per-crate changelogs |
 | 9–11 October 2026 | The rustfmt port: rustfmt 1.9.0's formatting logic ported module by module onto rust-analyzer's syntax trees, reaching 1219 of 1220. Then an investigation of where the port's time goes, and whether the proof of concept was a better foundation. It was not: most of its speed came from work it skipped. Released as 0.8.0. | [rustfmt port][port], [performance checkpoint][checkpoint], [change of direction][direction], [item independence][items], [representations][repr], [phase 2 close][close] |
 | 14–17 October 2026 | The performance and conformance programme: 31 experiments run in parallel on separate branches, each kept only if it passed every check twice and changed no output it was not meant to change; six full measurements against rustfmt on an idle machine. It reached 1220 of 1220, added rustfmt 1.8.0 support, and cut instructions by 66%. | [programme][programme], [handoff][handoff] |
+| 17 October 2026 | The documentation site, `chloro --version` with a development-build marker, a benchmark recipe for any Cargo project, and a measurement on ruff. Released, with the programme above, as 0.9.0. | [release][release] |
 
 ## Reading the performance programme
 
@@ -70,3 +71,4 @@ Other records that are useful on their own:
 [protocol]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-14-autoresearch/protocol.md
 [versions]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-14-autoresearch/rustfmt-versions.md
 [map]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-17-commit-map.md
+[release]: https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-17-release-0.9.0.md
