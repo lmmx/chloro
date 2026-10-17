@@ -88,6 +88,10 @@ See the [library guide](https://lmmx.github.io/chloro/guide/library/) for the pa
   experiments and measurements behind all of the above;
   [the 2026-10-17 handoff](https://github.com/lmmx/chloro/blob/master/docs/journal/2026-10-17-handoff.md) summarises the performance and
   conformance programme.
+- For LLMs and coding agents: [llms.txt](https://lmmx.github.io/chloro/llms.txt) indexes a
+  Markdown version of every page, and [llms-full.txt](https://lmmx.github.io/chloro/llms-full.txt)
+  has them all in one file; [AGENTS.md](https://github.com/lmmx/chloro/blob/master/AGENTS.md)
+  covers working on the code.
 
 ## License
 

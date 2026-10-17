@@ -1,3 +1,7 @@
+---
+description: "How chloro and chloro-core are released with release-plz, the checklist before a release, and the release binaries."
+---
+
 # Releasing
 
 <p class="lede">chloro is released with release-plz from the master branch. Both crates are
