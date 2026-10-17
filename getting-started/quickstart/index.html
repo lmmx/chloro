@@ -1361,13 +1361,13 @@ options.</p>
 status 1 if any file's formatted text differs from what is on disk. Every path must exist:
 a missing one is an error before anything is formatted. Add <code>--verbose</code> to see each file as
 it is processed and a summary at the end.</p>
-<div class="admonition warning">
-<p class="admonition-title">Name your source directories</p>
-<p>chloro walks every directory under the paths it is given, hidden directories and
-<code>target/</code> included, and does not read <code>.gitignore</code>. With no path at all it starts at the
-current directory. In a Cargo project, pass <code>src/</code> and your other source directories
-rather than <code>.</code>, or <code>target/</code> will be formatted too
-(<a href="https://github.com/lmmx/chloro/issues/90">#90</a>).</p>
+<div class="admonition note">
+<p class="admonition-title">Which files</p>
+<p>chloro walks the directories under the paths it is given for <code>.rs</code> files, skipping
+hidden entries (names starting with <code>.</code>, such as <code>.git</code>) and cache directories such as
+Cargo's <code>target/</code>. It does not read <code>.gitignore</code>. With no path it starts at the current
+directory, so <code>chloro --check</code> at the root of a Cargo project checks the project's
+sources (<a href="../../guide/cli/#sources">Sources</a>).</p>
 </div>
 <h2 id="format">Format<a class="headerlink" href="#format" title="Permanent link">&para;</a></h2>
 <div class="language-sh highlight"><pre><span></span><code>chloro<span class="w"> </span>--write<span class="w"> </span>src/<span class="w"> </span>tests/<span class="w"> </span>examples/

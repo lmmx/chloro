@@ -146,11 +146,11 @@ Error: 3 file(s) need formatting
 
 `--check` formats every `.rs` file under the paths you name, writes nothing, and exits with status 1 if any file's formatted text differs from what is on disk. Every path must exist: a missing one is an error before anything is formatted. Add `--verbose` to see each file as it is processed and a summary at the end.
 
-> [!WARNING]
+> [!NOTE]
 >
-> **Name your source directories**
+> **Which files**
 >
-> chloro walks every directory under the paths it is given, hidden directories and `target/` included, and does not read `.gitignore`. With no path at all it starts at the current directory. In a Cargo project, pass `src/` and your other source directories rather than `.`, or `target/` will be formatted too ([\#90](<https://github.com/lmmx/chloro/issues/90>)).
+> chloro walks the directories under the paths it is given for `.rs` files, skipping hidden entries (names starting with `.`, such as `.git`) and cache directories such as Cargo's `target/`. It does not read `.gitignore`. With no path it starts at the current directory, so `chloro --check` at the root of a Cargo project checks the project's sources ([Sources](<https://lmmx.github.io/chloro/guide/cli/#sources>)).
 
 ## Format
 
@@ -227,7 +227,9 @@ chloro [OPTIONS] [SOURCES]...
 
 Each source is a file or a directory. A directory is walked recursively for files ending in `.rs`; a file named directly is formatted whatever its extension. With no source, chloro starts at the current directory.
 
-- Every directory under a source is walked, including hidden ones and `target/`. chloro has no ignore rules and does not read `.gitignore`, so in a Cargo project name `src/`, `tests/`, `examples/` and `benches/` rather than `.` ([\#90](<https://github.com/lmmx/chloro/issues/90>)).
+- The walk skips hidden entries, whose names start with `.` (`.git/`, `.cargo/`, `.hidden.rs`), and cache directories: a directory with a `CACHEDIR.TAG` file, as Cargo writes in every `target/` directory (the [Cache Directory Tagging Specification](<https://bford.info/cachedir/>)). So `chloro --check` at the root of a Cargo project checks its sources and not its build output.
+- A source named on the command line is always used, hidden or tagged: `chloro target/` walks `target/`, and `chloro .hidden.rs` formats that file.
+- `.gitignore` is not read.
 - A file reachable twice (named twice, reached through a symlink, or both named and found in a directory) is formatted once.
 - A symlinked directory that points back into a directory being walked is not followed again.
 - A source path that does not exist is an error, reported before any file is formatted.
@@ -715,7 +717,9 @@ Usage: chloro [OPTIONS] [SOURCES]...
 A Rust code formatter reproducing `rustfmt --edition 2024`.
 
 Arguments:
-  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')
+  [SOURCES]...       Files or directories to format (default: '.', the current
+                     directory). Directories are walked for .rs files, skipping
+                     hidden entries and cache directories such as target/
 
 Options:
   -c, --check        Check if files need formatting (exit 1 if so)
@@ -760,9 +764,7 @@ Cache:
   finds nothing in it (a cold CI run) costs 10-15% more with it on.
 ```
 
-> [!NOTE]
->
-> `[SOURCES]` defaults to the current directory (`.`), not `'src'` as the help text says ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
+Which files a directory contributes is described in the guide, under [Sources](<https://lmmx.github.io/chloro/guide/cli/#sources>).
 
 ## Options
 
@@ -1089,10 +1091,15 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 - `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
 - `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
 
+### Changed
+
+- A directory walk skips hidden entries (`.git/`, `.hidden.rs`) and cache directories, those with a `CACHEDIR.TAG` file such as Cargo's `target/`, so `chloro --check` at the root of a project no longer formats its build output ([\#90](<https://github.com/lmmx/chloro/issues/90>)). A path named on the command line is always used.
+
 ### Fixed
 
 - A file that does not parse, or that contains syntax rustc's parser rejects, is reported as rustfmt reports it: its first error is printed in rustc's layout, nothing is printed or written for the file, and the exit status is 1, in every mode ([\#87](<https://github.com/lmmx/chloro/issues/87>)). It was left unchanged as before, but silently and with exit status 0, and recorded in the cache as formatted.
 - Under the default `newline_style = "Auto"`, a file that differs from its formatted output only in its `\r\n` line endings (all of them, or a stray few among `\n` ones) or a byte order mark is formatted, as rustfmt decides: `--check` passes and `--write` leaves it as it is ([\#97](<https://github.com/lmmx/chloro/issues/97>)). chloro reported such a file and rewrote it with `\n` line endings.
+- `--help` gives the default source as the current directory, which it is, not `src` ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
 
 ## [0.9.0](<https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0>) - 2026-10-17
 

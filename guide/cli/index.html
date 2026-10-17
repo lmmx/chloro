@@ -1380,10 +1380,14 @@ or writes them back.</p>
 <code>.rs</code>; a file named directly is formatted whatever its extension. With no source, chloro
 starts at the current directory.</p>
 <ul>
-<li>Every directory under a source is walked, including hidden ones and <code>target/</code>. chloro has
-  no ignore rules and does not read <code>.gitignore</code>, so in a Cargo project name <code>src/</code>,
-  <code>tests/</code>, <code>examples/</code> and <code>benches/</code> rather than <code>.</code>
-  (<a href="https://github.com/lmmx/chloro/issues/90">#90</a>).</li>
+<li>The walk skips hidden entries, whose names start with <code>.</code> (<code>.git/</code>, <code>.cargo/</code>,
+  <code>.hidden.rs</code>), and cache directories: a directory with a <code>CACHEDIR.TAG</code> file, as Cargo
+  writes in every <code>target/</code> directory (the
+  <a href="https://bford.info/cachedir/">Cache Directory Tagging Specification</a>). So <code>chloro --check</code>
+  at the root of a Cargo project checks its sources and not its build output.</li>
+<li>A source named on the command line is always used, hidden or tagged: <code>chloro target/</code> walks
+  <code>target/</code>, and <code>chloro .hidden.rs</code> formats that file.</li>
+<li><code>.gitignore</code> is not read.</li>
 <li>A file reachable twice (named twice, reached through a symlink, or both named and found in
   a directory) is formatted once.</li>
 <li>A symlinked directory that points back into a directory being walked is not followed again.</li>

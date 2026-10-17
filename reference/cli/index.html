@@ -1565,7 +1565,9 @@ options work together.</p>
 A Rust code formatter reproducing `rustfmt --edition 2024`.
 
 Arguments:
-  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')
+  [SOURCES]...       Files or directories to format (default: '.', the current
+                     directory). Directories are walked for .rs files, skipping
+                     hidden entries and cache directories such as target/
 
 Options:
   -c, --check        Check if files need formatting (exit 1 if so)
@@ -1609,11 +1611,8 @@ Cache:
   seen. The output and exit code are the same. It is off by default: a run that
   finds nothing in it (a cold CI run) costs 10-15% more with it on.
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>[SOURCES]</code> defaults to the current directory (<code>.</code>), not <code>'src'</code> as the help text says
-(<a href="https://github.com/lmmx/chloro/issues/91">#91</a>).</p>
-</div>
+<p>Which files a directory contributes is described in the guide, under
+<a href="../../guide/cli/#sources">Sources</a>.</p>
 <h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
 <h3 id="-check-c"><span class="keys"><kbd>--check</kbd></span> / <span class="keys"><kbd>-c</kbd></span><a class="headerlink" href="#-check-c" title="Permanent link">&para;</a></h3>
 <p>Format every file without writing anything. Exit with status 1, and print

@@ -11,10 +11,15 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 - `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
 - `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
 
+### Changed
+
+- A directory walk skips hidden entries (`.git/`, `.hidden.rs`) and cache directories, those with a `CACHEDIR.TAG` file such as Cargo's `target/`, so `chloro --check` at the root of a project no longer formats its build output ([\#90](<https://github.com/lmmx/chloro/issues/90>)). A path named on the command line is always used.
+
 ### Fixed
 
 - A file that does not parse, or that contains syntax rustc's parser rejects, is reported as rustfmt reports it: its first error is printed in rustc's layout, nothing is printed or written for the file, and the exit status is 1, in every mode ([\#87](<https://github.com/lmmx/chloro/issues/87>)). It was left unchanged as before, but silently and with exit status 0, and recorded in the cache as formatted.
 - Under the default `newline_style = "Auto"`, a file that differs from its formatted output only in its `\r\n` line endings (all of them, or a stray few among `\n` ones) or a byte order mark is formatted, as rustfmt decides: `--check` passes and `--write` leaves it as it is ([\#97](<https://github.com/lmmx/chloro/issues/97>)). chloro reported such a file and rewrote it with `\n` line endings.
+- `--help` gives the default source as the current directory, which it is, not `src` ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
 
 ## [0.9.0](<https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0>) - 2026-10-17
 

@@ -10,7 +10,9 @@ chloro [OPTIONS] [SOURCES]...
 
 Each source is a file or a directory. A directory is walked recursively for files ending in `.rs`; a file named directly is formatted whatever its extension. With no source, chloro starts at the current directory.
 
-- Every directory under a source is walked, including hidden ones and `target/`. chloro has no ignore rules and does not read `.gitignore`, so in a Cargo project name `src/`, `tests/`, `examples/` and `benches/` rather than `.` ([\#90](<https://github.com/lmmx/chloro/issues/90>)).
+- The walk skips hidden entries, whose names start with `.` (`.git/`, `.cargo/`, `.hidden.rs`), and cache directories: a directory with a `CACHEDIR.TAG` file, as Cargo writes in every `target/` directory (the [Cache Directory Tagging Specification](<https://bford.info/cachedir/>)). So `chloro --check` at the root of a Cargo project checks its sources and not its build output.
+- A source named on the command line is always used, hidden or tagged: `chloro target/` walks `target/`, and `chloro .hidden.rs` formats that file.
+- `.gitignore` is not read.
 - A file reachable twice (named twice, reached through a symlink, or both named and found in a directory) is formatted once.
 - A symlinked directory that points back into a directory being walked is not followed again.
 - A source path that does not exist is an error, reported before any file is formatted.

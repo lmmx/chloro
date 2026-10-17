@@ -10,7 +10,9 @@ Usage: chloro [OPTIONS] [SOURCES]...
 A Rust code formatter reproducing `rustfmt --edition 2024`.
 
 Arguments:
-  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')
+  [SOURCES]...       Files or directories to format (default: '.', the current
+                     directory). Directories are walked for .rs files, skipping
+                     hidden entries and cache directories such as target/
 
 Options:
   -c, --check        Check if files need formatting (exit 1 if so)
@@ -55,9 +57,7 @@ Cache:
   finds nothing in it (a cold CI run) costs 10-15% more with it on.
 ```
 
-> [!NOTE]
->
-> `[SOURCES]` defaults to the current directory (`.`), not `'src'` as the help text says ([\#91](<https://github.com/lmmx/chloro/issues/91>)).
+Which files a directory contributes is described in the guide, under [Sources](<https://lmmx.github.io/chloro/guide/cli/#sources>).
 
 ## Options
 
