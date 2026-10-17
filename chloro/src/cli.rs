@@ -29,6 +29,7 @@ pub mod cli {
     pub mod orchestrate;
     pub mod project;
     pub mod report;
+    pub mod stdin;
     pub mod trace;
     pub mod units;
     pub mod worker;
@@ -168,6 +169,10 @@ pub mod cli {
                 std::process::exit(1);
             }
         };
+
+        if args.stdin || !args.stdin_filepath.is_empty() {
+            std::process::exit(stdin::format_stdin(&args, &mut project));
+        }
 
         if args.verbose {
             eprintln!("Sources: {}", args.sources.join(", "));

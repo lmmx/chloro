@@ -49,6 +49,18 @@ Read no `rustfmt.toml` (the nearest, the home directory's or the user configurat
 directory's) and take no edition from a `Cargo.toml`: every file is formatted with the
 defaults and `--config`. Cannot be combined with `--config-path`.
 
+### ++"--stdin"++
+
+Format standard input and write it to standard output. Input that does not parse writes
+nothing to standard output and exits with 1; with `--check`, nothing is written and the
+exit status is 1 when the input needs formatting. Not with `--write` or sources.
+[Standard input](../guide/cli.md#standard-input).
+
+### ++"--stdin-filepath PATH"++
+
+With `--stdin`, the file the input belongs to (it need not exist): its configuration
+applies, and errors name it. Without it, the current directory's configuration applies.
+
 ### ++"--threads N"++
 
 The number of worker threads. The default, or `0`, is one per core. Files of 128 KiB and
