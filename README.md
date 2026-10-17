@@ -65,7 +65,7 @@ name your source directories and pass options with `--config`. See the
 [command-line guide](https://lmmx.github.io/chloro/guide/cli/).
 
 ```rust
-let formatted = chloro::format_source("fn main(){let x=1;}");
+let formatted = chloro::format_source("fn main(){let x=1;}\n");
 assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 
 let mut config = chloro::Config::default();

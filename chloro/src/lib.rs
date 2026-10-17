@@ -9,14 +9,17 @@
 //! interfaces.
 //!
 //! ```
-//! let formatted = chloro::format_source("fn main(){let x=1;}");
+//! let formatted = chloro::format_source("fn main(){let x=1;}\n");
 //! assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 //!
 //! let mut config = chloro::Config::default();
 //! config.set("tab_spaces", "2").unwrap();
-//! let formatted = chloro::format_source_with_config("fn main(){let x=1;}", &config);
+//! let formatted = chloro::format_source_with_config("fn main(){let x=1;}\n", &config);
 //! assert_eq!(formatted, "fn main() {\n  let x = 1;\n}\n");
 //! ```
+//!
+//! As in rustfmt, the default `newline_style = "Auto"` keeps the input's line endings, and
+//! gives input with no line break the platform's (`\r\n` on Windows).
 
 // Re-export the core formatting functionality
 pub use chloro_core::{Config, chloro_debug, format_source, format_source_with_config};
