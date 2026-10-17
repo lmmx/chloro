@@ -45,8 +45,8 @@ resumed.
   construction; (b) item threads capped at the idle workers: with the cap fixed when the
   units phase starts, the split file runs alone (span +49.0% `fx-hir`, +23.6% `fx-ide-db`;
   +23.6…+49.1% over all); with a cap that follows the workers as they go idle, `fx-hir`'s
-  tail −83% (−83…−93%) with idle and span unchanged at the median, `fx-ide-db`'s tail +874%
-  and span +9.8% (+7.8…+13.8%); (c) the two `const` arrays cut into 8 pieces at no cost:
+  tail −83% (−83…−93%, idle −12…−56%) with its span unchanged at the median (up to +71% in
+  single runs), `fx-ide-db`'s tail +874% and span +9.8% (+7.8…+13.8%); (c) the two `const` arrays cut into 8 pieces at no cost:
   `fx-ide-db` tail −40% (−40…−87%), span −0.3% (−0.3…−5.8%), `fx-hir` nothing (no unit of
   100 KB); (d) the split file's parse on four threads at no cost: `fx-ide-db` tail −60%
   (−60…−91%), span −0.3% (−0.3…−6.9%), `fx-hir` tail −40% (−37…−60%) with idle +140% and span
@@ -74,11 +74,11 @@ resumed.
 - **Decision: the hypothesis is refuted as stated.** On the quiet host the reconstructed
   tails are 0.71 and 1.04 idle core-ms per run: there is no tail of M5's size to halve, and no
   lever's replay halves both crates' tails without raising a span ((d) comes closest, −40% and
-  −60%, and raises `fx-hir`'s span; (c) and (b) cannot touch one crate each); the two built
-  levers were measured and reverted. Kept:
+  −60%, and raises `fx-hir`'s span; (c) cannot touch `fx-hir`; (b) raises `fx-ide-db`'s span);
+  the two built levers were measured and reverted. Kept:
   `benchmarks/schedule/split_sim.py` (the lever replays, `--blind`, `--compare`),
-  `collect_ab.sh`, `trace_patch.py`'s `owner` variant and a README note on reading a tail from
-  an unpatched trace. The branch head's Rust code is the base's (its CLI and `bench` are
+  `collect_ab.sh`, `identity_start.sh`, `trace_patch.py`'s `owner` variant and a README note on
+  reading a tail from an unpatched trace. The branch head's Rust code is the base's (its CLI and `bench` are
   byte-identical to `03c61be`'s).
 
 ## Identity
@@ -86,7 +86,7 @@ resumed.
 | field | value |
 |---|---|
 | branch | `20261015-split-tail` from `03c61be` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; code head `e96b530`, the best-known-good), worktree `/home/user/wt/split-tail` |
-| commits | `0a6080c` (lever (a)), `1c1405e` (its revert, with the reason), `fc29026` (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), `a158b1d` (`split_sim.py`'s parts table for the lever (a) build), `53d50f4` (this record's first revision and the ledger row), `67853b6` (lever (b)), `efd781c` (its revert, with the reason), then this revision |
+| commits | `0a6080c` (lever (a)), `1c1405e` (its revert, with the reason), `fc29026` (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), `a158b1d` (`split_sim.py`'s parts table for the lever (a) build), `53d50f4` (this record's first revision and the ledger row), `67853b6` (lever (b)), `efd781c` (its revert, with the reason), `4dcec09` (the record's lever (b) revision), `84824ec` (`identity_start.sh`), `2b1f6cb` (the gates) and this revision |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, valgrind 3.22.0, hyperfine 2.0.0; `cargo build --release -p chloro --features cli` and `cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz", 15 GiB; Linux 6.18.44-fc-v114 on 2026-10-15 (Q1, L1, L2), 6.18.44-fc-v139 after the reboot of 2026-10-17 (Q2). The on-CPU costs on the second are about 30% lower (the parse of `lib.rs` 13.0 against 18.4 ms): Q2 is compared with no other collection, only within itself |
 | binaries (scratchpad `e29/bin/`) | `chloro-base`: `03c61be`'s CLI, sha256 `f48f3593…0bde00`, 2,196,120 B; `chloro-diag-base`: `03c61be` + `trace_patch.py base`, `e0813080…74fa0f4ea`, 2,207,992 B (rebuilt from the committed patch: the same sha256); `chloro-a`: `0a6080c`'s CLI, `5928cbdd…f2c6b29`, 2,193,072 B; `chloro-diag-a2`: `0a6080c` + the committed `trace_patch.py owner`, `e63db4b6…41c82b18`, used in Q2; `chloro-diag-a`: the same from a scratch copy of that patch with one more comment line (which moves source line numbers), `ee089c90…9c3537b`, 2,205,208 B, used in L2; `chloro-b`: `67853b6`'s CLI, `e3b2edfd…2883ef92`, 2,195,504 B; `chloro-diag-b`: `67853b6` + `trace_patch.py base`, `3e5c0c07…83700f0f`; `bench-base`: `03c61be`'s `bench`, `6816ff8a…a32fa7`, 1,882,072 B. The head's CLI and `bench` (rebuilt at `efd781c` after the reboot): `f48f3593…` and `6816ff8a…`, byte-identical to the base's |
@@ -522,8 +522,9 @@ provisional):
 - (c) and (d) not built: neither can pass the keep rule on these crates ((c) leaves `fx-hir`
   unchanged by construction, (d) raises its span), and on the quiet host both bound
   `fx-ide-db`'s span at −0.3%.
-- Kept for the integrator: `split_sim.py`, `collect_ab.sh`, `trace_patch.py owner` and the
-  README note; `chloro-core` and `chloro/src` at the head are `03c61be`'s.
+- Kept for the integrator: `split_sim.py`, `collect_ab.sh`, `identity_start.sh`,
+  `trace_patch.py owner` and the README notes; `chloro-core` and `chloro/src` at the head are
+  `03c61be`'s.
 
 ## Follow-up
 
