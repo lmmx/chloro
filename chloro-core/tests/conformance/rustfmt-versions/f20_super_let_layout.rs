@@ -1,4 +1,4 @@
-fn g() { super   let x=1; super let (a,b)=(1,2); 
+fn g() { super   let x=1; super let (a,b)=(1,2);
     #[allow(unused)] super let y: u32 = 2;
     super let Some(z) = w else { return };
     super /* c */ let q = 3;
