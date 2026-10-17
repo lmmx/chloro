@@ -302,8 +302,9 @@ The flags are summarised here; the [CLI reference](<https://lmmx.github.io/chlor
 
 chloro handles both as rustfmt does:
 
-- A byte order mark at the start of a file is dropped.
-- Line endings follow the `newline_style` option. The default, `Auto`, uses the style of the file's first line ending (`\r\n` or `\n`), or the platform's for a file without one, as rustfmt does; `Unix` and `Windows` force one and `Native` uses the platform's.
+- The file is formatted as rustc reads it: without a byte order mark at the start, and with `\r\n` read as `\n`.
+- The output's line endings follow the `newline_style` option. `Unix` and `Windows` force `\n` or `\r\n`, and `Native` uses the platform's. The default, `Auto`, takes the style of the first line ending of the text as rustc reads it, in which `\r\n` is already `\n`: so the output has `\n` line endings (the platform's for a file without a line break).
+- Whether a file needs formatting is decided as rustfmt decides it. Under `Auto`, a file that differs from its formatted output only in its `\r\n` line endings or a byte order mark is formatted: `--check` passes and `--write` leaves it as it is. A file with `\r\n` line endings that does need formatting is written with `\n` ones. Under the other styles, any difference in the bytes counts.
 
 A few things rustfmt does that chloro does not (reading `rustfmt.toml`, `--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
 
@@ -563,7 +564,7 @@ assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 
 `format_source` formats with rustfmt's defaults at edition 2024, the same as `format_source_with_config(source, &Config::default())`.
 
-The formatting functions return text, not errors. Source that does not parse, or that rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so does a file with an inner `#![rustfmt::skip]` attribute, or any file when `disable_all_formatting` is set ([parse errors](<#parse-errors>) tells the first case from the others). To find out whether anything changed, compare the output with the input:
+The formatting functions return text, not errors. Source that does not parse, or that rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so does a file with an inner `#![rustfmt::skip]` attribute, or any file when `disable_all_formatting` is set ([parse errors](<#parse-errors>) tells the first case from the others). To find out whether anything changed, compare the output with the input, or, to decide as rustfmt does, use `is_unchanged`:
 
 ```rust
 let source = "fn main() {\n    let x = 1;\n}\n";
@@ -573,9 +574,16 @@ assert!(!needs_formatting);
 // Not valid Rust: returned as written.
 let broken = "fn main( {";
 assert_eq!(chloro::format_source(broken), broken);
+
+// `\r\n` line endings: the output has `\n` ones, and rustfmt counts the file as formatted.
+let crlf = "fn main() {\r\n    let x = 1;\r\n}\r\n";
+let config = chloro::Config::default();
+let formatted = chloro::format_source_with_config(crlf, &config);
+assert_eq!(formatted, source);
+assert!(chloro::is_unchanged(crlf, &formatted, &config));
 ```
 
-As in rustfmt, a byte order mark is dropped and `\r\n` in the input reads as `\n`; the output's line endings are set by `newline_style` (by default, those of the input's first line).
+As in rustfmt, a byte order mark is dropped and `\r\n` in the input reads as `\n`; the output's line endings are set by `newline_style`, by default `\n` (the platform's for input with no line break). `is_unchanged` compares as rustfmt's `--check` does: under the default `newline_style = "Auto"`, a source that differs from its output only in `\r\n` line endings or a byte order mark is unchanged; under the other styles, the bytes must be equal.
 
 ## Parse errors
 
@@ -840,6 +848,7 @@ The Rust API is documented on docs.rs. This page lists the public entry points a
 | `format_source_with_unit_cache(source, config, threads, cache: &dyn UnitCache) -> String` |  | yes | reuses formatted items; [guide](<https://lmmx.github.io/chloro/guide/library/#a-cache-of-formatted-items>) |
 | `try_format_source_with_config(source, config) -> Result<String, ParseError>` | yes | yes | the same text, or the syntax error; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-errors>) |
 | `try_format_source_with_config_parallel(source, config, threads)`, `try_format_source_with_unit_cache(source, config, threads, cache)` |  | yes | the same for the parallel and cached functions |
+| `is_unchanged(source, formatted, config) -> bool` | yes | yes | whether rustfmt counts `formatted` as a change to `source` (line endings, byte order mark); [guide](<https://lmmx.github.io/chloro/guide/library/#format-a-string>) |
 | `ParseError` | yes | yes | `message()`, `line()`, `column()` (from 1, in characters), `width()`; `Display` as `line:column: message` |
 | `parse_only(source, config) -> Option<usize>` |  | yes | the parse alone; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-without-formatting>) |
 
@@ -946,8 +955,6 @@ Six cases are recorded and open in the [conformance ledger](<https://github.com/
 | 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro's output matches rustfmt's at every pass. |
 | 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro reports a parse error and leaves the file unchanged. |
 
-Also open, as an issue: in a file whose line endings are mixed, rustfmt keeps a stray `\r\n` where chloro writes `\n` ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
-
 A difference not listed here is a bug: please [open an issue](<https://github.com/lmmx/chloro/issues>) with the input, the options, and the rustfmt version.
 
 ## Reproducing the comparison
@@ -1016,7 +1023,7 @@ A single measurement of the whole [ruff](<https://github.com/astral-sh/ruff>) wo
 - The one-thread row is the like-for-like comparison, since rustfmt formats on one thread: 0.28 of `cargo fmt`'s time, inside the one-core range of the nine crates above, though on a different machine and with fewer runs.
 - Peak memory is that of the largest single process, which for `cargo fmt` is rustfmt.
 - The recipe passes the file list to chloro through `xargs`, which can split a list this long into several chloro runs, one after another; their start-up and lost parallelism count against chloro ([\#99](<https://github.com/lmmx/chloro/issues/99>)).
-- The outputs agree on all but one file. In a separate check of ruff at commit `8d122c1` (2,023 files) with the same rustfmt, `cargo fmt --check` found nothing to change and `chloro --check` reported one file, which has three `\r\n` line endings among `\n` ones: rustfmt leaves them as they are and chloro converts them ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
+- The outputs agree on all but one file. In a separate check of ruff at commit `8d122c1` (2,023 files) with the same rustfmt, `cargo fmt --check` found nothing to change and `chloro --check` reported one file, which has three `\r\n` line endings among `\n` ones: rustfmt counts it as formatted and leaves it as it is, and chloro 0.9.0 rewrote it. chloro now decides as rustfmt does ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
 
 ## Other measurements
 
@@ -1080,10 +1087,12 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 ### Added
 
 - `try_format_source_with_config`, `try_format_source_with_config_parallel` and `try_format_source_with_unit_cache` return the formatted text, or the `ParseError` for which the other functions return the source unchanged: its message, line and column. `chloro` re-exports `try_format_source_with_config` and `ParseError`.
+- `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
 
 ### Fixed
 
 - A file that does not parse, or that contains syntax rustc's parser rejects, is reported as rustfmt reports it: its first error is printed in rustc's layout, nothing is printed or written for the file, and the exit status is 1, in every mode ([\#87](<https://github.com/lmmx/chloro/issues/87>)). It was left unchanged as before, but silently and with exit status 0, and recorded in the cache as formatted.
+- Under the default `newline_style = "Auto"`, a file that differs from its formatted output only in its `\r\n` line endings (all of them, or a stray few among `\n` ones) or a byte order mark is formatted, as rustfmt decides: `--check` passes and `--write` leaves it as it is ([\#97](<https://github.com/lmmx/chloro/issues/97>)). chloro reported such a file and rewrote it with `\n` line endings.
 
 ## [0.9.0](<https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0>) - 2026-10-17
 

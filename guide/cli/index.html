@@ -1537,10 +1537,17 @@ current directory (<code>.</code>), as described above
 <h2 id="byte-order-marks-and-line-endings">Byte order marks and line endings<a class="headerlink" href="#byte-order-marks-and-line-endings" title="Permanent link">&para;</a></h2>
 <p>chloro handles both as rustfmt does:</p>
 <ul>
-<li>A byte order mark at the start of a file is dropped.</li>
-<li>Line endings follow the <code>newline_style</code> option. The default, <code>Auto</code>, uses the style of the
-  file's first line ending (<code>\r\n</code> or <code>\n</code>), or the platform's for a file without one, as
-  rustfmt does; <code>Unix</code> and <code>Windows</code> force one and <code>Native</code> uses the platform's.</li>
+<li>The file is formatted as rustc reads it: without a byte order mark at the start, and with
+  <code>\r\n</code> read as <code>\n</code>.</li>
+<li>The output's line endings follow the <code>newline_style</code> option. <code>Unix</code> and <code>Windows</code> force
+  <code>\n</code> or <code>\r\n</code>, and <code>Native</code> uses the platform's. The default, <code>Auto</code>, takes the style of
+  the first line ending of the text as rustc reads it, in which <code>\r\n</code> is already <code>\n</code>: so
+  the output has <code>\n</code> line endings (the platform's for a file without a line break).</li>
+<li>Whether a file needs formatting is decided as rustfmt decides it. Under <code>Auto</code>, a file
+  that differs from its formatted output only in its <code>\r\n</code> line endings or a byte order
+  mark is formatted: <code>--check</code> passes and <code>--write</code> leaves it as it is. A file with <code>\r\n</code>
+  line endings that does need formatting is written with <code>\n</code> ones. Under the other styles,
+  any difference in the bytes counts.</li>
 </ul>
 <p>A few things rustfmt does that chloro does not (reading <code>rustfmt.toml</code>, <code>--emit</code>, formatting
 standard input) are listed under

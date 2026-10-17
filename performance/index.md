@@ -50,7 +50,7 @@ A single measurement of the whole [ruff](<https://github.com/astral-sh/ruff>) wo
 - The one-thread row is the like-for-like comparison, since rustfmt formats on one thread: 0.28 of `cargo fmt`'s time, inside the one-core range of the nine crates above, though on a different machine and with fewer runs.
 - Peak memory is that of the largest single process, which for `cargo fmt` is rustfmt.
 - The recipe passes the file list to chloro through `xargs`, which can split a list this long into several chloro runs, one after another; their start-up and lost parallelism count against chloro ([\#99](<https://github.com/lmmx/chloro/issues/99>)).
-- The outputs agree on all but one file. In a separate check of ruff at commit `8d122c1` (2,023 files) with the same rustfmt, `cargo fmt --check` found nothing to change and `chloro --check` reported one file, which has three `\r\n` line endings among `\n` ones: rustfmt leaves them as they are and chloro converts them ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
+- The outputs agree on all but one file. In a separate check of ruff at commit `8d122c1` (2,023 files) with the same rustfmt, `cargo fmt --check` found nothing to change and `chloro --check` reported one file, which has three `\r\n` line endings among `\n` ones: rustfmt counts it as formatted and leaves it as it is, and chloro 0.9.0 rewrote it. chloro now decides as rustfmt does ([\#97](<https://github.com/lmmx/chloro/issues/97>)).
 
 ## Other measurements
 

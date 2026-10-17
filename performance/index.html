@@ -1686,8 +1686,8 @@ not pinned to cores, chloro with its cache off.</p>
 <li>The outputs agree on all but one file. In a separate check of ruff at commit <code>8d122c1</code>
   (2,023 files) with the same rustfmt, <code>cargo fmt --check</code> found nothing to change and
   <code>chloro --check</code> reported one file, which has three <code>\r\n</code> line endings among <code>\n</code> ones:
-  rustfmt leaves them as they are and chloro converts them
-  (<a href="https://github.com/lmmx/chloro/issues/97">#97</a>).</li>
+  rustfmt counts it as formatted and leaves it as it is, and chloro 0.9.0 rewrote it. chloro
+  now decides as rustfmt does (<a href="https://github.com/lmmx/chloro/issues/97">#97</a>).</li>
 </ul>
 <h2 id="other-measurements">Other measurements<a class="headerlink" href="#other-measurements" title="Permanent link">&para;</a></h2>
 <table>

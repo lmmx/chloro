@@ -14,6 +14,7 @@ The Rust API is documented on docs.rs. This page lists the public entry points a
 | `format_source_with_unit_cache(source, config, threads, cache: &dyn UnitCache) -> String` |  | yes | reuses formatted items; [guide](<https://lmmx.github.io/chloro/guide/library/#a-cache-of-formatted-items>) |
 | `try_format_source_with_config(source, config) -> Result<String, ParseError>` | yes | yes | the same text, or the syntax error; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-errors>) |
 | `try_format_source_with_config_parallel(source, config, threads)`, `try_format_source_with_unit_cache(source, config, threads, cache)` |  | yes | the same for the parallel and cached functions |
+| `is_unchanged(source, formatted, config) -> bool` | yes | yes | whether rustfmt counts `formatted` as a change to `source` (line endings, byte order mark); [guide](<https://lmmx.github.io/chloro/guide/library/#format-a-string>) |
 | `ParseError` | yes | yes | `message()`, `line()`, `column()` (from 1, in characters), `width()`; `Display` as `line:column: message` |
 | `parse_only(source, config) -> Option<usize>` |  | yes | the parse alone; [guide](<https://lmmx.github.io/chloro/guide/library/#parse-without-formatting>) |
 

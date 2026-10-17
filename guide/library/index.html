@@ -1470,7 +1470,8 @@ The examples on this page that use only <code>format_source*</code> and <code>Co
 rustc's parser would reject, comes back unchanged, as rustfmt leaves such a file alone; so
 does a file with an inner <code>#![rustfmt::skip]</code> attribute, or any file when
 <code>disable_all_formatting</code> is set (<a href="#parse-errors">parse errors</a> tells the first case from
-the others). To find out whether anything changed, compare the output with the input:</p>
+the others). To find out whether anything changed, compare the output with the input, or,
+to decide as rustfmt does, use <code>is_unchanged</code>:</p>
 <div class="language-rust highlight"><pre><span></span><code><span class="kd">let</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\n</span><span class="s">    let x = 1;</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
 <span class="kd">let</span><span class="w"> </span><span class="n">needs_formatting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">source</span><span class="p">;</span>
 <span class="fm">assert!</span><span class="p">(</span><span class="o">!</span><span class="n">needs_formatting</span><span class="p">);</span>
@@ -1478,10 +1479,19 @@ the others). To find out whether anything changed, compare the output with the i
 <span class="c1">// Not valid Rust: returned as written.</span>
 <span class="kd">let</span><span class="w"> </span><span class="n">broken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"fn main( {"</span><span class="p">;</span>
 <span class="fm">assert_eq!</span><span class="p">(</span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source</span><span class="p">(</span><span class="n">broken</span><span class="p">),</span><span class="w"> </span><span class="n">broken</span><span class="p">);</span>
+
+<span class="c1">// `\r\n` line endings: the output has `\n` ones, and rustfmt counts the file as formatted.</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">crlf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"fn main() {</span><span class="se">\r\n</span><span class="s">    let x = 1;</span><span class="se">\r\n</span><span class="s">}</span><span class="se">\r\n</span><span class="s">"</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">Config</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">formatted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chloro</span><span class="p">::</span><span class="n">format_source_with_config</span><span class="p">(</span><span class="n">crlf</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">);</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">formatted</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="p">);</span>
+<span class="fm">assert!</span><span class="p">(</span><span class="n">chloro</span><span class="p">::</span><span class="n">is_unchanged</span><span class="p">(</span><span class="n">crlf</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">formatted</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">));</span>
 </code></pre></div>
 <p>As in rustfmt, a byte order mark is dropped and <code>\r\n</code> in the input reads as <code>\n</code>; the
-output's line endings are set by <code>newline_style</code> (by default, those of the input's first
-line).</p>
+output's line endings are set by <code>newline_style</code>, by default <code>\n</code> (the platform's for input
+with no line break). <code>is_unchanged</code> compares as rustfmt's <code>--check</code> does: under the default
+<code>newline_style = "Auto"</code>, a source that differs from its output only in <code>\r\n</code> line endings
+or a byte order mark is unchanged; under the other styles, the bytes must be equal.</p>
 <h2 id="parse-errors">Parse errors<a class="headerlink" href="#parse-errors" title="Permanent link">&para;</a></h2>
 <p><code>try_format_source_with_config</code> returns the same text as <code>format_source_with_config</code>, or
 the syntax error for which that returns the source unchanged: the error rustfmt reports for
