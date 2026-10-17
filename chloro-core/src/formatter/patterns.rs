@@ -5,10 +5,11 @@ use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::combine_strs_with_missing_comments;
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
-    LitKind, can_be_overflowed_expr, rewrite_literal, rewrite_unary_prefix, wrap_struct_field,
+    LitKind, can_be_overflowed_expr, lit_ends_in_dot, rewrite_literal, rewrite_unary_prefix,
+    rewrite_unary_suffix, wrap_struct_field,
 };
 use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, ListTactic, Separator, SeparatorPlace,
@@ -323,6 +324,9 @@ pub(crate) fn rewrite_range_pat(
             rhs = Some(p);
         }
     }
+    if context.config.rustfmt_version() >= RustfmtVersion::V1_10_0 {
+        return rewrite_range(context, shape, lhs.as_ref(), rhs.as_ref(), &infix);
+    }
     let infix = if context.config.spaces_around_ranges() {
         let lhs_spacing = if lhs.is_some() { " " } else { "" };
         let rhs_spacing = if rhs.is_some() { " " } else { "" };
@@ -338,6 +342,56 @@ pub(crate) fn rewrite_range_pat(
         shape,
         SeparatorPlace::Front,
     )
+}
+
+/// F17: rustfmt 1.10.0's `rewrite_range` (`1.99.0 src/range.rs`, PR #6871), which formats
+/// a range pattern as it formats a range expression: a space before the operator after a
+/// literal ending in `.`, which `1...=2.` would otherwise make invalid (`1. ..=2.`), and a
+/// one-sided range as a prefix or a suffix. rustc's endpoints are expressions, and a pattern
+/// endpoint here; the space after the operator, for a range without a start, cannot arise.
+fn rewrite_range(
+    context: &RewriteContext<'_>,
+    shape: Shape,
+    lhs: Option<&ast::Pat>,
+    rhs: Option<&ast::Pat>,
+    delim: &str,
+) -> Option<String> {
+    let needs_space_before_range = |lhs: &ast::Pat| matches!(lhs, ast::Pat::LiteralPat(p) if p.literal().is_some_and(|lit| lit_ends_in_dot(&lit)));
+    let space_if = |b: bool| if b { " " } else { "" };
+    match (lhs, rhs) {
+        (Some(lhs), Some(rhs)) => {
+            let sp_delim = if context.config.spaces_around_ranges() {
+                format!(" {delim} ")
+            } else {
+                format!("{}{delim}", space_if(needs_space_before_range(lhs)))
+            };
+            rewrite_pair(
+                lhs,
+                rhs,
+                PairParts::infix(&sp_delim),
+                context,
+                shape,
+                context.config.binop_separator(),
+            )
+        }
+        (None, Some(rhs)) => {
+            let sp_delim = if context.config.spaces_around_ranges() {
+                format!("{delim} ")
+            } else {
+                delim.to_owned()
+            };
+            rewrite_unary_prefix(context, &sp_delim, rhs, shape)
+        }
+        (Some(lhs), None) => {
+            let sp_delim = if context.config.spaces_around_ranges() {
+                format!(" {delim}")
+            } else {
+                format!("{}{delim}", space_if(needs_space_before_range(lhs)))
+            };
+            rewrite_unary_suffix(context, &sp_delim, lhs, shape)
+        }
+        (None, None) => Some(delim.to_owned()),
+    }
 }
 
 fn rewrite_struct_pat(

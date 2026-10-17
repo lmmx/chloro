@@ -164,7 +164,18 @@ impl Project {
         let text = fs::read_to_string(path).map_err(|e| failed(e.to_string()))?;
         let table = DeTable::parse(&text).map_err(|e| failed(e.to_string()))?;
         let mut config = Config::default();
-        for (key, value) in table.get_ref() {
+        // The release decides which options are stable, so it is read first: that of
+        // `--config`, which applies over the file's, or else the file's.
+        let cli_version = self.cli.iter().rev().find(|(k, _)| k == "rustfmt_version");
+        if let Some((key, value)) = cli_version {
+            config.set(key, value)?;
+        }
+        let mut entries: Vec<_> = table.get_ref().iter().collect();
+        entries.sort_by_key(|(key, _)| key.get_ref() != "rustfmt_version");
+        for (key, value) in entries {
+            if key.get_ref() == "rustfmt_version" && cli_version.is_some() {
+                continue;
+            }
             let value = file_value(value.get_ref(), &text[value.span()]);
             match config.set_from_file(key.get_ref(), value) {
                 Ok(Some(warning)) => eprintln!("Warning: {warning}"),

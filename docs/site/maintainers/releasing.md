@@ -41,7 +41,7 @@ newest heading instead of adding an entry, which gave 0.8.0 and 0.9.0 the 0.7.5 
 
 CI (`.github/workflows/ci.yml`) runs on every pull request and push to master: formatting,
 clippy, the tests on Linux, macOS (arm64) and Windows, a build of the Windows arm64 target,
-`cargo check` on the minimum Rust version, and `conform -i` at both rustfmt releases.
+`cargo check` on the minimum Rust version, and `conform -i` at the three rustfmt releases.
 
 - [ ] CI is green on the commit to be released.
 - [ ] `config_matrix -n 1220` (against a live rustfmt, so not in CI) is identical on every

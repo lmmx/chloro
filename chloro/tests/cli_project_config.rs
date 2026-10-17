@@ -220,3 +220,55 @@ fn the_cache_follows_the_configuration_file() {
     fs::write(ws.path().join("rustfmt.toml"), "max_width = 100\n").unwrap();
     assert_eq!(chloro(ws.path(), &["--check", a]).0, 1);
 }
+
+#[test]
+fn the_release_is_read_before_the_options_it_makes_stable() {
+    // `hex_literal_case` is stable from rustfmt 1.10.0, so it applies when the release is
+    // 1.10.0, named after it in the file or on the command line, and is a warning before.
+    let dir = TempDir::new().unwrap();
+    let file = dir.path().join("lib.rs");
+    fs::write(&file, "const A: u8 = 0xab;\n").unwrap();
+    for (toml, args, expected) in [
+        (
+            "hex_literal_case = \"Upper\"\nrustfmt_version = \"1.10.0\"\n",
+            &[][..],
+            "const A: u8 = 0xAB;\n",
+        ),
+        (
+            "hex_literal_case = \"Upper\"\n",
+            &["--config", "rustfmt_version=1.10.0"],
+            "const A: u8 = 0xAB;\n",
+        ),
+        (
+            "hex_literal_case = \"Upper\"\nrustfmt_version = \"1.10.0\"\n",
+            &["--config", "rustfmt_version=1.9.0"],
+            "const A: u8 = 0xab;\n",
+        ),
+        (
+            "",
+            &["--config", "hex_literal_case=upper,rustfmt_version=1.10.0"],
+            "const A: u8 = 0xAB;\n",
+        ),
+    ] {
+        fs::write(dir.path().join("rustfmt.toml"), toml).unwrap();
+        let output = common::chloro()
+            .args(["--no-cache"])
+            .args(args)
+            .arg(&file)
+            .output()
+            .unwrap();
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap(),
+            expected,
+            "{toml} {args:?}"
+        );
+        let warned = String::from_utf8(output.stderr)
+            .unwrap()
+            .contains("can't set `hex_literal_case");
+        assert_eq!(
+            warned,
+            args.contains(&"rustfmt_version=1.9.0"),
+            "{toml} {args:?}"
+        );
+    }
+}

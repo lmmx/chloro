@@ -406,8 +406,25 @@ fn node_rejected(node: Node<'_>, kind: SyntaxKind, first: u32, toolchain: Toolch
             // be negative`) and accepted by rustc 1.88.0's parser, so rustfmt 1.8.0
             // formats it.
             let negative = has_token(node, T![!]) && rustfmt_version >= RustfmtVersion::V1_9_0;
-            !has_token(node, T![for])
-                && (has_token(node, T![unsafe]) || has_token(node, T![default]) || negative)
+            let inherent = !has_token(node, T![for])
+                && (has_token(node, T![unsafe]) || has_token(node, T![default]) || negative);
+            let constness = has_token(node, T![const]);
+            let const_after_impl = constness
+                && node
+                    .children_with_tokens()
+                    .skip_while(|c| !matches!(c, NodeOrToken::Token(t) if t.kind() == T![impl]))
+                    .any(|c| matches!(c, NodeOrToken::Token(t) if t.kind() == T![const]));
+            let misplaced_const = match rustfmt_version {
+                // P10: rustc 1.88.0's parser (rustfmt 1.8.0) reads the `const` of an impl only
+                // after `impl`: `const impl` is "expected identifier, found keyword `impl`".
+                RustfmtVersion::V1_8_0 => constness && !const_after_impl,
+                RustfmtVersion::V1_9_0 => false,
+                // P9: rustc 1.99.0's parser (rustfmt 1.10.0) reads the `const` of a trait impl
+                // only before `impl` (`const impl Trait for T`): after it, `impl const Trait
+                // for T` is "expected a trait, found type".
+                RustfmtVersion::V1_10_0 => const_after_impl && has_token(node, T![for]),
+            };
+            inherent || misplaced_const
         }
         SyntaxKind::LET_EXPR => !let_expr_allowed(node, first, toolchain),
         // `static async || {}`

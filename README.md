@@ -21,7 +21,7 @@ The documentation is at [lmmx.github.io/chloro](https://lmmx.github.io/chloro/).
 chloro's output is identical to rustfmt 1.9.0's on all 1220 files of the rust-analyzer
 conformance corpus, on 31 non-default values of 24 stable options across four editions,
 and on all 20,540 files of a 577-crate registry corpus that rustfmt formats. With
-`rustfmt_version = "1.8.0"` it matches rustfmt 1.8.0 instead. The
+`rustfmt_version = "1.8.0"` or `"1.10.0"` it matches rustfmt 1.8.0 or 1.10.0 instead. The
 [compatibility page](https://lmmx.github.io/chloro/compatibility/) lists what was compared
 and what was not.
 

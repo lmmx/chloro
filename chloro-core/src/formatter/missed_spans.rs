@@ -170,7 +170,9 @@ impl FmtVisitor<'_> {
                 self.push_vertical_spaces(newline_count);
                 match self.config.rustfmt_version() {
                     // To avoid any issues with whitespace unicode chars just add the len of the slice
-                    RustfmtVersion::V1_9_0 => status.line_start = offset + subslice.len(),
+                    RustfmtVersion::V1_9_0 | RustfmtVersion::V1_10_0 => {
+                        status.line_start = offset + subslice.len()
+                    }
                     // F6: rustfmt 1.8.0 advances by the newline count (`v1.8.0
                     // src/missed_spans.rs:209`; the source holds no `\r\n` after
                     // normalisation), which is not a char boundary when the run holds a
@@ -330,6 +332,11 @@ impl FmtVisitor<'_> {
         if !remaining.is_empty() {
             self.push_str(&self.block_indent.to_string(self.config));
             self.push_str(remaining);
+            status.line_start = subslice.len() + offset;
+        } else if self.config.rustfmt_version() >= RustfmtVersion::V1_10_0 {
+            // F21: rustfmt 1.10.0 moves `line_start` past a rest of whitespace as well, which
+            // the last snippet then leaves out (`1.99.0 src/missed_spans.rs:367`, written for
+            // `--file-lines`); rustfmt 1.9.0 moves it only past code.
             status.line_start = subslice.len() + offset;
         }
     }

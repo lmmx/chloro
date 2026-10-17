@@ -20,13 +20,13 @@ cargo fmt --check
 ```
 
 CI (`.github/workflows/ci.yml`) runs these on Linux, macOS (arm64) and Windows, plus a
-Rust 1.88 check (the `rust-version`) and `conform -i` at both rustfmt releases.
+Rust 1.88 check (the `rust-version`) and `conform -i` at the three rustfmt releases.
 
 ## Rules a change must keep
 
 - Output is the contract. A change that is not a conformance fix must leave every formatted
   byte unchanged; check with the output hashes of `bench --record` / `bench --check`, then
-  `conform -i` at both rustfmt releases and `config_matrix -n 1220` (commands in the
+  `conform -i` at the three rustfmt releases and `config_matrix -n 1220` (commands in the
   maintainers' guide, "Checks for a change").
 - Formatter modules keep rustfmt's module, function and variable names and control flow.
 - The public API changes only by addition.

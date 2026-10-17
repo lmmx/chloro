@@ -160,13 +160,15 @@ impl Args {
         Ok(config)
     }
 
-    /// The `key=value` pairs of `--config`, in order.
+    /// The `key=value` pairs of `--config`, in order, but for `rustfmt_version` first: the
+    /// release decides which options are stable.
     ///
     /// # Errors
     ///
     /// Returns a message naming the first pair without `=`.
     pub fn config_pairs(&self) -> Result<Vec<(String, String)>, String> {
-        self.config
+        let mut pairs = self
+            .config
             .split(',')
             .filter(|o| !o.trim().is_empty())
             .map(|option| {
@@ -175,6 +177,8 @@ impl Args {
                     .ok_or_else(|| format!("expected key=value, found `{option}`"))?;
                 Ok((key.trim().to_owned(), value.trim().to_owned()))
             })
-            .collect()
+            .collect::<Result<Vec<_>, String>>()?;
+        pairs.sort_by_key(|(key, _)| key != "rustfmt_version");
+        Ok(pairs)
     }
 }

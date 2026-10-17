@@ -138,30 +138,35 @@ impl Rewrite for ast::LetStmt<'_> {
         // F4: rustfmt 1.9.0 leaves a `super let` statement as written (`v1.9.0
         // src/items.rs:68-71`, rust-side commit `266da427`); rustfmt 1.8.0 as built with
         // Rust 1.88.0 formats it as a `let`, without `super` (`v1.8.0 src/items.rs:49`).
-        if has_token(self.syntax(), T![super])
-            && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0
-        {
+        // F20: rustfmt 1.10.0 formats it as a `super let` (`1.99.0 src/items.rs:67`).
+        let super_ = has_token(self.syntax(), T![super]);
+        let rustfmt_version = context.config.rustfmt_version();
+        if super_ && rustfmt_version == RustfmtVersion::V1_9_0 {
             return None;
         }
         let span = item_span(self.syntax());
+        let let_ = if super_ && rustfmt_version >= RustfmtVersion::V1_10_0 {
+            "super let "
+        } else {
+            "let "
+        };
 
         let attrs_str = attrs.rewrite(context, shape)?;
         let mut result = if attrs_str.is_empty() {
-            "let ".to_owned()
+            let_.to_owned()
         } else {
             combine_strs_with_missing_comments(
                 context,
                 &attrs_str,
-                "let ",
+                let_,
                 mk_sp(attrs.last()?.span().hi(), span.lo()),
                 shape,
                 false,
             )?
         };
-        let let_kw_offset = result.len() - "let ".len();
+        let let_kw_offset = result.len() - let_.len();
 
-        // 4 = "let ".len()
-        let pat_shape = shape.offset_left(4)?;
+        let pat_shape = shape.offset_left(let_.len())?;
         // 1 = ;
         let pat_shape = pat_shape.sub_width(1)?;
         let pat = self.pat()?;
@@ -558,12 +563,26 @@ impl Rewrite for ast::Param<'_> {
             param_attrs(self.syntax(), context, shape)?;
 
         let Some(pat) = self.pat() else {
-            // An unnamed parameter (fn pointer types, C variadics). rustfmt rewrites only the
-            // type, which drops any attributes of the parameter.
-            if has_token(self.syntax(), T![...]) {
-                return Some("...".to_owned());
+            // An unnamed parameter (fn pointer types, C variadics). rustfmt 1.9.0 rewrites only
+            // the type, which drops any attributes of the parameter; F15: rustfmt 1.10.0
+            // combines them with the type as for a named parameter (`1.99.0
+            // src/items.rs:2364`).
+            let ty_str = if has_token(self.syntax(), T![...]) {
+                "...".to_owned()
+            } else {
+                self.ty()?.rewrite(context, shape)?
+            };
+            if context.config.rustfmt_version() < RustfmtVersion::V1_10_0 {
+                return Some(ty_str);
             }
-            return self.ty()?.rewrite(context, shape);
+            return combine_strs_with_missing_comments(
+                context,
+                &param_attrs_result,
+                &ty_str,
+                span,
+                shape,
+                !has_multiple_attr_lines && !has_doc_comments,
+            );
         };
         if has_token(self.syntax(), T![...]) {
             // `name: ...`
@@ -824,8 +843,16 @@ fn rewrite_fn_base(
             .last()
             .is_some_and(|last_line| last_line.contains("//"));
 
+        // F16: rustfmt 1.10.0 tests the comment first, so that a `//` comment in an empty
+        // parameter list of an overflowing header no longer swallows the `)` (`1.99.0
+        // src/items.rs:2595`, PR #6840); rustfmt 1.9.0 tests the overflow first.
+        let comment_first = context.config.rustfmt_version() >= RustfmtVersion::V1_10_0;
         if context.config.style_edition() >= StyleEdition::Edition2024 {
-            if closing_paren_overflow_max_width {
+            if comment_first && params_last_line_contains_comment {
+                result.push_str(&indent.to_string_with_newline(context.config));
+                result.push(')');
+                no_params_and_over_max_width = true;
+            } else if closing_paren_overflow_max_width {
                 result.push(')');
                 result.push_str(&indent.to_string_with_newline(context.config));
                 no_params_and_over_max_width = true;
@@ -2101,9 +2128,24 @@ fn format_impl_ref_and_type(
 
     let of_trait = iimpl.trait_();
     let constness = has_token(iimpl.syntax(), T![const]);
+    // F18: rustfmt 1.10.0 writes the `const` of a trait impl before `unsafe impl` (`1.99.0
+    // src/items.rs:959`), where rustc 1.99.0's parser reads it (`const impl Trait for T`; the
+    // old `impl const Trait` is refused, P9); rustfmt 1.9.0 writes it after the generics.
+    let const_first = context.config.rustfmt_version() >= RustfmtVersion::V1_10_0;
+    // F22: rustc 1.99.0's parser reads the `const` of `impl const S {}` as part of the self
+    // type, the trait object `const S`, which rustfmt 1.10.0 writes where it stands; rustfmt
+    // 1.8.0 writes the `const` after the generics as for a trait impl (P10: the source has
+    // it there); rustfmt 1.9.0 writes `const impl S {}`.
+    let const_self_ty = context.config.rustfmt_version() != RustfmtVersion::V1_9_0
+        && of_trait.is_none()
+        && constness
+        && const_after_impl(iimpl);
     if of_trait.is_some() {
         if has_token(iimpl.syntax(), T![default]) {
             result.push_str("default ");
+        }
+        if constness && const_first {
+            result.push_str("const ");
         }
         if has_token(iimpl.syntax(), T![unsafe]) {
             result.push_str("unsafe ");
@@ -2113,7 +2155,7 @@ fn format_impl_ref_and_type(
             // rustc rejects `unsafe` inherent impls; keep it rather than drop code.
             result.push_str("unsafe ");
         }
-        if constness {
+        if constness && !const_self_ty {
             result.push_str("const ");
         }
     }
@@ -2134,13 +2176,15 @@ fn format_impl_ref_and_type(
     // the self type as rustfmt 1.8.0 `src/items.rs` `format_impl` does.
     let polarity_str = if has_token(iimpl.syntax(), T![!]) {
         "!"
+    } else if const_self_ty {
+        "const "
     } else {
         ""
     };
     let polarity_overhead;
     let trait_ref_overhead;
     if let Some(of_trait) = &of_trait {
-        if constness {
+        if constness && !const_first {
             result.push_str(" const");
         }
         let result_len = last_line_width(&result);
@@ -2197,6 +2241,15 @@ fn format_impl_ref_and_type(
     let type_offset = new_line_offset;
     result.push_str(&self_ty.rewrite(context, Shape::legacy(budget, type_offset))?);
     Some(result)
+}
+
+/// Whether a `const` follows the `impl` keyword (`impl const Trait for T`).
+fn const_after_impl(iimpl: &ast::Impl) -> bool {
+    iimpl
+        .syntax()
+        .children_with_tokens()
+        .skip_while(|el| el.kind() != T![impl])
+        .any(|el| el.kind() == T![const])
 }
 
 fn rewrite_trait_ref(

@@ -14,7 +14,7 @@ use super::comment::{
     CharClasses, FindUncommented, combine_strs_with_missing_comments, contains_comment,
     recover_comment_removed, rewrite_comment, rewrite_missing_comment,
 };
-use super::config::{RustfmtVersion, StyleEdition};
+use super::config::{HexLiteralCase, RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext, RunState};
 use super::lists::{
     SeparatorPlace, SeparatorTactic, itemize_list, shape_for_tactic, struct_lit_formatting,
@@ -612,7 +612,7 @@ fn jump_label_text<'a>(context: &RewriteContext<'a>, label: &ast::Lifetime) -> C
             Some(raw) => Cow::Owned(format!("'{raw}")),
             None => Cow::Borrowed(text),
         },
-        RustfmtVersion::V1_9_0 => Cow::Borrowed(text),
+        RustfmtVersion::V1_9_0 | RustfmtVersion::V1_10_0 => Cow::Borrowed(text),
     }
 }
 
@@ -1342,14 +1342,41 @@ pub(crate) fn rewrite_literal(
     debug_assert!(!context.config.format_strings());
     match kind {
         LitKind::Str => rewrite_string_lit(context, span, shape),
-        // `hex_literal_case` and `float_literal_trailing_zero` are unstable options fixed at
-        // `Preserve`, so numbers are kept as written.
+        LitKind::Integer => rewrite_int_lit(context, span, shape),
+        // `float_literal_trailing_zero` is an unstable option fixed at `Preserve`, so floats
+        // are kept as written.
         _ => wrap_str(
             context.snippet(span).to_owned(),
             context.config.max_width(),
             shape,
         ),
     }
+}
+
+/// rustfmt's `rewrite_int_lit`: a hexadecimal literal (a lowercase `0x` prefix) with its
+/// digits in the case `hex_literal_case` sets, the prefix and the suffix kept as written.
+/// The suffix is what follows the digits and `_`s, which rustc's lexer reads greedily.
+fn rewrite_int_lit(context: &RewriteContext<'_>, span: Span, shape: Shape) -> Option<String> {
+    let text = context.snippet(span);
+    if let Some(stripped) = text.strip_prefix("0x") {
+        let end = stripped
+            .find(|c: char| !c.is_ascii_hexdigit() && c != '_')
+            .unwrap_or(stripped.len());
+        let (digits, suffix) = stripped.split_at(end);
+        let digits = match context.config.hex_literal_case() {
+            HexLiteralCase::Preserve => None,
+            HexLiteralCase::Upper => Some(digits.to_ascii_uppercase()),
+            HexLiteralCase::Lower => Some(digits.to_ascii_lowercase()),
+        };
+        if let Some(digits) = digits {
+            return wrap_str(
+                format!("0x{digits}{suffix}"),
+                context.config.max_width(),
+                shape,
+            );
+        }
+    }
+    wrap_str(text.to_owned(), context.config.max_width(), shape)
 }
 
 fn rewrite_string_lit(context: &RewriteContext<'_>, span: Span, shape: Shape) -> Option<String> {
