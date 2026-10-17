@@ -159,9 +159,14 @@ pub fn format_all(
     let mut order: Vec<(u64, usize)> = files.iter().enumerate().map(|(i, f)| (f.len, i)).collect();
     order.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
     let next = AtomicUsize::new(0);
+    let workers = num_threads.min(files.len().max(1));
+    // Workers that have found the queue empty. A large file gets no more item threads than
+    // its own worker, the threads no worker was started for, and these: its items do not
+    // take cores from files still being formatted (EXP-029, lever (b)).
+    let idle = AtomicUsize::new(0);
     let item_threads = |size: u64| {
         if size >= PARALLEL_ITEMS_MIN_BYTES as u64 {
-            num_threads
+            num_threads.min(1 + (num_threads - workers) + idle.load(Ordering::Relaxed))
         } else {
             1
         }
@@ -170,10 +175,11 @@ pub fn format_all(
     let mut results: Vec<Option<ProcessResult>> = (0..files.len()).map(|_| None).collect();
     trace::mark("spawn");
     let done: Vec<Vec<(usize, ProcessResult)>> = scope(|s| {
-        let handles: Vec<_> = (0..num_threads.min(files.len().max(1)))
+        let handles: Vec<_> = (0..workers)
             .map(|w| {
                 let next = &next;
                 let order = &order;
+                let idle = &idle;
                 s.spawn(move || {
                     let traced = trace::enabled();
                     let w_start = trace::now();
@@ -181,6 +187,7 @@ pub fn format_all(
                     loop {
                         let k = next.fetch_add(1, Ordering::Relaxed);
                         let Some(&(size, i)) = order.get(k) else {
+                            idle.fetch_add(1, Ordering::Relaxed);
                             break;
                         };
                         let start = trace::now();
