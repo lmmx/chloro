@@ -2,7 +2,7 @@ use facet::Facet;
 
 #[derive(Facet)]
 pub struct Args {
-    /// Path(s) to source file(s) or directory to format
+    /// Files or directories to format (default: the current directory)
     #[facet(positional, default = vec![".".to_string()])]
     pub sources: Vec<String>,
 
@@ -55,7 +55,9 @@ pub fn print_usage() {
     println!("A Rust code formatter reproducing `rustfmt --edition 2024`.");
     println!();
     println!("Arguments:");
-    println!("  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')");
+    println!("  [SOURCES]...       Files or directories to format (default: '.', the current");
+    println!("                     directory). Directories are walked for .rs files, skipping");
+    println!("                     hidden entries and cache directories such as target/");
     println!();
     println!("Options:");
     println!("  -c, --check        Check if files need formatting (exit 1 if so)");

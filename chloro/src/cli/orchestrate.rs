@@ -28,6 +28,12 @@ impl SourceFile {
 
 /// Discover all Rust files in a directory recursively, as canonical paths.
 ///
+/// Entries found in the walk are skipped when they are hidden (the name starts with `.`,
+/// such as `.git`), and so are directories tagged as caches by a `CACHEDIR.TAG` file (the
+/// Cache Directory Tagging Specification, <https://bford.info/cachedir/>), which Cargo
+/// writes in every `target` directory. `dir` itself is walked whatever its name and tag:
+/// a path the user names is always used.
+///
 /// Every file reached is the one `Path::canonicalize` would name, but the walk resolves
 /// paths once per root and once per symlink, not once per file: a directory entry that is
 /// not a symlink, read from a canonical directory, is canonical as `directory/name` (it adds
@@ -47,18 +53,42 @@ pub fn discover_rust_files(dir: &Path) -> io::Result<Vec<SourceFile>> {
     match dir.canonicalize() {
         Ok(root) => {
             let listing = fs::read_dir(&root)?;
-            walk_canonical(&root, listing, &mut Vec::new(), &mut files)?;
+            walk_canonical(&root, listing, true, &mut Vec::new(), &mut files)?;
         }
-        Err(_) => walk_resolving(dir, &mut files)?,
+        Err(_) => walk_resolving(dir, true, &mut files)?,
     }
     Ok(files)
 }
 
-/// Walks `dir`, a canonical directory listed by `listing`; `stack` holds the canonical
-/// directories being walked, to recognise a symlink back into one of them.
+/// The signature a `CACHEDIR.TAG` file starts with.
+const CACHEDIR_SIGNATURE: &[u8] = b"Signature: 8a477f597d28d172789f06886806bc55";
+
+/// Whether an entry named `name` is hidden from the walk.
+fn hidden(name: &OsStr) -> bool {
+    name.as_encoded_bytes().starts_with(b".")
+}
+
+/// Whether the directory `dir`, whose entries include `names`, is a cache directory: it has
+/// a `CACHEDIR.TAG` file that starts with the specification's signature.
+fn tagged_as_cache<'a>(dir: &Path, mut names: impl Iterator<Item = &'a OsStr>) -> bool {
+    use std::io::Read;
+    names.any(|name| name == "CACHEDIR.TAG")
+        && fs::File::open(dir.join("CACHEDIR.TAG")).is_ok_and(|file| {
+            let mut start = Vec::with_capacity(CACHEDIR_SIGNATURE.len());
+            let read = file
+                .take(CACHEDIR_SIGNATURE.len() as u64)
+                .read_to_end(&mut start);
+            read.is_ok() && start == CACHEDIR_SIGNATURE
+        })
+}
+
+/// Walks `dir`, a canonical directory listed by `listing`, unless it is a cache directory
+/// that is not the `root` of the walk; `stack` holds the canonical directories being
+/// walked, to recognise a symlink back into one of them.
 fn walk_canonical(
     dir: &Path,
     listing: fs::ReadDir,
+    root: bool,
     stack: &mut Vec<PathBuf>,
     files: &mut Vec<SourceFile>,
 ) -> io::Result<()> {
@@ -67,6 +97,10 @@ fn walk_canonical(
         let entry = entry?;
         entries.push((entry.file_name(), entry));
     }
+    if !root && tagged_as_cache(dir, entries.iter().map(|(name, _)| name.as_os_str())) {
+        return Ok(());
+    }
+    entries.retain(|(name, _)| !hidden(name));
     // Names are unique within a directory.
     entries.sort_unstable_by(|a, b| a.0.cmp(&b.0));
     stack.push(dir.to_path_buf());
@@ -75,7 +109,7 @@ fn walk_canonical(
             Ok(kind) if kind.is_dir() => {
                 let path = dir.join(&name);
                 match fs::read_dir(&path) {
-                    Ok(listing) => walk_canonical(&path, listing, stack, files)?,
+                    Ok(listing) => walk_canonical(&path, listing, false, stack, files)?,
                     // As before: `is_dir` (false for a path the kernel refuses), then the
                     // error of listing it.
                     Err(_) => resolve_entry(&path, None, files)?,
@@ -99,10 +133,18 @@ fn walk_canonical(
 }
 
 /// Walks `dir`, a path that may not be canonical, resolving every entry: the walk before
-/// this change, kept for a root or directory whose canonical path cannot be taken.
-fn walk_resolving(dir: &Path, files: &mut Vec<SourceFile>) -> io::Result<()> {
-    for entry in fs::read_dir(dir)? {
-        resolve_entry(&entry?.path(), None, files)?;
+/// this change, kept for a root or directory whose canonical path cannot be taken. The
+/// entries are skipped as in [`walk_canonical`].
+fn walk_resolving(dir: &Path, root: bool, files: &mut Vec<SourceFile>) -> io::Result<()> {
+    let entries = fs::read_dir(dir)?.collect::<io::Result<Vec<_>>>()?;
+    let names: Vec<_> = entries.iter().map(fs::DirEntry::file_name).collect();
+    if !root && tagged_as_cache(dir, names.iter().map(|n| n.as_os_str())) {
+        return Ok(());
+    }
+    for (entry, name) in entries.iter().zip(&names) {
+        if !hidden(name) {
+            resolve_entry(&entry.path(), None, files)?;
+        }
     }
     Ok(())
 }
@@ -121,10 +163,10 @@ fn resolve_entry(
             (Some(stack), Ok(target)) => {
                 if !stack.contains(&target) {
                     let listing = fs::read_dir(&target)?;
-                    walk_canonical(&target, listing, stack, files)?;
+                    walk_canonical(&target, listing, false, stack, files)?;
                 }
             }
-            _ => walk_resolving(path, files)?,
+            _ => walk_resolving(path, false, files)?,
         }
     } else if path.extension() == Some(OsStr::new("rs")) {
         files.push(SourceFile::at(path.canonicalize()?));

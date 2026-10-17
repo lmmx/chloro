@@ -23,13 +23,13 @@ status 1 if any file's formatted text differs from what is on disk. Every path m
 a missing one is an error before anything is formatted. Add `--verbose` to see each file as
 it is processed and a summary at the end.
 
-!!! warning "Name your source directories"
+!!! note "Which files"
 
-    chloro walks every directory under the paths it is given, hidden directories and
-    `target/` included, and does not read `.gitignore`. With no path at all it starts at the
-    current directory. In a Cargo project, pass `src/` and your other source directories
-    rather than `.`, or `target/` will be formatted too
-    ([#90](https://github.com/lmmx/chloro/issues/90)).
+    chloro walks the directories under the paths it is given for `.rs` files, skipping
+    hidden entries (names starting with `.`, such as `.git`) and cache directories such as
+    Cargo's `target/`. It does not read `.gitignore`. With no path it starts at the current
+    directory, so `chloro --check` at the root of a Cargo project checks the project's
+    sources ([Sources](../guide/cli.md#sources)).
 
 ## Format
 
