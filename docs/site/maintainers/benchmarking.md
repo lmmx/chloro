@@ -79,6 +79,28 @@ the real binary behind rustup's proxy).
     sessions on the virtual machine chloro was measured on. Compare tools within one run, never across runs,
     and treat a wall-time change smaller than the run-to-run spread as no change.
 
+## On any Cargo project: `just vs-rustfmt`
+
+```sh
+just vs-rustfmt path/to/project      # chloro, chloro --threads 1 and cargo fmt
+just vs-ruff                         # the same on ruff, in ~/tmp/ruff (cloned if missing)
+just vs-ruff ~/src/ruff 10           # another checkout, 10 runs
+```
+
+These recipes (`.just/bench.just`) give both tools the same files: the list `cargo fmt --all`
+formats, so each file is formatted once. A plain `rustfmt` over every `.rs` file of a
+project formats each module file several times, because rustfmt also formats the modules a
+file declares; on ruff that is 3.6 passes per file. Both tools run in check mode, so use an
+already-formatted tree. They need `hyperfine`.
+
+They time the `chloro` on your `PATH`, first making sure it was built from this checkout.
+`just reinstall` installs the CLI with a build ID baked in, which `chloro --version`
+prints (`chloro 0.8.0-dev (2f9b060, build <id>)`); `just build-id` computes the ID of the checkout as it is on disk, from the content
+of every file that goes into the binary (committed or not), `Cargo.lock`, the toolchain and
+the install command. When the two match, the benchmark starts at once without running
+Cargo; when they differ, or the installed `chloro` has no build ID, the recipe runs
+`just reinstall` first, outside the timed runs.
+
 ## In process: `bench`
 
 ```sh

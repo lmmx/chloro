@@ -90,6 +90,22 @@ pub mod cli {
             std::process::exit(0);
         }
 
+        if args.version {
+            // `build.rs` sets the version (`-dev` unless the source is the tagged release) and
+            // its details; `just reinstall` records the checkout's build ID (`just build-id`)
+            let mut details: Vec<&str> = env!("CHLORO_VERSION_DETAILS")
+                .split(", ")
+                .filter(|d| !d.is_empty())
+                .collect();
+            let build = option_env!("CHLORO_BUILD_ID").map(|id| format!("build {id}"));
+            details.extend(build.as_deref());
+            match details.is_empty() {
+                true => println!("chloro {}", env!("CHLORO_VERSION")),
+                false => println!("chloro {} ({})", env!("CHLORO_VERSION"), details.join(", ")),
+            }
+            std::process::exit(0);
+        }
+
         let config = match args.formatting_config() {
             Ok(config) => config,
             Err(e) => {
