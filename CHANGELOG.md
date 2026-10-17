@@ -11,6 +11,8 @@ release time by release-plz: [chloro/CHANGELOG.md](https://github.com/lmmx/chlor
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-17
+
 The performance and conformance work of
 [#88](https://github.com/lmmx/chloro/pull/88). Every output is identical to 0.8.0's except
 for the conformance fixes listed under *Fixed*. The measurements behind the figures below
@@ -48,6 +50,8 @@ are described on the [Performance](https://lmmx.github.io/chloro/performance/) p
 - Formatting is faster. Against rustfmt 1.9.0 on nine crates, chloro takes 0.21–0.35 of
   rustfmt's wall time on one core and 0.08–0.17 on four. Against 0.8.0, the formatter executes 66% fewer
   instructions on the same files and formats 2.7 times as many bytes per second on one core.
+- On the whole ruff workspace (2,008 files), chloro took 0.28 of `cargo fmt`'s wall time on
+  one thread and 0.038 on 20.
 - Peak memory on the same crates is 4–10 MiB on one core, against 6–29 MiB for 0.8.0
   (rustfmt: 43–86 MiB).
 - Nested closures no longer slow formatting down superlinearly: a 2 KB file of closures
@@ -133,7 +137,8 @@ README.
 The first releases: a proof-of-concept formatter over rust-analyzer's `rowan` trees, with
 library and command-line interfaces.
 
-[Unreleased]: https://github.com/lmmx/chloro/compare/chloro-v0.8.0...HEAD
+[Unreleased]: https://github.com/lmmx/chloro/compare/chloro-v0.9.0...HEAD
+[0.9.0]: https://github.com/lmmx/chloro/compare/chloro-v0.8.0...chloro-v0.9.0
 [0.8.0]: https://github.com/lmmx/chloro/compare/chloro-v0.7.5...chloro-v0.8.0
 [0.7.5]: https://github.com/lmmx/chloro/compare/chloro-v0.7.4...chloro-v0.7.5
 [0.7.0]: https://github.com/lmmx/chloro/releases/tag/chloro-v0.7.0

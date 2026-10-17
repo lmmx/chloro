@@ -90,6 +90,6 @@ and ran in 0.80–0.95 of its wall time, with identical output.
 
 ## Versions
 
-Both crates share a version (0.8.0 at the latest release). `chloro` depends on
+Both crates share a version (0.9.0 at the latest release). `chloro` depends on
 `chloro-core` at the same version through the workspace's `[workspace.dependencies]`.
 The minimum supported Rust version is the workspace's `rust-version`, 1.88.

@@ -125,6 +125,35 @@ wall times in milliseconds. The first five crates are from rust-analyzer, whose 
 chloro's conformance corpus. The other four come from crates.io and were not used during
 chloro's development.
 
+## A large workspace: ruff
+
+A single measurement of the whole [ruff](https://github.com/astral-sh/ruff) workspace,
+taken with `just vs-ruff`
+([Benchmarking](maintainers/benchmarking.md#on-any-cargo-project-just-vs-rustfmt)) on a
+20-core workstation, against `cargo fmt` with the rustfmt ruff's toolchain pins,
+`1.10.0-stable (b940084d7e 2026-09-28)`. Both tools check the 2,008 files `cargo fmt --all`
+formats, in an already-formatted checkout, with hyperfine: 5 timed runs each after 1 warm-up,
+not pinned to cores, chloro with its cache off.
+
+| command | wall time, mean ± σ | share of `cargo fmt`'s | peak memory |
+|---|---|---|---|
+| `chloro --check`, 20 threads (the default) | 212.3 ± 4.8 ms | 0.038 | 89.9 MiB |
+| `chloro --check --threads 1` | 1598.3 ± 12.6 ms | 0.284 | 16.2 MiB |
+| `cargo fmt --all -- --check` | 5633.0 ± 104.8 ms | 1 | 194.5 MiB |
+
+- The one-thread row is the like-for-like comparison, since rustfmt formats on one thread:
+  0.28 of `cargo fmt`'s time, inside the one-core range of the nine crates above, though on a
+  different machine and with fewer runs.
+- Peak memory is that of the largest single process, which for `cargo fmt` is rustfmt.
+- The recipe passes the file list to chloro through `xargs`, which can split a list this long
+  into several chloro runs, one after another; their start-up and lost parallelism count
+  against chloro ([#99](https://github.com/lmmx/chloro/issues/99)).
+- The outputs agree on all but one file. In a separate check of ruff at commit `8d122c1`
+  (2,023 files) with the same rustfmt, `cargo fmt --check` found nothing to change and
+  `chloro --check` reported one file, which has three `\r\n` line endings among `\n` ones:
+  rustfmt leaves them as they are and chloro converts them
+  ([#97](https://github.com/lmmx/chloro/issues/97)).
+
 ## Other measurements
 
 | quantity | chloro | rustfmt 1.9.0 |
@@ -162,10 +191,11 @@ training to the targets whose runners execute them natively; see
 
 ## What was not measured
 
-- macOS and Windows: every figure here is from x86-64 Linux.
+- macOS and Windows: the measurements other than ruff's are from x86-64 Linux.
 - rustfmt's throughput in process: rustfmt is only timed as a process, including its
   start-up (loading `librustc_driver` costs it about 30 ms and 34 MiB).
-- Memory bandwidth, and runs on more than four cores.
+- Memory bandwidth. Apart from the ruff measurement, nothing was measured on more than four
+  cores.
 - Unformatted input. The inputs are formatted by rustfmt first, because rustfmt's `--check`
   builds a diff of every file that would change, and that would add the cost of the diff to
   rustfmt's time.

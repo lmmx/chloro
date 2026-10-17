@@ -49,7 +49,7 @@ As a library:
 
 ```toml
 [dependencies]
-chloro = "0.8"
+chloro = "0.9"
 ```
 
 ## Use

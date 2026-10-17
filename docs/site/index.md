@@ -16,33 +16,47 @@ writes the same bytes as `rustfmt --edition 2024`. It is a module-by-module port
 1.9.0's formatting code onto the syntax trees of rust-analyzer's parser, so it does not need
 the Rust compiler. It comes as a 2 MB command-line tool and as a library.
 
-<div class="chl-stats">
-<div class="chl-stat">
+<div class="chl-conform">
 <span class="chl-figure">1220/1220</span>
-<span class="chl-label">rust-analyzer files identical to rustfmt 1.9.0</span>
-<span class="chl-note">and to rustfmt 1.8.0; default options, 0 non-idempotent</span>
+<span class="chl-label">rust-analyzer files formatted identically to rustfmt 1.9.0, and to rustfmt 1.8.0</span>
+<span class="chl-note">default options, none non-idempotent;
+<a href="compatibility/">rustfmt compatibility</a></span>
 </div>
-<div class="chl-stat">
-<span class="chl-figure">21–35%</span>
-<span class="chl-label">of rustfmt's wall time, one core</span>
-<span class="chl-note">nine crates of 215 KB–2.9 MB, <code>--check</code> on formatted input</span>
+
+<div class="chl-benches">
+<div class="chl-bench">
+<p class="chl-bench-title">Nine crates <span>against rustfmt 1.9.0</span></p>
+<p class="chl-bench-note">215 KB–2.9 MB each, <code>--check</code> on formatted files; an idle
+four-core Linux VM, 30 runs per cell, one-core runs pinned</p>
+<table class="chl-bench-table">
+<thead><tr><th>chloro on</th><th>wall time, rustfmt = 100%</th><th>peak memory</th></tr></thead>
+<tbody>
+<tr><th>1 core</th><td><span class="chl-meter" title="21–35% of rustfmt's wall time, per crate"><span class="chl-fill" style="width:21%"></span><span class="chl-spread" style="left:21%;width:14%"></span></span>21–35%</td><td>4–10 MiB</td></tr>
+<tr><th>4 cores</th><td><span class="chl-meter" title="8–17% of rustfmt's wall time, per crate"><span class="chl-fill" style="width:8%"></span><span class="chl-spread" style="left:8%;width:9%"></span></span>8–17%</td><td>5–23 MiB</td></tr>
+<tr class="chl-ref"><th>rustfmt</th><td><span class="chl-meter" title="rustfmt, one thread: 100%"><span class="chl-fill" style="width:100%"></span></span>100%</td><td>43–86 MiB</td></tr>
+</tbody>
+</table>
 </div>
-<div class="chl-stat">
-<span class="chl-figure">8–17%</span>
-<span class="chl-label">of rustfmt's wall time, four cores</span>
-<span class="chl-note">chloro with one thread per core; rustfmt runs on one thread</span>
-</div>
-<div class="chl-stat">
-<span class="chl-figure">4–23 MiB</span>
-<span class="chl-label">peak memory on the same crates</span>
-<span class="chl-note">4–10 MiB on one core, 5–23 MiB on four; rustfmt 43–86 MiB</span>
+<div class="chl-bench">
+<p class="chl-bench-title">ruff <span>against <code>cargo fmt</code></span></p>
+<p class="chl-bench-note">2,008 files, <code>--check</code> on the formatted workspace; a
+20-core workstation, rustfmt 1.10.0, 5 runs each (<code>just vs-ruff</code>)</p>
+<table class="chl-bench-table">
+<thead><tr><th>chloro on</th><th>wall time, cargo fmt = 100%</th><th>peak memory</th></tr></thead>
+<tbody>
+<tr><th>1 thread</th><td><span class="chl-meter" title="28% of cargo fmt's wall time (1.60 s against 5.63 s)"><span class="chl-fill" style="width:28.4%"></span></span>28%</td><td>16 MiB</td></tr>
+<tr><th>20 threads</th><td><span class="chl-meter" title="3.8% of cargo fmt's wall time (0.21 s against 5.63 s)"><span class="chl-fill" style="width:3.8%"></span></span>3.8%</td><td>90 MiB</td></tr>
+<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt (rustfmt, one thread): 100%, 5.63 s"><span class="chl-fill" style="width:100%"></span></span>100%</td><td>194 MiB</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
-<p class="chl-stats-caption">Measured on an idle four-core x86-64 Linux VM against
-<code>rustfmt 1.9.0-stable</code>, 30 timed runs per cell. The method, every workload and the
-limits of these numbers are on the <a href="performance/">Performance</a> page; the
-conformance matrix is on <a href="compatibility/">rustfmt compatibility</a>.</p>
+<p class="chl-stats-caption">rustfmt formats on one thread, so the one-core and one-thread
+rows compare the formatters like for like; the others add chloro's parallelism. The two
+benchmarks were run on different machines with different methods, so compare within a
+table, not across. Methods, every workload and the limits of these numbers are on the
+<a href="performance/">Performance</a> page.</p>
 
 ## Getting started
 

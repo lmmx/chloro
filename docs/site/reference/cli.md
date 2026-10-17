@@ -61,16 +61,16 @@ files and threads, each file as it is processed, and a summary at the end.
 
 ### ++"--version"++ / ++"-V"++
 
-Print the version and exit. The plain version, `chloro 0.8.0`, is printed only by a build
+Print the version and exit. The plain version, `chloro 0.9.0`, is printed only by a build
 of the release itself; any other build is marked as a development build, with what is known
 of its source:
 
 | output | built from |
 |---|---|
-| `chloro 0.8.0` | the release: the commit tagged `chloro-v0.8.0` with no uncommitted changes, or the crate published to crates.io |
-| `chloro 0.8.0-dev (2f9b060)` | another commit (`2f9b060`) of a git checkout |
-| `chloro 0.8.0-dev (2f9b060, dirty)` | a checkout with uncommitted changes to the files that go into the binary |
-| `chloro 0.8.0-dev (unknown source)` | a copy of the source with no git repository or packaging record, which cannot be checked |
+| `chloro 0.9.0` | the release: the commit tagged `chloro-v0.9.0` with no uncommitted changes, or the crate published to crates.io |
+| `chloro 0.9.0-dev (2f9b060)` | another commit (`2f9b060`) of a git checkout |
+| `chloro 0.9.0-dev (2f9b060, dirty)` | a checkout with uncommitted changes to the files that go into the binary |
+| `chloro 0.9.0-dev (unknown source)` | a copy of the source with no git repository or packaging record, which cannot be checked |
 
 The version is the crate's version; `-dev` is added only to this output. The check is made
 when chloro is compiled (`chloro/build.rs`), from the local repository: the build reruns when
@@ -78,7 +78,7 @@ HEAD moves, a tag changes, or a source file changes, and `--version` reads nothi
 time.
 
 A binary installed with `just reinstall` also prints its build ID, a hash of the source it
-was built from, as in `chloro 0.8.0-dev (2f9b060, dirty, build <id>)`
+was built from, as in `chloro 0.9.0-dev (2f9b060, dirty, build <id>)`
 ([Benchmarking](../maintainers/benchmarking.md#on-any-cargo-project-just-vs-rustfmt)).
 
 ### ++"--help"++ / ++"-h"++
