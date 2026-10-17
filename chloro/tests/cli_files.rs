@@ -1,5 +1,6 @@
 //! End-to-end tests of the CLI's file list.
-#![cfg(feature = "cli")]
+// Every case makes symlinks, so the file is Unix-only.
+#![cfg(all(feature = "cli", unix))]
 
 use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
@@ -9,7 +10,6 @@ const FORMATTED: &str = "fn main() {\n    let x = 1;\n}\n";
 
 /// A file reachable twice through a symlink, and named twice on the command line, is
 /// processed once: one report line, one write.
-#[cfg(unix)]
 #[test]
 fn a_file_reachable_several_ways_is_processed_once() {
     let src = tempfile::tempdir().unwrap();
@@ -64,7 +64,6 @@ fn processed(stderr: &str) -> Vec<String> {
 
 /// A symlinked directory inside a walked tree is walked under its canonical path, and a file
 /// reached both through it and through the real directory is processed once.
-#[cfg(unix)]
 #[test]
 fn a_symlinked_directory_is_walked_under_its_canonical_path() {
     let src = tempfile::tempdir().unwrap();
@@ -100,7 +99,6 @@ fn a_symlinked_directory_is_walked_under_its_canonical_path() {
 
 /// A symlinked `.rs` file inside a walked directory is processed under its target's
 /// canonical path, which need not end in `.rs`; the symlink stays in place.
-#[cfg(unix)]
 #[test]
 fn a_symlinked_file_inside_a_walked_directory_is_its_target() {
     let src = tempfile::tempdir().unwrap();
@@ -143,7 +141,6 @@ fn a_symlinked_file_inside_a_walked_directory_is_its_target() {
 }
 
 /// Symlinks back into the tree being walked (a cycle) end the walk with each file once.
-#[cfg(unix)]
 #[test]
 fn a_symlink_cycle_is_walked_once() {
     let src = tempfile::tempdir().unwrap();
@@ -168,7 +165,6 @@ fn a_symlink_cycle_is_walked_once() {
 /// Files are processed in the order of their canonical paths when their sizes are equal
 /// (`Path` order compares components: `a/b.rs` sorts before `a-b.rs`), wherever a symlink
 /// takes the walk.
-#[cfg(unix)]
 #[test]
 fn files_of_equal_size_are_processed_in_path_order() {
     let src = tempfile::tempdir().unwrap();
