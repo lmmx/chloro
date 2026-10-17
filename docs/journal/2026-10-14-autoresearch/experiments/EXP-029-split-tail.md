@@ -104,6 +104,7 @@ runs per crate and binary.
 | L1 | 2026-10-15 17:54:34–17:55:06 | 7.57–8.53 | `chloro-diag-base`, nine crates |
 | L2 | 2026-10-15 18:03:53–18:05:07 | 4.63–7.56 | `collect_ab.sh`, 5 blocks of 6 runs of `chloro-diag-base` and `chloro-diag-a`, nine crates |
 | L3 | 2026-10-17 06:47:49–06:49:33 | 7.6–8.7 (the other agents' callgrind runs) | `collect_ab.sh`, 5 blocks of 6 runs of `chloro-base`, `chloro-b`, `chloro-diag-base`, `chloro-diag-b` in turn, nine crates |
+| L4 | 2026-10-17 07:02:32–07:02:45 | 2.19–2.41 | the same four binaries, `fx-hir` and `fx-ide-db` |
 
 ## Hypothesis and falsifiers
 
@@ -401,6 +402,14 @@ The four crates without a split file (the lever changes nothing that runs there)
 builds: wall −5.9…+4.9%, CPU −4.2…+2.4% (`fx-syntax`, `fx-parser`, `reg-tokio`, `reg-winnow`):
 the noise of this window.
 
+A second collection, L4 (2026-10-17 07:02:32–07:02:45, `fx-hir` and `fx-ide-db` only, the same
+four binaries in 5 blocks of 6 runs, load 2.19–2.41, provisional), medians of 30 runs:
+
+| crate | replay of the cap on the base's costs: span (change), tail, idle | base build: span, tail, idle | lever build: span, tail, idle | release builds: wall, CPU, wall tail, idle in tail |
+|---|---|---|---|---|
+| fx-hir | 33.28 (+42.6%), 14.31, 41.01 | 25.42, 1.85, 0.91 | 31.73, 13.64, 39.80 | 43.8 → 51.6 (+17.8%), 106.0 → 103.0, 10.86 → 18.57, 31.35 → 51.75 |
+| fx-ide-db | 26.10 (+25.4%), 7.26, 21.53 | 20.76, 0.19, 0.42 | 24.20, 5.30, 15.55 | 38.7 → 41.6 (+7.5%), 89.1 → 91.3, 2.39 → 10.18, 6.45 → 30.25 |
+
 - The split file without helpers runs its whole units phase on one core while the other
   workers finish the crate: `fx-hir`'s tail grows 8x and its idle core time 74x, `fx-ide-db`'s
   32x and 48x. The measured spans rise by 40% and 18% where the replay said 49% and 28%: the
@@ -409,6 +418,8 @@ the noise of this window.
   are the replay's.
 - CPU falls 1.4–3.6% on the two crates with fewer threads, the one gain the cap was for, and
   it does not pay for the lost parallelism.
+- The release wall view moves the same way in L4, the quieter window: wall +17.8% and +7.5%,
+  the wall-view tail 1.7x and 4.3x.
 - **Keep rule:** the tails grow on both crates and two spans rise: **reverted** (`efd781c`).
 - Per-run rows: appendix D.
 
