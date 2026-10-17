@@ -15,11 +15,14 @@ what else the host is running.
 |---|---|
 | `collect.sh` | runs `diag.py` on the nine crate workloads in six configurations (4 threads and 1 pinned thread; no cache, cold cache, `--write` on raw copies) |
 | `diag.py` | runs a traced binary N times, keeps the traces, derives the wall view per run and prints the medians |
-| `trace_patch.py` | the diagnostic build's patch (thread CPU clocks, parse/units/stitch/unit records in `parallel.rs`); applied to a scratch worktree, never committed |
+| `trace_patch.py` | the diagnostic build's patch (thread CPU clocks, parse/units/stitch/unit records in `parallel.rs`); applied to a scratch worktree, never committed; variant `owner` for EXP-029's lever (a) at `0a6080c` |
 | `sim.py` | from patched traces: today's scheduler under processor sharing (A), a unit queue across files (B) and the work-conserving bound (C), all from on-CPU costs |
+| `split_sim.py` | EXP-029: from patched traces, a split file's parts (parse, the rest of its worker's time, units, stitch) and the replay of the levers on its own schedule (the worker formats units, capped or dynamic item threads, units cut below the item, a parallel parse); `--blind` recomputes the wall view without the item workers, as an unpatched trace sees it; `--compare` reads `collect_ab.sh` |
+| `collect_ab.sh` | several traced binaries on the nine crates, interleaved in blocks (same load window) |
 | `report.py` | the record's tables from a `collect.sh` directory (`d1` measured, `d2` reconstructed, `d4` phases) |
 | `cpu_split.py` | user and system CPU, faults and context switches at 1 thread on one core, 4 threads on one core and 4 threads on four cores, interleaved |
 | `identity.sh` | a CLI's output against another's (`--check`, `--write`, print; 1, 2 and 4 threads; crates, raw crates and the fixtures tree) |
+| `identity_start.sh` | the written trees of a CLI older than `--threads` and `--no-cache` (the programme's start, `884f9c9`) against a current CLI's at 1, 2 and 4 threads; prints the differing files |
 
 ## Run
 
@@ -49,6 +52,11 @@ Tab-separated, nanoseconds since `main` was entered:
 
 The patched build adds `cpu START NS` after each file (its worker's CPU time over the file),
 a fifth field on `worker` lines (the worker's CPU time) and `item KIND START END NS N` lines.
+An unpatched trace has no `item` lines, so its wall view counts a split file's whole span as
+one busy core and its item workers as idle: its idle core time in the tail overstates the
+loss whenever a split file is running then (EXP-029: on the same quiet-host traces, 10.6
+core-ms blind against 2.2 seen on `fx-hir`, 6.7 against 5.3 on `fx-ide-db`; `split_sim.py
+--blind`). Read the tail of a crate with a split file from a patched trace.
 On a loaded host the wall view mixes the schedule with waiting for a core, and the waiting
 shows up as gaps between a worker's files (in EXP-023, 0.9 ms over 122 files with one thread
 alone on a core, 84–131 ms per worker with four threads sharing one core). Read the wall view
