@@ -9,7 +9,7 @@ repository = "https://github.com/lmmx/chloro"
 rust-version = "1.88"
 
 [workspace.dependencies]
-chloro-core = { path = "chloro-core", version = "0.8.0" }
+chloro-core = { path = "chloro-core", version = "0.9.0" }
 
 assert_cmd = "2"
 blake3 = "1.8"
