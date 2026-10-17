@@ -1,8 +1,8 @@
 # Caching
 
-<p class="lede">Running a formatter over a tree that is already formatted is the common
-case, in a pre-commit hook or an editor's save. chloro remembers which file contents it has
-seen come out unchanged, and skips them next time.</p>
+<p class="lede">Most formatter runs, from a pre-commit hook or an editor on save, are over
+files that are already formatted. chloro records which file contents it has seen come out
+unchanged and skips them on later runs.</p>
 
 ## The fixed-point cache
 
@@ -23,8 +23,8 @@ On the 1238 already-formatted files of the conformance corpus, on four cores:
 | `--check --no-cache` | 356 ms |
 | `--check` with chloro 0.8.0, which has no cache | 1014 ms |
 
-Figures from the sixth quiet-host measurement ([M6][m6]); the conditions are on the
-[Performance](../performance.md) page.
+These figures are from measurement [M6][m6]; the [Performance](../performance.md) page
+describes the conditions.
 
 ### What the key covers
 
@@ -43,7 +43,7 @@ its digest is recorded under the executable's identity (path, size and modificat
 and on Unix also device, inode and status-change time) and read back while that identity is
 unchanged.
 
-!!! note "One documented limit"
+!!! note "Limitation"
 
     An executable rewritten in place with every one of those identity fields unchanged would
     be taken for the binary recorded earlier. On Unix that requires a write within the file
@@ -54,7 +54,7 @@ unchanged.
 
 ### Where the cache lives
 
-The first of:
+chloro uses the first of these that is set:
 
 1. `--cache-dir DIR`
 2. `$CHLORO_CACHE_DIR`
@@ -98,10 +98,10 @@ chloro --unit-cache --write src/
 
 It is off by default because it costs more than it saves when it starts empty: a cold
 `--check` of the conformance corpus took 10–15% longer with it, and its file grew to 8.6 MB
-for that corpus. It pays in workflows that reformat the same large files after small edits.
-In process, re-formatting a large file after a one-item edit took 0.26–0.47 of the time of
+for that corpus. It helps when the same large files are reformatted after small edits. In
+process, reformatting a large file after a one-item edit took 0.26–0.47 of the time of
 formatting it from scratch; at the command line, process start-up and reading the cache
-dilute that gain. The records are capped at 64 MiB per cache file.
+take back part of that saving. The records are capped at 64 MiB per cache file.
 
 The library exposes the same mechanism, with a store you provide; see
 [the library guide](library.md#a-cache-of-formatted-items).

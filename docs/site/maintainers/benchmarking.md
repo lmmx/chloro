@@ -1,8 +1,8 @@
 # Benchmarking
 
-<p class="lede">Two kinds of measurement steer chloro's performance work: instruction counts,
-which are exact and repeatable on any machine, and wall-time comparisons with rustfmt, which
-need a quiet machine and are only read as ratios.</p>
+<p class="lede">chloro's performance work uses two kinds of measurement: instruction counts,
+which are repeatable on any machine, and wall-time comparisons with rustfmt, which need an
+idle machine and are compared only as ratios.</p>
 
 The scripts are in `benchmarks/`; `benchmarks/README.md` documents every option. They need
 a release build of both crates first:
@@ -30,18 +30,18 @@ benchmarks/profile.sh --core 3 --runs 3 --per-file --phase parse
   checked on code it was not tuned on.
 
 Counts repeat to within about 2,000 instructions from run to run, so changes far below
-timing noise are visible. Two details make that hold:
+timing noise are visible. The script does two things to keep the counts stable:
 
 - The script stages the binary and the sample under fixed-length paths and runs with
   address randomisation off (`setarch -R`) and an empty environment, because path lengths
   shift the heap's layout and with it the count.
 - `--per-file` formats each file in its own process and sums the counts, which removes the
-  effect one file's allocations have on the next file's. A change worth under about
+  effect one file's allocations have on the next file's. A change of less than about
   2 million instructions is judged on the per-file figure.
 
 `--phase parse` counts only the parse (`chloro_core::parse_only`), to see the parser's
 share. `--sim` adds callgrind's cache and branch simulation; `--shuffle N` repeats the count
-with randomised code layouts, to tell a real change from a layout accident.
+with randomised code layouts, to tell a real change from an effect of code layout.
 
 Needs `valgrind` and `setarch`.
 
@@ -75,8 +75,8 @@ the real binary behind rustup's proxy).
 
 !!! warning "Wall time on a shared machine"
 
-    The same binary on the same files moved 20–40% between measurement windows on the
-    virtual machine chloro was measured on. Compare tools within one run, never across runs,
+    Timings of the same binary on the same files varied by 20–40% between measurement
+    sessions on the virtual machine chloro was measured on. Compare tools within one run, never across runs,
     and treat a wall-time change smaller than the run-to-run spread as no change.
 
 ## In process: `bench`
@@ -100,7 +100,7 @@ reports the best of `-n` rounds. It also records and checks output hashes
 | `examples/alloc_count.rs` | counting allocations |
 | `alloc-timing`, `alloc-mimalloc`, `alloc-jemalloc`, `alloc-snmalloc` features | instrumenting or replacing the global allocator in measurement builds; all off by default |
 
-## The records
+## Measurement records
 
 Six full measurements against rustfmt (M1 to M6) and the experiments behind each change are
 in the journal; the [project history](../history.md) explains how to find them. The

@@ -1,7 +1,7 @@
 # ++"chloro"++
 
-The command-line formatter. This page is the reference; the [Command line guide](../guide/cli.md)
-explains how the pieces fit together.
+Reference for the `chloro` command. The [Command line guide](../guide/cli.md) explains how the
+options work together.
 
 ## Usage
 

@@ -14,23 +14,23 @@ depending on the compiler. It is a module-for-module port of rustfmt 1.9.0's for
 logic onto the syntax trees of rust-analyzer's parser, available as a command-line tool and
 as a library.
 
-**Documentation: [lmmx.github.io/chloro](https://lmmx.github.io/chloro/)**
+The documentation is at [lmmx.github.io/chloro](https://lmmx.github.io/chloro/).
 
-## Why
+## Compatibility and performance
 
-- **rustfmt's output.** Identical to rustfmt 1.9.0 on all 1220 files of the rust-analyzer
-  conformance corpus, on 31 non-default values of 24 stable options across four editions,
-  and on all 20,540 files of a 577-crate registry corpus that rustfmt formats; identical to
-  rustfmt 1.8.0 with `rustfmt_version = "1.8.0"`. [What is compared, and what is not](https://lmmx.github.io/chloro/compatibility/).
-- **Fast.** 0.21–0.35 of rustfmt's wall time on one core and 0.08–0.17 on four, checking nine
-  crates of 215 KB to 2.9 MB; a warm `--check` of 1238 unchanged files in 16 ms.
-  [Method and conditions](https://lmmx.github.io/chloro/performance/).
-- **Small.** 4–23 MiB of peak memory where rustfmt takes 43–86 MiB, and a runtime dependency
-  tree of 18 crates, free of `syn`.
+chloro's output is identical to rustfmt 1.9.0's on all 1220 files of the rust-analyzer
+conformance corpus, on 31 non-default values of 24 stable options across four editions,
+and on all 20,540 files of a 577-crate registry corpus that rustfmt formats. With
+`rustfmt_version = "1.8.0"` it matches rustfmt 1.8.0 instead. The
+[compatibility page](https://lmmx.github.io/chloro/compatibility/) lists what was compared
+and what was not.
 
-These figures are measured on x86-64 Linux, with the method and the commands to reproduce
-them on the [Performance](https://lmmx.github.io/chloro/performance/) page; none is a claim of equivalence with rustfmt
-beyond the tested matrix.
+Checking nine crates of 215 KB to 2.9 MB, chloro took 0.21–0.35 of rustfmt's wall time on
+one core and 0.08–0.17 on four, and 4–23 MiB of peak memory where rustfmt took 43–86 MiB.
+With a warm cache, `--check` of 1238 unchanged files takes 16 ms. Its runtime dependency tree
+is 18 crates and does not include `syn`. These figures were measured on x86-64 Linux; the
+[performance page](https://lmmx.github.io/chloro/performance/) gives the method and the
+commands to reproduce them.
 
 <!-- just: conf-md -->
 **Summary:** +0 / -0
@@ -76,7 +76,7 @@ let formatted = chloro::format_source_with_config("fn main(){}", &config);
 See the [library guide](https://lmmx.github.io/chloro/guide/library/) for the parallel and cached entry points of
 `chloro-core`, and [docs.rs](https://docs.rs/chloro) for the API.
 
-## Learn more
+## Documentation
 
 - [How it works](https://lmmx.github.io/chloro/architecture/overview/): the parser, the flat syntax tree, the ported
   formatter, and parallel execution.

@@ -1,14 +1,14 @@
 # rustfmt compatibility
 
-<p class="lede">chloro's goal is rustfmt's output, byte for byte. This page says what that
-has been checked against, how, and where the checks stop.</p>
+<p class="lede">chloro aims to produce exactly the bytes rustfmt produces. This page lists
+what its output has been compared against, how the comparisons were made, and what they do
+not cover.</p>
 
-Each claim below compares chloro's output with the output of a named rustfmt binary on the
-same source and the same options. None of it is a proof that chloro and rustfmt agree on
-every possible input: rustfmt is defined by its implementation, and the comparison covers
-the corpora and options listed here.
+Each result below compares chloro's output with the output of a named rustfmt binary on the
+same source with the same options. The comparisons cover the corpora and options listed
+here; they do not show that chloro and rustfmt agree on every possible input.
 
-## The reference
+## Reference versions
 
 | | |
 |---|---|
@@ -17,7 +17,7 @@ the corpora and options listed here.
 | how rustfmt is run | `rustfmt --edition 2024` (or the edition under test) on standard input, with no `rustfmt.toml` |
 | what counts as identical | the same bytes; where rustfmt rejects a file, the expected output is the input, unchanged |
 
-## The matrix
+## Results
 
 | what varies | values | corpus | identical |
 |---|---|---|---|
@@ -29,7 +29,7 @@ the corpora and options listed here.
 | code chloro was not developed on | default options, rustfmt 1.9.0 | 20,850 files of 577 crates from crates.io | 20,540 of the 20,540 files rustfmt formats |
 | the same at rustfmt 1.8.0 | default options | 20,019 files of 559 crates, measured before the last conformance fixes | 20,007 of 20,019: 9 files the later fixes target, 3 that both releases reject |
 
-How to read it:
+Notes on the table:
 
 - **The rust-analyzer corpus.** 1238 `.rs` files from rust-analyzer are checked in under
   `chloro-core/tests/conformance/fixtures/`, with rustfmt's output for each stored as a
@@ -85,8 +85,8 @@ compared.
 
 - **`rustfmt.toml`.** chloro reads no configuration file. Options come from `--config` or
   `Config`.
-- **Unstable options.** Fixed at rustfmt's defaults; setting one to another value is an
-  error ([Configuration](guide/configuration.md#unstable-rustfmt-options)).
+- **Unstable options.** chloro always uses rustfmt's defaults for them, and setting one to
+  another value is an error ([Configuration](guide/configuration.md#unstable-rustfmt-options)).
 - **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or
   standard input modes; `--check` reports a count, not a diff. Editions are set with
   `--config edition=…`.
@@ -111,7 +111,7 @@ Six cases are recorded and open in the [conformance ledger][ledger]:
 | 20 | Edition-2015 trait methods with anonymous parameters, `fn f(usize);`, which rust-analyzer's parser rejects. | chloro returns the file unchanged; rustfmt formats it. |
 | 21 | rustfmt's internal error on one file of rustyline 14.0.0. | rustfmt exits with an error and writes the output chloro writes. |
 | 22 | rustfmt's run time on a 47 KB generated file of pest_meta 2.9.2. | rustfmt takes over nine minutes and chloro 0.2 s, for identical output. |
-| 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro matches rustfmt pass for pass. |
+| 23 | Files where rustfmt's own output is not a fixed point (eight known). | chloro's output matches rustfmt's at every pass. |
 | 24 | Minor forms: a trailing comma in `builtin # offset_of(…)`, which rust-analyzer rejects. | chloro returns the file unchanged. |
 
 A difference not listed here is a bug: please [open an issue](https://github.com/lmmx/chloro/issues)

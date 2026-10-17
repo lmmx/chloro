@@ -42,10 +42,10 @@ are described on the [Performance](https://lmmx.github.io/chloro/performance/) p
 
 ### Changed
 
-- Faster: against rustfmt 1.9.0 on nine crates, chloro takes 0.21–0.35 of rustfmt's wall
-  time on one core and 0.08–0.17 on four. Against 0.8.0, the formatter executes 66% fewer
+- Formatting is faster. Against rustfmt 1.9.0 on nine crates, chloro takes 0.21–0.35 of
+  rustfmt's wall time on one core and 0.08–0.17 on four. Against 0.8.0, the formatter executes 66% fewer
   instructions on the same files and formats 2.7 times as many bytes per second on one core.
-- Less memory: 4–10 MiB peak on one core on the same crates, against 6–29 MiB for 0.8.0
+- Peak memory on the same crates is 4–10 MiB on one core, against 6–29 MiB for 0.8.0
   (rustfmt: 43–86 MiB).
 - Nested closures no longer slow formatting down superlinearly: a 2 KB file of closures
   nested 16 deep takes 5.5 million instructions, against 242.5 million in 0.8.0.

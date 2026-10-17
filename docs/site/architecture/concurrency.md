@@ -1,8 +1,8 @@
 # Parallelism and caches
 
-<p class="lede">Two observations about rustfmt's output make it safe for chloro to format
-pieces of a file separately: what a top-level item becomes depends only on the item, and the
-text between items can be put back in order afterwards.</p>
+<p class="lede">chloro can format parts of a file separately because, in rustfmt, the output
+of a top-level item depends only on that item, and the text between items can be filled in
+afterwards, in order.</p>
 
 ## Item independence
 
@@ -14,10 +14,9 @@ together) gave 13,650 units in the first and 965,193 in the second. Formatted on
 every unit came out as it does in its file, except in the text before it: a comment before
 the item, a `#[rustfmt::skip]` module, a `#!` line. No unit differed in any other way.
 
-So a unit's output is a function of its own text, the configuration, and the file's
-`rustfmt::skip::macros` and `::attributes` names. That is evidence, not a proof, and chloro
-does not rely on it unchecked: both uses below are tested for identical output over both
-corpora.
+So a unit's output depends only on its own text, the configuration, and the file's
+`rustfmt::skip::macros` and `::attributes` names. This was an empirical test rather than a
+proof, so both uses below are also tested for identical output over both corpora.
 
 ## Formatting items on several threads
 
@@ -27,16 +26,16 @@ tree is `Sync`. Workers take units from a shared queue, longest first, and each 
 unit with a visitor of its own, starting from the state the sequential visitor would have at
 that point.
 
-The subtle part is the gap before each unit. The sequential visitor writes the comments and
+The text before each unit needs special handling. The sequential visitor writes the comments and
 blank lines before an item from inside the item's own code, and what it writes depends on
 the output so far (whether the buffer is empty, how many newlines it ends with). A worker
 cannot know that, so it does not write the gap: it records the call it would have made.
 The calling thread then walks the units in order, replays each recorded gap call on the real
 output buffer, and appends the unit's text.
 
-If a unit's record cannot be stitched where it belongs, the calling thread formats that part
+If a unit's record cannot be placed where it belongs, the calling thread formats that part
 sequentially instead; a panic in a worker is re-raised with its original payload.
-`tests/parallel_equivalence.rs` holds the two paths to identical output, and the corpus
+`tests/parallel_equivalence.rs` checks that the two paths give identical output, and the corpus
 check (`examples/bench --threads 4 --check`) compares the parallel output of every corpus
 file with hashes recorded from the sequential path.
 
@@ -61,7 +60,8 @@ limits.
 
 ## The unit cache
 
-`format_source_with_unit_cache` is the parallel path with a cache in front of each unit. A
+`format_source_with_unit_cache` is the parallel function with a cache lookup before each
+unit is formatted. A
 cached unit records its output with every position relative to the unit's start, so a hit
 applies wherever the unit has moved in the file. Everything that depends on more than the
 unit is recomputed on every call: the parse, the whole-file checks, the text between units,

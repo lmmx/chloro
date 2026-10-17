@@ -1,7 +1,7 @@
 # Parsing and the syntax tree
 
 <p class="lede">chloro parses with rust-analyzer's parser and stores the result as one flat
-array, so that reading the tree costs nothing beyond an index.</p>
+array, so that reading a node of the tree is an array lookup that allocates nothing.</p>
 
 ## Why rust-analyzer's parser
 
@@ -14,7 +14,7 @@ nodes.
 
 The parser is used as published, pinned to one version (0.0.307 today) in
 `chloro-core/Cargo.toml`. It produces a stream of events (start node, token, finish node,
-error); everything after that is chloro's.
+error); chloro does everything after that, from building the tree to formatting.
 
 ## The lexer front end
 
@@ -25,7 +25,7 @@ from the text, and recognises the most common tokens (whitespace, ASCII identifi
 one-character punctuation, line comments) with a byte scan, handing the rest to
 `rustc_lexer`'s cursor.
 
-It must produce exactly the tokens `LexedStr` produces. Two things hold it to that:
+It must produce exactly the tokens `LexedStr` produces, and two checks ensure that it does:
 
 - Any text with a lexer error, a shebang or front matter goes to `LexedStr` as before, so
   error handling is rust-analyzer's own.
@@ -33,7 +33,7 @@ It must produce exactly the tokens `LexedStr` produces. Two things hold it to th
   output with `LexedStr`'s, over both corpora in two editions, 10,000 random texts and
   10,000 mutated corpus files; and debug builds compare the two on every text they lex.
 
-This one change cut the instructions to format the crates.io sample by 15%.
+With this lexer, formatting the crates.io sample takes 15% fewer instructions.
 
 ## The flat tree
 
@@ -66,9 +66,8 @@ builds it. <code>end</code> is the index after the element's subtree, so the nex
 <code>NAME</code> (index 4) is at index 6.</p>
 
 A handle to a node or token (`Node`, `Token`) is a reference to the tree and an index. It is
-`Copy`, and making one allocates nothing. That is the difference from `rowan`, the tree
-library rust-analyzer itself uses, where reading a node creates a reference-counted "red"
-node on the heap. Replacing rowan's trees with this array cut the formatter's instructions
+`Copy`, and making one allocates nothing. In `rowan`, the tree library rust-analyzer itself
+uses, reading a node creates a reference-counted "red" node on the heap. Replacing rowan's trees with this array cut the formatter's instructions
 by a quarter and its heap allocations by 43%.
 
 On top of the array, a typed layer (`cst::ast`) has the same names as rust-analyzer's
@@ -93,7 +92,7 @@ fragment trees live in an arena that lasts for one formatting run.
 ## Where the two parsers disagree
 
 rustfmt formats only what rustc's parser accepts, and leaves everything else alone. The two
-parsers mostly agree, but not everywhere:
+parsers accept almost the same syntax, with differences in both directions:
 
 - **rust-analyzer accepts, rustc rejects.** rust-analyzer is deliberately permissive (it
   parses broken code in an editor) and accepts some removed or experimental syntax.

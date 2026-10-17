@@ -1,7 +1,8 @@
 # Configuration
 
-<p class="lede">chloro's options are rustfmt's stable options, with rustfmt's names, value
-spellings and defaults, plus one of its own: the rustfmt release to reproduce.</p>
+<p class="lede">chloro accepts rustfmt's stable options, with the same names, value spellings
+and defaults. It adds one option, <code>rustfmt_version</code>, which selects the rustfmt
+release to reproduce.</p>
 
 With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfmt.toml`.
 
@@ -87,10 +88,10 @@ chloro --config max_width=120,use_field_init_shorthand=true --check src/
 | `disable_all_formatting` | `false` | `true`, `false` |
 | `rustfmt_version` | `1.9.0` | `1.8.0`, `1.9.0` (chloro only) |
 
-The meaning of each rustfmt option is rustfmt's; the
+Each option means what it means in rustfmt; the
 [rustfmt configuration reference](https://rust-lang.github.io/rustfmt/) describes them.
-[rustfmt compatibility](../compatibility.md#options) says which values chloro's output has
-been compared with rustfmt's on.
+[rustfmt compatibility](../compatibility.md#options) lists the option values on which
+chloro's output has been compared with rustfmt's.
 
 ### Width heuristics
 
@@ -114,7 +115,8 @@ differs from them.
 
 ### `rustfmt_version`
 
-chloro's own option. It selects the rustfmt release whose output is reproduced:
+This option is specific to chloro. It selects the rustfmt release whose output is
+reproduced:
 
 - `1.9.0`, the default: `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the release chloro is
   ported from.
@@ -122,8 +124,9 @@ chloro's own option. It selects the rustfmt release whose output is reproduced:
 
 The two releases differ in a handful of formatting decisions and in which syntax their
 parsers accept; [rustfmt compatibility](../compatibility.md#rustfmt-releases) lists the
-differences. `1.7.0` and earlier are refused with the reason: rustfmt 1.7.0 has no 2024
-Style Guide rules, so its output cannot be reached from 1.9.0's by a few branch points.
+differences. `1.7.0` and earlier are rejected with an explanation: rustfmt 1.7.0 has no
+2024 Style Guide rules, and its output differs from 1.9.0's too widely to reproduce with a
+few version checks in the formatter.
 
 ### Unstable rustfmt options
 

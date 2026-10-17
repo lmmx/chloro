@@ -1,8 +1,8 @@
 # Quickstart
 
-<p class="lede">Check a crate, format it, and keep it formatted in CI. Every command here
-gives the same result as the corresponding <code>rustfmt</code> run at edition 2024 with
-default options.</p>
+<p class="lede">How to check and format a crate with chloro, and how to run the check in CI.
+Each command gives the same result as <code>rustfmt</code> at edition 2024 with default
+options.</p>
 
 ## Check
 

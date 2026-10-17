@@ -1,26 +1,29 @@
 # How it works
 
-<p class="lede">chloro gets rustfmt's output without rustfmt's compiler by porting rustfmt's
-formatting logic onto a different parser, and then making that port cheap to run.</p>
+<p class="lede">chloro is rustfmt's formatting code ported onto a parser that is available as
+an ordinary library, then optimised. This page gives an overview of how a file goes from
+source text to formatted output.</p>
 
-## The idea
+## Background
 
 rustfmt is built on the Rust compiler: it parses a file with rustc's parser into rustc's
 abstract syntax tree, then rewrites each node, trying candidate layouts in a fixed order and
 keeping the first that fits the width. Its output is the product of a few hundred
 interacting width heuristics and fallbacks. chloro's first versions tried to reproduce that
 output rule by rule from observation, and matched rustfmt on 233 of the 1220 conformance
-files; rule-by-rule reproduction does not converge.
+files. Reproducing a few hundred interacting heuristics one rule at a time from their
+output did not come close to rustfmt.
 
 So chloro ports rustfmt instead. The formatter in `chloro-core` follows rustfmt 1.9.0's
 source module by module, keeping its control flow, names and comments, so that every
-formatting decision can be checked against the rustfmt code it reproduces. What changes is
-underneath: the syntax comes from rust-analyzer's parser (`ra_ap_parser`), which is a
-library, rather than from rustc, which is not. A thin adaptation layer presents
+formatting decision can be checked against the rustfmt code it reproduces. The difference
+is the parser: the syntax comes from rust-analyzer's parser (`ra_ap_parser`), which is
+published as a library, rather than from rustc, which is not. A thin adaptation layer presents
 rust-analyzer's syntax in the shape rustfmt's code expects.
 
-With the port, conformance went to 1219 of 1220 files, and then 1220. The performance
-work that followed kept every output byte the same, and made the port 2.7 times as fast.
+The port matched rustfmt on 1219 of the 1220 files, and later on all 1220. The performance
+work that followed left every output byte unchanged and made the formatter 2.7 times as
+fast.
 
 ## The pipeline
 
@@ -85,8 +88,8 @@ the step.</p>
 3. **Build the tree.** The parser's events become one flat array of nodes and tokens over the
    source text, with comments and whitespace attached where rust-analyzer attaches them.
    [Parsing and the syntax tree](parsing.md) describes the tree.
-4. **Take rustc's view.** rustfmt formats exactly the files rustc's parser accepts, and the
-   two parsers disagree at the edges. Where rust-analyzer rejects syntax rustc accepts, the
+4. **Match rustc's parser.** rustfmt formats exactly the files rustc's parser accepts, and
+   the two parsers do not accept exactly the same syntax. Where rust-analyzer rejects syntax rustc accepts, the
    tree is rebuilt with the node rustc would build (`rustc_syntax`); where rust-analyzer
    accepts syntax rustc rejects, the file is returned unchanged (`rustc_compat`). A file that
    neither parser accepts is returned unchanged, as rustfmt returns it.
@@ -97,7 +100,7 @@ the step.</p>
    `newline_style`, as rustfmt's `format_lines` and `apply_newline_style` do.
 
 For a file of 128 KiB or more, step 5 runs on several threads at once, one top-level item
-per task, with the text between items stitched in order on one thread.
+per task, while the text between items is written in order on one thread.
 [Parallelism and caches](concurrency.md) covers that, and the caches that let chloro skip
 work it has done before.
 
@@ -113,8 +116,8 @@ On the 49-file instruction-count sample, after the performance work:
 
 The parser is rust-analyzer's, used as published. Its remaining cost could be cut further
 only with a fork of `ra_ap_parser` (sizing its buffers up front and writing chloro's tree
-directly from its events), bounded at about 6–7% of the total; chloro does not maintain a
-fork.
+directly from its events), which would save at most about 6–7% of the total; chloro does
+not maintain a fork.
 
 ## The crates
 
@@ -124,6 +127,7 @@ fork.
 | `chloro` | the command line (`src/cli/`: argument parsing, file discovery, the worker pool, the caches) and a library facade over `chloro-core` |
 
 `chloro-core`'s runtime dependency tree is 18 crates as `cargo tree` counts them (itself
-included), rust-analyzer's parser and its lexer among them; `syn` is not one of them. `rowan` and `ra_ap_syntax`, the tree types
-rust-analyzer itself uses, are development dependencies only: the tests use them to check
-that chloro's tree is the same tree.
+included), rust-analyzer's parser and its lexer among them; `syn` is not one of them.
+`rowan` and `ra_ap_syntax`, the tree types rust-analyzer itself uses, are only development
+dependencies: the tests use them to check that chloro builds the same tree as
+rust-analyzer.

@@ -75,9 +75,9 @@ links to docs.rs.
     main branch and not yet in a published release; 0.8.0 is the latest release. The
     [Changelog](../changelog.md) says which version each change is in.
 
-## What chloro needs at run time
+## Run-time requirements
 
-Nothing besides itself. It does not call `rustfmt`, `rustc` or `cargo`, and it reads no
-configuration file: options come from `--config` on the command line or from `Config` in
-the library. The only file it writes outside the files it formats is its
-[cache](../guide/caching.md), under the user cache directory by default.
+chloro has no run-time dependencies. It does not call `rustfmt`, `rustc` or `cargo`, and it
+reads no configuration file: options come from `--config` on the command line or from
+`Config` in the library. Apart from the files it formats, the only file it writes is its
+[cache](../guide/caching.md), which lives in the user cache directory by default.

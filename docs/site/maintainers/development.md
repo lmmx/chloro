@@ -1,8 +1,8 @@
 # Development
 
 <p class="lede">How the repository is laid out, how to build and test it, and the checks a
-change must pass. chloro's rule is that a change which alters any output is a conformance
-change and must say so; every other change must leave every output byte where it was.</p>
+change must pass. A change that alters any formatted output is a conformance change and must
+say so; any other change must leave every output byte unchanged.</p>
 
 ## Layout
 
@@ -102,21 +102,22 @@ show that it does. In order, cheapest first:
 A conformance fix changes outputs on purpose: the files it changes should be exactly the
 ones it targets, checked file by file, and the case recorded in the conformance ledger.
 
-## Rules the code keeps
+## Code conventions
 
-- **The port stays a port.** Formatter modules keep rustfmt's module, function and variable
+- **rustfmt's structure.** Formatter modules keep rustfmt's module, function and variable
   names and its control flow, so that a difference can be traced to the rustfmt code it
-  reproduces. Optimisations go in a form that leaves that mapping readable.
-- **Additive public API.** `format_source` and `format_source_with_config` keep their
-  signatures; new capabilities are new functions.
-- **`unsafe` needs a reason.** `chloro` forbids it. `chloro-core` has one block, with a written
-  safety argument and a randomised test; any other needs the same, and a measured safe
-  alternative first.
-- **New dependencies need a measured reason.** `chloro-core` has 18 crates in its runtime tree.
+  reproduces. Optimisations are written so that this correspondence stays readable.
+- **Public API.** Changes are additive: `format_source` and `format_source_with_config` keep
+  their signatures, and new capabilities are new functions.
+- **`unsafe` code.** `chloro` forbids it. `chloro-core` has one `unsafe` block, with a written
+  safety argument and a randomised test. Any new one needs the same, and a safe alternative
+  measured first.
+- **Dependencies.** A new dependency needs a measured reason. `chloro-core` has 18 crates in
+  its runtime tree.
 
 ## The journal
 
 `docs/journal/` records design decisions, experiments and measurements as dated entries, in
-the format `docs/JOURNAL.md` describes. It is the place for a record of why something is the
-way it is; this website describes what it is. The [project history](../history.md) is a
+the format `docs/JOURNAL.md` describes. The journal records why things are the way they are;
+this website describes how chloro works now. The [project history](../history.md) is a
 guide to the journal.
