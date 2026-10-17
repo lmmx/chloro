@@ -3,7 +3,9 @@ Usage: chloro [OPTIONS] [SOURCES]...
 A Rust code formatter reproducing `rustfmt --edition 2024`.
 
 Arguments:
-  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')
+  [SOURCES]...       Files or directories to format (default: '.', the current
+                     directory). Directories are walked for .rs files, skipping
+                     hidden entries and cache directories such as target/
 
 Options:
   -c, --check        Check if files need formatting (exit 1 if so)

@@ -14,10 +14,8 @@ options work together.
 --8<-- "docs/site/_snippets/cli/help.txt"
 ```
 
-!!! note
-
-    `[SOURCES]` defaults to the current directory (`.`), not `'src'` as the help text says
-    ([#91](https://github.com/lmmx/chloro/issues/91)).
+Which files a directory contributes is described in the guide, under
+[Sources](../guide/cli.md#sources).
 
 ## Options
 
