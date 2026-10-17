@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A Rust code formatter that reproduces rustfmt's output, byte for byte, without the compiler">
+        <meta name="description" content="Where chloro's documentation lives, and how this website is built, checked and published to GitHub Pages.">
       
       
         <meta name="author" content="Louis Maddox">
@@ -14,6 +14,11 @@
       
         <link rel="canonical" href="https://lmmx.github.io/chloro/maintainers/documentation/">
       
+      
+        <link rel="describedby" href="../../llms.txt">
+        
+          <link rel="alternate" type="text/markdown" href="./index.md">
+        
       
       
         <link rel="prev" href="../releasing/">
@@ -1034,6 +1039,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#for-agents-and-llms" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        For agents and LLMs
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#design" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1132,7 +1148,7 @@
   <span class="md-ellipsis">
     
   
-  chloro
+  Command-line reference
 
     
   </span>
@@ -1317,6 +1333,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#for-agents-and-llms" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        For agents and LLMs
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#design" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1353,6 +1380,11 @@
                 <a id="__skip" tabindex="-1"></a>
                 
                   
+  <button type="button" title="Copy as Markdown" aria-label="Copy as Markdown" class="md-content__button md-icon" data-md-copy-url="./index.md">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z"/></svg>
+  </button>
+
 
   
   
@@ -1434,11 +1466,33 @@ just<span class="w"> </span>site-examples<span class="w">     </span><span class
   a file, relative to the repository root.</li>
 <li>Add a new page to the <code>nav</code> in <code>zensical.toml</code>; <code>site-check</code> fails on a page that is not
   in it.</li>
+<li>Give each page a front-matter <code>description</code> (one sentence, at most 160 characters), and
+  list the page with the same description in the <code>llmstxt</code> sections of <code>zensical.toml</code>.
+  The description is the page's meta description for search engines and its entry in
+  <code>llms.txt</code>; <code>site-check</code> fails on a page without one, or one listed with another.</li>
 <li>Link between pages with relative paths to the <code>.md</code> files. Link to the journal, the source
   and anything else in the repository with absolute GitHub URLs on <code>master</code>, since those
   files are not part of the site.</li>
 <li>State measured figures with their conditions, and link to the record they come from.</li>
 </ul>
+<h2 id="for-agents-and-llms">For agents and LLMs<a class="headerlink" href="#for-agents-and-llms" title="Permanent link">&para;</a></h2>
+<p>Zensical's built-in <code>llmstxt</code> plugin, configured in <code>zensical.toml</code>, adds to every build:</p>
+<ul>
+<li><code>llms.txt</code>, an index of the pages in the <a href="https://llmstxt.org/">llms.txt</a> format, with
+  each page's description; the maintainers' pages are under <em>Optional</em>;</li>
+<li><code>llms-full.txt</code>, every listed page in one file;</li>
+<li>a Markdown copy of each page beside its HTML, <code>&lt;page&gt;/index.md</code>, converted from the built
+  page (snippets included, links absolute);</li>
+<li><code>&lt;link rel="alternate" type="text/markdown"&gt;</code> and <code>&lt;link rel="describedby"&gt;</code> (to
+  <code>llms.txt</code>) in each page's head.</li>
+</ul>
+<p>Each page also has a <em>Copy as Markdown</em> button (<code>content.action.copy</code>). <code>AGENTS.md</code> at the
+repository root is the entry point for coding agents working on the code, and the README
+links all of these.</p>
+<p>GitHub Pages serves the site from a subpath, so a <code>robots.txt</code> (which must be at the domain
+root) is not possible, and it cannot negotiate content or set headers: an agent asking for
+<code>text/markdown</code> gets HTML, and finds the Markdown through the links above. The sitemap is at
+<code>sitemap.xml</code>.</p>
 <h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
 <p>The site follows the design of nave's documentation: Zensical's modern theme, Instrument
 Serif for page titles, Encode Sans Condensed for headings, Work Sans for text, commands set
@@ -1484,6 +1538,9 @@ also be run by hand from the Actions tab.</p>
 
 
 
+
+  
+  
 
 
 
@@ -1532,13 +1589,13 @@ also be run by hand from the Actions tab.</p>
         
         
           
-          <a href="../../reference/cli/" class="md-footer__link md-footer__link--next" aria-label="Next: chloro">
+          <a href="../../reference/cli/" class="md-footer__link md-footer__link--next" aria-label="Next: Command-line reference">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                chloro
+                Command-line reference
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1604,7 +1661,7 @@ also be run by hand from the Actions tab.</p>
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.copy","content.tabs.link","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.action.copy","content.code.copy","content.tabs.link","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
       <script src="../../assets/javascripts/bundle.a2388154.min.js"></script>
