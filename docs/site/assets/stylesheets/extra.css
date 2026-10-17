@@ -147,6 +147,7 @@
   margin: 0.4rem auto 1.6rem;
   max-width: 30rem;
   line-height: 1.35;
+  text-wrap: balance;
 }
 
 /* Measured figures, each with the conditions it was measured under */
@@ -371,6 +372,10 @@
   .chl-hero img {
     width: 104px;
     height: 104px;
+  }
+
+  .md-typeset .chl-tagline {
+    font-size: 1rem;
   }
 
   .chl-stat .chl-figure {

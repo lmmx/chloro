@@ -9,7 +9,7 @@ description: A fast Rust code formatter that matches the output of rustfmt, byte
 ![The chloro mark: a leaf whose veins branch like a syntax tree](assets/images/chloro.svg){ width="132" height="132" }
 </div>
 
-<p class="chl-tagline">A fast Rust code formatter that matches the output of rustfmt.</p>
+<p class="chl-tagline">rustfmt's output in a fraction of the time.</p>
 
 chloro formats Rust several times faster than rustfmt, in a fraction of the memory, and
 writes the same bytes as `rustfmt --edition 2024`. It is a module-by-module port of rustfmt
