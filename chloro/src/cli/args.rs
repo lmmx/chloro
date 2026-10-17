@@ -22,6 +22,15 @@ pub struct Args {
     #[facet(named, long, default)]
     pub config: String,
 
+    /// The configuration file for every file, or a directory holding one (default: each
+    /// file's nearest `rustfmt.toml` or `.rustfmt.toml`)
+    #[facet(named, long, default)]
+    pub config_path: String,
+
+    /// Read no configuration file and no `Cargo.toml`: only `--config` applies
+    #[facet(named, long, default)]
+    pub isolated: bool,
+
     /// Do not read or write the fixed-point cache
     #[facet(named, long, default)]
     pub no_cache: bool,
@@ -63,7 +72,11 @@ pub fn print_usage() {
     println!("  -c, --check        Check if files need formatting (exit 1 if so)");
     println!("  -w, --write        Write formatted output back to files");
     println!("  -v, --verbose      Show verbose output");
-    println!("      --config OPTS  rustfmt options as comma-separated key=value pairs");
+    println!("      --config OPTS  rustfmt options as comma-separated key=value pairs, over");
+    println!("                     the configuration file's");
+    println!("      --config-path PATH");
+    println!("                     The rustfmt.toml for every file, or a directory holding one");
+    println!("      --isolated     Read no rustfmt.toml and no Cargo.toml edition");
     println!("      --no-cache     Format every file; do not read or write the caches");
     println!("      --unit-cache   Also cache each formatted top-level item, so that a changed");
     println!("                     file formats only the items not seen before (off by default)");
@@ -88,6 +101,12 @@ pub fn print_usage() {
     println!();
     println!("  # Format with rustfmt options");
     println!("  chloro --config max_width=80,tab_spaces=2 src/lib.rs");
+    println!();
+    println!("Configuration:");
+    println!("  As rustfmt, chloro reads each file's nearest .rustfmt.toml or rustfmt.toml");
+    println!("  (else the one in the home or the user configuration directory), and, as cargo");
+    println!("  fmt, takes the edition from the nearest Cargo.toml's [package]. --config");
+    println!("  overrides both.");
     println!();
     println!("Cache:");
     println!("  chloro records the content hash of every file it finds already formatted,");
@@ -120,12 +139,27 @@ impl Args {
     /// invalid value.
     pub fn formatting_config(&self) -> Result<chloro_core::Config, String> {
         let mut config = chloro_core::Config::default();
-        for option in self.config.split(',').filter(|o| !o.trim().is_empty()) {
-            let (key, value) = option
-                .split_once('=')
-                .ok_or_else(|| format!("expected key=value, found `{option}`"))?;
-            config.set(key.trim(), value.trim())?;
+        for (key, value) in self.config_pairs()? {
+            config.set(&key, &value)?;
         }
         Ok(config)
+    }
+
+    /// The `key=value` pairs of `--config`, in order.
+    ///
+    /// # Errors
+    ///
+    /// Returns a message naming the first pair without `=`.
+    pub fn config_pairs(&self) -> Result<Vec<(String, String)>, String> {
+        self.config
+            .split(',')
+            .filter(|o| !o.trim().is_empty())
+            .map(|option| {
+                let (key, value) = option
+                    .split_once('=')
+                    .ok_or_else(|| format!("expected key=value, found `{option}`"))?;
+                Ok((key.trim().to_owned(), value.trim().to_owned()))
+            })
+            .collect()
     }
 }

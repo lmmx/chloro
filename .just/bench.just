@@ -1,7 +1,8 @@
 # Both tools get the same files: the ones `cargo fmt --all` formats, each once. Nothing is
 # written (both run in check mode), so use an already-formatted tree: rustfmt's --check
-# also builds a diff of every file that would change. cargo fmt reads the project's
-# rustfmt.toml and rust-toolchain.toml; chloro reads neither. Needs hyperfine.
+# also builds a diff of every file that would change. Both read the project's rustfmt.toml
+# and take each crate's edition from its Cargo.toml; cargo fmt also reads
+# rust-toolchain.toml, which chloro does not. Needs hyperfine.
 #
 # Time the installed chloro (reinstalled first if it is not built from this checkout; all
 # cores, then one thread) against `cargo fmt` on the Cargo project in DIR

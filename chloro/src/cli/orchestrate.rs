@@ -1,8 +1,6 @@
 use super::args::Args;
-use super::cache::Cache;
 use super::trace;
-use super::units::Units;
-use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, format_file};
+use super::worker::{PARALLEL_ITEMS_MIN_BYTES, ProcessResult, Setup, format_file};
 use std::ffi::OsStr;
 use std::fs;
 use std::io;
@@ -10,19 +8,25 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread::scope;
 
-/// A file to format: its canonical path, and its size in bytes for the largest-first queue
-/// (0 when it could not be read, which puts the file last).
+/// A file to format: its canonical path, its size in bytes for the largest-first queue (0
+/// when it could not be read, which puts the file last), and the index of its [`Setup`]
+/// (`project::Project::config_of`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceFile {
     pub path: PathBuf,
     pub len: u64,
+    pub config: usize,
 }
 
 impl SourceFile {
     /// A file named by a canonical path whose size is not known yet: one `metadata` call.
     pub fn at(path: PathBuf) -> Self {
         let len = fs::metadata(&path).map_or(0, |m| m.len());
-        SourceFile { path, len }
+        SourceFile {
+            path,
+            len,
+            config: 0,
+        }
     }
 }
 
@@ -121,6 +125,7 @@ fn walk_canonical(
                     files.push(SourceFile {
                         path: dir.join(&name),
                         len,
+                        config: 0,
                     });
                 }
             }
@@ -174,20 +179,16 @@ fn resolve_entry(
     Ok(())
 }
 
-/// Formats all files on `args.thread_count()` threads, consulting `cache` for files already
-/// known to be formatted and `units` for the unchanged items of the others.
+/// Formats all files on `args.thread_count()` threads, each with its configuration's
+/// [`Setup`]: its cache for files already known to be formatted, and its unit cache for the
+/// unchanged items of the others.
 ///
 /// The files are sorted largest first and handed out from a shared queue, so the large
 /// files start first and no thread is left with a long tail while the others idle. A
 /// file of at least `PARALLEL_ITEMS_MIN_BYTES` has its top-level items formatted on all
 /// the threads (`format_source_with_config_parallel`); the file-level workers and the
 /// item-level workers share the cores, and the scheduler sorts it out.
-pub fn format_all(
-    files: &[SourceFile],
-    args: &Args,
-    cache: Option<&Cache>,
-    units: Option<&Units>,
-) -> Vec<ProcessResult> {
+pub fn format_all(files: &[SourceFile], args: &Args, setups: &[Setup]) -> Vec<ProcessResult> {
     let num_threads = args.thread_count();
 
     if args.verbose {
@@ -228,7 +229,13 @@ pub fn format_all(
                         let start = trace::now();
                         done.push((
                             i,
-                            format_file(&files[i].path, args, cache, units, item_threads(size)),
+                            format_file(
+                                &files[i].path,
+                                args,
+                                files[i].config,
+                                &setups[files[i].config],
+                                item_threads(size),
+                            ),
                         ));
                         if traced {
                             let (read, hashed, formatted, split) = trace::take_stamps();

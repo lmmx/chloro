@@ -8,7 +8,9 @@ description: "rustfmt's stable options in chloro, with the same names, values an
 and defaults. It adds one option, <code>rustfmt_version</code>, which selects the rustfmt
 release to reproduce.</p>
 
-With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfmt.toml`.
+The command line reads each file's `rustfmt.toml` and its crate's edition as `cargo fmt`
+does ([below](#configuration-files)), and `--config` over both. With none of them, and in
+the library, chloro formats as `rustfmt --edition 2024` does with no `rustfmt.toml`.
 
 ## Setting options
 
@@ -19,7 +21,8 @@ With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfm
     ```
 
     `--config` takes comma-separated `key=value` pairs, as rustfmt's `--config` does. Values
-    may be quoted (`edition="2021"`).
+    may be quoted (`edition="2021"`), and a choice may be written in any case
+    (`newline_style=unix`), as rustfmt reads it.
 
 === "By name"
 
@@ -47,17 +50,49 @@ With no options, chloro formats as `rustfmt --edition 2024` does with no `rustfm
     Every stable option is a public field of `Config`. The enum-valued fields
     (`newline_style`, `edition`, …) take types from `chloro_core::formatter::config`.
 
-chloro does not read `rustfmt.toml` or `.rustfmt.toml`. A project that has one can pass its
-stable options through `--config`:
+## Configuration files
+
+The command line finds the configuration of each file as `cargo fmt` does:
+
+1. **`rustfmt.toml`.** The nearest `.rustfmt.toml` or `rustfmt.toml` (in that order in each
+   directory), in the file's directory or one of its parents, as rustfmt reads it. Without
+   one, the home directory's, then the one in `rustfmt/` under the user configuration
+   directory (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `~/Library/Application Support` on
+   macOS, `%APPDATA%` on Windows).
+2. **The edition.** `cargo fmt` passes each crate's edition to rustfmt, so chloro takes it
+   from the nearest `Cargo.toml` that has a `[package]`: its `edition`, the workspace's
+   `[workspace.package] edition` for `edition.workspace = true`, or 2015 when it sets none, as
+   Cargo does. It overrides an `edition` in `rustfmt.toml`; `style_edition` follows it unless
+   `rustfmt.toml` sets one. A file with no package above it keeps the configuration file's
+   edition, or 2024.
+3. **`--config`**, which overrides both.
 
 ```toml title="rustfmt.toml"
 max_width = 120
 use_field_init_shorthand = true
 ```
 
-```sh
-chloro --config max_width=120,use_field_init_shorthand=true --check src/
+The values have rustfmt's TOML types: an integer for a width or a count, `true` or `false`
+for a flag, a string for a choice or an edition (`edition = "2021"`). As stable rustfmt
+does, chloro warns about an unstable or unknown option and ignores it, and a value an option
+does not take is an error that stops the run before any file is formatted:
+
+```console
+$ chloro --check
+Warning: can't set `imports_granularity = "Crate"`, unstable features are only available in nightly channel.
+$ chloro --check
+The file `/home/me/project/rustfmt.toml` failed to parse.
+Error details: invalid type: string "120", expected usize in `max_width`
 ```
+
+`--config-path PATH` names the configuration file for every file, or a directory that holds
+one. `--isolated` reads no configuration file and no `Cargo.toml`: every file gets the
+defaults and `--config`. `--verbose` names each configuration file and edition it uses. The
+fixed-point cache is kept per configuration, so after an edit to a `rustfmt.toml` its files
+are formatted again.
+
+The library reads no files: `Config::set_from_file(key, FileValue)` applies one option of a
+configuration file with these rules, for a tool that reads its own.
 
 ## The options
 

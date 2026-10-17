@@ -5,7 +5,8 @@
 //! it is; under `Unix` and `Windows` it is rewritten.
 #![cfg(feature = "cli")]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -15,7 +16,7 @@ const CRLF: &str = "fn a() {}\r\nfn b() {}\r\n";
 
 /// `chloro <args>` under `dir`: the exit status and standard output.
 fn chloro(dir: &Path, args: &[&str]) -> (i32, String) {
-    let output = cargo_bin_cmd!("chloro")
+    let output = common::chloro()
         .env("CHLORO_CACHE_DIR", dir.join("cache"))
         .args(args)
         .output()

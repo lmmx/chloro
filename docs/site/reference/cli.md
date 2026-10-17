@@ -32,8 +32,22 @@ Write each file whose formatted text differs from its contents. Without `--check
 ### ++"--config OPTS"++
 
 rustfmt options as comma-separated `key=value` pairs, with rustfmt's names and value
-spellings, plus `rustfmt_version`. An invalid option is an error before any file is read.
+spellings, plus `rustfmt_version`, applied over each file's `rustfmt.toml` and edition. An
+invalid option is an error before any file is read.
 [Configuration](../guide/configuration.md) lists them.
+
+### ++"--config-path PATH"++
+
+The `rustfmt.toml` for every file, or a directory whose `.rustfmt.toml` or `rustfmt.toml` it
+is, in place of each file's nearest one. A path that does not exist, or a directory without
+one, is an error. The edition still comes from each file's `Cargo.toml`.
+[Configuration files](../guide/configuration.md#configuration-files).
+
+### ++"--isolated"++
+
+Read no `rustfmt.toml` (the nearest, the home directory's or the user configuration
+directory's) and take no edition from a `Cargo.toml`: every file is formatted with the
+defaults and `--config`. Cannot be combined with `--config-path`.
 
 ### ++"--threads N"++
 

@@ -3,7 +3,8 @@
 //! files are formatted as usual.
 #![cfg(feature = "cli")]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
@@ -20,7 +21,7 @@ struct Run {
 
 /// Run `chloro <args>` with its cache under `dir`.
 fn chloro(dir: &Path, args: &[&str]) -> Run {
-    let output = cargo_bin_cmd!("chloro")
+    let output = common::chloro()
         .env("CHLORO_CACHE_DIR", dir.join("cache"))
         .args(args)
         .output()

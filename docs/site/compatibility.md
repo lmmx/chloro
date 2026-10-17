@@ -87,13 +87,15 @@ compared.
 
 ## What is not covered
 
-- **`rustfmt.toml`.** chloro reads no configuration file. Options come from `--config` or
-  `Config`.
+- **Configuration files.** chloro reads `rustfmt.toml` and each crate's edition as
+  `cargo fmt` does ([Configuration files](guide/configuration.md#configuration-files)), but
+  not `rust-toolchain.toml`, which selects the rustfmt that `cargo fmt` runs: choose the
+  release with `rustfmt_version`.
 - **Unstable options.** chloro always uses rustfmt's defaults for them, and setting one to
   another value is an error ([Configuration](guide/configuration.md#unstable-rustfmt-options)).
 - **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or
-  standard input modes; `--check` reports a count, not a diff. Editions are set with
-  `--config edition=…`.
+  standard input modes; `--check` reports a count, not a diff. An edition comes from the
+  crate's `Cargo.toml` or from `--config edition=…`.
 - **Out-of-line modules.** rustfmt formats the files a crate's `mod` declarations lead to;
   chloro formats the files and directories you name, whatever modules they declare.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's

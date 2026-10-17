@@ -13,38 +13,35 @@ pub struct AggregatedResults {
     pub parse_errors: Vec<String>,
     /// Files reported as formatted from the cache without running the formatter.
     pub cache_hits: usize,
-    /// Content digests confirmed as fixed points in this run, to record in the cache.
-    pub fixed_points: Vec<Digest>,
+    /// Content digests confirmed as fixed points in this run, to record in the cache, by the
+    /// index of the configuration whose cache records them.
+    pub fixed_points: Vec<Vec<Digest>>,
     pub errors: Vec<String>,
 }
 
-impl Default for AggregatedResults {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl AggregatedResults {
-    pub fn new() -> Self {
+    /// No results yet, for a run of `configs` configurations.
+    pub fn new(configs: usize) -> Self {
         Self {
             files_processed: 0,
             files_changed: 0,
             files_unchanged: 0,
             parse_errors: Vec::new(),
             cache_hits: 0,
-            fixed_points: Vec::new(),
+            fixed_points: vec![Vec::new(); configs],
             errors: Vec::new(),
         }
     }
 }
 
-/// Aggregate results from all files
-pub fn aggregate_results(results: Vec<ProcessResult>) -> AggregatedResults {
-    let mut agg = AggregatedResults::new();
+/// Aggregate results from all files, formatted under `configs` configurations
+pub fn aggregate_results(results: Vec<ProcessResult>, configs: usize) -> AggregatedResults {
+    let mut agg = AggregatedResults::new(configs);
 
     for result in results {
         match result {
             ProcessResult::Formatted {
+                config,
                 changed,
                 cached,
                 fixed_point,
@@ -59,7 +56,7 @@ pub fn aggregate_results(results: Vec<ProcessResult>) -> AggregatedResults {
                 if cached {
                     agg.cache_hits += 1;
                 }
-                agg.fixed_points.extend(fixed_point);
+                agg.fixed_points[config].extend(fixed_point);
             }
             ProcessResult::ParseError { diagnostic, .. } => {
                 agg.files_processed += 1;

@@ -3,7 +3,8 @@
 //! named on the command line is always used.
 #![cfg(feature = "cli")]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -37,7 +38,7 @@ fn project() -> TempDir {
 
 /// The files `chloro -v --check <args>` processes in `cwd`, relative to `root`, sorted.
 fn processed(cwd: &Path, root: &Path, args: &[&str]) -> Vec<String> {
-    let output = cargo_bin_cmd!("chloro")
+    let output = common::chloro()
         .current_dir(cwd)
         .args(["-v", "--check", "--no-cache"])
         .args(args)
@@ -82,7 +83,7 @@ fn a_source_named_on_the_command_line_is_always_used() {
 
 #[test]
 fn help_gives_the_current_directory_as_the_default_source() {
-    let output = cargo_bin_cmd!("chloro").arg("--help").output().unwrap();
+    let output = common::chloro().arg("--help").output().unwrap();
     let help = String::from_utf8(output.stdout).unwrap();
     assert!(help.contains("(default: '.', the current"), "{help}");
 }

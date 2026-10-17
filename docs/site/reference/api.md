@@ -37,6 +37,8 @@ two cases. All of them return the same text for the same source and configuratio
 |---|---|
 | `Config` | one public field per stable rustfmt option, plus `rustfmt_version`; `Default` is rustfmt's defaults |
 | `Config::set(&mut self, key: &str, value: &str) -> Result<(), String>` | set an option by rustfmt's name and spelling |
+| `Config::set_from_file(&mut self, key: &str, value: FileValue) -> Result<Option<String>, String>` | apply an option of a `rustfmt.toml` as stable rustfmt does: TOML types checked, unstable and unknown options a warning; [guide](../guide/configuration.md#configuration-files) |
+| `FileValue` | a TOML value: `String`, `Integer`, `Boolean`, or `Other` as written |
 | `chloro_core::formatter::config::{NewlineStyle, Heuristics, Edition, StyleEdition, MatchArmLeadingPipe, Density, RustfmtVersion}` | the enum-valued options |
 
 [Configuration](../guide/configuration.md) lists every option and its default.

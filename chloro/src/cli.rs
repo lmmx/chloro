@@ -27,6 +27,7 @@ pub mod cli {
     pub mod cache;
     pub mod logs;
     pub mod orchestrate;
+    pub mod project;
     pub mod report;
     pub mod trace;
     pub mod units;
@@ -34,17 +35,19 @@ pub mod cli {
 
     use crate::vlog;
     use args::{Args, print_usage};
-    use cache::Cache;
+    use cache::{Cache, Tool};
     use orchestrate::{SourceFile, discover_rust_files, format_all};
+    use project::Project;
     use report::{aggregate_results, print_summary};
     use std::io;
     use std::path::Path;
     use units::Units;
+    use worker::Setup;
 
-    /// Open the fixed-point cache named by the arguments, or `None` when it is disabled by
-    /// `--no-cache`, when no cache directory resolves, or when the running executable cannot
-    /// be hashed.
-    fn open_cache(args: &Args, config: &chloro_core::Config) -> Option<Cache> {
+    /// The executable's identity for the fixed-point caches named by the arguments, or `None`
+    /// when they are disabled by `--no-cache`, when no cache directory resolves, or when the
+    /// running executable cannot be hashed.
+    fn identify_tool(args: &Args) -> Option<Tool> {
         if args.no_cache {
             vlog!(args, { "Cache: disabled (--no-cache)" });
             return None;
@@ -55,16 +58,64 @@ pub mod cli {
             });
             return None;
         };
-        let cache = Cache::open(&dir, config);
-        match &cache {
-            Some(cache) => {
-                vlog!(args, {"Cache: {} ({} entries)", cache.path().display(), cache.len()})
-            }
-            None => vlog!(args, {
+        let tool = Tool::identify(&dir);
+        if tool.is_none() {
+            vlog!(args, {
                 "Cache: disabled (cannot read the running executable)"
-            }),
+            });
         }
-        cache
+        tool
+    }
+
+    /// The setup of `config`: its fixed-point cache when `tool` is given, and its unit cache
+    /// next to that with `--unit-cache`.
+    fn setup(args: &Args, tool: Option<&Tool>, config: &chloro_core::Config) -> Setup {
+        let cache = tool.map(|tool| Cache::open_for(tool, config));
+        if let Some(cache) = &cache {
+            vlog!(args, {"Cache: {} ({} entries)", cache.path().display(), cache.len()});
+        }
+        // The unit cache lives next to the fixed-point cache and is read on the first file
+        // the fixed-point cache does not answer.
+        let units = cache.as_ref().filter(|_| args.unit_cache).map(Units::new);
+        Setup {
+            config: config.clone(),
+            cache,
+            units,
+        }
+    }
+
+    /// Write `setup`'s caches: its unit cache, then its fixed-point cache with `fixed_points`
+    /// recorded.
+    fn save_caches(args: &Args, setup: Setup, fixed_points: Vec<cache::Digest>) {
+        let Some(cache) = setup.cache else {
+            return;
+        };
+        if let Some(units) = setup.units {
+            if let Some(stats) = units.stats() {
+                vlog!(args, {
+                    "Unit cache: {} ({} entries read, {} bytes); units looked up: {}, found: {}, stored: {}; {} entries, {} record bytes held",
+                    units.path().display(),
+                    stats.entries_read,
+                    stats.file_len,
+                    stats.lookups,
+                    stats.hits,
+                    stats.stores,
+                    stats.entries,
+                    stats.record_bytes
+                });
+            }
+            let path = units.path().to_path_buf();
+            match units.save(&cache) {
+                Ok(true) => vlog!(args, {"Unit cache written: {}", path.display()}),
+                Ok(false) => {}
+                Err(e) => vlog!(args, {"Unit cache not written: {}: {e}", path.display()}),
+            }
+        }
+        let path = cache.path().to_path_buf();
+        match cache.save(fixed_points) {
+            Ok(()) => vlog!(args, {"Cache written: {}", path.display()}),
+            Err(e) => vlog!(args, {"Cache not written: {}: {e}", path.display()}),
+        }
     }
 
     /// Entry point for the chloro CLI
@@ -106,10 +157,14 @@ pub mod cli {
             std::process::exit(0);
         }
 
-        let config = match args.formatting_config() {
-            Ok(config) => config,
+        if let Err(e) = args.formatting_config() {
+            eprintln!("Error: invalid --config: {e}");
+            std::process::exit(1);
+        }
+        let mut project = match Project::new(&args) {
+            Ok(project) => project,
             Err(e) => {
-                eprintln!("Error: invalid --config: {e}");
+                eprintln!("Error: {e}");
                 std::process::exit(1);
             }
         };
@@ -129,10 +184,10 @@ pub mod cli {
             eprintln!();
         }
 
-        // Opened before the files are discovered: the executable is hashed as soon after
+        // Identified before the files are discovered: the executable is hashed as soon after
         // start-up as possible (`cache::tool_key`).
         trace::mark("args");
-        let cache = open_cache(&args, &config);
+        let tool = identify_tool(&args);
         trace::mark("cache");
 
         // Collect all files from all source paths
@@ -167,56 +222,44 @@ pub mod cli {
             return Ok(());
         }
 
+        // Each file's configuration, before any file is formatted: a configuration file
+        // that rustfmt would refuse stops the run, with rustfmt's message.
+        for file in &mut all_files {
+            file.config = match project.config_of(&file.path) {
+                Ok(config) => config,
+                Err(e) => {
+                    eprintln!("{e}");
+                    std::process::exit(1);
+                }
+            };
+        }
+        trace::mark("config");
+
         if args.verbose {
             eprintln!("Found {} Rust file(s)", all_files.len());
             eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
 
-        // The unit cache lives next to the fixed-point cache and is read on the first file
-        // the fixed-point cache does not answer.
-        let units = match &cache {
-            Some(cache) if args.unit_cache => Some(Units::new(cache)),
-            Some(_) => {
-                vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
-                None
-            }
-            None => None,
-        };
-
-        // Format files in parallel
-        let results = format_all(&all_files, &args, cache.as_ref(), units.as_ref());
-        trace::mark("formatted");
-        let agg = aggregate_results(results);
-
-        if let (Some(units), Some(cache)) = (units, &cache) {
-            if let Some(stats) = units.stats() {
-                vlog!(args, {
-                    "Unit cache: {} ({} entries read, {} bytes); units looked up: {}, found: {}, stored: {}; {} entries, {} record bytes held",
-                    units.path().display(),
-                    stats.entries_read,
-                    stats.file_len,
-                    stats.lookups,
-                    stats.hits,
-                    stats.stores,
-                    stats.entries,
-                    stats.record_bytes
-                });
-            }
-            let path = units.path().to_path_buf();
-            match units.save(cache) {
-                Ok(true) => vlog!(args, {"Unit cache written: {}", path.display()}),
-                Ok(false) => {}
-                Err(e) => vlog!(args, {"Unit cache not written: {}: {e}", path.display()}),
-            }
+        let setups: Vec<Setup> = project
+            .configs()
+            .iter()
+            .map(|config| setup(&args, tool.as_ref(), config))
+            .collect();
+        if tool.is_some() && !args.unit_cache {
+            vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
         }
 
-        if let Some(cache) = cache {
-            let path = cache.path().to_path_buf();
-            match cache.save(agg.fixed_points.iter().copied()) {
-                Ok(()) => vlog!(args, {"Cache written: {}", path.display()}),
-                Err(e) => vlog!(args, {"Cache not written: {}: {e}", path.display()}),
-            }
+        // Format files in parallel
+        let results = format_all(&all_files, &args, &setups);
+        trace::mark("formatted");
+        let mut agg = aggregate_results(results, setups.len());
+
+        for (setup, fixed_points) in setups
+            .into_iter()
+            .zip(std::mem::take(&mut agg.fixed_points))
+        {
+            save_caches(&args, setup, fixed_points);
         }
 
         trace::mark("saved");

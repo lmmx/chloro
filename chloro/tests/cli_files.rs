@@ -2,7 +2,8 @@
 // Every case makes symlinks, so the file is Unix-only.
 #![cfg(all(feature = "cli", unix))]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 
 const UNFORMATTED: &str = "fn main(){let x=1;}\n";
@@ -22,7 +23,7 @@ fn a_file_reachable_several_ways_is_processed_once() {
     let a_str = a.to_str().unwrap();
     let sources = [dir, b_str, b_str, a_str];
 
-    let check = cargo_bin_cmd!("chloro")
+    let check = common::chloro()
         .arg("--check")
         .arg("--no-cache")
         .args(sources)
@@ -35,7 +36,7 @@ fn a_file_reachable_several_ways_is_processed_once() {
     );
     assert_eq!(fs::read_to_string(&b).unwrap(), UNFORMATTED);
 
-    let write = cargo_bin_cmd!("chloro")
+    let write = common::chloro()
         .args(["-v", "--write", "--no-cache"])
         .args(sources)
         .output()
@@ -78,7 +79,7 @@ fn a_symlinked_directory_is_walked_under_its_canonical_path() {
     fs::write(&y, UNFORMATTED).unwrap();
     std::os::unix::fs::symlink(outside.path(), src.path().join("ext")).unwrap();
 
-    let write = cargo_bin_cmd!("chloro")
+    let write = common::chloro()
         .args(["-v", "--write", "--no-cache", "--threads", "1"])
         .arg(src.path())
         .output()
@@ -112,7 +113,7 @@ fn a_symlinked_file_inside_a_walked_directory_is_its_target() {
     // A symlink whose name does not end in `.rs` is not a Rust file, whatever its target.
     std::os::unix::fs::symlink(&target, dir.join("b.txt")).unwrap();
 
-    let check = cargo_bin_cmd!("chloro")
+    let check = common::chloro()
         .args(["-v", "--check", "--no-cache"])
         .arg(src.path())
         .output()
@@ -125,7 +126,7 @@ fn a_symlinked_file_inside_a_walked_directory_is_its_target() {
         "{stderr}"
     );
 
-    let write = cargo_bin_cmd!("chloro")
+    let write = common::chloro()
         .args(["--write", "--no-cache"])
         .arg(src.path())
         .output()
@@ -152,7 +153,7 @@ fn a_symlink_cycle_is_walked_once() {
     std::os::unix::fs::symlink(".", src.path().join("self")).unwrap();
     std::os::unix::fs::symlink("..", sub.join("up")).unwrap();
 
-    let check = cargo_bin_cmd!("chloro")
+    let check = common::chloro()
         .args(["-v", "--check", "--no-cache"])
         .arg(src.path())
         .output()
@@ -179,7 +180,7 @@ fn files_of_equal_size_are_processed_in_path_order() {
     // Walked before `a` by name, but its files are under `z`.
     std::os::unix::fs::symlink(root.join("z"), root.join("0link")).unwrap();
 
-    let check = cargo_bin_cmd!("chloro")
+    let check = common::chloro()
         .args(["-v", "--check", "--no-cache", "--threads", "1"])
         .arg(&root)
         .output()

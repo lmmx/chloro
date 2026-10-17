@@ -5,8 +5,8 @@ description: "Check and format a Rust crate with chloro, and run the check in CI
 # Quickstart
 
 <p class="lede">How to check and format a crate with chloro, and how to run the check in CI.
-Each command gives the same result as <code>rustfmt</code> at edition 2024 with default
-options.</p>
+Each command gives the same result as <code>cargo fmt</code>: chloro reads the crate's
+<code>rustfmt.toml</code> and edition as it does.</p>
 
 ## Check
 
@@ -64,8 +64,9 @@ $ chloro --config wrap_comments=true src/
 Error: invalid --config: `wrap_comments` is an unstable rustfmt option; only its default `false` is supported
 ```
 
-chloro does not read `rustfmt.toml`. If your project has one, translate its stable options
-into `--config`; [Configuration](../guide/configuration.md) lists every option chloro accepts.
+A `rustfmt.toml` in the project applies as it does for `cargo fmt`, under `--config`;
+[Configuration](../guide/configuration.md#configuration-files) has the rules and every
+option chloro accepts.
 
 ## Use it in CI
 

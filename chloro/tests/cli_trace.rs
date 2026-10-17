@@ -2,7 +2,8 @@
 //! mark, file and worker, in order, and no change to the run's output or exit code.
 #![cfg(feature = "cli")]
 
-use assert_cmd::cargo::cargo_bin_cmd;
+mod common;
+
 use std::fs;
 use std::path::Path;
 
@@ -51,12 +52,12 @@ fn a_traced_run_records_its_marks_files_and_workers() {
     let out = tempfile::tempdir().unwrap();
     let trace_path = out.path().join("trace.tsv");
 
-    let plain = cargo_bin_cmd!("chloro")
+    let plain = common::chloro()
         .args(["--check", "--no-cache", "--threads", "2"])
         .arg(src.path())
         .output()
         .unwrap();
-    let traced = cargo_bin_cmd!("chloro")
+    let traced = common::chloro()
         .env("CHLORO_TRACE", &trace_path)
         .args(["--check", "--no-cache", "--threads", "2"])
         .arg(src.path())
@@ -80,6 +81,7 @@ fn a_traced_run_records_its_marks_files_and_workers() {
             "cache",
             "walk",
             "sort",
+            "config",
             "spawn",
             "joined",
             "formatted",
@@ -129,7 +131,7 @@ fn a_traced_run_with_the_cache_stamps_the_digest() {
     let trace_path = out.path().join("trace.tsv");
     let cache = out.path().join("cache");
 
-    let traced = cargo_bin_cmd!("chloro")
+    let traced = common::chloro()
         .env("CHLORO_TRACE", &trace_path)
         .args(["--check", "--threads", "1", "--cache-dir"])
         .arg(&cache)
@@ -152,7 +154,7 @@ fn an_untraced_run_writes_no_trace() {
     let src = tempfile::tempdir().unwrap();
     fs::write(src.path().join("a.rs"), FORMATTED).unwrap();
     let out = tempfile::tempdir().unwrap();
-    let run = cargo_bin_cmd!("chloro")
+    let run = common::chloro()
         .env_remove("CHLORO_TRACE")
         .current_dir(out.path())
         .args(["--check", "--no-cache"])

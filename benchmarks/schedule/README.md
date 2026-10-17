@@ -44,8 +44,9 @@ benchmarks/schedule/identity.sh /path/to/chloro-base target/release/chloro /tmp/
 
 Tab-separated, nanoseconds since `main` was entered:
 
-- `mark NAME T`: the main thread's phases, in order `args`, `cache`, `walk`, `sort`, `spawn`,
-  `joined`, `formatted`, `saved`, `finish`;
+- `mark NAME T`: the main thread's phases, in order `args`, `cache`, `walk`, `sort`,
+  `config` (each file's configuration resolved), `spawn`, `joined`, `formatted`, `saved`,
+  `finish`;
 - `file WORKER BYTES SPLIT START READ HASHED FORMATTED END`: `HASHED` is 0 without the cache,
   `FORMATTED` is 0 on a cache hit, `SPLIT` is 1 when the file's items went to several threads;
 - `worker ID START END`: a worker from its first instruction to its exit.
