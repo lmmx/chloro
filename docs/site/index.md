@@ -6,7 +6,8 @@ description: A fast Rust code formatter that matches the output of rustfmt, byte
 <h1 id="chloro-home">chloro</h1>
 
 <div class="chl-hero" markdown>
-![The chloro mark: a leaf whose veins branch like a syntax tree](assets/images/chloro.svg){ width="132" height="132" }
+![The chloro mark: a seedling whose leaf veins branch like a syntax tree](assets/images/chloro-hero.svg#only-light){ width="132" height="132" }
+![The chloro mark: a seedling whose leaf veins branch like a syntax tree](assets/images/chloro-hero-dark.svg#only-dark){ width="132" height="132" }
 </div>
 
 <p class="chl-tagline">rustfmt's output in a fraction of the time.</p>

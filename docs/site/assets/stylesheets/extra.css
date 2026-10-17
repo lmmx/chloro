@@ -130,6 +130,11 @@
   display: none;
 }
 
+/* The header's mark in the dark scheme (the theme takes one logo file) */
+[data-md-color-scheme="slate"] .md-logo img {
+  content: url("../images/chloro-small-dark.svg");
+}
+
 .chl-hero {
   text-align: center;
 }

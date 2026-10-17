@@ -68,8 +68,11 @@ The site follows the design of nave's documentation: Zensical's modern theme, In
 Serif for page titles, Encode Sans Condensed for headings, Work Sans for text, commands set
 as key caps. chloro's own colours are chlorophyll greens, defined as CSS variables for the
 light and dark schemes in `docs/site/assets/stylesheets/extra.css`, with a toggle in the
-header. The mark in `docs/site/assets/images/chloro.svg` is a leaf whose veins branch like a
-syntax tree. Charts and diagrams are inline SVG drawn with the page's colour variables, so
+header. The mark is a seedling whose big leaf has veins that branch like a syntax tree, in
+`docs/site/assets/images/`: `chloro-hero.svg` and `chloro-hero-dark.svg` on the home page,
+with a ground shadow, sheen and highlights drawn with gradients (no filters);
+`chloro-small.svg` and `chloro-small-dark.svg` (flat, without veins) in the header; and
+`chloro.svg`, the favicon, which switches to the dark palette when the browser prefers dark. Charts and diagrams are inline SVG drawn with the page's colour variables, so
 they follow the scheme, and each chart has its data in a table beside it.
 
 ## Deployment
