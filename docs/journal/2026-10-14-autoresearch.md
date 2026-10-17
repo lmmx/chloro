@@ -616,6 +616,7 @@ on the merged tree against the previous best-known-good:
 | 2026-10-17, E31: own token conversion over `rustc_lexer` with the parser's input built in one pass (P2), the common tokens by a byte scan (P4) | 203,151,226 | −8.06% (registry −14.76%) | two passes over the tokens become one; `LexedStr` kept for error texts; 0 token or element mismatches on both corpora |
 | 2026-10-17, E30: a closure body that renders a `match` arm is never one line | 202,822,327 | −0.162% (per file −0.363%; registry inside the spread) | an attempt that cannot be one line is not rendered; the exact width model measured at 0.28% / 0.39% and not built |
 | PGO on top (measured on `d2f6fa0`, M5) | 182,602,721 against 220,957,089 | −17.4% | code layout |
+| PGO on top (measured on `2cb0ba3`, M6) | 170,069,599 against 202,822,485 | −16.1% | code layout |
 
 The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
 cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-10-15 night
@@ -629,14 +630,15 @@ the 13 files the conformance fixes target. Every step left every output on 1238 
 files they target, checked file by file against a record of the starting outputs.
 
 Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
-([M5](2026-10-14-autoresearch/measurements/m5-quiet-host.md), on the code of the
-best-known-good `e96b530`): 0.239–0.405 of its wall time per crate on one core and 0.083–0.173
+([M6](2026-10-14-autoresearch/measurements/m6-quiet-host.md), on the code of the
+best-known-good `96c9abc`): 0.214–0.345 of its wall time per crate on one core and 0.077–0.165
 on four, with every chloro run below every rustfmt run and every run of the start's binary on all nine crates in both modes;
-0.210–0.332 and 0.066–0.148 with PGO (M4, on `e640fbf`: 0.26–0.44 and 0.092–0.179; 0.24–0.38 and
-0.072–0.175 with PGO). In process the formatter runs at 9.3–10.4 MB/s against 3.7–4.0 for
-the start in the same window (2.5–2.7x; M4 measured 11.22–11.79 against 4.96–5.09, M3 9.39–9.54
-against 5.22–5.27 on the code of `113367a`). The warm cache answers `--check` on the 1238
-formatted fixtures in 17.8 ms on four cores (M4: 16.9; M3: 28.9). At the start of the programme the
+0.182–0.325 and 0.067–0.164 with PGO (M5, on `e96b530`: 0.239–0.405 and 0.083–0.173, 0.210–0.332 and
+0.066–0.148 with PGO; M4, on `e640fbf`: 0.26–0.44 and 0.092–0.179). In process the formatter runs at
+12.0–13.2 MB/s against 4.4–4.9 for the start in the same window (2.7x; M5 measured
+9.33–10.38 against 3.68–4.03, M4 11.22–11.79 against 4.96–5.09, M3 9.39–9.54 against 5.22–5.27 on the
+code of `113367a`). The warm cache answers `--check` on the 1238 formatted fixtures in 16.2 ms
+on four cores (M5: 17.8; M4: 16.9; M3: 28.9). At the start of the programme the
 per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
 time.
 
@@ -755,8 +757,9 @@ Next actions, in the order of value per effort:
   against 3.68–4.03 for `884f9c9` in the same window (11.15–12.56 profile-guided); against
   rustfmt 1.9.0 on nine crates, formatted input, `--check`: 0.239–0.405 of its wall time on
   one core and 0.083–0.173 on four, with every chloro run below every rustfmt run and every
-  run of the start's binary in both modes (measurements/m5-quiet-host.md, on the code of
-  `e96b530`; M4 on `e640fbf` read 0.26–0.44 and 0.092–0.179)
+  run of the start's binary in both modes (measurements/m6-quiet-host.md, on the code of
+  `96c9abc`: 0.214–0.345 and 0.077–0.165; M5 on `e96b530` read 0.239–0.405 and 0.083–0.173, M4 on
+  `e640fbf` 0.26–0.44 and 0.092–0.179)
 - The nested-closure cliff is removed: a 2,000-byte file of expression closures nested to
   depth 16 costs 5.69 M instructions against 242.5 M at the start, with identical output
   (benchmarks/cliffs, E19 and E26)
