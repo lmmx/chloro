@@ -12,13 +12,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `dc20cd7` (the integration branch at the start of this session: E6 cache, E1 parallel items with the largest-first queue and the 128 KiB split threshold, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`) |
+| `head` | `5f24cc9` (was `dc20cd7`) (the integration branch at the start of this session: E6 cache, E1 parallel items with the largest-first queue and the 128 KiB split threshold, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `dc20cd7c652784466484d1196092109feaed6601` (worktree clean, `worktree_dirty=0`
+- **Commits:** `head` `5f24cc928c6385d3f1b9b3ac1a5c57887c9a01b0` (was `dc20cd7c652784466484d1196092109feaed6601`) (worktree clean, `worktree_dirty=0`
   in every `env.txt`); `base` `884f9c93f735676a752c67fab91d08959f410430` (`git worktree add
   /home/user/wt/base 884f9c9`, its own `target/`).
 - **Binaries (sha256):**
@@ -546,8 +546,8 @@ head-pgo against base.
 
 - No PGO build of `fmt_stdin` or `conform`: the stdin rows and the `conform -i` row have no
   `head-pgo` figure.
-- No quiet-host figure for the newer integration head (commits after `dc20cd7`); this record
-  is milestone 1 and stays on `dc20cd7`.
+- No quiet-host figure for the newer integration head (commits after `5f24cc9` (was `dc20cd7`)); this record
+  is milestone 1 and stays on `5f24cc9` (was `dc20cd7`).
 - The `cold` cache variant has no pinned row.
 
 ## Appendix: `report.py` tables as written

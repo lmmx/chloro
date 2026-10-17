@@ -13,11 +13,11 @@ and is not touched here. Labels: **measured**, **read**, **derived**.
 | field | value |
 |---|---|
 | branch | `20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates` |
-| base | `aa44d4c` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good) |
-| commits | `70cbc93` `perf(chains): skip the last child's vertical candidate when it cannot win`; this record |
+| base | `9929551` (was `aa44d4c`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good) |
+| commits | `25dd4a4` (was `70cbc93`) `perf(chains): skip the last child's vertical candidate when it cannot win`; this record |
 | rejected | row 7, literal widths once per literal (reverted, not committed; diff kept as `scratchpad/e18/lit-v1.diff`) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0; workspace release profile (fat LTO, one codegen unit), `cargo build --release -p chloro-core --examples` |
-| base binary | `bench` built at `aa44d4c` in this worktree before any change, copied to `target/release/examples/bencB` (same path length as the head's `bench`, see EXP-003 on path-length sensitivity), sha256 `30a72a7c48262518` |
+| base binary | `bench` built at `9929551` (was `aa44d4c`) in this worktree before any change, copied to `target/release/examples/bencB` (same path length as the head's `bench`, see EXP-003 on path-length sensitivity), sha256 `30a72a7c48262518` |
 | `Ir` command | `benchmarks/profile.sh --core 3 --runs 1 --sample /tmp/chloro-bench/deadc018 [--bench target/release/examples/bencB]` (private sample path of the default's length) |
 | host | 4 vCPU, shared with other experiments (load average 3.7–6.5 during the work); `Ir` is deterministic, wall times are not quiet-host figures |
 
@@ -39,7 +39,7 @@ under `rewrite_literal`).
 Each lever is falsified on its own if `Ir` does not fall by more than 0.1% of the start
 (0.31 M), or if any output changes.
 
-## Row 5: chain dead candidate (kept, `70cbc93`)
+## Row 5: chain dead candidate (kept, `25dd4a4` (was `70cbc93`))
 
 ### Exactness (read)
 
@@ -93,8 +93,8 @@ callgrind's recursion; this count covers every call.
 
 | binary | `Ir` | Δ |
 |---|---|---|
-| base `aa44d4c` (`bencB`) | 312,999,355 | |
-| `70cbc93` | 302,370,674 | −10,628,681 (−3.40%) |
+| base `9929551` (was `aa44d4c`) (`bencB`) | 312,999,355 | |
+| `25dd4a4` (was `70cbc93`) | 302,370,674 | −10,628,681 (−3.40%) |
 
 The fall exceeds the study's 3.03% bound, which priced only the outer call site's `new_rw`
 (9.48 M): dead `new_rw` renders nested inside outer `rw` renders (the `'2` level) were outside
@@ -109,7 +109,7 @@ with the expected outputs printed by `rustfmt 1.9.0` and `rustup run 1.88.0 rust
 
 ## Row 7: literal widths once per literal (rejected)
 
-Built on `70cbc93`: `StrWidths` (the first-line width, single-line flag, widest later line and
+Built on `25dd4a4` (was `70cbc93`): `StrWidths` (the first-line width, single-line flag, widest later line and
 last-line width of `filter_normal_code(text)`, with `fits` equal to `filtered_str_fits` for every
 `max_width` and shape, unit-tested over 11 literal texts × 48 × 48 × 3 shapes) and
 `LiteralFacts` (plus the continuation test of `rewrite_string_lit`), cached per run by the text's
@@ -117,9 +117,9 @@ address and length for multi-line literals; one-line literals kept the old path.
 passed (a multi-line string, a raw string, a byte string with `\r` escapes and a continued
 string at `max_width` 100, 60 and 40, against rustfmt 1.9.0 and 1.8.0).
 
-| binary | `Ir` | Δ against `70cbc93` |
+| binary | `Ir` | Δ against `25dd4a4` (was `70cbc93`) |
 |---|---|---|
-| row 7 on `70cbc93` | 307,663,496 | +5,292,822 (+1.75%) |
+| row 7 on `25dd4a4` (was `70cbc93`) | 307,663,496 | +5,292,822 (+1.75%) |
 
 `rewrite_literal`'s inclusive cost rose from 5.19 M to 8.30 M. A counter run found 1,448 cache
 misses (235,691 bytes of literal text) and 58 hits (4,893 bytes): after row 5, a multi-line
@@ -129,9 +129,9 @@ Each miss pays a full scan of every line for the widest later line, where `filte
 stops at the first failing test, plus the map insert. With 58 hits the lever's ceiling on this
 head is far below 0.1%; a cheaper exact scan of long literals would be a different lever
 (per-call cost, not repeats). Reverted; the rebuilt head binary is byte-identical to
-`70cbc93`'s (sha256 `78979a831bdb920a`).
+`25dd4a4` (was `70cbc93`)'s (sha256 `78979a831bdb920a`).
 
-## Gates (`70cbc93`)
+## Gates (`25dd4a4` (was `70cbc93`))
 
 | gate | result |
 |---|---|

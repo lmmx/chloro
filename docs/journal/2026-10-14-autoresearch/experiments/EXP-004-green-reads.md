@@ -10,8 +10,8 @@ tool's output on the builds below), **read** (from source).
 | field | value |
 |---|---|
 | branch | `20261014-green-reads` |
-| base | `4cd6336` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of `884f9c9`, the profile baseline) |
-| commits | `4841d9b`, `5e7e36c`, `362e1eb`, `fb07072`, `62c4348`, `5c02ef2` (one per site group, in that order) |
+| base | `8b93cba` (was `4cd6336`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of `884f9c9`, the profile baseline) |
+| commits | `af1d64e` (was `4841d9b`), `8a92a84` (was `5e7e36c`), `46bfe7f` (was `362e1eb`), `62480dc` (was `fb07072`), `c5befa8` (was `62c4348`), `e13ae57` (was `5c02ef2`) (one per site group, in that order) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, valgrind 3.22.0 |
 | host | 4 vCPU Intel Xeon @ 2.80GHz, 15 GB; CPU-heavy runs pinned with `taskset -c N`; gates of one commit ran on four cores at once (callgrind on core 0, hash checks on 1, `conform -i` on 2, clippy and tests on 3) |
 | build | `cargo build --release --examples -p chloro-core` (default release profile, no `[profile.release]` in the workspace) |
@@ -43,12 +43,12 @@ range (a binary search on the green children) or, for an empty child, by positio
 
 | commit | sites | helpers added (chloro-core/src/formatter/nodes.rs unless noted) |
 |---|---|---|
-| `4841d9b` statements | `stmts_of` classifies the statement list's children by green kind and offset (tail expression: the first expression child; `ExprStmt::expr` via `child`; `MacroCall::token_tree` and `TokenTree::l_curly_token` on the green token tree); `Block::from_block_expr` reads the `unsafe` token's start | `child_at`, `green_has_token`, `token_start`; `child` rewritten on `child_at` |
-| `5e7e36c` attributes | `outer_attributes` and `inner_attributes` classify children on the green node and create a red element per attribute kept | `element_at`; `is_inner_doc_text` (span.rs) |
-| `362e1eb` one-shot queries (class D) | `fn` body presence (`visit_item`, `visit_assoc_item`, `ExternItem`, `item_attrs`), `arm_span`, `param_ty_hi`, `mac_span`, generic-argument presence and the argument lists of `rewrite_segment`, `BinExpr::op_kind`/`op_token` (`rewrite_all_pairs`, `is_assignment`, `rewrite_assignment`, `rewrite_pair`), left-operand presence, `Attribute::path_text`/`is_skip`/`attr_meta`, `LitKind::of`, the closure `use` keyword, `has_c_variadic` | `has_child`, `child_range`, `green_child`, `attr_path_text`, `bin_op_kind`, `bin_op_text`, `push_non_trivia_text` |
-| `fb07072` rejected siblings (class S) | `child::<N>` at `fn` bodies, names and generic parameter lists, `let` patterns/types/initializers/`else` blocks, parameter patterns and types, match arm bodies and guards, call argument lists, closure bodies and parameter lists, record literal field lists and bases, `use` tree paths, method-call generic arguments, tuple field names; `nth_child::<N>` at `BinExpr::rhs` and `IndexExpr::index`; `condition_expr`, `then_branch`, `else_branch`, `loop_body` at `to_control_flow` | `nth_child`, `condition_expr`, `then_branch`, `else_branch`, `loop_body` |
-| `62c4348` macro scans (class C) | `rewrite_macro_name`, `tt_delimiter`, `tt_is_empty`, `MacroCall::token_tree` (`rewrite_macro_inner`, `convert_try_mac`, `macro_style`), `MacroBranch::new`'s delimiter kind, `MacroTokens::splice`'s child walk | `first_token_kind`, `green_children_with_ranges` |
-| `5c02ef2` block cache | `RunState::block_of` keeps the `Block` of each block expression for the run, keyed by green address and offset like the memo, cleared by `clear_memo`; `to_control_flow`, `plain_block` and `as_block` take the run or the context (context.rs) | `RunState::blocks`, `RunState::block_of` |
+| `af1d64e` (was `4841d9b`) statements | `stmts_of` classifies the statement list's children by green kind and offset (tail expression: the first expression child; `ExprStmt::expr` via `child`; `MacroCall::token_tree` and `TokenTree::l_curly_token` on the green token tree); `Block::from_block_expr` reads the `unsafe` token's start | `child_at`, `green_has_token`, `token_start`; `child` rewritten on `child_at` |
+| `8a92a84` (was `5e7e36c`) attributes | `outer_attributes` and `inner_attributes` classify children on the green node and create a red element per attribute kept | `element_at`; `is_inner_doc_text` (span.rs) |
+| `46bfe7f` (was `362e1eb`) one-shot queries (class D) | `fn` body presence (`visit_item`, `visit_assoc_item`, `ExternItem`, `item_attrs`), `arm_span`, `param_ty_hi`, `mac_span`, generic-argument presence and the argument lists of `rewrite_segment`, `BinExpr::op_kind`/`op_token` (`rewrite_all_pairs`, `is_assignment`, `rewrite_assignment`, `rewrite_pair`), left-operand presence, `Attribute::path_text`/`is_skip`/`attr_meta`, `LitKind::of`, the closure `use` keyword, `has_c_variadic` | `has_child`, `child_range`, `green_child`, `attr_path_text`, `bin_op_kind`, `bin_op_text`, `push_non_trivia_text` |
+| `62480dc` (was `fb07072`) rejected siblings (class S) | `child::<N>` at `fn` bodies, names and generic parameter lists, `let` patterns/types/initializers/`else` blocks, parameter patterns and types, match arm bodies and guards, call argument lists, closure bodies and parameter lists, record literal field lists and bases, `use` tree paths, method-call generic arguments, tuple field names; `nth_child::<N>` at `BinExpr::rhs` and `IndexExpr::index`; `condition_expr`, `then_branch`, `else_branch`, `loop_body` at `to_control_flow` | `nth_child`, `condition_expr`, `then_branch`, `else_branch`, `loop_body` |
+| `c5befa8` (was `62c4348`) macro scans (class C) | `rewrite_macro_name`, `tt_delimiter`, `tt_is_empty`, `MacroCall::token_tree` (`rewrite_macro_inner`, `convert_try_mac`, `macro_style`), `MacroBranch::new`'s delimiter kind, `MacroTokens::splice`'s child walk | `first_token_kind`, `green_children_with_ranges` |
+| `e13ae57` (was `5c02ef2`) block cache | `RunState::block_of` keeps the `Block` of each block expression for the run, keyed by green address and offset like the memo, cleared by `clear_memo`; `to_control_flow`, `plain_block` and `as_block` take the run or the context (context.rs) | `RunState::blocks`, `RunState::block_of` |
 
 `non_trivia_text` and `is_outer_doc_comment` are now used by tests only (`#[cfg(test)]`).
 No `unsafe`, no new dependency, no change to which layout attempts are made: each site
@@ -84,25 +84,25 @@ since D1). Each row's gates ran on that commit's binary.
 
 | commit | sites | red nodes | Ir | ΔIr | Ir per node removed | gates | decision |
 |---|---|---|---|---|---|---|---|
-| base `4cd6336` | — | 284,789 | 587,589,233 | — | — | — | — |
-| `4841d9b` | `stmts_of`, `from_block_expr` | 262,032 (−22,757) | 583,244,951 | −4,344,282 (−0.74%) | 191 | pass | kept |
-| `5e7e36c` | `outer_attributes`, `inner_attributes` | 251,215 (−10,817) | 580,903,783 | −2,341,168 (−0.40%) | 216 | pass | kept |
-| `362e1eb` | D rows | 196,535 (−54,680) | 563,434,616 | −17,469,167 (−3.01%) | 319 | pass | kept |
-| `fb07072` | S rows | 158,774 (−37,761) | 555,406,669 | −8,027,947 (−1.42%) | 213 | pass | kept |
-| `62c4348` | macro scans | 145,144 (−13,630) | 551,103,784 | −4,302,885 (−0.77%) | 316 | pass | kept |
-| `5c02ef2` | block cache | 141,544 (−3,600) | 549,937,449 | −1,166,335 (−0.21%) | 324 | pass | kept |
+| base `8b93cba` (was `4cd6336`) | — | 284,789 | 587,589,233 | — | — | — | — |
+| `af1d64e` (was `4841d9b`) | `stmts_of`, `from_block_expr` | 262,032 (−22,757) | 583,244,951 | −4,344,282 (−0.74%) | 191 | pass | kept |
+| `8a92a84` (was `5e7e36c`) | `outer_attributes`, `inner_attributes` | 251,215 (−10,817) | 580,903,783 | −2,341,168 (−0.40%) | 216 | pass | kept |
+| `46bfe7f` (was `362e1eb`) | D rows | 196,535 (−54,680) | 563,434,616 | −17,469,167 (−3.01%) | 319 | pass | kept |
+| `62480dc` (was `fb07072`) | S rows | 158,774 (−37,761) | 555,406,669 | −8,027,947 (−1.42%) | 213 | pass | kept |
+| `c5befa8` (was `62c4348`) | macro scans | 145,144 (−13,630) | 551,103,784 | −4,302,885 (−0.77%) | 316 | pass | kept |
+| `e13ae57` (was `5c02ef2`) | block cache | 141,544 (−3,600) | 549,937,449 | −1,166,335 (−0.21%) | 324 | pass | kept |
 | **total** | | **−143,245 (−50.3%)** | | **−37,651,784 (−6.41%)** | 263 | | |
 
 - No commit was rejected. The threshold for keeping a commit was `Ir` down by more than
   0.1% with identical output; the smallest kept change is the block cache at 0.21%.
-- `362e1eb` was first measured at 563,459,429 with `Iterator::last` in `has_c_variadic`;
+- `46bfe7f` (was `362e1eb`) was first measured at 563,459,429 with `Iterator::last` in `has_c_variadic`;
   clippy rejects `last` on a double-ended iterator, and the committed `next_back` form
   measures 563,434,616 (−24,813).
 - `Block::from_block_expr` ran 2,571 times on the sample before the cache (callgrind call
-  count at `fb07072`); the cache removes 3,600 red nodes and 1.17 M Ir, so a repeated call
+  count at `62480dc` (was `fb07072`)); the cache removes 3,600 red nodes and 1.17 M Ir, so a repeated call
   cost about 1,000 Ir after the first five commits had taken the statement walk off red
   nodes.
-- Red-node creation after `5c02ef2`: 141,544 on the sample. Of these, 65,548 (46.3%) are
+- Red-node creation after `e13ae57` (was `5c02ef2`): 141,544 on the sample. Of these, 65,548 (46.3%) are
   created through `element_at`, the range search that creates a kept node.
 
 ## Gates (measured)
@@ -110,10 +110,10 @@ since D1). Each row's gates ran on that commit's binary.
 | gate | corpus | result, every commit |
 |---|---|---|
 | `cargo fmt --check` | | clean |
-| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean (after the `next_back` change in `362e1eb`) |
-| `cargo test -p chloro-core` | 156 library tests at `5c02ef2`, 17 conformance batch tests, 4 + 10 integration tests | all pass |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean (after the `next_back` change in `46bfe7f` (was `362e1eb`)) |
+| `cargo test -p chloro-core` | 156 library tests at `e13ae57` (was `5c02ef2`), 17 conformance batch tests, 4 + 10 integration tests | all pass |
 | `bench --check` | 1238 fixture files, hashes recorded with the base binary | 0 changed |
-| `bench --check` | cargo registry corpus under `~/.cargo/registry/src`: 19,463 files in 524 crates for `4841d9b` and `5e7e36c`; 19,978 files in 556 crates from `362e1eb` on (the clippy run fetched 32 more crates; the record was re-made with the base binary before `362e1eb` was checked) | 0 changed |
+| `bench --check` | cargo registry corpus under `~/.cargo/registry/src`: 19,463 files in 524 crates for `af1d64e` (was `4841d9b`) and `8a92a84` (was `5e7e36c`); 19,978 files in 556 crates from `46bfe7f` (was `362e1eb`) on (the clippy run fetched 32 more crates; the record was re-made with the base binary before `46bfe7f` (was `362e1eb`) was checked) | 0 changed |
 | `conform -i` | 1220 rust-analyzer fixtures | 1219/1220 identical, 0 not idempotent |
 
 The registry corpus here was fetched from
@@ -123,17 +123,17 @@ recorded in [../corpus/registry-crates.txt](../corpus/registry-crates.txt).
 
 ## Wall clock (measured)
 
-`bench -n 5` on the 1238 fixtures (13.8 MB), base binary and `5c02ef2` binary interleaved,
+`bench -n 5` on the 1238 fixtures (13.8 MB), base binary and `e13ae57` (was `5c02ef2`) binary interleaved,
 three pairs, `taskset -c 0`, no other agent work on the host during the runs.
 
-| pair | base, best of 5 | `5c02ef2`, best of 5 | difference |
+| pair | base, best of 5 | `e13ae57` (was `5c02ef2`), best of 5 | difference |
 |---|---|---|---|
 | 1 | 3.000 s, 4.63 MB/s | 2.905 s, 4.78 MB/s | +3.2% |
 | 2 | 2.946 s, 4.72 MB/s | 2.802 s, 4.96 MB/s | +5.1% |
 | 3 | 2.980 s, 4.67 MB/s | 2.942 s, 4.72 MB/s | +1.1% |
 
 Load average 0.59 before and 0.92 after the six runs. The base range is 4.63–4.72 MB/s and
-the `5c02ef2` range 4.72–4.96 MB/s: the new binary is ahead in 3 of 3 pairs, and the
+the `e13ae57` (was `5c02ef2`) range 4.72–4.96 MB/s: the new binary is ahead in 3 of 3 pairs, and the
 ranges meet at 4.72 MB/s, so the protocol's non-overlap condition for a wall-clock claim
 is not met. The instruction count is the claim; the wall-clock direction agrees with it.
 
@@ -156,12 +156,12 @@ is not met. The instruction count is the claim; the wall-clock direction agrees 
 
 ## Decision
 
-Kept: all six commits. Branch `20261014-green-reads` at `5c02ef2`, ready for the integrator's
+Kept: all six commits. Branch `20261014-green-reads` at `e13ae57` (was `5c02ef2`), ready for the integrator's
 gates 1–5 on the merged tree.
 
 ## Follow-up
 
-Creation paths remaining at `5c02ef2` (red nodes on the sample, first chloro frame and
+Creation paths remaining at `e13ae57` (was `5c02ef2`) (red nodes on the sample, first chloro frame and
 the frame below it; `scratchpad/cg/c6-paths.txt`):
 
 | red nodes | first chloro frame | accessor below it |

@@ -4,9 +4,9 @@
 
 | field | value |
 |---|---|
-| branch | `20261014-cli-cache` from `d797292` (integration branch `claude/chloro-perf-research-swarm-nrscj8`) |
-| base BKG | `884f9c9` (`d797292` adds only documentation) |
-| commits | `6e893f4` (code, tests, README), the following commit (this file, ledger row) |
+| branch | `20261014-cli-cache` from `8f6b2b0` (was `d797292`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`) |
+| base BKG | `884f9c9` (`8f6b2b0` (was `d797292`) adds only documentation) |
+| commits | `15ed8ff` (was `6e893f4`) (code, tests, README), the following commit (this file, ledger row) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo build --release --features cli`, default profile |
 | host | 4 vCPU Xeon @ 2.80GHz, 15 GB, Linux 6.18; load at measurement time recorded per table |
 | scope | `chloro/src/cli/` only; `chloro-core` has no diff |
@@ -212,7 +212,7 @@ the cache read and write. On the raw tree, 702 files are formatted whether or no
 
 | build | bytes | change |
 |---|---|---|
-| `d797292` (no cache) | 2,516,048 | |
+| `8f6b2b0` (was `d797292`) (no cache) | 2,516,048 | |
 | this branch, `blake3` default features | 2,704,336 | +188,288 (+7.5%) |
 | this branch, `blake3` `features = ["pure"]` | 2,673,624 | +157,576 (+6.3%) |
 | this branch, `blake3` `features = ["no_avx512"]` | 2,703,784 | +187,736 (+7.5%) |

@@ -13,13 +13,13 @@ cliff constraint is [EXP-019](EXP-019-cliffs.md)'s `closures-expr`; the heap-lay
 
 | field | value |
 |---|---|
-| branch | `20261015-memo-policy` from `4f1b9d9` (integration branch; its code is the BKG `05ab7b4`, the commits above it are documentation), worktree `/home/user/wt/memopol` |
-| merged in | `99dc14a` merges `origin/20261015-harness` (E27: `profile.sh` path independence, `--per-file`, `--sample-list`, `parse_only`, `bench --phase`; no formatter change). Conflicts in `benchmarks/README.md` and the ledger only, both sides kept |
-| kept commit | `fd18d50` (the memo from nesting depth 6, the debug hit check, the test); then this file and the ledger row |
+| branch | `20261015-memo-policy` from `33866dc` (was `4f1b9d9`) (integration branch; its code is the BKG `dcbb43d` (was `05ab7b4`), the commits above it are documentation), worktree `/home/user/wt/memopol` |
+| merged in | `61d708e` (was `99dc14a`) merges `origin/20261015-harness` (E27: `profile.sh` path independence, `--per-file`, `--sample-list`, `parse_only`, `bench --phase`; no formatter change). Conflicts in `benchmarks/README.md` and the ledger only, both sides kept |
+| kept commit | `870bd5d` (was `fd18d50`) (the memo from nesting depth 6, the debug hit check, the test); then this file and the ledger row |
 | rejected, not committed | store on the second miss; kind-selective storing; a subtree-size gate; depth gates other than 6; depth 6 with kinds off; depth 5 with a size gate (all measured below with an instrumented build) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, hyperfine 2.0.0, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz; other agents built and ran throughout (load average 11.9–23.3). `Ir` is unaffected; every wall-clock figure is **measured, provisional** (protocol §6) |
-| binaries | base: `bench` of `99dc14a` (sha256 `b1ff3e01…`, the BKG's formatter with E27's `bench`), copied to `bench-base` before the first change; head: `bench` of `fd18d50` (sha256 `a8debc57…`, built at the commit before its comment-only amend; the rebuild at `fd18d50` is byte-identical, see *Gates*) |
+| binaries | base: `bench` of `61d708e` (was `99dc14a`) (sha256 `b1ff3e01…`, the BKG's formatter with E27's `bench`), copied to `bench-base` before the first change; head: `bench` of `870bd5d` (was `fd18d50`) (sha256 `a8debc57…`, built at the commit before its comment-only amend; the rebuild at `870bd5d` (was `fd18d50`) is byte-identical, see *Gates*) |
 | `Ir` commands | `benchmarks/profile.sh --core 3 --bench BIN --runs 3 --per-file [--sample-list benchmarks/samples/registry49.txt]`; `--sim` for the co-metric |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures), `registry-e8d87c2.tsv` (25,024 registry files present, 4,174 reported as not recorded) |
 
@@ -234,7 +234,7 @@ Reading the table:
   `closures-expr` does not move, at depth 12 it costs 3% more. A size gate on top (depth 5,
   subtree ≥ 16) gains another 0.12–0.21 M for a second constant; not taken (below).
 
-## The policy (read; `fd18d50`)
+## The policy (read; `870bd5d` (was `fd18d50`))
 
 `RunState` counts the `memoize` rewrites in progress (`memo_depth`). While fewer than
 `MEMO_MIN_DEPTH` = 6 are in progress, `memoize` increments the count, runs the rewrite and
@@ -385,7 +385,7 @@ earlier records). No wall claim; a quiet-host pair is owed.
 
 ## Gates (measured)
 
-| gate | corpus | result on `fd18d50` |
+| gate | corpus | result on `870bd5d` (was `fd18d50`) |
 |---|---|---|
 | `cargo fmt --all --check` | | clean |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean (one `type_complexity` in the new test fixed before commit) |
@@ -398,7 +398,7 @@ earlier records). No wall claim; a quiet-host pair is owed.
 | cliff shapes against rustfmt | 108 generated files and 8 `closures-expr` depths | all identical |
 
 The gates ran on the binaries built at the commit before a comment-only amend (three lines of
-the constant's documentation, same line count); `bench` rebuilt at `fd18d50` has the same
+the constant's documentation, same line count); `bench` rebuilt at `870bd5d` (was `fd18d50`) has the same
 sha256 as the measured one (`a8debc57…`). The registry `config_matrix` (gate 7) was not run:
 no output changed on either hash corpus.
 
@@ -434,7 +434,7 @@ no output changed on either hash corpus.
 
 ## Decision
 
-Kept: `fd18d50`, the memo from nesting depth 6. Per file (the lever's own effect) −3,875,681
+Kept: `870bd5d` (was `fd18d50`), the memo from nesting depth 6. Per file (the lever's own effect) −3,875,681
 instructions (−1.58%) on the fixture sample and −2,920,027 (−0.91%) on the registry sample;
 whole sample −2.49% and −1.05%. Outputs byte-identical on both hash corpora (sequential and
 four threads), `conform` 1220/1220 at both rustfmt versions, `config_matrix` identical on all

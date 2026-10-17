@@ -14,13 +14,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `4867896` (the integration branch after the E3 and R2 merges: E6 cache, E1 parallel items, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`, E4 green reads, E8 `rustfmt_version`, E7b flat substrate, E3 hot paths, R2 conformance fixes; one docs-only commit above the ledger's best-known-good `113367a`, same code) |
+| `head` | `069f5a7` (was `4867896`) (the integration branch after the E3 and R2 merges: E6 cache, E1 parallel items, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`, E4 green reads, E8 `rustfmt_version`, E7b flat substrate, E3 hot paths, R2 conformance fixes; one docs-only commit above the ledger's best-known-good `af52d66` (was `113367a`), same code) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`; the script also builds the profile-guided `bench`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `4867896e1b51a68afc9cdf3bf018bc80d8a00269` (worktree clean,
+- **Commits:** `head` `069f5a7f6441fb142de01a1dcc4de4ca85accbb0` (was `4867896e1b51a68afc9cdf3bf018bc80d8a00269`) (worktree clean,
   `worktree_dirty=0` in every `env.txt`; `git diff --stat 113367a HEAD` touches three
   Markdown files and no source); `base` `884f9c93f735676a752c67fab91d08959f410430` (`git
   worktree add /home/user/wt/base 884f9c9`, its own `target/`).
@@ -44,7 +44,7 @@ Labels used throughout:
   [m2-quiet-host.md](m2-quiet-host.md) and [m1-quiet-host.md](m1-quiet-host.md): the
   default-profile build of `884f9c9` reproduces byte for byte on this toolchain in a fresh
   container.
-- The `head` chloro binary is 2,010,696 bytes against 1,928,728 for M2's `8d418ee` build
+- The `head` chloro binary is 2,010,696 bytes against 1,928,728 for M2's `fe34bd2` (was `8d418ee`) build
   and 2,516,048 for `base` (0.799x base; 1.042x M2's head); `head-pgo` is 2,714,112 bytes
   (1.079x base, 1.047x M2's 2,592,152).
 - `cargo tree -e no-dev -p chloro-core --prefix none | sort -u | wc -l`: 17 lines for `head`,
@@ -293,7 +293,7 @@ rustfmt builds and prints a diff for every changed file; chloro compares two str
   copied to a scratch directory and rewritten once by `head --write --no-cache`; `head --check
   --no-cache` on the result exits 0. `CHLORO_CACHE_DIR` points at a scratch directory, which
   holds one file `56497adc96513e4f417307216ac2c810.chloro-cache` of 44,152 bytes after a run
-  (the file name is the key of this binary; M2's `8d418ee` build wrote `083aac67…`, the same
+  (the file name is the key of this binary; M2's `fe34bd2` (was `8d418ee`) build wrote `083aac67…`, the same
   size). `head -v --check` on the copy reports `(1226 entries)` for the file; the 1238
   fixtures hold 1230 distinct contents by sha256.
 - Commands: `hyperfine -N -i -w 1 -r 15 --metrics … -n cold --prepare "rm -rf $C" "head
@@ -374,7 +374,7 @@ Harness run (`compare_rustfmt.sh --groups e --rounds 3 --baseline`), same core, 
   312,733,931 (−46.81%), head-pgo 244,710,917 (−58.38%; 0.7825x head); two runs of each
   agree to within 1,787 instructions (base), 110 (head) and 1,620 (head-pgo). The base count
   is 44 below M2's 587,989,243 for the same binary hash; the head count's run 1 is 9 above
-  the 312,734,032 the ledger records for `113367a` in [../experiments.md](../experiments.md).
+  the 312,734,032 the ledger records for `af52d66` (was `113367a`) in [../experiments.md](../experiments.md).
 
 ## Parallel items (measurement E)
 
@@ -506,13 +506,13 @@ or head-pgo above base in mean wall, minimum wall or CPU; the list is peak RSS o
 
 ## Against M2
 
-M2 ([m2-quiet-host.md](m2-quiet-host.md)) measured `8d418ee` (E6, E1, E2, E4, E8, E7b) on
-the 2.80 GHz host class; this record measures `4867896` (M2's head plus E3 and R2) on the
+M2 ([m2-quiet-host.md](m2-quiet-host.md)) measured `fe34bd2` (was `8d418ee`) (E6, E1, E2, E4, E8, E7b) on
+the 2.80 GHz host class; this record measures `069f5a7` (was `4867896`) (M2's head plus E3 and R2) on the
 same host class (same `model name`, `nproc`, `MemTotal` and kernel). Protocol §3 keeps
 absolute figures within one window, so the two records' ratios are set side by side and the
 absolute figures are not; `base` is the same binary (same sha256) in both:
 
-| ratio (means) | M2, `8d418ee` | M3, `4867896` |
+| ratio (means) | M2, `fe34bd2` (was `8d418ee`) | M3, `069f5a7` (was `4867896`) |
 |---|---|---|
 | crates, `mc`, head/base | 0.48–0.62 | 0.30–0.58 |
 | crates, `1c`, head/base (wall; CPU) | 0.53–0.67; 0.54–0.67 | 0.46–0.60; 0.46–0.59 |

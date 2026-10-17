@@ -4,12 +4,12 @@ Every mismatch between chloro and `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`
 found on 2026-10-14, with a reproducer, the root cause, a classification and its state.
 The fixes are on the branch `20261014-conformance-fixes`
 (worktree `/home/user/wt/conformance`), which starts at `884f9c9` and has the integration
-branch `claude/chloro-perf-research-swarm-nrscj8` merged in three times (at `80e4740`; at
-`8d418ee`, the flat syntax array of E7b; at `b4917ad`, the hot paths of E3). After the
+branch `claude/chloro-perf-research-swarm-nrscj8` merged in three times (at `73d75ce` (was `80e4740`); at
+`fe34bd2` (was `8d418ee`), the flat syntax array of E7b; at `ca64d10` (was `b4917ad`), the hot paths of E3). After the
 third merge, four commits bring the branch's instruction count on the profile sample below
-the base's (section Cost on the profile sample). The final gates ran on `b0aa3d2`; the
+the base's (section Cost on the profile sample). The final gates ran on `8a8f09d` (was `b0aa3d2`); the
 commit that adds this text changes only this file. File and line references to chloro are
-to `b0aa3d2` unless a commit is named; references to rustfmt are to the `v1.9.0` checkout
+to `8a8f09d` (was `b0aa3d2`) unless a commit is named; references to rustfmt are to the `v1.9.0` checkout
 at `/home/user/ref/rustfmt-v1.9.0/src`.
 
 ## Method
@@ -42,26 +42,26 @@ at `/home/user/ref/rustfmt-v1.9.0/src`.
     already formatted);
   - "rustfmt accepts, chloro rejects": a file chloro returns unchanged although rustfmt
     formats it (invisible when the file is already formatted).
-- The gates ran on each fix commit's own tree before the next commit, except for `7978e1c`
-  and `f43d45f`, which were committed in a loop whose output was lost to an interruption;
+- The gates ran on each fix commit's own tree before the next commit, except for `00aac21` (was `7978e1c`)
+  and `b278aba` (was `f43d45f`), which were committed in a loop whose output was lost to an interruption;
   their gates were run afterwards on copies made with `git archive` (each with its own
   target directory and fresh file times): fmt, clippy and all tests pass, `conform -i`
   1219/1220 with 0 not idempotent, `bench --check` 0 of 1238 changed
   (`scratchpad/conformance/gate-ab.log`, `gate-b.log`).
-- Final runs on `b464243` with the repository's own examples:
+- Final runs on `716c609` (was `b464243`) with the repository's own examples:
   `config_matrix --rustfmt <stable rustfmt> -n 1220 -v` and
   `config_matrix --rustfmt <stable rustfmt> --root ~/.cargo/registry/src -n 30000 -v default`
   (outputs in `scratchpad/conformance/final/`), pinned with `taskset -c 2`.
-- Final gates on `b0aa3d2` (`scratchpad/perf/gates.sh`, outputs in `scratchpad/perf/gates/`,
+- Final gates on `8a8f09d` (was `b0aa3d2`) (`scratchpad/perf/gates.sh`, outputs in `scratchpad/perf/gates/`,
   pinned with `taskset -c 2`): `cargo fmt --check`, `cargo clippy --workspace --all-targets
   --all-features -- -D warnings`, `cargo test -p chloro-core`, `conform -i` and
   `conform -i -V 1.8.0`, `bench --check` against both `884f9c9` goldens, the two
   `config_matrix` runs above, and `benchmarks/profile.sh`. The script ran clippy on
   `9468265`, which clippy rejected for one `needless_borrow` in `rustc_syntax.rs`; the
-  amended commit `b0aa3d2` changes that borrow and passes clippy, and the other gates ran on
+  amended commit `8a8f09d` (was `b0aa3d2`) changes that borrow and passes clippy, and the other gates ran on
   its build.
 - Differential check of the cost commits (`scratchpad/perf/zz_edition_record.rs`, an
-  example kept out of the repository): built at `11e5945` (before them) and at `9468265`,
+  example kept out of the repository): built at `8488b22` (was `11e5945`) (before them) and at `9468265`,
   it formats the 1238 fixtures and the 20,850 registry files under `edition` 2015, 2018,
   2021 and 2024 with `rustfmt_version` 1.9.0 and 1.8.0 and records a hash of each output:
   176,704 outputs, identical in the two records. The probe lists of cases 4–12 give the
@@ -75,15 +75,15 @@ Fixtures, default options, `examples/conform.rs -i`:
 | | identical | not idempotent |
 |---|---|---|
 | `884f9c9` | 1219/1220 | 0 |
-| `b464243`, `rustfmt_version = 1.9.0` | 1220/1220 | 0 |
-| `b464243`, `rustfmt_version = 1.8.0` (`conform -i -V 1.8.0`) | 1220/1220 | 0 |
-| `b0aa3d2`, `rustfmt_version = 1.9.0` | 1220/1220 | 0 |
-| `b0aa3d2`, `rustfmt_version = 1.8.0` | 1220/1220 | 0 |
+| `716c609` (was `b464243`), `rustfmt_version = 1.9.0` | 1220/1220 | 0 |
+| `716c609` (was `b464243`), `rustfmt_version = 1.8.0` (`conform -i -V 1.8.0`) | 1220/1220 | 0 |
+| `8a8f09d` (was `b0aa3d2`), `rustfmt_version = 1.9.0` | 1220/1220 | 0 |
+| `8a8f09d` (was `b0aa3d2`), `rustfmt_version = 1.8.0` | 1220/1220 | 0 |
 
 Option matrix over the 1238 fixture files, from the comparison tool (identical / files
 rustfmt accepts; "parses" = files rustfmt rejects and chloro parses; "rejects" = files
 rustfmt accepts and chloro returns unchanged). `examples/config_matrix.rs --rustfmt <stable
-rustfmt> -n 1220 -v` on `729fd36` gives the same counts: 1022/1022 for each of the 28
+rustfmt> -n 1220 -v` on `78fcb58` (was `729fd36`) gives the same counts: 1022/1022 for each of the 28
 values with `--edition 2024`, 844/844, 843/843 and 838/838 for `edition=2021`, `2018` and
 `2015`, no differing file (20 min 54 s; `scratchpad/conformance/final/config_matrix-fixtures.txt`).
 At `884f9c9` config_matrix reported the "identical" column of the first group (the
@@ -126,7 +126,7 @@ At `884f9c9` config_matrix reported the "identical" column of the first group (t
 
 Registry, default options (`--edition 2024`), the 20,847 files of the baseline list:
 
-| | `884f9c9` | `b464243` |
+| | `884f9c9` | `716c609` (was `b464243`) |
 |---|---|---|
 | rustfmt accepts, output identical | 20,526 of 20,536 | 20,536 of 20,536 |
 | rustfmt rejects (exit 1, no output), chloro returns the input | 307 | 309 |
@@ -139,7 +139,7 @@ Registry, default options (`--edition 2024`), the 20,847 files of the baseline l
 | chloro panics | 0 | 0 |
 
 `examples/config_matrix.rs --rustfmt <stable rustfmt> --root ~/.cargo/registry/src -n 30000
--v default` on `729fd36`, over the registry as it was at the end (20,850 files): 20,540 of
+-v default` on `78fcb58` (was `729fd36`), over the registry as it was at the end (20,850 files): 20,540 of
 the 20,540 files rustfmt accepts are identical, no differing file (15 min 51 s;
 `scratchpad/conformance/final/config_matrix-registry.txt`). The count includes pest_meta
 2.9.2 `src/grammar.rs`, on which rustfmt took 9 min 36 s (case 22).
@@ -148,28 +148,28 @@ the 20,540 files rustfmt accepts are identical, no differing file (15 min 51 s;
 
 | commit | change |
 |---|---|
-| `72af2ac` | nested blocks of a macro definition get trailing semicolons (case 1) |
-| `e0ff879` | a repeat array `[x; n]` is not block-like (case 2) |
-| `56a373b` | doc comments in macro arguments are tokens (case 3) |
-| `7978e1c` | `rustc_compat` rejects `<-`, `..a = b` and `a..=` (cases 4–6) |
-| `f43d45f` | `rustc_compat` rejects ambiguous `+` in types and unbraced const parameter defaults (cases 7, 8) |
-| `5f043e8` | `rustc_compat` rejects `builtin #` constructs (case 9) |
-| `ccf6f21` | `rustc_compat` rejects edition 2015 trait method parameters that are patterns (case 10) |
-| `f519a29` | `rustc_compat` rejects misplaced doc comments and pre-2021 C strings (cases 11, 12) |
-| `83e9fde` | `rustc_syntax`: parenthesized first bound of a bare trait object (case 13, `0024_many_type_parens.rs`) |
-| `0479fd3` | `rustc_syntax`: float literal field names (case 14, `0054_float_split_scientific_notation.rs`) |
-| `1be8a3f` | `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]` (case 15) |
-| `0856215` | const block items (case 16, facet-core `macros.rs`) |
-| `7c778e0` | `impl impl Trait {}` (case 17, `inline/err/impl_type.rs`) |
-| `8e7ec67` | merge of the integration branch at `80e4740` (E1, E2, E4, E6, E8) |
-| `b6e858e` | an unknown literal prefix is no lexer error before edition 2021 (case 18) |
-| `729fd36` | merge of the integration branch at `8d418ee` (E7b flat syntax array); the fixes re-expressed on `cst::Tree` |
-| `b464243` | module map entry of `rustc_syntax` (a doc comment in `formatter.rs`) |
-| `2ad6240` | merge of the integration branch at `b4917ad` (E3 hot paths) |
-| `91e8e02` | cost: the skip context is an `Option<Rc<SkipContext>>`, and item attributes are read for it only when a path starts with `rustfmt` |
-| `11e5945` | cost: const block items take their block from `RunState::block_of` |
-| `6b7120f` | cost: `rustc_compat` in one pass over the flat tree's elements, ancestors found on demand |
-| `b0aa3d2` | cost: `reparse` reuses the first lex and parse and skips the edits that cannot apply |
+| `0b82b81` (was `72af2ac`) | nested blocks of a macro definition get trailing semicolons (case 1) |
+| `34d66b7` (was `e0ff879`) | a repeat array `[x; n]` is not block-like (case 2) |
+| `2c43d18` (was `56a373b`) | doc comments in macro arguments are tokens (case 3) |
+| `00aac21` (was `7978e1c`) | `rustc_compat` rejects `<-`, `..a = b` and `a..=` (cases 4–6) |
+| `b278aba` (was `f43d45f`) | `rustc_compat` rejects ambiguous `+` in types and unbraced const parameter defaults (cases 7, 8) |
+| `bbc2e88` (was `5f043e8`) | `rustc_compat` rejects `builtin #` constructs (case 9) |
+| `c1ef5d5` (was `ccf6f21`) | `rustc_compat` rejects edition 2015 trait method parameters that are patterns (case 10) |
+| `8e054fa` (was `f519a29`) | `rustc_compat` rejects misplaced doc comments and pre-2021 C strings (cases 11, 12) |
+| `1da9b5b` (was `83e9fde`) | `rustc_syntax`: parenthesized first bound of a bare trait object (case 13, `0024_many_type_parens.rs`) |
+| `169ed0c` (was `0479fd3`) | `rustc_syntax`: float literal field names (case 14, `0054_float_split_scientific_notation.rs`) |
+| `c6bdaf1` (was `1be8a3f`) | `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]` (case 15) |
+| `1073a87` (was `0856215`) | const block items (case 16, facet-core `macros.rs`) |
+| `652bae9` (was `7c778e0`) | `impl impl Trait {}` (case 17, `inline/err/impl_type.rs`) |
+| `0219b8c` (was `8e7ec67`) | merge of the integration branch at `73d75ce` (was `80e4740`) (E1, E2, E4, E6, E8) |
+| `b64675d` (was `b6e858e`) | an unknown literal prefix is no lexer error before edition 2021 (case 18) |
+| `78fcb58` (was `729fd36`) | merge of the integration branch at `fe34bd2` (was `8d418ee`) (E7b flat syntax array); the fixes re-expressed on `cst::Tree` |
+| `716c609` (was `b464243`) | module map entry of `rustc_syntax` (a doc comment in `formatter.rs`) |
+| `0486e62` (was `2ad6240`) | merge of the integration branch at `ca64d10` (was `b4917ad`) (E3 hot paths) |
+| `3307555` (was `91e8e02`) | cost: the skip context is an `Option<Rc<SkipContext>>`, and item attributes are read for it only when a path starts with `rustfmt` |
+| `8488b22` (was `11e5945`) | cost: const block items take their block from `RunState::block_of` |
+| `46f65c9` (was `6b7120f`) | cost: `rustc_compat` in one pass over the flat tree's elements, ancestors found on demand |
+| `8a8f09d` (was `b0aa3d2`) | cost: `reparse` reuses the first lex and parse and skips the edits that cannot apply |
 
 Every fix commit carries a regression test: `chloro-core/src/tests/formatter/rustfmt_parity.rs`
 (cases 1–3, 13–18, each comparing chloro's output with rustfmt 1.9.0's for the same input)
@@ -181,11 +181,11 @@ merge the 2015 example of this branch's own `edition_dependent_lexing_and_params
 corrected: it put `&self` after other parameters, which rustc rejects, and the flat
 `Tree::parse` in the test reports the parse error that `SourceFile::parse` had tolerated.
 
-`bench --check` against `fixtures-884f9c9.tsv`: from `83e9fde` on, one output changes,
+`bench --check` against `fixtures-884f9c9.tsv`: from `1da9b5b` (was `83e9fde`) on, one output changes,
 `parser/test_data/parser/err/0024_many_type_parens.rs` (the file case 13 targets); the
 commits before change none (their targets differ from rustfmt only under other options or
 in the registry). `bench --check scratchpad/golden/registry-884f9c9.tsv --root
-~/.cargo/registry/src` on `729fd36`: 12 of 20,850 outputs change, the targeted files —
+~/.cargo/registry/src` on `78fcb58` (was `729fd36`): 12 of 20,850 outputs change, the targeted files —
 axum `method_routing.rs`, combine `stream/mod.rs`, ethnum `serde.rs` (case 1), image
 `color.rs` (case 2), diesel `frame_clause.rs`, icu_locale_core `calendar.rs` and
 `dictionary_break.rs` (case 3), rayon `iter/extend.rs` (case 4), ra_ap_parser
@@ -202,35 +202,35 @@ moves with the sample path by a few hundred thousand instructions, not with the 
 
 | build | Ir, `sampleCF` | against the base |
 |---|---|---|
-| `b4917ad` (integration branch, the base) | 316,299,962 | |
-| `2ad6240` (merge) | 326,538,280 | +3.24 % |
-| `91e8e02` | 323,097,065 | +2.15 % |
-| `11e5945` | 323,014,855 | +2.12 % |
-| `6b7120f` | 313,471,141 | −0.89 % |
-| `b0aa3d2` | 312,736,806 | −1.13 % |
+| `ca64d10` (was `b4917ad`) (integration branch, the base) | 316,299,962 | |
+| `0486e62` (was `2ad6240`) (merge) | 326,538,280 | +3.24 % |
+| `3307555` (was `91e8e02`) | 323,097,065 | +2.15 % |
+| `8488b22` (was `11e5945`) | 323,014,855 | +2.12 % |
+| `46f65c9` (was `6b7120f`) | 313,471,141 | −0.89 % |
+| `8a8f09d` (was `b0aa3d2`) | 312,736,806 | −1.13 % |
 
-With the default sample path (`/tmp/chloro-bench/sample49`): `b4917ad` 316,299,929,
-`b0aa3d2` 312,736,691 (−1.13 %). The coordinator's count for `b4917ad` on that path,
+With the default sample path (`/tmp/chloro-bench/sample49`): `ca64d10` (was `b4917ad`) 316,299,929,
+`8a8f09d` (was `b0aa3d2`) 312,736,691 (−1.13 %). The coordinator's count for `ca64d10` (was `b4917ad`) on that path,
 316,076,716, comes from a bench binary at another path; the limit set for this branch is
 317.7 M (+0.5 % of that count).
 
-Where the merge's 10,238,318 instructions went (callgrind, `b4917ad` against `2ad6240`):
+Where the merge's 10,238,318 instructions went (callgrind, `ca64d10` (was `b4917ad`) against `0486e62` (was `2ad6240`)):
 
 - `rustc_compat`: 15.23 M inclusive against 9.56 M. The rules added on this branch read
   every token's text, kept doc comment and token tree state per token, and scanned the
   children of every binary expression for `<-`, `..a = b` and comparisons; the recursive
-  walk kept the path from the root. At `b0aa3d2` the rules cost 5.95 M inclusive: one loop
+  walk kept the path from the root. At `8a8f09d` (was `b0aa3d2`) the rules cost 5.95 M inclusive: one loop
   over the elements, a token's text read only for a comment, the macro input of a token
   tree scanned for the `:::` rule only, one look at a binary expression's operator, and
   ancestors searched for only after a rule's other conditions hold (`rustc_compat.rs:43`).
-- The skip context: 3.44 M (`91e8e02`). `RewriteContext::new` allocated an
+- The skip context: 3.44 M (`3307555` (was `91e8e02`)). `RewriteContext::new` allocated an
   `Rc<SkipContext>` with two `HashSet`s, dropped when `get_context` replaced it;
   `visit_item` cloned the context and ran two `format!` and a `path_text` per attribute of
   every item; `Attribute::rewrite` built every attribute's path text.
 - `reparse` on the sample's files with syntax errors: a second lex and parse, a deep copy
-  and three copies of the owned tree; 0.26 M inclusive at `b0aa3d2`.
+  and three copies of the owned tree; 0.26 M inclusive at `8a8f09d` (was `b0aa3d2`).
 - `Block::from_block_expr`: a second caller kept it out of line in `RunState::block_of`
-  (0.08 M, `11e5945`).
+  (0.08 M, `8488b22` (was `11e5945`)).
 
 ## Cases fixed
 
@@ -248,7 +248,7 @@ Where the merge's 10,238,318 instructions went (callgrind, `b4917ad` against `2a
   (`visitor.rs:1067-1075`, `utils.rs:289-303`). chloro copied `is_macro_def` into nested
   visitors (`visitor.rs:108` at `884f9c9`).
 - Classification: rustfmt behaviour not ported.
-- Fix: `72af2ac` (`visitor.rs:137`, `from_context`).
+- Fix: `0b82b81` (was `72af2ac`) (`visitor.rs:137`, `from_context`).
 
 ### 2. A repeat array is not block-like
 
@@ -262,7 +262,7 @@ Where the merge's 10,238,318 instructions went (callgrind, `b4917ad` against `2a
   (`matches.rs:627`) and `can_be_overflowed_expr` (`expr.rs:1536`). chloro matched every
   `ArrayExpr` (`utils.rs:232`, `matches.rs:630`, `expr.rs:1375` at `884f9c9`).
 - Classification: adaptation-layer bug (node kind coarser than rustc's).
-- Fix: `e0ff879` (`nodes.rs:295` `is_repeat_array`; `utils.rs:354`, `matches.rs:640`,
+- Fix: `34d66b7` (was `e0ff879`) (`nodes.rs:295` `is_repeat_array`; `utils.rs:354`, `matches.rs:640`,
   `expr.rs:1403`).
 
 ### 3. Doc comments in macro arguments
@@ -281,7 +281,7 @@ Where the merge's 10,238,318 instructions went (callgrind, `b4917ad` against `2a
   (`parse/macros/mod.rs:98-150`). chloro skipped doc comments with all trivia
   (`macro_args.rs:119` at `884f9c9`).
 - Classification: adaptation-layer bug (lexer difference).
-- Fix: `56a373b` (`macro_args.rs:176` `doc_at`, `macro_args.rs:415` `parse_macro_arg`,
+- Fix: `2c43d18` (was `56a373b`) (`macro_args.rs:176` `doc_at`, `macro_args.rs:415` `parse_macro_arg`,
   `macro_args.rs:431` `parse_macro_args`).
 
 ### 4–12. Syntax rust-analyzer's parser accepts and rustc's rejects
@@ -292,21 +292,21 @@ default options where the file is not already formatted). Classification of all 
 rustc parse error not modelled in `rustc_compat` (rust-analyzer accepts the syntax or
 reports it only in its validation pass, which chloro does not run). Rules in
 `chloro-core/src/formatter/rustc_compat.rs`; the probe lists are
-`scratchpad/conformance/cases_compat.txt` and `cases2.txt` (150 inputs; on `b464243`
+`scratchpad/conformance/cases_compat.txt` and `cases2.txt` (150 inputs; on `716c609` (was `b464243`)
 rustc's acceptance and chloro's agree on all of them in editions 2018, 2021 and 2024, and
 on all but `trait T { fn f(usize); }` in 2015, case 20).
 
 | case | reproducer | rustc's error | rule | commit | evidence |
 |---|---|---|---|---|---|
-| 4 | `a <- b` | `<` and an adjacent `-` lex as `<-`, "unexpected token: `<-`" | `bin_expr_rejected`, `rustc_compat.rs:178` | `7978e1c` | rayon 1.12.0 `src/iter/extend.rs` (`extend!($self <- vecs)` in a `macro_rules!` body, formatted by chloro as `$self < -vecs`) |
-| 5 | `..z = 2;` | a range that starts an expression ends it: "expected one of ..., found `=`" (accepted where an outer operator loop continues: `x = ..z = 2`, `|x| ..z = 2`, `return ..z = 2`) | `prefix_range_assigned`, `rustc_compat.rs:233` | `7978e1c` | ra_ap_parser 0.0.307 `test_data/parser/ok/0029_range_forms.rs` |
-| 6 | `0..=;`, `match x { 0..= => {} }` | E0586 inclusive range with no end | `inclusive_without_end`, `rustc_compat.rs:254` | `7978e1c` | ra_ap_syntax 0.0.307 `validation/0038_endless_inclusive_range.rs` |
-| 7 | `&dyn A + B`, `*const impl A + B`, `x as dyn A + B`, `fn() -> dyn A + B`, `Fn() -> impl A + B` | "ambiguous `+` in a type" (`AllowPlus::No`) | `ambiguous_plus`, `rustc_compat.rs:268` | `f43d45f` | `validation/0045_ambiguous_trait_object.rs`, `validation/0261_dangling_impl_undeclared_lifetime.rs` (`&impl 'a + Sized`) |
-| 8 | `struct A<const N: i32 = i32::MAX>;` | "expressions must be enclosed in braces to be used as const generic arguments" | `const_param_default_rejected`, `rustc_compat.rs:309` | `f43d45f` | `inline/ok/const_param_default_path.rs` |
-| 9 | `builtin # asm("")`, `builtin # format_args(..)`, `builtin#offset_of(..)` (2021+), `builtin # offset_of(Foo, (bar))` | unknown `builtin #` construct; reserved prefix; "offset_of expects dot-separated field and variant names" | `offset_of_rejected`, `rustc_compat.rs:290`, and `ASM_EXPR`/`FORMAT_ARGS_EXPR` | `5f043e8` | `inline/ok/asm_expr.rs`, `asm_kinds.rs`, `asm_label.rs`, `builtin_expr.rs`, `global_asm.rs`, `offset_of_parens.rs` |
-| 10 | edition 2015: `trait T { fn f((a, b): (u8, u8)) {} }` | E0642 (anonymous parameters: a pattern must start like `name:`) | `trait_param_rejected`, `rustc_compat.rs:375` | `ccf6f21` | `test_data/parser/ok/0063_trait_fn_patterns.rs` under `edition = 2015` |
-| 11 | `struct S { a: u8, /// doc\n }`, `fn f() {} //! doc`, `#[a]\n//! doc\nfn f() {}` | "found a documentation comment that doesn't document anything", "expected item after doc comment", "expected outer doc comment" | `Walker::doc_token`, `rustc_compat.rs:511`, and `walk`, `rustc_compat.rs:565` (an outer doc comment followed by `}` `)` `]` `,` `;` `=>` `=` `>` or the end of the file; an inner doc comment outside the leading position of a file or module, block, `impl`/`trait`, `extern` or `match` body) | `f519a29` | `test_data/lexer/ok/single_line_comments.rs` |
-| 12 | edition 2015/2018: `let _ = c"g";` | `c` is an identifier, the string a separate token | `Walker::doc_token`, `rustc_compat.rs:511` | `f519a29` | `inline/ok/expr_literals.rs` under `edition = 2015` and `2018` |
+| 4 | `a <- b` | `<` and an adjacent `-` lex as `<-`, "unexpected token: `<-`" | `bin_expr_rejected`, `rustc_compat.rs:178` | `00aac21` (was `7978e1c`) | rayon 1.12.0 `src/iter/extend.rs` (`extend!($self <- vecs)` in a `macro_rules!` body, formatted by chloro as `$self < -vecs`) |
+| 5 | `..z = 2;` | a range that starts an expression ends it: "expected one of ..., found `=`" (accepted where an outer operator loop continues: `x = ..z = 2`, `|x| ..z = 2`, `return ..z = 2`) | `prefix_range_assigned`, `rustc_compat.rs:233` | `00aac21` (was `7978e1c`) | ra_ap_parser 0.0.307 `test_data/parser/ok/0029_range_forms.rs` |
+| 6 | `0..=;`, `match x { 0..= => {} }` | E0586 inclusive range with no end | `inclusive_without_end`, `rustc_compat.rs:254` | `00aac21` (was `7978e1c`) | ra_ap_syntax 0.0.307 `validation/0038_endless_inclusive_range.rs` |
+| 7 | `&dyn A + B`, `*const impl A + B`, `x as dyn A + B`, `fn() -> dyn A + B`, `Fn() -> impl A + B` | "ambiguous `+` in a type" (`AllowPlus::No`) | `ambiguous_plus`, `rustc_compat.rs:268` | `b278aba` (was `f43d45f`) | `validation/0045_ambiguous_trait_object.rs`, `validation/0261_dangling_impl_undeclared_lifetime.rs` (`&impl 'a + Sized`) |
+| 8 | `struct A<const N: i32 = i32::MAX>;` | "expressions must be enclosed in braces to be used as const generic arguments" | `const_param_default_rejected`, `rustc_compat.rs:309` | `b278aba` (was `f43d45f`) | `inline/ok/const_param_default_path.rs` |
+| 9 | `builtin # asm("")`, `builtin # format_args(..)`, `builtin#offset_of(..)` (2021+), `builtin # offset_of(Foo, (bar))` | unknown `builtin #` construct; reserved prefix; "offset_of expects dot-separated field and variant names" | `offset_of_rejected`, `rustc_compat.rs:290`, and `ASM_EXPR`/`FORMAT_ARGS_EXPR` | `bbc2e88` (was `5f043e8`) | `inline/ok/asm_expr.rs`, `asm_kinds.rs`, `asm_label.rs`, `builtin_expr.rs`, `global_asm.rs`, `offset_of_parens.rs` |
+| 10 | edition 2015: `trait T { fn f((a, b): (u8, u8)) {} }` | E0642 (anonymous parameters: a pattern must start like `name:`) | `trait_param_rejected`, `rustc_compat.rs:375` | `c1ef5d5` (was `ccf6f21`) | `test_data/parser/ok/0063_trait_fn_patterns.rs` under `edition = 2015` |
+| 11 | `struct S { a: u8, /// doc\n }`, `fn f() {} //! doc`, `#[a]\n//! doc\nfn f() {}` | "found a documentation comment that doesn't document anything", "expected item after doc comment", "expected outer doc comment" | `Walker::doc_token`, `rustc_compat.rs:511`, and `walk`, `rustc_compat.rs:565` (an outer doc comment followed by `}` `)` `]` `,` `;` `=>` `=` `>` or the end of the file; an inner doc comment outside the leading position of a file or module, block, `impl`/`trait`, `extern` or `match` body) | `8e054fa` (was `f519a29`) | `test_data/lexer/ok/single_line_comments.rs` |
+| 12 | edition 2015/2018: `let _ = c"g";` | `c` is an identifier, the string a separate token | `Walker::doc_token`, `rustc_compat.rs:511` | `8e054fa` (was `f519a29`) | `inline/ok/expr_literals.rs` under `edition = 2015` and `2018` |
 
 rustfmt 1.8.0 (rustc 1.88.0) and rustfmt 1.9.0 give the same output and exit status on
 every input of the probe lists for cases 4–12 with `--edition 2024`; the inputs where they
@@ -329,7 +329,7 @@ differ are the const block items of case 16.
   does not reach the file, which never parsed.
 - Classification: rustc grammar rust-analyzer's parser lacks; representable in
   rust-analyzer's tree (`DYN_TRAIT_TYPE` without `dyn`, `TYPE_BOUND` with parentheses).
-- Fix: `83e9fde`. `rustc_syntax::with_inserted_dyn` (`rustc_syntax.rs:263`) parses the
+- Fix: `1da9b5b` (was `83e9fde`). `rustc_syntax::with_inserted_dyn` (`rustc_syntax.rs:263`) parses the
   file again with `dyn ` inserted before the `(` (or before the `?` when no `+` follows),
   one insertion per round at the first error (`insertions`, `rustc_syntax.rs:437`; the
   context must allow `+` in rustc and the parenthesized type must be a path without a
@@ -353,7 +353,7 @@ differ are the const block items of case 16.
   position is a token index, not a text offset) and wraps the literal in `ERROR`.
 - Classification: rustc grammar rust-analyzer's tree builder lacks; representable
   (`NAME_REF` holding the literal).
-- Fix: `0479fd3`, `float_fields_as_names` (`rustc_syntax.rs:498`). A literal with a sign or
+- Fix: `169ed0c` (was `0479fd3`), `float_fields_as_names` (`rustc_syntax.rs:498`). A literal with a sign or
   a suffix (`1e+2`, `1e0f32`) stays an error, as in rustc.
 
 ### 15. `#[rustfmt::skip::macros(..)]` and `#[rustfmt::skip::attributes(..)]`
@@ -369,9 +369,9 @@ differ are the const block items of case 16.
   (`attr.rs:403`).
 - Classification: rustfmt feature not ported. No registry file uses it (0 matches for
   `rustfmt::skip::` in the registry).
-- Fix: `1be8a3f` (`skip.rs`, `visitor.rs:405`, `visitor.rs:418`, `macros.rs:184`,
+- Fix: `c6bdaf1` (was `1be8a3f`) (`skip.rs`, `visitor.rs:405`, `visitor.rs:418`, `macros.rs:184`,
   `attr.rs:505`, `attr.rs:548`; the context holds it as an `Option<Rc<SkipContext>>` since
-  `91e8e02`); the parallel path (`parallel.rs`) reads the file's inner
+  `3307555` (was `91e8e02`)); the parallel path (`parallel.rs`) reads the file's inner
   attributes into each worker's context.
 
 ### 16. Const block items (facet-core 0.30.0 `src/macros.rs`)
@@ -389,7 +389,7 @@ differ are the const block items of case 16.
   `format_snippet` keeps the body. rust-analyzer reports "expected an item".
 - Classification: unstable-feature syntax rust-analyzer's parser lacks; representable as a
   `CONST` item without a name whose body is a `BLOCK_EXPR`.
-- Fix: `0856215` (`rebuild_const_blocks`, `rustc_syntax.rs:567`; `const_block_item`,
+- Fix: `1073a87` (was `0856215`) (`rebuild_const_blocks`, `rustc_syntax.rs:567`; `const_block_item`,
   `nodes.rs:302`; `visitor.rs:509`). Under `rustfmt_version = 1.8.0` the edit is not made:
   rustc 1.88.0's parser rejects const block items (probed with rustfmt 1.8.0).
 
@@ -404,7 +404,7 @@ differ are the const block items of case 16.
   ends the impl and parses `impl NotType {}` as a second impl.
 - Classification: rustc grammar rust-analyzer's parser lacks; representable
   (`IMPL_TRAIT_TYPE` as the impl's type).
-- Fix: `7c778e0` (`rebuild_impl_self_types`, `rustc_syntax.rs:693`); `impl impl A for B {}`
+- Fix: `652bae9` (was `7c778e0`) (`rebuild_impl_self_types`, `rustc_syntax.rs:693`); `impl impl A for B {}`
   stays an error, as in rustc.
 
 ### 18. Unknown literal prefixes before edition 2021
@@ -417,7 +417,7 @@ differ are the const block items of case 16.
   followed by `#`, a string or a character in every edition (`ra_ap_parser-0.0.307
   src/lexed_str.rs`, `UnknownPrefix`); rustc reserves the prefixes from edition 2021.
 - Classification: lexer edition difference.
-- Fix: `b6e858e` (`lexer_rejects`, `rustc_syntax.rs:60`, for the file and for macro
+- Fix: `b64675d` (was `b6e858e`) (`lexer_rejects`, `rustc_syntax.rs:60`, for the file and for macro
   arguments).
 
 ## Cases open
@@ -521,11 +521,11 @@ differ are the const block items of case 16.
 - Const block items format as rustfmt's `ItemKind::ConstBlock` (`visitor.rs:509`)
 - `config_matrix -n 1220` reports every fixture identical for all 31 option values (9 min
   56 s), and `config_matrix --root ~/.cargo/registry/src -n 30000 default` 20,540 of 20,540
-  registry files identical (14 min 25 s), on `b0aa3d2` as on `729fd36`
+  registry files identical (14 min 25 s), on `8a8f09d` (was `b0aa3d2`) as on `78fcb58` (was `729fd36`)
 - `bench --check` against the `884f9c9` hashes changes 1 of 1238 fixture outputs and 12 of
-  20,850 registry outputs, the files the fixes target, on `b0aa3d2`
+  20,850 registry outputs, the files the fixes target, on `8a8f09d` (was `b0aa3d2`)
 - `benchmarks/profile.sh` counts 312,736,691 instructions on the 49-file sample at
-  `b0aa3d2` against 316,299,929 at the base `b4917ad` (default sample path); `rustc_compat`
+  `8a8f09d` (was `b0aa3d2`) against 316,299,929 at the base `ca64d10` (was `b4917ad`) (default sample path); `rustc_compat`
   costs 5.95 M of them
 
 ## Missing

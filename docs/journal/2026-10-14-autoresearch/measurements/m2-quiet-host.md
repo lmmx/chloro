@@ -15,13 +15,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `8d418ee` (the integration branch after the E7b merge: E6 cache, E1 parallel items, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`, E4 green reads, E8 `rustfmt_version`, E7b flat substrate) |
+| `head` | `fe34bd2` (was `8d418ee`) (the integration branch after the E7b merge: E6 cache, E1 parallel items, E2 `[profile.release]` `lto = "fat"`, `codegen-units = 1`, E4 green reads, E8 `rustfmt_version`, E7b flat substrate) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`; the script now also builds the profile-guided `bench`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `8d418eee2de08c56e1324bc424b1aa8e96929638` (worktree clean, `worktree_dirty=0`
+- **Commits:** `head` `fe34bd2c2b7cbcc60a63bd5023fd6b83bf7fe46e` (was `8d418eee2de08c56e1324bc424b1aa8e96929638`) (worktree clean, `worktree_dirty=0`
   in every `env.txt`); `base` `884f9c93f735676a752c67fab91d08959f410430` (`git worktree add
   /home/user/wt/base 884f9c9`, its own `target/`).
 - **Binaries (sha256):**
@@ -43,7 +43,7 @@ Labels used throughout:
 - The four `base` hashes equal the ones recorded in [m1-quiet-host.md](m1-quiet-host.md) and
   the chloro hash equals the one in [../baseline.md](../baseline.md): the default-profile
   build of `884f9c9` reproduces byte for byte on this toolchain.
-- The `head` chloro binary is 1,928,728 bytes against 2,048,304 for M1's `dc20cd7` build and
+- The `head` chloro binary is 1,928,728 bytes against 2,048,304 for M1's `5f24cc9` (was `dc20cd7`) build and
   2,516,048 for `base` (0.767x base); `head-pgo` is 2,592,152 bytes (1.030x base, 0.851x M1's
   3,047,112).
 - `cargo tree -e no-dev -p chloro-core --prefix none | sort -u | wc -l`: 17 lines for `head`,
@@ -281,7 +281,7 @@ rustfmt builds and prints a diff for every changed file; chloro compares two str
   copied to a scratch directory and rewritten once by `head --write --no-cache`; `head --check
   --no-cache` on the result exits 0. `CHLORO_CACHE_DIR` points at a scratch directory, which
   holds one file `083aac67e014bbc689da1858fea5dac3.chloro-cache` of 44,152 bytes after a run
-  (the file name is the key of this binary; M1's `dc20cd7` build wrote `eb8c3d0c…`, the same
+  (the file name is the key of this binary; M1's `5f24cc9` (was `dc20cd7`) build wrote `eb8c3d0c…`, the same
   size).
 - Commands: `hyperfine -N -i -w 1 -r 15 --metrics … -n cold --prepare "rm -rf $C" "head
   --check $T" -n warm --prepare "" "head --check $T" -n no-cache --prepare "" "head --check
@@ -498,13 +498,13 @@ the split files.
 
 ## Against M1
 
-M1 ([m1-quiet-host.md](m1-quiet-host.md)) measured `dc20cd7` (E6, E1, E2) on the 2.10 GHz
-host; this record measures `8d418ee` (M1's head plus E4, E8 and E7b) on the 2.80 GHz host.
+M1 ([m1-quiet-host.md](m1-quiet-host.md)) measured `5f24cc9` (was `dc20cd7`) (E6, E1, E2) on the 2.10 GHz
+host; this record measures `fe34bd2` (was `8d418ee`) (M1's head plus E4, E8 and E7b) on the 2.80 GHz host.
 The hosts differ, so the absolute figures of the two records are not compared (protocol §3);
 `base` is the same binary (same sha256) in both, and each record's ratios are within one
 window on one host, so the ratios are set side by side:
 
-| ratio (means) | M1, `dc20cd7` on the 2.10 GHz host | M2, `8d418ee` on the 2.80 GHz host |
+| ratio (means) | M1, `5f24cc9` (was `dc20cd7`) on the 2.10 GHz host | M2, `fe34bd2` (was `8d418ee`) on the 2.80 GHz host |
 |---|---|---|
 | crates, `mc`, head/base | 0.52–0.88 | 0.48–0.62 |
 | crates, `1c`, head/base (wall; CPU) | 0.76–0.98; 0.76–0.99 | 0.53–0.67; 0.54–0.67 |

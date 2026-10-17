@@ -16,13 +16,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `6b78728` (the integration branch after the E12–E18 merges; three docs-only commits above the ledger's best-known-good `e640fbf`, same code; the formatter code is M3's `4867896` plus R5, E12, E15, E17, E18 and E16, with E13 touching the release workflow and E14 adding off-by-default features) |
+| `head` | `e39a54a` (was `6b78728`) (the integration branch after the E12–E18 merges; three docs-only commits above the ledger's best-known-good `f4be63e` (was `e640fbf`), same code; the formatter code is M3's `069f5a7` (was `4867896`) plus R5, E12, E15, E17, E18 and E16, with E13 touching the release workflow and E14 adding off-by-default features) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`; the script also builds the profile-guided `bench`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `6b78728ab59fde69663c8b4ca9ec32ca55748c08` (worktree clean,
+- **Commits:** `head` `e39a54a8a14762899dd151c36eba8c0cc6ea882b` (was `6b78728ab59fde69663c8b4ca9ec32ca55748c08`) (worktree clean,
   `worktree_dirty=0`; `git diff --stat e640fbf HEAD` touches three Markdown files under
   `docs/journal/` and no source); `base` `884f9c93f735676a752c67fab91d08959f410430` (`git
   worktree add /home/user/wt/base 884f9c9`, its own `target/`).
@@ -44,7 +44,7 @@ Labels used throughout:
 
 - The four `base` hashes and the rustfmt hash equal the ones recorded in M1, M2 and M3: the
   default-profile build of `884f9c9` reproduces byte for byte on this toolchain.
-- The `head` chloro binary is 2,147,536 bytes against 2,010,696 for M3's `4867896` build and
+- The `head` chloro binary is 2,147,536 bytes against 2,010,696 for M3's `069f5a7` (was `4867896`) build and
   2,516,048 for `base` (0.854x base; 1.068x M3's head: the CLI gained the unit cache, the
   identity stamp and the E16 paths); `head-pgo` is 2,924,784 bytes (1.162x base, 1.078x M3's
   2,714,112).
@@ -435,7 +435,7 @@ compiled-in fixture root, `chloro` = head, `chloro-base` = base:
   248,202,137 (−57.79%), head-pgo 206,922,054 (−64.81%; 0.8337x head); two runs of each agree
   to within 23 instructions (base), 1,685 (head) and 50 (head-pgo). The base count equals M3's
   run 1 (587,989,199) to within 44 and M2's 587,989,243 exactly; the head count's run 1 is 43
-  above the 248,202,094 the ledger records for `e640fbf`. The profile-guided count is this
+  above the 248,202,094 the ledger records for `f4be63e` (was `e640fbf`). The profile-guided count is this
   training run's: M3's PGO build of M3's head read 0.7825x its head and E13's reproduction
   0.784x; here 0.8337x, so the profile is worth less on the E16–E18 code (whose hot paths the
   levers already shortened) than it was before them.
@@ -588,14 +588,14 @@ From the parallel-items table (head with 4 threads against base on one file), pe
 
 ## Against M3
 
-M3 ([m3-quiet-host.md](m3-quiet-host.md)) measured `4867896` (the E3 + R2 head) on the 2.80
-GHz host class; this record measures `6b78728` (M3's head plus R5, E12, E15, E17, E18, E16;
+M3 ([m3-quiet-host.md](m3-quiet-host.md)) measured `069f5a7` (was `4867896`) (the E3 + R2 head) on the 2.80
+GHz host class; this record measures `e39a54a` (was `6b78728`) (M3's head plus R5, E12, E15, E17, E18, E16;
 E13 and E14 change no formatter code) on the same host class (same `model name`, `nproc`,
 `MemTotal` and kernel). Protocol §3 keeps absolute figures within one window, so the two
 records' ratios are set side by side and the absolute figures are not; `base` is the same
 binary (same sha256) in both:
 
-| ratio (means) | M3, `4867896` | M4, `6b78728` |
+| ratio (means) | M3, `069f5a7` (was `4867896`) | M4, `e39a54a` (was `6b78728`) |
 |---|---|---|
 | crates, `mc`, head/base | 0.30–0.58 | 0.25–0.52 |
 | crates, `1c`, head/base (wall; CPU) | 0.46–0.60; 0.46–0.59 | 0.38–0.60; 0.38–0.59 |

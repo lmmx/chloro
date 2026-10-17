@@ -19,7 +19,7 @@ width-first decisions; written in parallel), `parser-and-substrate.md` (the pars
 
 ## Method
 
-Code read at `bdfb9d1` (`chloro-core` unchanged since); every code claim carries file:line under
+Code read at `bd9c768` (was `bdfb9d1`) (`chloro-core` unchanged since); every code claim carries file:line under
 `chloro-core/src/formatter/` unless another path is given. The proof of concept was read with
 `git show c4d74ee:<path>`. Existing release binaries only; scratch directory
 `$S = /tmp/claude-0/-home-user-chloro/9623d6dc-d933-5682-9d83-7762284f5c7f/scratchpad/theory-fastpath`.

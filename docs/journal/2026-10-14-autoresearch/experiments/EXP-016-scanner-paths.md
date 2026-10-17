@@ -10,14 +10,14 @@ output on the builds below), **read** (from source), **derived**.
 
 | field | value |
 |---|---|
-| branch | `20261015-scanner-paths` from `f2a25dd` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/scanner-paths` |
-| base BKG | `92fdef0`, whose `chloro-core` is the code of `bdfb9d1`; `f2a25dd` adds only documentation after it |
-| kept commits | `ca71f90` (S3), `4358bb9` (S1), `6e6deca` and `fb48651` (S2), `4499fbc` (S4), `d80cdfd` (S7), `70f75e5` (S8), `8832233` (S5), `5950f4c` (S12), `b092f47` (S15), `5cb66ff` (S13); then this file and the ledger row |
+| branch | `20261015-scanner-paths` from `25b6e17` (was `f2a25dd`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/scanner-paths` |
+| base BKG | `397159b` (was `92fdef0`), whose `chloro-core` is the code of `bd9c768` (was `bdfb9d1`); `25b6e17` (was `f2a25dd`) adds only documentation after it |
+| kept commits | `92004c5` (was `ca71f90`) (S3), `52a56fd` (was `4358bb9`) (S1), `a4b99f9` (was `6e6deca`) and `802ccad` (was `fb48651`) (S2), `2af3547` (was `4499fbc`) (S4), `c52fd82` (was `d80cdfd`) (S7), `ef2532e` (was `70f75e5`) (S8), `1a5d2d1` (was `8832233`) (S5), `af9ae1b` (was `5950f4c`) (S12), `919bf3c` (was `b092f47`) (S15), `d26b9ef` (was `5cb66ff`) (S13); then this file and the ledger row |
 | rejected, reverted | S12 in the study's form, S10, S16 (two forms), a second round of S7; details under *Rejected* |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0; `cargo build --release -p chloro-core --examples` (the workspace's fat-LTO, one-codegen-unit profile) |
 | host | 4 vCPU Xeon @ 2.80GHz, 15 GB; other experiments built and ran on the host throughout (load average 2.3–7.5). `Ir` is unaffected; the wall-clock pairs below are **measured, provisional** (protocol § 6) |
 | `Ir` command | `benchmarks/profile.sh --core 3 --runs 1 --sample /tmp/chloro-bench/scanpth1`: the script's sample at a private path of the default's length (`sample49` is shared with other agents and deleted by each run) |
-| `Ir` of the base | 312,997,148 for `f2a25dd` built in this worktree, against the ledger's 312,734,032 for the same code: the count depends on the length of the binary's path (E3, *Identity*), and every figure below is from this worktree's path |
+| `Ir` of the base | 312,997,148 for `25b6e17` (was `f2a25dd`) built in this worktree, against the ledger's 312,734,032 for the same code: the count depends on the length of the binary's path (E3, *Identity*), and every figure below is from this worktree's path |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (20,850 recorded registry files; the registry directory holds 25,024 files tonight, the 4,174 others are reported as not recorded and ignored) |
 
 ## Hypothesis and falsification
@@ -33,7 +33,7 @@ each result.
 Each kept commit's message states its exactness argument, its test and its `Ir`. Where the
 implementation departs from the study's description, the departure is named.
 
-### S3: list gaps (`ca71f90`)
+### S3: list gaps (`92004c5` (was `ca71f90`))
 
 - `extract_pre_comment` returns `(None, None)` when the snippet has no `/` (each of its three
   tests needs one); `extract_post_comment` returns `None` when `snippet[..comment_end]` has no
@@ -46,24 +46,24 @@ implementation departs from the study's description, the departure is named.
   `/`, can hide a separator. The comparison test passes with the narrower condition and fails
   when the `/` test is dropped.
 
-### S1: `filtered_str_fits` (`4358bb9`)
+### S1: `filtered_str_fits` (`52a56fd` (was `4358bb9`))
 
 - `lines_fit` walks the text once, finding the next `\n`, `\r` or non-ASCII byte eight bytes
   at a time; a line's width is its length when ASCII and its `unicode_str_width` otherwise; a
   text with `\r` takes the line-by-line form (`str_fits_by_lines`, rustfmt's).
 
-### S2: newline counts (`6e6deca`, `fb48651`)
+### S2: newline counts (`a4b99f9` (was `6e6deca`), `802ccad` (was `fb48651`))
 
-- `6e6deca`: `push_str` no longer counts. `line_number()` counts the buffer's `\n` from a cached
+- `a4b99f9` (was `6e6deca`): `push_str` no longer counts. `line_number()` counts the buffer's `\n` from a cached
   prefix count, less `uncounted_newlines` (a worker's leading newline; the ABI text that
   `format_foreign_mod` writes without `push_str`). The removed-import `pop` keeps rustfmt's
   `saturating_sub`. Debug builds keep the running count and assert equality at each read; the
   parallel tests reach the assertion.
-- `fb48651`: `count_newline_bytes` sums exact per-byte flags over up to 255 words before
+- `802ccad` (was `fb48651`): `count_newline_bytes` sums exact per-byte flags over up to 255 words before
   reducing; `count_newlines(overflowed) == 1` becomes `has_one_newline`, which stops at a
   second `\n`. `prefer_next_line`'s comparison keeps two counts.
 
-### S4: `find_uncommented` (`4499fbc`)
+### S4: `find_uncommented` (`2af3547` (was `4499fbc`))
 
 - For a one-byte pattern other than `/`: search for the pattern byte and `/`; the pattern
   first is the answer, the end is `None`, a `/` before neither `*` nor `/` is passed over, any
@@ -73,7 +73,7 @@ implementation departs from the study's description, the departure is named.
   (extended with the patterns `#`, `*`, `\`, `\n`, `'`) confirms it and fails when the
   `/`-before-`/` stop is dropped.
 
-### S7: `format!` to `concat` (`d80cdfd`)
+### S7: `format!` to `concat` (`c52fd82` (was `d80cdfd`))
 
 - The `format!` calls with the largest inclusive cost (`ControlFlow::rewrite_cond`,
   `rewrite_match`, `wrap_struct_field`, `rewrite_macro`'s empty forms and `;`, use-tree
@@ -82,7 +82,7 @@ implementation departs from the study's description, the departure is named.
   7 files. E3's invariant: string arguments under bare `{}` are written unchanged; no type in
   the crate derefs to `str`; `?` arguments are bound first, in `format!`'s order.
 
-### S8: ASCII-first `trim` (`70f75e5`)
+### S8: ASCII-first `trim` (`ef2532e` (was `70f75e5`))
 
 - `utils::trim` finds the first and last bytes outside tab, `\n`, `\x0B`, `\x0C`, `\r` and
   space (`char::is_whitespace` on ASCII; `trim_ascii` omits `\x0B`) and returns `str::trim`'s
@@ -91,7 +91,7 @@ implementation departs from the study's description, the departure is named.
   `trim_tries`, `rewrite_chain_from`, `close_block`, `push_rewrite_inner`,
   `rewrite_missing_comment`, `trimmed_last_line_width`, `rewrite_match_body`.
 
-### S5: sixteen-byte search (`8832233`)
+### S5: sixteen-byte search (`1a5d2d1` (was `8832233`))
 
 - `find_any_byte` (used by `skip_plain`, `skip_comment` and the searches of S2–S4) compares
   sixteen bytes per step with SSE2 and reads the final sixteen bytes of a slice once, shifting
@@ -103,19 +103,19 @@ implementation departs from the study's description, the departure is named.
   their shared search, so the S2–S4 searches gain too. The `r` lookback the study proposed
   was not taken.
 
-### S12: path allocation (`5950f4c`)
+### S12: path allocation (`af9ae1b` (was `5950f4c`))
 
 - Departure: the 9,269 `reserve` calls attributed to `rewrite_path`'s 32-byte buffer come
   from `single_ident_path`, inlined into it, which pushed onto `String::new()`. It now copies
   the first token with `to_owned`. The study's form was measured and rejected (below).
 
-### S15: indent strings (`b092f47`)
+### S15: indent strings (`919bf3c` (was `b092f47`))
 
 - `to_string` and `to_string_with_newline` are `#[inline]` and return the `INDENT_BUFFER`
   slice when there are no hard tabs and the indent fits; everything else calls the previous
   body, `#[inline(never)]`.
 
-### S13: line table (`5cb66ff`)
+### S13: line table (`d26b9ef` (was `5cb66ff`))
 
 - `line_of` extends the table by `find_any_byte` for each `\n` instead of a byte loop.
 
@@ -127,17 +127,17 @@ commit messages give one of the two percentages, not always the same one.)
 
 | commit | lever | `Ir` before | `Ir` after | change | share of base | study's bound; falsifier | decision |
 |---|---|---|---|---|---|---|---|
-| `ca71f90` | S3, list gaps | 312,997,148 | 303,767,669 | −9,229,479 (−2.95%) | −2.95% | 11.1 M; < 7.8 M refutes | kept |
-| `4358bb9` | S1, `filtered_str_fits` | 303,767,669 | 300,212,806 | −3,554,863 (−1.17%) | −1.14% | 5.7 M; < 3 M refutes | kept |
-| `6e6deca` | S2, `line_number` on demand | 300,212,806 | 294,668,603 | −5,544,203 (−1.85%) | −1.77% | 6.5 M for S2; < 4 M refutes | kept |
-| `fb48651` | S2, word count, `== 1` | 294,668,603 | 292,628,791 | −2,039,812 (−0.69%) | −0.65% | (S2 together −7.58 M) | kept |
-| `4499fbc` | S4, `find_uncommented` | 292,628,791 | 288,311,366 | −4,317,425 (−1.48%) | −1.38% | 4.5 M; < 2 M refutes | kept |
-| `d80cdfd` | S7, `format!` → `concat` | 288,311,366 | 284,093,442 | −4,217,924 (−1.46%) | −1.35% | 2.8 M; < 1 M refutes | kept |
-| `70f75e5` | S8, `trim` | 284,093,442 | 282,855,651 | −1,237,791 (−0.44%) | −0.40% | 1.1–1.5 M; < 0.5 M refutes | kept |
-| `8832233` | S5, sixteen-byte search | 282,855,651 | 281,021,083 | −1,834,568 (−0.65%) | −0.59% | 1.5 M after S4; < 0.5 M refutes | kept |
-| `5950f4c` | S12, single-identifier path | 281,021,083 | 280,341,736 | −679,347 (−0.24%) | −0.22% | 1.0 M; < 0.3 M refutes | kept |
-| `b092f47` | S15, indent slice inline | 280,341,736 | 278,965,452 | −1,376,284 (−0.49%) | −0.44% | 1.1 M; < 0.3 M refutes | kept |
-| `5cb66ff` | S13, line table | 278,965,452 | 278,125,378 | −840,074 (−0.30%) | −0.27% | 0.9 M; < 0.3 M refutes | kept |
+| `92004c5` (was `ca71f90`) | S3, list gaps | 312,997,148 | 303,767,669 | −9,229,479 (−2.95%) | −2.95% | 11.1 M; < 7.8 M refutes | kept |
+| `52a56fd` (was `4358bb9`) | S1, `filtered_str_fits` | 303,767,669 | 300,212,806 | −3,554,863 (−1.17%) | −1.14% | 5.7 M; < 3 M refutes | kept |
+| `a4b99f9` (was `6e6deca`) | S2, `line_number` on demand | 300,212,806 | 294,668,603 | −5,544,203 (−1.85%) | −1.77% | 6.5 M for S2; < 4 M refutes | kept |
+| `802ccad` (was `fb48651`) | S2, word count, `== 1` | 294,668,603 | 292,628,791 | −2,039,812 (−0.69%) | −0.65% | (S2 together −7.58 M) | kept |
+| `2af3547` (was `4499fbc`) | S4, `find_uncommented` | 292,628,791 | 288,311,366 | −4,317,425 (−1.48%) | −1.38% | 4.5 M; < 2 M refutes | kept |
+| `c52fd82` (was `d80cdfd`) | S7, `format!` → `concat` | 288,311,366 | 284,093,442 | −4,217,924 (−1.46%) | −1.35% | 2.8 M; < 1 M refutes | kept |
+| `ef2532e` (was `70f75e5`) | S8, `trim` | 284,093,442 | 282,855,651 | −1,237,791 (−0.44%) | −0.40% | 1.1–1.5 M; < 0.5 M refutes | kept |
+| `1a5d2d1` (was `8832233`) | S5, sixteen-byte search | 282,855,651 | 281,021,083 | −1,834,568 (−0.65%) | −0.59% | 1.5 M after S4; < 0.5 M refutes | kept |
+| `af9ae1b` (was `5950f4c`) | S12, single-identifier path | 281,021,083 | 280,341,736 | −679,347 (−0.24%) | −0.22% | 1.0 M; < 0.3 M refutes | kept |
+| `919bf3c` (was `b092f47`) | S15, indent slice inline | 280,341,736 | 278,965,452 | −1,376,284 (−0.49%) | −0.44% | 1.1 M; < 0.3 M refutes | kept |
+| `d26b9ef` (was `5cb66ff`) | S13, line table | 278,965,452 | 278,125,378 | −840,074 (−0.30%) | −0.27% | 0.9 M; < 0.3 M refutes | kept |
 | **total** | | 312,997,148 | 278,125,378 | **−34,871,770 (−11.14%)** | | 37.8 M (12.1%) | |
 
 The head measured again after the final rebuild: 278,125,519 (141 from the S13 run, the
@@ -147,7 +147,7 @@ script's run-to-run spread).
 
 | attempt | measurement | mechanism | decision |
 |---|---|---|---|
-| S12 as the study gives it: `rewrite_path`'s buffer `max(32, len + len / 4)` from the path's source length | 281,021,083 → 281,226,778 (+205,695) | the 9,269 `reserve` calls stayed (they are `single_ident_path`'s); `_int_realloc`'s copies +0.22 M | reverted; replaced by `5950f4c` |
+| S12 as the study gives it: `rewrite_path`'s buffer `max(32, len + len / 4)` from the path's source length | 281,021,083 → 281,226,778 (+205,695) | the 9,269 `reserve` calls stayed (they are `single_ident_path`'s); `_int_realloc`'s copies +0.22 M | reverted; replaced by `af9ae1b` (was `5950f4c`) |
 | S10: `from_context` without the file-sized buffer of `new` (a `with_buffer` constructor) | 278,965,452 → 279,447,330 (+481,878) | `malloc`/`_int_malloc`/`free` −0.55 M as expected, but `memcpy` called from `_int_realloc` +1.44 M (16,456 calls against 16,300): without the large blocks freed back into the top chunk, blocks that grew in place now move | reverted |
 | S16: `contains('\r') && contains("\r\n")` in `normalize_src` | 278,125,378 → 278,458,658 (+333,280) | `is_contained_in` −400,304, but the inlined `char` search over the whole file costs 735,273 in `normalize_src` | reverted |
 | S16 with `find_any_byte` for `\r` | 278,125,378 → 278,175,940 (+50,562) | a sixteen-byte search of 650 KB costs about what the substring search did | reverted |
@@ -157,7 +157,7 @@ script's run-to-run spread).
 
 ## Totals (measured)
 
-| | base `f2a25dd` | head `5cb66ff` | change |
+| | base `25b6e17` (was `f2a25dd`) | head `d26b9ef` (was `5cb66ff`) | change |
 |---|---|---|---|
 | `Ir`, 49-file sample (`profile.sh`, this worktree) | 312,997,148 | 278,125,378 | −34,871,770 (−11.14%) |
 | `memcpy` from `_int_realloc` (calls) | 5,507,672 (18,737) | 3,546,886 (16,300) | −1,960,786 (−2,437 calls, S7) |
@@ -170,7 +170,7 @@ S10 and S16 lost.
 
 ## Wall clock (measured, provisional)
 
-`bench -n 5` on the 1238 fixtures (13.9 MB), the base binary (`f2a25dd`, built in this
+`bench -n 5` on the 1238 fixtures (13.9 MB), the base binary (`25b6e17` (was `f2a25dd`), built in this
 worktree before the first change) and the head binary interleaved, three pairs,
 `taskset -c 2`, load average 2.7–4.2 while other experiments ran.
 
@@ -248,7 +248,7 @@ S16, S12 in the study's form, a second S7 round.
   real, their losses are `_int_realloc` copies.
 - S6 (carried width facts) and S14 (comment index) are untouched; with S1–S4 in, S14's bound is
   at most the 0.6% the study gives after S3 and S4.
-- Remaining scanning and string cost at the head (exclusive `Ir`, callgrind of `5cb66ff`):
+- Remaining scanning and string cost at the head (exclusive `Ir`, callgrind of `d26b9ef` (was `5cb66ff`)):
   `write_list` 6.68 M (with its inlined width code), `filtered_str_fits` 3.61 M (`lines_fit`
   inlined), `CharSearcher::next_match` 3.01 M, `CharClasses::next` 2.61 M, `memrchr` 2.42 M
   (`lines().last()`, `rsplit`), `skip_plain` 2.34 M, `find_uncommented` 1.77 M.

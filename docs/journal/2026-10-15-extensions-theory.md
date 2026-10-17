@@ -44,7 +44,7 @@ end of the first-attempts entry, recognising canonical text.
 ## The final head, measured
 
 Profile of `target/release/examples/bench -n 1` on the 49-file sample under
-`benchmarks/profile.sh` at `31ce20e` (the code of the best-known-good `bdfb9d1`), 312,733,055
+`benchmarks/profile.sh` at `1b89e4c` (was `31ce20e`) (the code of the best-known-good `bd9c768` (was `bdfb9d1`)), 312,733,055
 instructions, exclusive instructions grouped by component (the grouping script and the
 annotated profile are in this container's scratch directory; the groups follow
 [2026-10-14-autoresearch/profile-flat.md](2026-10-14-autoresearch/profile-flat.md)):
@@ -105,7 +105,7 @@ measured findings about the CLI's fixed costs opened the night: reading and hash
 executable for the cache key cost 2.3–3.3 ms on every run, more than the 1.7–2.4 ms start-up,
 and a warm-cache run was mostly kernel time (33.7 ms system against 14.8 ms user) from one
 `canonicalize` per file (15,488 `readlink` calls) and two path sorts. Both became E12 (merged
-at `92fdef0`): warm `--check` of the 1238 fixtures 0.56–0.61 of before, the cache's per-run
+at `397159b` (was `92fdef0`)): warm `--check` of the 1238 fixtures 0.56–0.61 of before, the cache's per-run
 overhead 2.8–2.9 ms → 0.6–1.0 ms, `readlink` calls 8,060 → 4, output identical. The record's
 item-level cache (L1) became E15: exact on both corpora, 0.26–0.47 of the sequential formatter
 in process after a one-item edit in a large file, 1.2–2.0x at process level pinned against
@@ -115,7 +115,7 @@ removes 4.0–5.7 ms of the 4.3–6.0 ms a median-file save costs: the largest l
 ratio, 93–95%), a unit queue across files (L8, 6.6–34.6% of 4-thread wall on crates), `--check`
 early exit (L7, ≤ 0.78 of a differing file), BOLT (L12, 0–5%, hypothesis), THP, static linking,
 `mmap` (each ≤ 0.3 ms or ≤ 5.7% CPU). PGO in the release workflow (L5) became E13 (merged at
-`45e8470`). The allocator (L6, L9) is E14's measurement. Scenario bounds the record derives:
+`3479ddb` (was `45e8470`)). The allocator (L6, L9) is E14's measurement. Scenario bounds the record derives:
 CI cold run of the fixture tree 434 ms → about 300 ms; CI warm run 28.9 → 13–16 ms (E12 took
 most of it); editor save of a median file 4.3–6.0 ms → about 0.15 ms with the item cache in a
 resident process; one huge file cold 27.6 → about 14 ms (parse plus the largest unit is the
@@ -269,17 +269,17 @@ the repository is in the container's scratch directory
 with the container.
 
 - Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR #88, head pushed; the
-  best-known-good code is `bdfb9d1` (ledger). Nothing here changes formatter code yet.
+  best-known-good code is `bd9c768` (was `bdfb9d1`) (ledger). Nothing here changes formatter code yet.
 - Theory records being written by sibling agents (read-only, one file each under
   2026-10-15-extensions-theory/): `decide-once-and-exact-reuse.md`, `parser-and-substrate.md`,
   `scanning-and-strings.md`, `already-formatted-fast-path.md`. `incremental-and-process.md`
-  landed (commit `383fa28`). When a record lands: read its ranked table, spot-check two of its
+  landed (commit `4dd27c1` (was `383fa28`)). When a record lands: read its ranked table, spot-check two of its
   measured numbers against the profile in the scratch directory (`profile-final/`), commit
   it, fill its row of "Bounds, by record" above, push.
 - E12 (`20261015-cli-waste`, worktree `/home/user/wt/cli-waste`, agent running): canonicalise
   once per root and per symlink instead of per file, one sort, a stamp-cached tool key;
   record `2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md`. Landed and merged at
-  `92fdef0` after the orchestrator reproduced the gates in the worktree (fmt, clippy, 37 CLI
+  `397159b` (was `92fdef0`) after the orchestrator reproduced the gates in the worktree (fmt, clippy, 37 CLI
   tests; `--check --no-cache` on the formatted fixture copy: same exit code and byte-identical
   stdout against the base binary) and the headline on this loaded host, base against new
   interleaved: warm `--check` of the 1238 fixtures on 4 threads 46.0 → 25.6 ms mean (0.56,
@@ -304,7 +304,7 @@ with the container.
   `target/release/rustd` exists, run
   `python3 harness/cratetest.py /home/user/wt/rustd-trial/chloro-core --test basic --json ...`
   from `/home/user/dioxuslabs/rustd` (the worktree `/home/user/wt/rustd-trial` is chloro at
-  `383fa28` with the `basic` test binary pre-built under the nightly); then `--test unit`;
+  `4dd27c1` (was `383fa28`) with the `basic` test binary pre-built under the nightly); then `--test unit`;
   record compiled/skipped by reason, match, timings, RSS; then the edit-loop bench if
   coverage is meaningful. Stop conditions: build failure, essential functions skipped, any
   change needed in rustd. Baseline build-loop timings are in scratch `rustd-trial/baseline.txt`
@@ -315,7 +315,7 @@ with the container.
   the identity harness over both corpora (cold and warm passes against the sequential
   formatter), the edit scenario on the five largest fixtures, and the cold-path overhead;
   record `2026-10-14-autoresearch/experiments/EXP-015-item-cache.md`. First result (02:45
-  UTC, branch pushed, six commits to `b8c3882`): exact everywhere (1238 fixtures and 24,582
+  UTC, branch pushed, six commits to `f118800` (was `b8c3882`)): exact everywhere (1238 fixtures and 24,582
   registry files, cold, warm, moved and blanked, 1 and 4 threads; goldens and conform unchanged
   with the cache off; Ir +0.0005% off); in process 0.26–0.47 of the sequential formatter after
   a one-literal edit; at process level 1.2–2.0x pinned and 0.9–1.7x unpinned against
@@ -323,9 +323,9 @@ with the container.
   it), 1.11–2.04x against today's fixed-point cache; cold pass with the cache on +10–15% wall,
   +4.6% instructions, an 8.6 MB unit file. The agent was sent back (02:38 UTC, one hour) to
   merge the E12/E13 head into the branch, make the unit cache opt-in (`--unit-cache`), and
-  re-measure the edit scenario and the cold overhead. Landed (`8ae8a92`: merged the E12/E13 head,
+  re-measure the edit scenario and the cold overhead. Landed (`aa45a8e` (was `8ae8a92`): merged the E12/E13 head,
   `--unit-cache` opt-in, `--no-cache` turns both caches off; re-measured pinned minima all five
-  files 1.56–2.09x against `--no-cache`, unpinned 1.13–1.52x) and merged at `4e48bdb` after the
+  files 1.56–2.09x against `--no-cache`, unpinned 1.13–1.52x) and merged at `20cb3f7` (was `4e48bdb`) after the
   orchestrator reproduced in the worktree: identity harness `examples/unit_cache` on the fixtures
   at 1 and 4 threads with `--shift --blank`, 0 differences (13,595 units, 13,203 found shifted;
   13,672 checked blanked); goldens with the cache off 0 of 1238 sequential and at 4 threads;
@@ -336,7 +336,7 @@ with the container.
   box 1.5 h): the profile-guided build in `.github/workflows/binaries.yml` for native targets,
   validated locally by running the workflow's commands (goldens, conform at both versions, Ir
   against 312.7 M, hyperfine on two crates); record
-  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. Landed and merged at `45e8470`
+  `2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md`. Landed and merged at `3479ddb` (was `45e8470`)
   after the orchestrator reproduced, on the branch's profile-guided `bench`: 0 of 1238 fixture
   outputs changed against the golden record and 245,255,322 instructions on the sample (0.784 of
   312,733,055; the agent measured 245,639,781, M3 244,712,537: the profile differs per training
@@ -354,7 +354,7 @@ with the container.
   memory-bounded options), `tikv-jemallocator`, `snmalloc` on the M3 harness rows (wall, CPU,
   peak RSS); decision rule: RSS within 1.2x of glibc on every workload and wall below with
   disjoint ranges on most, else measurement only; record `EXP-014-allocators.md`. Landed
-  (`8e6e36c`) and merged at `3fd39b4` (features off by default; Ir and goldens unchanged, reproduced).
+  (`d54783b` (was `8e6e36c`)) and merged at `9e22b3d` (was `3fd39b4`) (features off by default; Ir and goldens unchanged, reproduced).
   Result: no allocator meets the rule. glibc's own time share measured directly with a wrapping
   allocator and `rdtsc`: 13–16% of the formatter's time on one thread (13.7–16.3% on the sample,
   12.7–13.9% on the full tree), against its 15.1% instruction share; jemalloc 10.8% and snmalloc
@@ -367,9 +367,9 @@ with the container.
   02:39 UTC, time box 3.5 h): the local levers of `scanning-and-strings.md` section 7 (S3, S1,
   S2, S4, S7, S8, S5, S12, S15, S10, S13, S16; bound about 12% of instructions), one commit per
   lever with the E3 gates (Ir per commit, both goldens, conform at both versions); record
-  `EXP-016-scanner-paths.md`. Landed (`4e8080c`: eleven levers kept, −11.14% Ir on its base,
+  `EXP-016-scanner-paths.md`. Landed (`db05efb` (was `4e8080c`): eleven levers kept, −11.14% Ir on its base,
   S10, S16 and the record's form of S12 rejected on numbers, the full `config_matrix -n 1220`
-  identical on all 31 values, `bench` 1.11–1.12x in three disjoint pairs) and merged at `e640fbf`
+  identical on all 31 values, `bench` 1.11–1.12x in three disjoint pairs) and merged at `f4be63e` (was `e640fbf`)
   after the orchestrator reproduced on the branch (goldens, conform at both versions, Ir
   278,125,396, fmt, clippy, 231 core tests) and resolved two code conflicts with E15/E18
   (both imports in `context.rs`; `parallel.rs` keeps E15's cache path and `stitch()` with E16's
@@ -379,18 +379,18 @@ with the container.
   −20.6% tonight); fmt, clippy with every feature, 290 workspace tests. One `unsafe` block
   entered chloro-core with S5 (an SSE2 unaligned 16-byte load from a `&[u8; 16]`, gated on the
   target feature, with a randomised test against the scalar search). The best-known-good is
-  `e640fbf`.
+  `f4be63e` (was `e640fbf`).
 - All six records are committed and the synthesis sections above are written (02:58 UTC).
 - E18 (`20261015-dead-candidates`, worktree `/home/user/wt/dead-candidates`, agent running since
   02:57 UTC, time box 2 h): the chain's dead vertical candidate skipped with a run-level guard
   and literal widths computed once (decide-once rows 5 and 7); record `EXP-018-dead-candidates.md`.
-  Landed (`a02cec5`: the chain skip kept at −3.40% Ir with a run-level guard, firing 2,024 times
+  Landed (`5a1a64b` (was `a02cec5`): the chain skip kept at −3.40% Ir with a run-level guard, firing 2,024 times
   on the sample; the literal-width cache rejected at +1.75%, 1,448 misses against 58 hits) and
-  merged at `387d723` after the orchestrator reproduced on the branch (goldens, conform at both
+  merged at `eebc9cb` (was `387d723`) after the orchestrator reproduced on the branch (goldens, conform at both
   versions, Ir 302,372,347 on its base, fmt, clippy, tests) and then ran the gates on the merged
   head itself: goldens 0 of 1238 and 0 of 25,024 registry files, sequential and 4 threads;
   `conform -i` 1220/1220 at both versions; Ir 280,278,276–280,279,614 (−52.3% from the start,
-  −10.4% tonight); fmt, clippy and every workspace test. The best-known-good is `387d723`.
+  −10.4% tonight); fmt, clippy and every workspace test. The best-known-good is `eebc9cb` (was `387d723`).
 - M4 (05:03 UTC): the quiet-host chain ran on the idle host from 04:30:43 to 05:02:54 UTC as
   one script (`scratchpad/m4/chain.sh`; identity, a1/a2/a3 harness sweeps, in-process harness,
   cache, bench triples with `profile.sh` and `conform -i`, parallel items, three noise runs;
@@ -404,7 +404,7 @@ with the container.
   figure per binary (`agreement()` in `compare_rustfmt.sh`, the commit after the record). README,
   ledger, the autoresearch entry and this entry carry M4; the overnight report is
   `2026-10-15-overnight-report.md`.
-- Wave 3 (launched 09:25 UTC from `8ebd3bb`; the brief and ranking are in
+- Wave 3 (launched 09:25 UTC from `73f8a85` (was `8ebd3bb`); the brief and ranking are in
   `2026-10-15-unmined-tricks.md` §7): four agents on worktrees, each with a 4–5 h time box,
   a record under `2026-10-14-autoresearch/experiments/`, and the branch to push:
   E19 `20261015-cliffs` (/home/user/wt/cliffs; EXP-019-cliffs.md), E20 `20261015-sink`
@@ -415,27 +415,27 @@ with the container.
   experiment per merge, re-run gates on the merged head, ledger row, best-known-good only on
   reproduced gates; then wave 4 (E23–E27 of the same table) and a quiet-host M5. If this
   session is not resumed, a new session starts from this bullet and the four branches.
-- Wave 3 progress (11:15 UTC): E20 reported and **merged at `60de639`** after the integrator
+- Wave 3 progress (11:15 UTC): E20 reported and **merged at `ecf30f9` (was `60de639`)** after the integrator
   reproduced its gates in the worktree (goldens 0 of 1238 sequential and 4 threads, 0 of
   25,024 registry; conform 1220/1220 at both versions; `Ir` 238,032,982 against the agent's
   238,033,138; fmt, clippy, 291 tests) and re-ran gates 1–3 on the merged head (identical
   goldens and conform; `Ir` 238,033,298 at the default sample path). Best-known-good is
-  `60de639`, −4.10% from `e640fbf`. E22 reported (co-metric `profile.sh --sim` kept;
+  `ecf30f9` (was `60de639`), −4.10% from `f4be63e` (was `e640fbf`). E22 reported (co-metric `profile.sh --sim` kept;
   `steps_fused` kept, −0.105% `Ir`, −3% `Bcm`; hot/cold splits, flag tables and BOLT rejected;
   the layout lever closed under the plateau rule), its gates were reproduced in the worktree
   (goldens, conform, `Ir` 247,935,835, co-metric, fmt, clippy, 290 tests) and it is **merged at
-  `9d78713`**; post-merge gates identical, `Ir` 237,768,533 at the default sample path, which is
+  `275690f` (was `9d78713`)**; post-merge gates identical, `Ir` 237,768,533 at the default sample path, which is
   the best-known-good. E19 reported (six exact levers, −4.59% on its base, output identical; a
   real cliff in nested closures with exponent 3.6 that no small exact change fixes, rustfmt
   itself exponential there; a per-file co-metric isolating the heap-layout term) and was asked
-  to merge the integration head into `20261015-cliffs` first, because its `f18dac3` is the same
-  lever as E20's `c40a441` in lists.rs; it re-gated on the merged branch (232,050,509 at the default path, −2.41%; per-file sum
+  to merge the integration head into `20261015-cliffs` first, because its `8704724` (was `f18dac3`) is the same
+  lever as E20's `5ddfd19` (was `c40a441`) in lists.rs; it re-gated on the merged branch (232,050,509 at the default path, −2.41%; per-file sum
   −3.08%), the integrator reproduced every gate in the worktree (goldens, conform, `Ir`
-  232,050,590, co-metric, fmt, clippy, 296 tests) and **merged it at `05ab7b4`** (post-merge
-  gates identical; `Ir` 232,047,700). Best-known-good is `05ab7b4`, −60.5% from the start. The
+  232,050,590, co-metric, fmt, clippy, 296 tests) and **merged it at `dcbb43d` (was `05ab7b4`)** (post-merge
+  gates identical; `Ir` 232,047,700). Best-known-good is `dcbb43d` (was `05ab7b4`), −60.5% from the start. The
   unfixed cliff (nested closures, exponent 3.6; rustfmt itself exponential there) goes to E26's
   brief: an exact fix needs a lower bound on one-line width. E26 (`20261015-width`,
-  /home/user/wt/width, from `e312e39`) launched 11:58 UTC with that brief: a token-sum lower
+  /home/user/wt/width, from `1fe04fc` (was `e312e39`)) launched 11:58 UTC with that brief: a token-sum lower
   bound on one-line width with a per-token-class proof, a verification harness over both
   corpora, pre-checks at one-line-only attempt sites, the cliff exponent before and after;
   record EXP-026-width-bound.md. E21 reported (12:10 UTC) and is **refuted as stated**: through
@@ -448,12 +448,12 @@ with the container.
   branch. The sub-millisecond save needs an in-editor client (an LSP front end or an extension
   speaking the socket): a product decision for the owner, not an experiment. Wave 3 is
   complete (E19, E20, E22 merged; E21 refuted and kept on its branch). Wave 4 running: E24 and
-  E27 from `2f00988`, E26 from `e312e39`, E23 (`20261015-unit-queue`, /home/user/wt/queue, from
-  `9135c62`, launched 12:14 UTC: the imbalance diagnostic first, with a stop rule, then the unit
+  E27 from `efc206c` (was `2f00988`), E26 from `1fe04fc` (was `e312e39`), E23 (`20261015-unit-queue`, /home/user/wt/queue, from
+  `d4e3069` (was `9135c62`), launched 12:14 UTC: the imbalance diagnostic first, with a stop rule, then the unit
   queue; record EXP-023-unit-queue.md). E24 reported (12:30 UTC) and is **rejected**: the
   node-indexed side array recovers 17% of the memo container's 0.98%, because the memo's cost is
   storing results read again 3.2% of the time (315 hits in 9,766 lookups on the fixture sample,
-  0.6% on the registry sample), not hashing; record and ledger row cherry-picked (`4f1b9d9`),
+  0.6% on the registry sample), not hashing; record and ledger row cherry-picked (`33866dc` (was `4f1b9d9`)),
   branch `20261015-memo-array` kept, no code. That measurement became E28 (`20261015-memo-policy`,
   /home/user/wt/memopol, launched 12:45 UTC: store-on-second-miss or kind-selective memo, with
   the cliff falsifier). E27 reported (12:40 UTC): all five harness deliverables on
@@ -462,8 +462,8 @@ with the container.
   `--shuffle N`; protocol §3/§4 amended); finding: the parser is 36.3% of the fixture sample's
   instructions and 43.3% of the registry sample's net of process start-up, above T9's 40%
   trigger on the registry sample; its gates were reproduced (goldens, conform, fixtures 237,764,952, registry 322,841,637,
-  parse 86,529,679, fmt, clippy, 292 tests) and it is **merged at `28534ec`**; post-merge gates
-  identical; the best-known-good is `28534ec` at 232,051,704 (fixtures) and 305,873,488
+  parse 86,529,679, fmt, clippy, 292 tests) and it is **merged at `38e4fb1` (was `28534ec`)**; post-merge gates
+  identical; the best-known-good is `38e4fb1` (was `28534ec`) at 232,051,704 (fixtures) and 305,873,488
   (registry; −5.26% against the code before E19), parse-only 86,534,335 (37.3%). E25 (`20261015-arena`, /home/user/wt/arena, launched 12:45
   UTC: allocation attribution by lifetime first, stop rule, then a per-item arena or string pool
   on the hottest paths) runs with E23, E26 and E28; both E25 and E28 merged E27's harness into
@@ -473,7 +473,7 @@ with the container.
   about 6%), and M4's gap between wall and CPU/4 is process start-up and exit plus run-to-run
   spread (32–83% of it), not scheduling; the unit queue was not built. Its tooling (the
   `CHLORO_TRACE` timeline, zero cost when off, and `benchmarks/schedule/`) was reproduced
-  (goldens, conform, `Ir` 232,047,936, fmt, clippy, 299 tests) and **merged at `6fd4c9d`**
+  (goldens, conform, `Ir` 232,047,936, fmt, clippy, 299 tests) and **merged at `80ed8ab` (was `6fd4c9d`)**
   (post-merge gates identical on both samples). Follow-ups for M5: run the timeline 30 times
   per crate; test whether split files oversubscribing the cores cause the spread; the
   process's fixed cost (L11, L4). E28 reported (14:25 UTC): the memo's net value measured per
@@ -485,25 +485,25 @@ with the container.
   (the whole-series exponent rises 0.013 only because depths 2–6 got cheaper; accepted as not
   faster growth); store-on-second-miss refuted (1.66x at depth 16). Its gates were reproduced
   (goldens, conform, fixtures 226,279,028, registry 302,665,100, fmt, clippy, 298 tests, the
-  option matrix's last six values identical) and it is **merged at `30f9aaa`**; post-merge
-  gates identical; the best-known-good is `30f9aaa` at 226,278,649 (fixtures, −61.5% from the
+  option matrix's last six values identical) and it is **merged at `3881721` (was `30f9aaa`)**; post-merge
+  gates identical; the best-known-good is `3881721` (was `30f9aaa`) at 226,278,649 (fixtures, −61.5% from the
   start) and 302,664,964 (registry). E25 reported (14:45 UTC): the
   allocator cost is malloc/free pairs (92.6% of formatter blocks die inside their item, 91%
   already on tcache at about 130 Ir a pair), not realloc; a per-thread bump arena on chains,
   overflow and types gives −1.60% / −0.80% per file with RSS neutral, below the 3% falsifier,
   and adds a 596-line hand-written arena-backed Vec/String with thirteen `unsafe` blocks. Not
   merged: the agent was asked for a Miri run and a `bumpalo` variant (compile-time lifetimes)
-  before a decision; branch `20261015-arena`, head `eaab530`. E26 reported (15:20 UTC) and is
+  before a decision; branch `20261015-arena`, head `bc4a7b6` (was `eaab530`). E26 reported (15:20 UTC) and is
   **kept**: a token-sum lower bound on one-line width (`width.rs`, a per-token-class proof
   table, safe code) with pre-checks at the closure-body and one-line `if`/`else` sites;
   −0.76% on the fixture sample, and the nested-closure cliff collapses (depth 16: 105.4 M →
   5.81 M; exponent 3.62 → about 1.0); the bound never exceeded a one-line rendering on the
   fixtures under three option sets, the 25,024 registry files or the 217 cliff files; its
   gates were reproduced (goldens, conform, `Ir` 230,281,492, fmt, clippy, 302 tests, the option
-  matrix) and it is **merged at `830345e`**; post-merge gates identical on both samples;
-  best-known-good `830345e` at 224,591,085 (fixtures, −61.8% from the start) and 302,124,546
+  matrix) and it is **merged at `2fefa5a` (was `830345e`)**; post-merge gates identical on both samples;
+  best-known-good `2fefa5a` (was `830345e`) at 224,591,085 (fixtures, −61.8% from the start) and 302,124,546
   (registry); the cliff on the merged head (with E28's memo gate) reads 5.62 M at depth 8 and
-  5.74 M at depth 16. E25's follow-up reported (16:10 UTC): Miri (nightly, strict provenance, Stacked and Tree Borrows) finds no undefined behaviour in the hand-written arena once its pointers are kept as pointers (`b2dd419`), and a `bumpalo` variant (`224870a`: a `RefCell<Bump>` per thread lent to a closure, reset when the outermost borrower returns and at unit boundaries; 74 lines, no `unsafe`) keeps 97–99% of the gain (per file −1.55% fixtures, −0.79% registry) with peak RSS 0.989–1.019x; the reset at unit boundaries alone read 1.22x RSS on `fx-hir-ty` and was dropped. The `bumpalo` variant is **merged at `e96b530`** after the integrator reproduced its gates on the merged tree (goldens both corpora, conform both versions, `Ir` 220,958,649 fixtures / 299,933,504 registry, fmt, clippy, 308 tests, the option matrix); best-known-good `e96b530` at 220,958,649 (fixtures, -62.4% from the start) and 299,933,504 (registry). M5 ran on the quiet host (16:32–17:32 UTC, no other agent; [measurements/m5-quiet-host.md](2026-10-14-autoresearch/measurements/m5-quiet-host.md)): 0.239–0.405 of rustfmt's wall time per crate on one core and 0.083–0.173 on four (0.210–0.332 and 0.066–0.148 profile-guided), `bench` 9.3–10.4 MB/s against 3.7–4.0 for the start, `Ir` 220,957,089 (182,602,721 profile-guided, 0.3106 of base), warm cache 17.8 ms; the README and PR #88 carry it. Wave 4 is complete (M5 committed at `03c61be`; PR #88's body and the README carry it). **Wave 5 launched 17:47 UTC**, three agents on disjoint hot paths (protocol §6), time box 3.5 h each, briefs with step-1 measurement before code, per-lever keep rules, both samples per file, and the exactness harnesses as gates: E29 (`20261015-split-tail`, /home/user/wt/split-tail) the four-core tail owned by the split file on `fx-hir` (22%) and `fx-ide-db` (14%) in M5's trace: the split file's worker formats units itself, item threads capped at idle workers, sub-item units inside one large unit (EXP-001's open item), then P9's parallel parse of the split file's items; metric the `sim.py` reconstruction from thread CPU clocks (load-independent) with the wall view secondary; keep rule: both tails halved, no crate's span up, CPU within 5%, identity at 1/2/4 threads. E30 (`20261015-width-model`, /home/user/wt/width-model) the exact one-line width `W(n)` for kinds with a per-kind exactness argument, taking over the S1 attempts that fail on structure, the `if`/`else` fits and `choose_rhs`'s same-line candidate, a negative memo keyed by node and flags, the bound cached per node; a verification harness (W(n) equals the rendered width wherever exactness is claimed, over both corpora, three option sets and the cliff fixtures) and the option matrix as gates; falsifier < 1.0% per file on the fixture sample or any registry regression. E31 (`20261015-parse-floor-2`, /home/user/wt/parse-floor-2) the fork-free parser levers of parser-and-substrate.md in order P7 (`rustc_compat` inside the build), P2 (own token conversion over `rustc_lexer` to the parser's `Input`; a direct dependency only if no crate is added or a measured reason), P4 (table-driven lexer, if P2 lands), each behind E17's element-equality harness and a token-equality / differential-lexing harness over both corpora plus random inputs; keep rules 1 M / 10 M / 5 M per file; the fork (P3/P6/P11) is reported as a bound for the owner, not built. All three agents were stopped by the account's weekly rate limit at about 18:00 UTC on 10-15, before any had pushed (E29 at `fc29026` with lever (a) tried and reverted and the simulator scripts committed; E30 with uncommitted width.rs/closures.rs edits; E31 at `eabb600` with P7 tried and reverted and P2 in progress), and were resumed in their worktrees on 2026-10-17 at 06:31 UTC with a 3 h time box. E31 reported (07:04 UTC): P7 (`rustc_compat` inside the build) measured and rejected (+0.42 M even inlined: the rules cost 33 Ir per element in any form), P2 (`cst::lex`: `rustc_lexer`'s tokens converted and the parser's `Input` built in one pass, `LexedStr` kept for texts with lexer errors or a script prefix; no crate added) kept at −10.54 M per file on the fixture sample and −27.6 M on the registry sample, P4 (whitespace, ASCII identifiers, one-byte punctuation and line comments by a byte scan, the cursor for the rest, 2.7–3.7% of tokens) kept at a further −7.28 M / −15.58 M; token equality against `LexedStr` over both corpora, 10,000 random texts and 10,000 mutations and E17's element equality all 0 mismatches. **Merged at `2ecc8a3`** after the integrator reproduced every gate including both harnesses; best-known-good `2ecc8a3` at 203,151,226 (fixtures, -65.4% from the start) and 255,677,420 (registry, -62.9%); the parse phase is now 33.7% / 41.7% of the whole. The fork bound E31 leaves for the owner: P3 + P6 together about 11–13 M (5.5–6.5%) on the fixture sample and 16–19 M (6.3–7.5%) on the registry sample, P11 beyond that only a difference in grammar decision cost at very high risk. E29 reported (07:03 UTC): refuted as stated, nothing kept in the formatter or CLI (code byte-identical to `03c61be`); M5's `fx-hir` tail was the release trace counting the split file's item threads as idle (patched trace: 0.7–1.6 idle core-ms, the schedule 1.1–1.5% above the work-conserving bound); `fx-ide-db`'s tail is real but 1.1% of capacity on the quiet host; levers (a) and (b) built, exact and reverted ((b) raised spans 18–40%); (c) and (d) bounded at −0.3% span and not built; the split-schedule simulator, `collect_ab.sh`, `identity_start.sh` and the `owner` trace patch are kept; merged as a record (`5dddfc9`). E30 reported (08:10 UTC): the hypothesis is falsified before building: an instrumented record-and-replay of every one-line attempt on both samples puts everything an exact width `W(n)` could decide at 0.28% / 0.39% of the instructions (S1 exact 0.05%, S3 0.02–0.04%, `choose_rhs` 0.18–0.27%, the negative memo 0.14% in its exact form, the bound cache ≤ 0.09%), so `W(n)` was not built; the one use above the bar was structural (41 of 47 failing S1 attempts have no one-line rendering at any shape), built as two rules: rule M (a body rendering a `match` arm is never one line; a documented argument, debug assertions on every expression rewrite, a unit test) kept at −801,783 per file (−0.363%) on the fixture sample and −2,718 on the registry sample, rule C (a chain wider than `chain_width`) reverted on a +10 K registry regression that its own code did not cause (a layout term) but protocol §3 rejects. **Merged at `96c9abc`** after the integrator reproduced the gates on the merged tree (goldens both corpora, conform both versions, `Ir` 202,822,327 fixtures / 255,681,216 registry, fmt, clippy, 309 tests, the option matrix, the cliff shape, the debug-assertion bench over both corpora); best-known-good `96c9abc` at 202,822,327 (fixtures, -65.5% from the start) and 255,681,216 (registry). The width-model lever is closed at its measured ceiling (protocol §7). Wave 5 is complete: E29 refuted (record and harness merged), E30 falsified with one exact rule kept, E31 kept (−8.06% / −14.76%). M6 ran on the quiet host (08:19–09:07 UTC, no other agent; [measurements/m6-quiet-host.md](2026-10-14-autoresearch/measurements/m6-quiet-host.md)): 0.214–0.345 of rustfmt's wall time per crate on one core and 0.077–0.165 on four (0.182–0.325 and 0.067–0.164 profile-guided), `bench` 12.0–13.2 MB/s against 4.4–4.9 for the start, `Ir` 202,822,485 (170,069,599 profile-guided, 0.2892 of base), warm cache 16.2 ms; the README, the index and PR #88 carry it. Remaining for the owner: the parser fork decision (E31's bound; the decision record in 2026-10-14-autoresearch.md § What is left) and whether a sixth wave runs. State at 2026-10-17 09:30 UTC: nothing is running and no monitor or scheduled check-in is armed (the M6 check-in was deleted at 09:20 UTC); the only worktrees are the integration checkout and `/home/user/wt/base`; the branch is at `df30b2a` (code `96c9abc`), clean and pushed. The external research exchange is journalled in full in 2026-10-15-external-research-brief/ (five documents) with the 2026-10-17 retrospective in 2026-10-15-external-research-brief.md § 6. The handoff for the whole branch, with a glossary of the codes and the release-readiness assessment, is [2026-10-17-handoff.md](2026-10-17-handoff.md); the owner decided on 2026-10-17 not to start the parser rewrite on chloro. Integration rule unchanged: reproduce every gate on the merged tree before merging, one experiment per merge, ledger best-known-good only on reproduced figures. Wave 4's E24 (memo side array) and E27 (harness: registry
+  5.74 M at depth 16. E25's follow-up reported (16:10 UTC): Miri (nightly, strict provenance, Stacked and Tree Borrows) finds no undefined behaviour in the hand-written arena once its pointers are kept as pointers (`104493f` (was `b2dd419`)), and a `bumpalo` variant (`2a5beba` (was `224870a`): a `RefCell<Bump>` per thread lent to a closure, reset when the outermost borrower returns and at unit boundaries; 74 lines, no `unsafe`) keeps 97–99% of the gain (per file −1.55% fixtures, −0.79% registry) with peak RSS 0.989–1.019x; the reset at unit boundaries alone read 1.22x RSS on `fx-hir-ty` and was dropped. The `bumpalo` variant is **merged at `a26b460` (was `e96b530`)** after the integrator reproduced its gates on the merged tree (goldens both corpora, conform both versions, `Ir` 220,958,649 fixtures / 299,933,504 registry, fmt, clippy, 308 tests, the option matrix); best-known-good `a26b460` (was `e96b530`) at 220,958,649 (fixtures, -62.4% from the start) and 299,933,504 (registry). M5 ran on the quiet host (16:32–17:32 UTC, no other agent; [measurements/m5-quiet-host.md](2026-10-14-autoresearch/measurements/m5-quiet-host.md)): 0.239–0.405 of rustfmt's wall time per crate on one core and 0.083–0.173 on four (0.210–0.332 and 0.066–0.148 profile-guided), `bench` 9.3–10.4 MB/s against 3.7–4.0 for the start, `Ir` 220,957,089 (182,602,721 profile-guided, 0.3106 of base), warm cache 17.8 ms; the README and PR #88 carry it. Wave 4 is complete (M5 committed at `4ad3b54` (was `03c61be`); PR #88's body and the README carry it). **Wave 5 launched 17:47 UTC**, three agents on disjoint hot paths (protocol §6), time box 3.5 h each, briefs with step-1 measurement before code, per-lever keep rules, both samples per file, and the exactness harnesses as gates: E29 (`20261015-split-tail`, /home/user/wt/split-tail) the four-core tail owned by the split file on `fx-hir` (22%) and `fx-ide-db` (14%) in M5's trace: the split file's worker formats units itself, item threads capped at idle workers, sub-item units inside one large unit (EXP-001's open item), then P9's parallel parse of the split file's items; metric the `sim.py` reconstruction from thread CPU clocks (load-independent) with the wall view secondary; keep rule: both tails halved, no crate's span up, CPU within 5%, identity at 1/2/4 threads. E30 (`20261015-width-model`, /home/user/wt/width-model) the exact one-line width `W(n)` for kinds with a per-kind exactness argument, taking over the S1 attempts that fail on structure, the `if`/`else` fits and `choose_rhs`'s same-line candidate, a negative memo keyed by node and flags, the bound cached per node; a verification harness (W(n) equals the rendered width wherever exactness is claimed, over both corpora, three option sets and the cliff fixtures) and the option matrix as gates; falsifier < 1.0% per file on the fixture sample or any registry regression. E31 (`20261015-parse-floor-2`, /home/user/wt/parse-floor-2) the fork-free parser levers of parser-and-substrate.md in order P7 (`rustc_compat` inside the build), P2 (own token conversion over `rustc_lexer` to the parser's `Input`; a direct dependency only if no crate is added or a measured reason), P4 (table-driven lexer, if P2 lands), each behind E17's element-equality harness and a token-equality / differential-lexing harness over both corpora plus random inputs; keep rules 1 M / 10 M / 5 M per file; the fork (P3/P6/P11) is reported as a bound for the owner, not built. All three agents were stopped by the account's weekly rate limit at about 18:00 UTC on 10-15, before any had pushed (E29 at `c611aac` (was `fc29026`) with lever (a) tried and reverted and the simulator scripts committed; E30 with uncommitted width.rs/closures.rs edits; E31 at `e1c2eec` (was `eabb600`) with P7 tried and reverted and P2 in progress), and were resumed in their worktrees on 2026-10-17 at 06:31 UTC with a 3 h time box. E31 reported (07:04 UTC): P7 (`rustc_compat` inside the build) measured and rejected (+0.42 M even inlined: the rules cost 33 Ir per element in any form), P2 (`cst::lex`: `rustc_lexer`'s tokens converted and the parser's `Input` built in one pass, `LexedStr` kept for texts with lexer errors or a script prefix; no crate added) kept at −10.54 M per file on the fixture sample and −27.6 M on the registry sample, P4 (whitespace, ASCII identifiers, one-byte punctuation and line comments by a byte scan, the cursor for the rest, 2.7–3.7% of tokens) kept at a further −7.28 M / −15.58 M; token equality against `LexedStr` over both corpora, 10,000 random texts and 10,000 mutations and E17's element equality all 0 mismatches. **Merged at `de9dcc9` (was `2ecc8a3`)** after the integrator reproduced every gate including both harnesses; best-known-good `de9dcc9` (was `2ecc8a3`) at 203,151,226 (fixtures, -65.4% from the start) and 255,677,420 (registry, -62.9%); the parse phase is now 33.7% / 41.7% of the whole. The fork bound E31 leaves for the owner: P3 + P6 together about 11–13 M (5.5–6.5%) on the fixture sample and 16–19 M (6.3–7.5%) on the registry sample, P11 beyond that only a difference in grammar decision cost at very high risk. E29 reported (07:03 UTC): refuted as stated, nothing kept in the formatter or CLI (code byte-identical to `4ad3b54` (was `03c61be`)); M5's `fx-hir` tail was the release trace counting the split file's item threads as idle (patched trace: 0.7–1.6 idle core-ms, the schedule 1.1–1.5% above the work-conserving bound); `fx-ide-db`'s tail is real but 1.1% of capacity on the quiet host; levers (a) and (b) built, exact and reverted ((b) raised spans 18–40%); (c) and (d) bounded at −0.3% span and not built; the split-schedule simulator, `collect_ab.sh`, `identity_start.sh` and the `owner` trace patch are kept; merged as a record (`21f6f0e` (was `5dddfc9`)). E30 reported (08:10 UTC): the hypothesis is falsified before building: an instrumented record-and-replay of every one-line attempt on both samples puts everything an exact width `W(n)` could decide at 0.28% / 0.39% of the instructions (S1 exact 0.05%, S3 0.02–0.04%, `choose_rhs` 0.18–0.27%, the negative memo 0.14% in its exact form, the bound cache ≤ 0.09%), so `W(n)` was not built; the one use above the bar was structural (41 of 47 failing S1 attempts have no one-line rendering at any shape), built as two rules: rule M (a body rendering a `match` arm is never one line; a documented argument, debug assertions on every expression rewrite, a unit test) kept at −801,783 per file (−0.363%) on the fixture sample and −2,718 on the registry sample, rule C (a chain wider than `chain_width`) reverted on a +10 K registry regression that its own code did not cause (a layout term) but protocol §3 rejects. **Merged at `2e1bc8f` (was `96c9abc`)** after the integrator reproduced the gates on the merged tree (goldens both corpora, conform both versions, `Ir` 202,822,327 fixtures / 255,681,216 registry, fmt, clippy, 309 tests, the option matrix, the cliff shape, the debug-assertion bench over both corpora); best-known-good `2e1bc8f` (was `96c9abc`) at 202,822,327 (fixtures, -65.5% from the start) and 255,681,216 (registry). The width-model lever is closed at its measured ceiling (protocol §7). Wave 5 is complete: E29 refuted (record and harness merged), E30 falsified with one exact rule kept, E31 kept (−8.06% / −14.76%). M6 ran on the quiet host (08:19–09:07 UTC, no other agent; [measurements/m6-quiet-host.md](2026-10-14-autoresearch/measurements/m6-quiet-host.md)): 0.214–0.345 of rustfmt's wall time per crate on one core and 0.077–0.165 on four (0.182–0.325 and 0.067–0.164 profile-guided), `bench` 12.0–13.2 MB/s against 4.4–4.9 for the start, `Ir` 202,822,485 (170,069,599 profile-guided, 0.2892 of base), warm cache 16.2 ms; the README, the index and PR #88 carry it. Remaining for the owner: the parser fork decision (E31's bound; the decision record in 2026-10-14-autoresearch.md § What is left) and whether a sixth wave runs. State at 2026-10-17 09:30 UTC: nothing is running and no monitor or scheduled check-in is armed (the M6 check-in was deleted at 09:20 UTC); the only worktrees are the integration checkout and `/home/user/wt/base`; the branch is at `a3f2132` (was `df30b2a`) (code `2e1bc8f` (was `96c9abc`)), clean and pushed. The external research exchange is journalled in full in 2026-10-15-external-research-brief/ (five documents) with the 2026-10-17 retrospective in 2026-10-15-external-research-brief.md § 6. The handoff for the whole branch, with a glossary of the codes and the release-readiness assessment, is [2026-10-17-handoff.md](2026-10-17-handoff.md); the owner decided on 2026-10-17 not to start the parser rewrite on chloro. Integration rule unchanged: reproduce every gate on the merged tree before merging, one experiment per merge, ledger best-known-good only on reproduced figures. Wave 4's E24 (memo side array) and E27 (harness: registry
   sample, parse-only phase, path-independent count, per-file mode) launch from this head. The external research brief and
   report are journalled in `2026-10-15-external-research-brief.md` with seven adopted
   additions (a registry validation sample, rollback as state, generation-stamped side arrays,
@@ -518,9 +518,9 @@ with the container.
   UTC, time box 3 h): the exact, fork-free parse-floor levers of `parser-and-substrate.md` (P8
   pass `in_trait` down instead of a parent search, P5 macro arguments lexed and parsed once, P1
   fused trivia interspersal and tree build gated by element equality over both corpora), one
-  gated commit per lever; record `EXP-017-parse-floor.md`. Landed (`7f6e98e`: all three kept,
+  gated commit per lever; record `EXP-017-parse-floor.md`. Landed (`510515e` (was `7f6e98e`): all three kept,
   −7.11% Ir, tree equality 0 mismatches on 1,330 + 34,008 file trees and 14,579 + 625,316
-  fragment trees) and merged at `a3a60bd` after the orchestrator reproduced: goldens 0 of 1238
+  fragment trees) and merged at `eb505dc` (was `a3a60bd`) after the orchestrator reproduced: goldens 0 of 1238
   sequential and 4 threads, 0 of 25,024 registry files; `conform -i` 1220/1220 at both versions;
   Ir 290,493,068; fmt, clippy, chloro-core tests including the two fused-build equality tests.
   The best-known-good moves to this merge (ledger).
@@ -538,10 +538,10 @@ with the container.
   are committed, each with its ranked table and its scratch evidence paths; the synthesis
   above merges their tables (docs/journal/2026-10-15-extensions-theory/)
 - The final head's component shares and cache/branch simulation are recorded above
-  (measured at `31ce20e`, the code of the best-known-good)
+  (measured at `1b89e4c` (was `31ce20e`), the code of the best-known-good)
 - Experiments the records led to, all merged with their gates reproduced on the integration
-  host: E12 (`92fdef0`), E13 (`45e8470`), E15 (`4e48bdb`, opt-in), E17 (`a3a60bd`), E18
-  (`387d723`), E14 (`3fd39b4`, measurement only), E16 (`e640fbf`, the best-known-good); ledger
+  host: E12 (`397159b` (was `92fdef0`)), E13 (`3479ddb` (was `45e8470`)), E15 (`20cb3f7` (was `4e48bdb`), opt-in), E17 (`eb505dc` (was `a3a60bd`)), E18
+  (`eebc9cb` (was `387d723`)), E14 (`9e22b3d` (was `3fd39b4`), measurement only), E16 (`f4be63e` (was `e640fbf`), the best-known-good); ledger
   rows in 2026-10-14-autoresearch/experiments.md
 - M4, the quiet-host measurement of the overnight head
   ([measurements/m4-quiet-host.md](2026-10-14-autoresearch/measurements/m4-quiet-host.md)):
@@ -556,7 +556,7 @@ with the container.
   on its branch); ledger rows in 2026-10-14-autoresearch/experiments.md
 - M5 ([measurements/m5-quiet-host.md](2026-10-14-autoresearch/measurements/m5-quiet-host.md),
   the wave-4 head) and M6 ([measurements/m6-quiet-host.md](2026-10-14-autoresearch/measurements/m6-quiet-host.md),
-  the wave-5 head `96c9abc`): 0.214–0.345 of rustfmt's wall time per crate on one core and
+  the wave-5 head `2e1bc8f` (was `96c9abc`)): 0.214–0.345 of rustfmt's wall time per crate on one core and
   0.077–0.165 on four, every run below; 202,822,485 `Ir` (0.3449 of the start), 170,069,599
   profile-guided; registry sample 255,681,198 (0.3713); the README and PR #88 carry M6
 

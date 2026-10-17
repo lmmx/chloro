@@ -14,14 +14,14 @@ Labels: **measured** (a tool's output on the builds below), **read** (from sourc
 
 | field | value |
 |---|---|
-| branch | `20261015-sink` from `8ebd3bb` (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/sink` |
-| base BKG | `e640fbf`; `8ebd3bb` adds only documentation and `benchmarks/compare_rustfmt.sh` after it (`git diff --stat e640fbf 8ebd3bb -- chloro-core/src chloro-core/examples` is empty) |
-| kept commits | `8df88c3` (step 2, `write_list_into`), `7290457` (step 3, chain entry lists), `e6fe9c0` (step 4, overflowed argument moved), `c40a441` (the two per-item scans of `write_list`, where its cost was); then this file and the ledger row |
+| branch | `20261015-sink` from `73f8a85` (was `8ebd3bb`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`), worktree `/home/user/wt/sink` |
+| base BKG | `f4be63e` (was `e640fbf`); `73f8a85` (was `8ebd3bb`) adds only documentation and `benchmarks/compare_rustfmt.sh` after it (`git diff --stat e640fbf 8ebd3bb -- chloro-core/src chloro-core/examples` is empty) |
+| kept commits | `b9a279b` (was `8df88c3`) (step 2, `write_list_into`), `0f83db7` (was `7290457`) (step 3, chain entry lists), `804c400` (was `e6fe9c0`) (step 4, overflowed argument moved), `5ddfd19` (was `c40a441`) (the two per-item scans of `write_list`, where its cost was); then this file and the ledger row |
 | rejected, reverted | step 3's chain rewrites in one buffer (two forms), the placeholder's first line written in place (a no-op), `write_list_into` through `&mut String` and the by-value form; details under *Rejected* |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz, 15 GB; E19, E21 and E22 built and ran on the host throughout (load average 4.7–12.7, callgrind runs of other agents and E21's resident process on core 3). `Ir` is unaffected; every wall-clock figure is **measured, provisional** (protocol § 6) |
 | `Ir` command | `benchmarks/profile.sh --core 3 --bench target/release/examples/bench --sample /tmp/chloro-bench/sinkxx49` (the script's sample at a private path of the default's length; `sample49` is shared and deleted by each run) |
-| `Ir` of the base | 248,202,217 for `8ebd3bb` built in this worktree (the brief's range for the head: 248,202,094–248,203,822) |
+| `Ir` of the base | 248,202,217 for `73f8a85` (was `8ebd3bb`) built in this worktree (the brief's range for the head: 248,202,094–248,203,822) |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (25,024 registry files present, one not recorded) |
 | attribution builds | the same code with `CARGO_PROFILE_RELEASE_DEBUG=line-tables-only` into a scratch target directory; `valgrind --tool=callgrind --dump-instr=yes` under the script's environment; each instruction's cost attributed through `addr2line -i` to the innermost (or outermost) inlining frame in `chloro-core/src/formatter/` (`e20/scripts/outer.py`); the line-table builds count within 0.01% of the release builds (248,204,351 against 248,202,217 at the base) |
 
@@ -62,7 +62,7 @@ $S/pairs.sh /home/user/wt/sink/bench-base $S/bin/bench-<tag> 3          # taskse
 
 ### Totals
 
-| quantity | base `8ebd3bb` | head `c40a441` |
+| quantity | base `73f8a85` (was `8ebd3bb`) | head `5ddfd19` (was `c40a441`) |
 |---|---|---|
 | `Ir` | 248,202,217 | 238,033,138 |
 | glibc allocator family, exclusive (`malloc`, `free`, `realloc`, `_int_*`, consolidation) and the `RawVec` growth helpers | 40,896,404 | 36,545,455 |
@@ -123,7 +123,7 @@ Per source line of the base, outermost formatter frame, exclusive plus the calls
 
 ## Steps (read, measured)
 
-### Step 2: `write_list_into` (`8df88c3`)
+### Step 2: `write_list_into` (`b9a279b` (was `8df88c3`))
 
 - `write_list_into(items, formatting, out) -> bool` appends the list to `out` or truncates it
   back and returns `false` where `write_list` returns `None`. Its reads of the list's own text
@@ -142,14 +142,14 @@ Per source line of the base, outermost formatter frame, exclusive plus the calls
   0.17–0.43 M dearer than in `write_list` (spill and reload code at the call boundary, by
   `cmpsrc.py`), so the step keeps 87% of its site cost.
 
-### Step 3: the chain's entry lists (`7290457`)
+### Step 3: the chain's entry lists (`0f83db7` (was `7290457`))
 
 - `make_subexpr_list` starts with room for eight entries instead of `vec![top]`; the item list
   with room for every sub-expression; the child list with room for every item after the parent.
   Capacities only.
 - The chain's string assembly in one buffer was measured and rejected (below).
 
-### Step 4: the overflowed argument (`e6fe9c0`)
+### Step 4: the overflowed argument (`804c400` (was `e6fe9c0`))
 
 - `try_overflow_last_item` matches `placeholder` by value and moves the overflowed rewrite into
   the list item instead of `overflowed.to_owned()`.
@@ -157,7 +157,7 @@ Per source line of the base, outermost formatter frame, exclusive plus the calls
   item is never rewritten by `itemize_list` (`leave_last: true`), so its `item` is always `None`
   there (2,033 of 2,033 calls took the allocating branch). Reverted before the commit.
 
-### Where `write_list`'s cost was (`c40a441`)
+### Where `write_list`'s cost was (`5ddfd19` (was `c40a441`))
 
 - `item_last_line_width` is computed in the one branch that reads it (a post-comment outside a
   horizontal list), from the same item, `item_sep_len` and indent; `prev_item_is_nested_import`
@@ -177,12 +177,12 @@ without that term.
 
 | commit | step | `Ir` before | `Ir` after | change | parser growth change | net of it | site cost | net / site | decision |
 |---|---|---|---|---|---|---|---|---|---|
-| `8df88c3` | 2, `write_list_into` | 248,202,217 | 246,674,459 | −1,527,758 (−0.62%) | +354,255 | −1,882,013 | 1.75 M | 108% (observed 87%) | kept |
-| `7290457` | 3, chain entry lists | 246,674,459 | 244,224,959 | −2,449,500 (−0.99%) | −408,892 | −2,040,608 | 2.17 M | 94% | kept |
+| `b9a279b` (was `8df88c3`) | 2, `write_list_into` | 248,202,217 | 246,674,459 | −1,527,758 (−0.62%) | +354,255 | −1,882,013 | 1.75 M | 108% (observed 87%) | kept |
+| `0f83db7` (was `7290457`) | 3, chain entry lists | 246,674,459 | 244,224,959 | −2,449,500 (−0.99%) | −408,892 | −2,040,608 | 2.17 M | 94% | kept |
 | — | 3, chain rewrites in one buffer | 244,224,959 | 246,227,944 | +2,002,985 (+0.82%) | +3,466,641 | −1,463,656 | ≈ 1.6 M | — | rejected |
 | — | 3, the same, buffer sized from the chain's source | 244,224,959 | 246,720,522 | +2,495,563 (+1.02%) | +4,717,283 | −2,221,720 | ≈ 1.6 M | — | rejected |
-| `e6fe9c0` | 4, overflowed argument moved | 244,224,959 | 243,593,585 | −631,374 (−0.26%) | −294,294 | −337,080 | 0.40 M | 83% | kept |
-| `c40a441` | `write_list`'s two scans | 243,593,585 | 238,033,138 | −5,560,447 (−2.28%) | 0 | −5,560,447 | 4.86 M | 114% | kept |
+| `804c400` (was `e6fe9c0`) | 4, overflowed argument moved | 244,224,959 | 243,593,585 | −631,374 (−0.26%) | −294,294 | −337,080 | 0.40 M | 83% | kept |
+| `5ddfd19` (was `c40a441`) | `write_list`'s two scans | 243,593,585 | 238,033,138 | −5,560,447 (−2.28%) | 0 | −5,560,447 | 4.86 M | 114% | kept |
 | **kept, total** | | 248,202,217 | 238,033,138 | **−10,169,079 (−4.10%)** | −348,931 | −9,820,148 | | | |
 
 The gate runs of the committed builds read 246,675,864, 244,223,113, 243,593,647 and
@@ -230,10 +230,10 @@ throughout; none of these ranges is a speedup claim.
 
 | binary (`Ir` change against base) | window, UTC, load average (1, 5, 15 min) at start | base, MB/s per pair | head, MB/s per pair | head / base per pair | ranges |
 |---|---|---|---|---|---|
-| step 2, `8df88c3` (−0.62%) | 10:47–10:50, 5.93 7.90 8.75 | 3.03, 3.01, 3.12 | 2.74, 3.03, 4.24 | 0.904, 1.007, 1.359 | overlap |
-| step 3, `7290457` (−1.60%) | 10:50–10:51, 5.05 6.70 8.16 | 4.41, 4.20, 4.13 | 4.23, 4.16, 4.26 | 0.959, 0.990, 1.031 | overlap |
-| step 4, `e6fe9c0` (−1.86%) | 10:51–10:53, 4.70 6.18 7.82 | 2.64, 3.59, 5.06 | 4.33, 4.29, 7.67 | 1.640, 1.195, 1.516 | overlap |
-| head, `c40a441` (−4.10%) | 10:53–10:54, 5.45 5.93 7.52 | 8.42, 7.59, 7.82 | 8.16, 8.04, 8.88 | 0.969, 1.059, 1.136 | overlap |
+| step 2, `b9a279b` (was `8df88c3`) (−0.62%) | 10:47–10:50, 5.93 7.90 8.75 | 3.03, 3.01, 3.12 | 2.74, 3.03, 4.24 | 0.904, 1.007, 1.359 | overlap |
+| step 3, `0f83db7` (was `7290457`) (−1.60%) | 10:50–10:51, 5.05 6.70 8.16 | 4.41, 4.20, 4.13 | 4.23, 4.16, 4.26 | 0.959, 0.990, 1.031 | overlap |
+| step 4, `804c400` (was `e6fe9c0`) (−1.86%) | 10:51–10:53, 4.70 6.18 7.82 | 2.64, 3.59, 5.06 | 4.33, 4.29, 7.67 | 1.640, 1.195, 1.516 | overlap |
+| head, `5ddfd19` (was `c40a441`) (−4.10%) | 10:53–10:54, 5.45 5.93 7.52 | 8.42, 7.59, 7.82 | 8.16, 8.04, 8.88 | 0.969, 1.059, 1.136 | overlap |
 | head again | 10:54–10:56, 4.81 5.61 7.30 | 8.02, 7.35, 7.81 | 7.32, 7.55, 7.94 | 0.913, 1.027, 1.017 | overlap |
 
 The same base binary read 2.64–8.42 MB/s within ten minutes (M4's quiet host: 11.22–11.79 for
@@ -287,7 +287,7 @@ fails it.
 
 ## Decision
 
-Kept: `8df88c3`, `7290457`, `e6fe9c0`, `c40a441`, −10,169,079 `Ir` (−4.10%) with
+Kept: `b9a279b` (was `8df88c3`), `0f83db7` (was `7290457`), `804c400` (was `e6fe9c0`), `5ddfd19` (was `c40a441`), −10,169,079 `Ir` (−4.10%) with
 byte-identical output on both hash corpora and `conform` at both versions; of it −4.61 M the
 sink steps and −5.56 M the two scans of `write_list`, which the integrator can take or drop
 separately. Rejected: the chain's rewrites in one buffer (two forms). The hypothesis holds for

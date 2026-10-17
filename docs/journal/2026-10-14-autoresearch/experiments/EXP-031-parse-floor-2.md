@@ -14,12 +14,12 @@ parser, no `[patch]`. Labels: **measured** (a tool's output on the builds below)
 
 | field | value |
 |---|---|
-| branch | `20261015-parse-floor-2` from `03c61be` (integration head; code of `e96b530`, the best-known-good), worktree `/home/user/wt/parse-floor-2` |
-| commits | `1b44ee5` (P7 attempt) and `eabb600` (its revert); `29f8fb5` (P2, kept); `7ce5658` (P4, kept); then this record |
+| branch | `20261015-parse-floor-2` from `4ad3b54` (was `03c61be`) (integration head; code of `a26b460` (was `e96b530`), the best-known-good), worktree `/home/user/wt/parse-floor-2` |
+| commits | `600763d` (was `1b44ee5`) (P7 attempt) and `e1c2eec` (was `eabb600`) (its revert); `89e4c88` (was `29f8fb5`) (P2, kept); `7ab5f8d` (was `7ce5658`) (P4, kept); then this record |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `ra_ap_parser` 0.0.307, `ra-ap-rustc_lexer` 0.137.0, `rustc-literal-escaper` 0.0.4, `rustfmt 1.9.0` |
 | host | 4 vCPU Intel Xeon @ 2.80GHz, shared with E29 and E30 throughout (load average 6–14 when measured; the session was interrupted on 2026-10-15 by a rate limit and resumed on 2026-10-17 at 06:31 UTC after a host reboot; binaries were checked by sha256 before reuse). `Ir` is unaffected by load; the wall-clock figures below are provisional |
 | build | `cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
-| binaries (sha256, first 16) | base `5965903ba274b0cb` (`03c61be`), P7 attempt `70e1ccaac9ef0617`, P7 inline variant `scratchpad/e31/p7b/bench`, P2 `be0fd0c8112a6eec` (`29f8fb5`), P4 `8703798680fa9b65` (`7ce5658`; a build before `cargo fmt` of the same code, `41ffb5de2bfac53f`, measured within 8 K of it on every figure) |
+| binaries (sha256, first 16) | base `5965903ba274b0cb` (`4ad3b54` (was `03c61be`)), P7 attempt `70e1ccaac9ef0617`, P7 inline variant `scratchpad/e31/p7b/bench`, P2 `be0fd0c8112a6eec` (`89e4c88` (was `29f8fb5`)), P4 `8703798680fa9b65` (`7ab5f8d` (was `7ce5658`); a build before `cargo fmt` of the same code, `41ffb5de2bfac53f`, measured within 8 K of it on every figure) |
 | `Ir` commands | `benchmarks/profile.sh --core N --runs 2 --per-file --bench B` (fixture sample) and the same with `--sample-list benchmarks/samples/registry49.txt` (registry sample), each also with `--phase parse`; the four ran in parallel on cores 0–3 (`Ir` does not depend on the core). Figures are the minimum of the two runs; per-file figures are net of the empty sample |
 | attribution | `callgrind_annotate --inclusive=yes` and `--tree=caller` (call counts) on the `--phase parse` profiles; element and token counts of the sample trees by `examples/dump_tree` |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` and `registry-e8d87c2.tsv` |
@@ -39,7 +39,7 @@ new crate in the runtime tree without a measured reason of at least 3% per file.
 
 ## The attribution re-measured at the base (measured)
 
-`03c61be`, `--phase parse`. Token counts are `Converter::push` calls (every token
+`4ad3b54` (was `03c61be`), `--phase parse`. Token counts are `Converter::push` calls (every token
 `LexedStr::new` lexes, in every file including those that do not parse); non-trivia tokens and
 elements are the sample trees' (`dump_tree`: fixtures 42 files that parse alone, 80,438 nodes,
 91,576 tokens of which 64,003 not trivia; registry 49 files, 105,268 nodes, 180,388 tokens of
@@ -68,7 +68,7 @@ which 120,708 not trivia).
   `LexedStr::new` for 1.70 M and `to_input` for 0.57 M on the fixture sample, 14.97 M and
   2.36 M on the registry sample (measured, `--tree=caller` on the format-phase profiles).
 
-## P7: `rustc_compat` inside the tree build (`1b44ee5`, reverted in `eabb600`)
+## P7: `rustc_compat` inside the tree build (`600763d` (was `1b44ee5`), reverted in `e1c2eec` (was `eabb600`))
 
 - Change: a `BuildHook` trait lets `TreeBuilder::steps_with` report every token, `Enter` and
   `Exit`; `CompatHook` applies the walker's token rules as tokens are laid out (ancestors from
@@ -99,7 +99,7 @@ which 120,708 not trivia).
 - Decision: rejected by its keep rule (at least 1 M saved per file); the theory bound
   (≤ 1.1%) is refuted at this head: the removable part is below the measurement's resolution.
 
-## P2: own token conversion and the parser's input built directly (`29f8fb5`, kept)
+## P2: own token conversion and the parser's input built directly (`89e4c88` (was `29f8fb5`), kept)
 
 - Change: `cst::lex::lex(edition, text)` returns `Tokens` (kinds and starts with an `EOF`
   entry, as `LexedStr` holds them) and the parser's `Input`, or `None`; the tree build is
@@ -173,7 +173,7 @@ which 120,708 not trivia).
 - Decision: kept (−10.53 M per file on the fixture sample against the 10 M rule, −27.6 M on the
   registry sample, zero mismatches).
 
-## P4: the common tokens by a byte scan (`7ce5658`, kept)
+## P4: the common tokens by a byte scan (`7ab5f8d` (was `7ce5658`), kept)
 
 - Change: in `lex`, table-driven scans decide whitespace (Pattern_White_Space's ASCII
   members), ASCII identifiers and keywords, one-byte punctuation (straight into the token
@@ -214,7 +214,7 @@ which 120,708 not trivia).
 
 ## The head against the base (measured)
 
-| sample | base `03c61be` | head `7ce5658` | change |
+| sample | base `4ad3b54` (was `03c61be`) | head `7ab5f8d` (was `7ce5658`) | change |
 |---|---|---|---|
 | fixtures, whole | 220,959,314 | 203,150,467 | −17,808,847 (−8.06%) |
 | fixtures, per file net | 220,755,444 | 202,936,968 | −17,818,476 (−8.07%) |
@@ -230,7 +230,7 @@ front end 11,536,782, `rustc_compat` 5,700,935, `RawVec<Event>` growth 1,208,395
 
 ## Gates (measured)
 
-| gate | scope | P2 `29f8fb5` | P4 `7ce5658` |
+| gate | scope | P2 `89e4c88` (was `29f8fb5`) | P4 `7ab5f8d` (was `7ce5658`) |
 |---|---|---|---|
 | `cargo fmt --all --check` | | clean | clean |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | no warnings | no warnings |
@@ -252,8 +252,8 @@ figure to cite; the instruction counts are the metric.
 
 ## Decision
 
-Kept: `29f8fb5` (P2) and `7ce5658` (P4), on the branch for the integrator's gates 1–5 on the
-merged tree. Rejected: P7 (`1b44ee5`, reverted in `eabb600`), measured above. None of the
+Kept: `89e4c88` (was `29f8fb5`) (P2) and `7ab5f8d` (was `7ce5658`) (P4), on the branch for the integrator's gates 1–5 on the
+merged tree. Rejected: P7 (`600763d` (was `1b44ee5`), reverted in `e1c2eec` (was `eabb600`)), measured above. None of the
 falsifiers holds: two levers kept, no harness mismatch, no output change, no crate added.
 
 What the fork would add beyond these levers (derived from the head's parse-phase profiles; the
@@ -266,7 +266,7 @@ owner's decision, not done here):
 | P3 + P6 | | ≈ 11–13 M (5.5–6.5%) fixtures, ≈ 16–19 M (6.3–7.5%) registry | the registry parse share would fall from 41.81% to about 37–38% (fixtures from 33.77% to about 29–30%) |
 | P11: own parser | grammar 18.74 M (fixtures), 24.74 M (registry) | beyond P3 + P6, only a difference in decision cost (the same work in any recursive descent over the same grammar; the theory record's ≈ 1–1.6% of its total) | very high risk: 15 conformance-ledger cases re-opened |
 
-Merged at `2ecc8a3` after the integrator reproduced the gates on the merged tree: 0 of 1238
+Merged at `de9dcc9` (was `2ecc8a3`) after the integrator reproduced the gates on the merged tree: 0 of 1238
 fixture hashes changed (sequential and 4 threads), 0 of 25,077 registry hashes; `conform -i`
 1220/1220 at 1.9.0 and 1.8.0; `Ir` 203,151,226 and 203,151,309 on the fixture sample (per file
 202,934,484 net) and 255,677,420 and 255,677,661 on the registry sample (per file 255,654,373); parse

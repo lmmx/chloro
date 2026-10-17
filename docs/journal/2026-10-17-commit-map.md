@@ -6,6 +6,7 @@
 - The rewrite changed no tree: every rewritten commit has the same tree, the same parents (mapped), the same author and committer dates and the same message apart from the removed trailers as the commit it replaces (checked commit by commit), and the branch head's tree is `0bbeb4e356ee25bc6e3276d58b566b6e3e31491d` before and after.
 - Commits authored by `pre-commit-ci[bot]` keep their author and committer; the four commits authored by the maintainer keep their author and committer and lose only the trailers.
 - The commits the journal names most often map as follows: `884f9c9` (the start) is unchanged; `96c9abc` (the last code commit, the E30 merge) is `2e1bc8f`; `1051c1e` (the handoff) is `c660779`.
+- The journal's references to these commits were updated after the rewrite: a hash quoted on its own reads `new` (was `old`), keeping the hash recorded at the time beside the commit it now names (1,284 references in 55 files, each checked to resolve to the commit this map gives); hashes inside recorded commands, golden file names (`fixtures-e8d87c2.tsv`) and fenced tool output (153) were left as recorded, and this map resolves them.
 - The experiment branches on origin (`20261014-*`, `20261015-*`) were not rewritten — each still holds the original commits of its own experiment under their original hashes; commits made only on the integration branch (merges, journal updates) exist under their original hashes only in the map below.
 
 ## Map

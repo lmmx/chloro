@@ -15,7 +15,7 @@ experiment that would refute it.
 
 `$P` = `/tmp/claude-0/-home-user-chloro/9623d6dc-d933-5682-9d83-7762284f5c7f/scratchpad/profile-final`
 (the final-head profile, `bench -n 1` on the 49-file sample, 312,733,055 Ir, code of
-`bdfb9d1`); `$S` = `.../scratchpad/theory-parser`; `$B` = `target/release/examples`;
+`bd9c768` (was `bdfb9d1`)); `$S` = `.../scratchpad/theory-parser`; `$B` = `target/release/examples`;
 `RA` = `~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ra_ap_parser-0.0.307/src`;
 `LX` = `.../ra-ap-rustc_lexer-0.137.0/src` (the version in `Cargo.lock`). The five large files
 are the formatted fixture copies of M3's stdin workloads (`lints.rs` 639,771 B, `nodes.rs`

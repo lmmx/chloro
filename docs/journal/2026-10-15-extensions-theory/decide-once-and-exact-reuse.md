@@ -14,7 +14,7 @@ and the experiment that would refute it.
 
 ## Method
 
-Code read at `bdfb9d1` (`git diff --stat bdfb9d1 HEAD -- chloro-core/src` is empty) and rustfmt
+Code read at `bd9c768` (was `bdfb9d1`) (`git diff --stat bdfb9d1 HEAD -- chloro-core/src` is empty) and rustfmt
 1.9.0 at `/home/user/ref/rustfmt-v1.9.0/src`. `$S` = `.../scratchpad/theory-decide-once/`,
 `$P` = `.../scratchpad/profile-final/`; binaries in `target/release/examples/`, `bench` sha256
 `fdfce77d2f43c19a` (the profile's).
@@ -370,7 +370,7 @@ output (lists.rs:499, 545). Each operates on a range; replacements are truncate-
 | allocator arcs from formatter frames and the string helpers they call (inclusive, with realloc's internal copy) | 32,545,212 (10.41%) | **measured**, `final.pkl` arcs into `malloc`/`free`/`realloc`/`RawVec` growth |
 | same, parser, macro-argument parsing and `cst` | 19,098,539 (6.11%) | **measured** |
 | same, two `Rc<Cell<bool>>` per `RewriteContext` | 1,105,163 (0.35%) | **measured** |
-| `String` blocks at this head | 176,786 − 40,278 = 136,508 | **derived**: `String` new + growth at `8d418ee` (profile-flat.md §3) minus E3's removed `malloc` + `realloc` calls (EXP-003 totals), all of them `String` sites by EXP-003's lever list |
+| `String` blocks at this head | 176,786 − 40,278 = 136,508 | **derived**: `String` new + growth at `fe34bd2` (was `8d418ee`) (profile-flat.md §3) minus E3's removed `malloc` + `realloc` calls (EXP-003 totals), all of them `String` sites by EXP-003's lever list |
 | formatter blocks | 237,991 − 30,468 − 2,055 − 353 = 205,115; `String` share 66.6% | **derived** (DHAT totals and categories, `dhatsum_final.md`) |
 | allocator Ir per block | 47,003,376 / 237,991 = 197.5 | **derived** |
 | `String` allocation cost | A: 32.55 M × 0.666 = 21.66 M (6.93%); B: 136,508 × 197.5 = 26.96 M (8.62%) | **derived** |
@@ -380,7 +380,7 @@ output (lists.rs:499, 545). Each operates on a range; replacements are truncate-
 
 - The bound counts every `String` block and every formatter copy; a sink keeps the moves of list
   re-assembly, candidate swaps and memo copies, so the removable part lies below it
-  (**hypothesis**). profile-flat.md's lever 2 was ≤ 10.7% at `8d418ee` by method B.
+  (**hypothesis**). profile-flat.md's lever 2 was ≤ 10.7% at `fe34bd2` (was `8d418ee`) by method B.
 - Nested visitors allocate twice: `FmtVisitor::from_context` calls `FmtVisitor::new`, which reserves
   twice the file's size (visitor.rs:102), then replaces the buffer with 256 bytes (visitor.rs:145):
   2,290 DHAT blocks and 68,614,171 of the run's 123,468,129 allocated bytes, ≤ 1,376,432 Ir (0.44%)
@@ -395,10 +395,10 @@ output (lists.rs:499, 545). Each operates on a range; replacements are truncate-
 ## 5. Memo extensions
 
 - Final head (**measured**): 10,229 `memoize` calls, 9,838 misses, 391 hits (3.82%), as at
-  `8d418ee`. Overhead: `memoize` exclusive 3,197,209 + `reserve_rehash` 580,122 + the result clone's
+  `fe34bd2` (was `8d418ee`). Overhead: `memoize` exclusive 3,197,209 + `reserve_rehash` 580,122 + the result clone's
   `malloc` 634,176 and `memcpy` 305,372 (10,133 calls) + the frees at `clear_memo` (visitor.rs:414),
   ≈ 9,742 × 107.3 Ir = 1.05 M (**derived** from `visit_item`'s 10,817 frees for 1,160,572 Ir) =
-  5.76 M (1.84%), against about 5.6 M (1.44%) at `8d418ee` (profile-flat.md).
+  5.76 M (1.84%), against about 5.6 M (1.44%) at `fe34bd2` (was `8d418ee`) (profile-flat.md).
 - The memo saves 19 M net (memo on/off at `6b07131`, profile-baseline.md lever 11), so removing it
   is not a lever while repeats remain; its clone and free part (≤ 1.99 M, 0.63%) falls under § 4.
 - Exact-shape hits stay rare because repeats come at other shapes: X9 counted 916,291 uncached

@@ -5,7 +5,7 @@ Part of [../2026-10-15-extensions-theory.md](../2026-10-15-extensions-theory.md)
 ## Question
 
 How much of the final head's 312,733,055 instructions (the 49-file sample, `benchmarks/profile.sh`,
-code of `bdfb9d1`) is per-byte and per-string work — scanning source text for comments and
+code of `bd9c768` (was `bdfb9d1`)) is per-byte and per-string work — scanning source text for comments and
 separators, measuring built strings, assembling strings — and how much of it each further
 lever can remove, with the exactness argument, the cost, and the experiment that would refute
 the bound. 1% of the total is 3,127,331 instructions throughout.
@@ -16,7 +16,7 @@ the bound. 1% of the total is 3,127,331 instructions throughout.
   `profile-final/` (`callgrind.1.out`, 312,733,055 Ir; `annotate-all.txt`), X1 and X8
   ([../2026-10-10-formatter-work-measurements.md](../2026-10-10-formatter-work-measurements.md)),
   E3 ([../2026-10-14-autoresearch/experiments/EXP-003-hot-paths.md](../2026-10-14-autoresearch/experiments/EXP-003-hot-paths.md)),
-  the DHAT categories of [../2026-10-14-autoresearch/profile-flat.md](../2026-10-14-autoresearch/profile-flat.md) (at `8d418ee`).
+  the DHAT categories of [../2026-10-14-autoresearch/profile-flat.md](../2026-10-14-autoresearch/profile-flat.md) (at `fe34bd2` (was `8d418ee`)).
 - New runs on the existing release binaries (`target/release/examples/bench`, sha256
   `fdfce77d2f43c19a`, the binary of `profile-final/`; `examples/fmt_stdin`), scratch
   `$S = .../scratchpad/theory-scanning/`, load average 3.5–4.8 (other builds running; no wall
@@ -209,9 +209,9 @@ the sink's cursor and this lever is part of it, not additive to it.
 
 ### Widths: what E3 did and what remains
 
-- E3 lever 8 (**read**, EXP-003): `0f5f235` tests eight bytes per step for ASCII without `\n`
-  and returns the length (−2.75% of `8d418ee` on replay); `4b5bb3a` finds the first/last `\n` or
-  non-ASCII byte eight bytes per step (−2.23%); `a383516` counts `\n` per word on the
+- E3 lever 8 (**read**, EXP-003): `19db4fe` (was `0f5f235`) tests eight bytes per step for ASCII without `\n`
+  and returns the length (−2.75% of `fe34bd2` (was `8d418ee`) on replay); `35e1475` (was `4b5bb3a`) finds the first/last `\n` or
+  non-ASCII byte eight bytes per step (−2.23%); `bfe5af3` (was `a383516`) counts `\n` per word on the
   out-of-line path (−0.53%). `unicode_str_width`'s out-of-line part is 26,511 Ir at the head.
 - What remains is per-call and repeat cost, not per-byte cost: `last_line_width` 64 Ir and
   `first_line_width` 61 Ir per call on strings averaging 17 bytes (E3, at its base: 120,914
@@ -225,10 +225,10 @@ the sink's cursor and this lever is part of it, not additive to it.
 - The state machine (comment.rs:797-936) costs 46 Ir per character stepped; `skip_plain` costs
   3.75 Ir/byte in its 8-byte loop (30 instructions per step, **measured**) plus ≈ 40 Ir per call
   and ≈ 10 Ir per byte in the byte loop that handles the last < 8 bytes of a slice.
-- Why E3's per-byte lookahead lost (+783,573): before `16e2e3d` every byte went through the byte
+- Why E3's per-byte lookahead lost (+783,573): before `259abb0` (was `16e2e3d`) every byte went through the byte
   loop, and the lookahead (`bytes.get(pos + 1)` and its tests) ran on every byte; the stop bytes
   are one in 20.4 bytes of fixture source (mean run between `r " ' /`, **measured**), so the
-  lookahead added work to ≈ 95% of bytes to save work on ≈ 5%. `16e2e3d` computes it at the stop
+  lookahead added work to ≈ 95% of bytes to save work on ≈ 5%. `259abb0` (was `16e2e3d`) computes it at the stop
   bytes only.
 - Run lengths (**measured**, source text; the scanned spans are slices of it, **hypothesis**
   that the distribution carries over): between the current stop set `r " ' /`, mean 20.4, median
@@ -261,7 +261,7 @@ the sink's cursor and this lever is part of it, not additive to it.
   4,114 calls, **derived**), where the existing vector form runs at 4.75 Ir/byte because the
   `usize` accumulator limits it to 4 bytes per step. A byte accumulator (SSE2 `psubb` of the
   compare mask, flushed by `psadbw` every 255 steps, ≈ 0.3 Ir/byte) or the word count of
-  `a383516` (≈ 1.1 Ir/byte) is a different code shape from the one rejected.
+  `bfe5af3` (was `a383516`) (≈ 1.1 Ir/byte) is a different code shape from the one rejected.
 - What changes the second: an inline 8-byte search (`find_any_byte`, comment.rs:770-792) costs
   ≈ 10 Ir per 8 bytes and ≈ 6 per hit: 230,118 / 8 × 10 + 9,155 × 6 ≈ 0.34 M against 1.26 M
   (**derived**).
@@ -313,7 +313,7 @@ the sink's cursor and this lever is part of it, not additive to it.
 
 ### Allocation sites at the final head (DHAT, measured)
 
-Total 237,991 blocks, 123,468,129 bytes requested, 44,071,009 bytes written (8d418ee:
+Total 237,991 blocks, 123,468,129 bytes requested, 44,071,009 bytes written (fe34bd2 (was 8d418ee):
 278,743 blocks); 186,688 blocks and 94,958,536 bytes are attributed to formatter frames, 51,301
 blocks to the parser and `cst` (`dhatsum3.py`; DHAT attributes a growth `realloc` to the frame
 that grew the block). Allocator Ir per block: glibc family 47,003,376 / 237,991 = 197
@@ -461,4 +461,4 @@ Compound bound (**derived**, rows S1–S16 except S14, overlaps removed as state
 - An `Ir` measurement of any lever in the ranked table
 - A per-caller split of `_int_realloc`'s `memcpy`, and a final-head DHAT classification of
   `String` against `Vec` blocks (the binary has no debug info; profile-flat.md's categories are
-  from `8d418ee`)
+  from `fe34bd2` (was `8d418ee`))

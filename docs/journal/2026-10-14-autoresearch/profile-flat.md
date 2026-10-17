@@ -1,4 +1,4 @@
-# 2026-10-14: Profile of the flat substrate at 8d418ee
+# 2026-10-14: Profile of the flat substrate at fe34bd2 (was 8d418ee)
 
 Re-profile of the integration branch after E7b ([EXP-007b](experiments/EXP-007b-flat-port.md):
 rowan and `ra_ap_syntax` replaced under the formatter by `chloro_core::cst`), with E2's
@@ -10,7 +10,7 @@ Labels: **measured** (a tool's output on the builds below), **read** (from sourc
 
 ## Setup
 
-- **Commit:** `8d418ee` (merge of `20261014-flat-port`; best-known-good of
+- **Commit:** `fe34bd2` (was `8d418ee`) (merge of `20261014-flat-port`; best-known-good of
   [experiments.md](experiments.md)).
 - **Toolchain:** `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, valgrind 3.22.0.
 - **Host:** 4 vCPU Xeon @ 2.80GHz, 15 GB (the host of profile-baseline.md). Valgrind runs
@@ -225,7 +225,7 @@ except `RewriteContext::new`'s `Rc` (6,013 at `884f9c9`, now 6,043 for each of t
 |---|---|---|---|---|---|---|
 | `884f9c9`, default (doc) | 588,694,071 | 7,324,842 | 1.24% | 262,220,316 | 2,217,341 | 74,697 |
 | `884f9c9`, LTO build (doc) | 540,630,938 | 6,261,085 | 1.16% | 230,974,652 | 2,098,655 | 73,373 |
-| `8d418ee`, `target/prof2` | 391,413,147 | 5,345,731 | 1.37% | 169,004,048 | 1,320,960 | 61,431 |
+| `fe34bd2` (was `8d418ee`), `target/prof2` | 391,413,147 | 5,345,731 | 1.37% | 169,004,048 | 1,320,960 | 61,431 |
 
 - I1 misses fall 14.6% against the LTO build while Ir falls 27.6%, so the miss rate rises
   from 1.16% to 1.37%. The largest I1 contributors: `malloc.c` 364,913 (6.8%), `lists.rs`
@@ -253,7 +253,7 @@ compare with EXP-007b's 7.01–7.54 MB/s (core 1, load 0) and not with profile-b
 
 Exclusive Ir by component (by function), in M:
 
-| component | doc `884f9c9` | LTO `884f9c9` | `8d418ee` | change vs LTO |
+| component | doc `884f9c9` | LTO `884f9c9` | `fe34bd2` (was `8d418ee`) | change vs LTO |
 |---|---|---|---|---|
 | total | 587.21 | 539.70 | 390.50 | −149.20 (−27.6%) |
 | chloro's own code | 175.84 | 187.59 | 172.35 | −15.24 |

@@ -12,7 +12,7 @@ workflow, BOLT, link flags, static linking, huge pages), and file/unit schedulin
 
 ## Method
 
-Code read at head `31ce20e`; every code claim carries file:line. Numbers from the record are cited
+Code read at head `1b89e4c` (was `31ce20e`); every code claim carries file:line. Numbers from the record are cited
 by file. New measurements ran on copies under the scratchpad
 (`.../scratchpad/theory-incremental/`), with `CHLORO_CACHE_DIR` pointed there, using the existing
 release binaries (`target/release/chloro`, 2,017,472 bytes; `examples/{bench,parse_floor,dump_tree,alloc_count}`).

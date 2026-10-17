@@ -223,7 +223,7 @@ best-known-good row moves. The README's figures change only to numbers from
 Each experiment's own record is under `2026-10-14-autoresearch/experiments/`; the ledger
 row names the gate results and the commit. What follows is the orchestrator's reading.
 
-**E6, CLI cache (`20261014-cli-cache`, merged `d9f5a86`).** The cache records the BLAKE3
+**E6, CLI cache (`20261014-cli-cache`, merged `7db33e8` (was `d9f5a86`)).** The cache records the BLAKE3
 digest of each file's content found to be a fixed point, in a file named by the digest of
 the running binary and of the serialised `Config`. On a copy of the 1238 fixtures that is
 entirely fixed points, `--check` takes 32.7 ± 2.2 ms warm against 819.4 ± 65.3 ms with
@@ -235,7 +235,7 @@ assumed), and a cache directory under `~/.cache/chloro` by default. On a tree wh
 files would change, the cache changes nothing measurable: the changed files are formatted
 regardless.
 
-**E1, items in parallel (`20261014-parallel-items`, merged `7faa8c9`).** A file is parsed
+**E1, items in parallel (`20261014-parallel-items`, merged `bd03dc7` (was `7faa8c9`)).** A file is parsed
 once; worker threads build their own red trees over the shared green tree and format
 top-level units (an item, or a `use`/`mod`/`extern crate` group that `reorder.rs` sorts
 together) from a longest-first queue, each with its own visitor and `RunState`. The gap
@@ -305,7 +305,7 @@ borrow their tree, and fragment trees are created mid-run and held by the macro-
 cache and the memo. E7b, the port, runs on `20261014-flat-port` with the arena design
 (trees owned for the run's lifetime, memo keyed by tree id and index).
 
-**E8, `rustfmt_version` (`20261014-rustfmt-version`, merged `79d69c9`).** A chloro-only
+**E8, `rustfmt_version` (`20261014-rustfmt-version`, merged `8824439` (was `79d69c9`)).** A chloro-only
 `Config` field with two values, `1.9.0` (default, unchanged path) and `1.8.0` (the build
 shipped with Rust 1.88.0); `1.7.0` is refused by `Config::set` with the reason from the
 matrix. Six formatting classes (F1–F6) and three acceptance classes (P1, P2, P8) are
@@ -323,7 +323,7 @@ is snapshotted for both releases at both editions, regenerated with
 `CHLORO_RUSTFMT_VERSIONS=1.8.0=1.88.0`. The default path's instruction count moves by
 −0.04%.
 
-**E7b, the flat substrate under the formatter (`20261014-flat-port`, merged after the orchestrator reproduced every gate on `b4fdd1a`: 390,690,264 instructions on the sample, −24.7%).** The port replaces
+**E7b, the flat substrate under the formatter (`20261014-flat-port`, merged after the orchestrator reproduced every gate on `3a1af91` (was `b4fdd1a`): 390,690,264 instructions on the sample, −24.7%).** The port replaces
 rowan's red and green trees with the flat preorder array of E7: `chloro-core/src/cst/`
 holds the `Tree`, `Copy` node and token handles borrowing it, a `TreeBuilder` fed by the
 same parser events, a `typed-arena` of trees owned by the run (the file is tree 0, each
@@ -364,7 +364,7 @@ per `RewriteContext` that E7b introduced. Remaining levers by upper bound: a CLI
 ≤7.4% but only with a parser change, `CharClasses` ≤7.2%, `unicode_str_width` ≤5.3%; E3
 holds the last two and part of the second.
 
-**E3, hot paths (`20261014-hot-paths`, merged `7cf3c9e`).** Nineteen levers, each a
+**E3, hot paths (`20261014-hot-paths`, merged `6c0af72` (was `7cf3c9e`)).** Nineteen levers, each a
 separate commit kept only when the instruction count on the sample fell by more than 0.1%
 with every output unchanged, replayed in order onto the flat build to attribute the gain:
 390,690,354 → 316,301,692 instructions (−19.0%; the orchestrator's reproduction
@@ -386,7 +386,7 @@ lookahead in `skip_plain` (+784 K), the line table via `match_indices` (+519 K).
 removed scans or copies rather than speeding the state machine up: `CharClasses::next`
 itself keeps its structure and now costs 4.47 M.
 
-**R2, the conformance ledger and fixes (`20261014-conformance-fixes`, merged `113367a`).** [conformance-ledger.md](2026-10-14-autoresearch/conformance-ledger.md)
+**R2, the conformance ledger and fixes (`20261014-conformance-fixes`, merged `af52d66` (was `113367a`)).** [conformance-ledger.md](2026-10-14-autoresearch/conformance-ledger.md)
 records 24 cases: every mismatch found on the fixtures under all 31 option values, on the
 20,850-file registry, and in the rustc-recovery and `#[rustfmt::skip::*]` gaps the earlier
 entries left open, each with a reproducer, both outputs, the cause in rustfmt's or rustc's
@@ -399,7 +399,7 @@ comments and C strings before 2021; a new `rustc_syntax` module rebuilds the tre
 rustc's parser accepts what rust-analyzer's rejects (the parenthesised first bound of a bare
 trait object behind `0024_many_type_parens.rs`, `s.1e0` field names, const block items,
 `impl impl Trait {}`); `#[rustfmt::skip::macros(..)]` and `::attributes(..)`; unknown
-literal prefixes before 2021. Reproduced here on `b464243`: `conform -i` 1220/1220 at
+literal prefixes before 2021. Reproduced here on `716c609` (was `b464243`): `conform -i` 1220/1220 at
 1.9.0 and at 1.8.0 with 0 non-idempotent; all 31 option values fully identical (1022/1022,
 editions 844/844, 843/843, 838/838); the fixture goldens change exactly `0024`, the
 registry goldens exactly the 12 files the fixes target; 20540/20540 registry files
@@ -444,7 +444,7 @@ changed since open; stale temporary files are swept with the stale cache files; 
 holds the parallel and sequential paths to byte-identical output on 113 fixtures under two
 configurations at 2 and 4 threads. Gates on the branch head, reproduced here before the
 merge: fmt, clippy and every workspace test clean; 0 of 1238 fixture and 0 of 20850
-registry outputs changed against the `e8d87c2` goldens, sequential and at 4 threads;
+registry outputs changed against the `a18987d` (was `e8d87c2`) goldens, sequential and at 4 threads;
 `conform -i` 1220/1220 at both versions with 0 non-idempotent; 312,732,924 and
 312,734,679 instructions on the sample against the best-known-good 312,734,032, inside the
 run-to-run spread. The agent that started the branch stopped after two findings when the
@@ -454,7 +454,7 @@ worktrees and finished the other eight.
 ## Milestone 1, measured on a quiet host (M1)
 
 [measurements/m1-quiet-host.md](2026-10-14-autoresearch/measurements/m1-quiet-host.md)
-measures `884f9c9` (base), `dc20cd7` (head: E6, E1, E2 merged) and a profile-guided build
+measures `884f9c9` (base), `5f24cc9` (was `dc20cd7`) (head: E6, E1, E2 merged) and a profile-guided build
 of the same head against rustfmt 1.9.0 in an otherwise idle container (4 vCPU Xeon @
 2.10GHz, a different host class from the 2.80GHz machine of the earlier entries, so only
 ratios carry). `benchmarks/compare_rustfmt.sh`, 30 runs per cell, rustfmt-formatted input,
@@ -500,7 +500,7 @@ the same way.
 ## Milestone 2, measured on a quiet host (M2)
 
 [measurements/m2-quiet-host.md](2026-10-14-autoresearch/measurements/m2-quiet-host.md):
-`884f9c9` (base), `8d418ee` (head: E6, E1, E2, E4, E8, E7b) and a profile-guided build of
+`884f9c9` (base), `fe34bd2` (was `8d418ee`) (head: E6, E1, E2, E4, E8, E7b) and a profile-guided build of
 the head against rustfmt 1.9.0, in an idle container of the 2.80GHz host class of the
 first profile (not M1's 2.10GHz class). Same method as M1, 30 runs per cell, formatted
 input, the cache disabled through the harness.
@@ -541,7 +541,7 @@ input, the cache disabled through the harness.
 ## Milestone 3, measured on a quiet host (M3)
 
 [measurements/m3-quiet-host.md](2026-10-14-autoresearch/measurements/m3-quiet-host.md):
-`884f9c9` (base), `4867896` (head: the code of the best-known-good `113367a`, that is M2's
+`884f9c9` (base), `069f5a7` (was `4867896`) (head: the code of the best-known-good `af52d66` (was `113367a`), that is M2's
 head with E3 and R2 on top) and its profile-guided build against rustfmt 1.9.0, in a
 sibling session's idle container of the same 2.80GHz host class as M2, same method (30 runs
 per cell, formatted input, the cache disabled through the harness); steal on the pinned
@@ -581,9 +581,9 @@ core 0.60–0.85% per sweep. The base and rustfmt binaries are M2's byte for byt
   0.30–0.58, on one core 0.53–0.67 → 0.46–0.60; head/rustfmt on one core 0.44–0.61 →
   0.32–0.54; in process head/base 1.44–1.56x → 1.79–1.81x; the difference is the E3 and R2
   work between the two heads.
-- Not measured on a quiet host: the R5 merge `bdfb9d1` itself. Its changes are to the
+- Not measured on a quiet host: the R5 merge `bd9c768` (was `bdfb9d1`) itself. Its changes are to the
   CLI's file list and cache and to the parallel replay's checks, none on the sequential
-  formatting path; its instruction count on the sample is inside the spread of `113367a`'s
+  formatting path; its instruction count on the sample is inside the spread of `af52d66` (was `113367a`)'s
   and its outputs are identical on both corpora (EXP-011).
 
 ## What the programme established
@@ -601,11 +601,11 @@ on the merged tree against the previous best-known-good:
 | E3: hot paths | 316,076,716 | −19.1% | scans and copies removed |
 | R2: conformance fixes | 312,734,032 | −1.06% | a one-pass `rustc_compat` |
 | R5: review fixes | 312,732,924–312,734,679 | 0.00% | inside the spread |
-| PGO on top (measured on `4867896`, M3) | 244,712,537 against 312,734,041 | −21.7% | code layout |
+| PGO on top (measured on `069f5a7` (was `4867896`), M3) | 244,712,537 against 312,734,041 | −21.7% | code layout |
 | 2026-10-15, E17: parse floor (`in_trait` passed down, macro fragments parsed once, one-pass tree build) | 290,493,068 | −7.11% | fewer passes over the parser's output |
 | 2026-10-15, E18: the chain's dead vertical candidate skipped | 280,278,276 | −3.52% | speculation removed exactly |
 | 2026-10-15, E16: scanner, list-gap and string-assembly fast paths (eleven levers) | 248,202,094 | −11.44% | per-call work removed |
-| PGO on top (measured on `6b78728`, M4) | 206,922,054 against 248,202,137 | −16.6% | code layout; worth less on the shortened hot paths than M3's −21.7% |
+| PGO on top (measured on `e39a54a` (was `6b78728`), M4) | 206,922,054 against 248,202,137 | −16.6% | code layout; worth less on the shortened hot paths than M3's −21.7% |
 | 2026-10-15, E20: `write_list_into` (the shared sink) and the list scans computed where read | 238,033,187 | −4.10% | assembly into the caller's buffer; scans fused |
 | 2026-10-15, E22: `steps_fused` (the fused trivia step kept, the interspersed path dropped) | 237,768,533 | −0.11% | one path; the layout levers (hot/cold, flag tables, BOLT) rejected |
 | 2026-10-15, E19: six exact levers from the cliff hunt and the repeated-work audit | 232,047,700 | −2.41% (−3.08% per file) | if-else chain in one buffer, use-segment comparison without clones, facts decided from the first child, `definitive_tactic` early stop, macro token trees from the tree |
@@ -615,8 +615,8 @@ on the merged tree against the previous best-known-good:
 | 2026-10-15, E25: a scratch arena (`bumpalo`) for the module-local intermediates of chains, overflow and types | 220,958,649 | −1.62% (−1.55% per file) | malloc/free pairs removed exactly; no `unsafe` |
 | 2026-10-17, E31: own token conversion over `rustc_lexer` with the parser's input built in one pass (P2), the common tokens by a byte scan (P4) | 203,151,226 | −8.06% (registry −14.76%) | two passes over the tokens become one; `LexedStr` kept for error texts; 0 token or element mismatches on both corpora |
 | 2026-10-17, E30: a closure body that renders a `match` arm is never one line | 202,822,327 | −0.162% (per file −0.363%; registry inside the spread) | an attempt that cannot be one line is not rendered; the exact width model measured at 0.28% / 0.39% and not built |
-| PGO on top (measured on `d2f6fa0`, M5) | 182,602,721 against 220,957,089 | −17.4% | code layout |
-| PGO on top (measured on `2cb0ba3`, M6) | 170,069,599 against 202,822,485 | −16.1% | code layout |
+| PGO on top (measured on `d1cf9cf` (was `d2f6fa0`), M5) | 182,602,721 against 220,957,089 | −17.4% | code layout |
+| PGO on top (measured on `3c0ae68` (was `2cb0ba3`), M6) | 170,069,599 against 202,822,485 | −16.1% | code layout |
 
 The gains compound multiplicatively, not additively: at the end of 2026-10-14 the per-byte
 cost of the formatter was 0.532 of what it was, 0.416 with PGO; after the 2026-10-15 night
@@ -631,13 +631,13 @@ files they target, checked file by file against a record of the starting outputs
 
 Against rustfmt 1.9.0 on identical file sets, formatted input, on the 2.80GHz host class
 ([M6](2026-10-14-autoresearch/measurements/m6-quiet-host.md), on the code of the
-best-known-good `96c9abc`): 0.214–0.345 of its wall time per crate on one core and 0.077–0.165
+best-known-good `2e1bc8f` (was `96c9abc`)): 0.214–0.345 of its wall time per crate on one core and 0.077–0.165
 on four, with every chloro run below every rustfmt run and every run of the start's binary on all nine crates in both modes;
-0.182–0.325 and 0.067–0.164 with PGO (M5, on `e96b530`: 0.239–0.405 and 0.083–0.173, 0.210–0.332 and
-0.066–0.148 with PGO; M4, on `e640fbf`: 0.26–0.44 and 0.092–0.179). In process the formatter runs at
+0.182–0.325 and 0.067–0.164 with PGO (M5, on `a26b460` (was `e96b530`): 0.239–0.405 and 0.083–0.173, 0.210–0.332 and
+0.066–0.148 with PGO; M4, on `f4be63e` (was `e640fbf`): 0.26–0.44 and 0.092–0.179). In process the formatter runs at
 12.0–13.2 MB/s against 4.4–4.9 for the start in the same window (2.7x; M5 measured
 9.33–10.38 against 3.68–4.03, M4 11.22–11.79 against 4.96–5.09, M3 9.39–9.54 against 5.22–5.27 on the
-code of `113367a`). The warm cache answers `--check` on the 1238 formatted fixtures in 16.2 ms
+code of `af52d66` (was `113367a`)). The warm cache answers `--check` on the 1238 formatted fixtures in 16.2 ms
 on four cores (M5: 17.8; M4: 16.9; M3: 28.9). At the start of the programme the
 per-core figure, measured honestly for the first time by R4, was 0.62–1.00 of rustfmt's CPU
 time.
@@ -662,7 +662,7 @@ reusing rewrites across indentation (not exact, from the earlier entries).
 The bullets below this subsection were written at the end of the first session and revised
 after the overnight run; waves 3–5 ([2026-10-15-unmined-tricks.md](2026-10-15-unmined-tricks.md)
 §7 and the ledger) have since taken or closed most of them. Against the best-known-good
-`96c9abc`, 202,822,327 instructions on the fixture sample and 255,681,216 on the registry
+`2e1bc8f` (was `96c9abc`), 202,822,327 instructions on the fixture sample and 255,681,216 on the registry
 sample (M6):
 
 - The shared sink: taken in part (E20, `write_list_into` and the list scans, −4.10%); the
@@ -746,7 +746,7 @@ glossary of the codes, is [2026-10-17-handoff.md](2026-10-17-handoff.md); the ru
 of the day-2 and day-3 work is the "Handoff (overnight run)" section of
 [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md), which carries waves 3–5
 and M6. State at 2026-10-17 09:30 UTC: branch `claude/chloro-perf-research-swarm-nrscj8` at
-`df30b2a` (code head `96c9abc`), working tree clean, everything pushed, PR #88 open; no agent,
+`a3f2132` (was `df30b2a`) (code head `2e1bc8f` (was `96c9abc`)), working tree clean, everything pushed, PR #88 open; no agent,
 monitor, benchmark or scheduled check-in is running or armed; the two remaining worktrees are
 the integration checkout and `/home/user/wt/base` (`884f9c9`). The decision record above is
 the one open item. The text below is the first session's handoff, kept as written.
@@ -755,13 +755,13 @@ State at the end of this session (2026-10-15, about 00:30 UTC):
 
 - Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR
   [lmmx/chloro#88](https://github.com/lmmx/chloro/pull/88), head carries every merge listed
-  in the ledger; best-known-good `bdfb9d1` (the R5 merge; 312,734,032 `Ir` within the
+  in the ledger; best-known-good `bd9c768` (was `bdfb9d1`) (the R5 merge; 312,734,032 `Ir` within the
   spread; conform 1220/1220 at both versions; goldens `fixtures-e8d87c2.tsv`,
   `registry-e8d87c2.tsv` in this container's scratch directory, re-recordable with
   `bench --record` at that commit).
-- M3 landed: `20261014-measure-m3` (`2fc1640`), merged at `6802902`; the README's
+- M3 landed: `20261014-measure-m3` (`a15bebf` (was `2fc1640`)), merged at `0353bad` (was `6802902`); the README's
   performance section, the best-known-good row and "What the programme established" carry
-  its numbers. It measured `4867896`, the code of `113367a`; the R5 merge is not separately
+  its numbers. It measured `069f5a7` (was `4867896`), the code of `af52d66` (was `113367a`); the R5 merge is not separately
   measured (see the M3 section).
 - Three bounded investigations ran in the last minutes of the session; all three landed
   and are committed: EXP-009 (glibc malloc tunables: nothing outside the spread, lever
@@ -778,7 +778,7 @@ State at the end of this session (2026-10-15, about 00:30 UTC):
 
 Next actions, in the order of value per effort:
 
-0. Done (R5, merge `bdfb9d1`): the ten review findings are fixed with tests;
+0. Done (R5, merge `bd9c768` (was `bdfb9d1`)): the ten review findings are fixed with tests;
    [experiments/EXP-011-review-fixes.md](2026-10-14-autoresearch/experiments/EXP-011-review-fixes.md)
    has the changes and gates. What remains of them: on macOS and Windows a binary replaced
    between process start and the cache open (now the first thing after argument parsing)
@@ -805,25 +805,25 @@ Next actions, in the order of value per effort:
   (chloro-core/Cargo.toml); chloro-core's runtime dependency tree is 18 crates (16 after
   E7b; `bumpalo` for E25's scratch arena, `ctor` for the identity record)
 - Instructions on the 49-file fixture sample under `benchmarks/profile.sh`: 202,822,327 at the
-  best-known-good `96c9abc` (E31 and E30 merged) against 587,988,576 at `884f9c9` (-65.5%);
+  best-known-good `2e1bc8f` (was `96c9abc`) (E31 and E30 merged) against 587,988,576 at `884f9c9` (-65.5%);
   170,069,599 profile-guided in M6 (0.289 of the start; the build of the E31 merge read
   171,001,243); on the registry validation sample 255,681,216 against 688,589,271 (-62.9%),
   219,987,557 profile-guided; the parse-only phase is 33.7% and 41.7% of those counts (M5
-  measured 220,957,089 / 299,933,543 and 39.1% / 46.6% on the code of `e96b530`, before E31;
+  measured 220,957,089 / 299,933,543 and 39.1% / 46.6% on the code of `a26b460` (was `e96b530`), before E31;
   the ledger's best-known-good row has the step-by-step chain)
 - In process on one core of the 2.80GHz host class (M6, measurements/m6-quiet-host.md, on the
-  code of `96c9abc`): 11.99–13.19 MB/s on the 1238 fixtures against 4.36–4.86 for `884f9c9`
+  code of `2e1bc8f` (was `96c9abc`)): 11.99–13.19 MB/s on the 1238 fixtures against 4.36–4.86 for `884f9c9`
   in the same window (14.45–15.10 profile-guided; 2.71x–2.75x); against rustfmt 1.9.0 on nine
   crates, formatted input, `--check`: 0.214–0.345 of its wall time on one core and
   0.077–0.165 on four (profile-guided 0.182–0.325 and 0.067–0.164), with every chloro run
-  below every rustfmt run and every run of the start's binary in both modes; M5 on `e96b530`
-  read 0.239–0.405 and 0.083–0.173, M4 on `e640fbf` 0.26–0.44 and 0.092–0.179
+  below every rustfmt run and every run of the start's binary in both modes; M5 on `a26b460` (was `e96b530`)
+  read 0.239–0.405 and 0.083–0.173, M4 on `f4be63e` (was `e640fbf`) 0.26–0.44 and 0.092–0.179
 - The nested-closure cliff is removed: a 2,000-byte file of expression closures nested to
   depth 16 costs 5.51 M instructions against 242.5 M at the start, with identical output
   (benchmarks/cliffs, E19 and E26; M6)
 - Conformance is 1220/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
   1.9.0 and 1.8.0, and all 31 option values are fully identical (`conform -i`,
-  `config_matrix -n 1220` at every merge that changes formatter code, last at `96c9abc`);
+  `config_matrix -n 1220` at every merge that changes formatter code, last at `2e1bc8f` (was `96c9abc`));
   20540/20540 registry files identical in the live comparison; against the `884f9c9` output
   record the whole programme changed exactly the 13 files the conformance fixes target
   (experiments.md, best-known-good; 0 of 25,077 registry hashes changed at every merge)
@@ -876,6 +876,6 @@ Next actions, in the order of value per effort:
 ## Divergence
 
 - README badges state 33 dependencies and a 2.5 MB binary; the release CLI is 2,017,472
-  bytes at `bdfb9d1` and chloro-core's runtime tree is 16 crates (the badges are regenerated
+  bytes at `bd9c768` (was `bdfb9d1`) and chloro-core's runtime tree is 16 crates (the badges are regenerated
   by `just emblazon`; `just` and `blazon` are not installed in this container, so it was not
   run)

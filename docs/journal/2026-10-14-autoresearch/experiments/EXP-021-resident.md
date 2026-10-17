@@ -13,11 +13,11 @@ the executable identity of [EXP-012](EXP-012-cli-waste.md) and the unit cache of
 | field | value |
 |---|---|
 | branch | `20261015-resident`, worktree `/home/user/wt/resident` |
-| base | `8ebd3bb` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good `e640fbf`) |
+| base | `73f8a85` (was `8ebd3bb`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`; formatter code of the best-known-good `f4be63e` (was `e640fbf`)) |
 | commits | `326615c` (server, client, protocol, `--stdin`, shared run, tests, driver), `a7a3b7a` (in-memory bound of the unit store, unit tests, interleaved driver mode), `9be1290` (invalidation tests, editor-style client mode), `0eadd9d` (one item thread per single-source request by default), `93d7d3a` (a test retries spawning a freshly copied binary), the commit of this record and the ledger row |
 | scope | `chloro/src/cli*`, `chloro/tests/cli_serve.rs`, `chloro/examples/serve_driver.rs`, `chloro/Cargo.toml` (the example); no `chloro-core` change, no new dependency |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`; workspace release profile (fat LTO, one codegen unit); `cargo build --release -p chloro --features cli` (and `--examples`), `cargo build --release -p chloro-core --examples` |
-| binaries | `chloro-base` (`8ebd3bb`, 2,147,536 B); `chloro-e21` (`326615c`, 2,290,328 B, +142,792 B), used for w1 and the identity runs; `chloro-e21b` (`a7a3b7a`, 2,290,328 B; `9be1290` changes no source of the binary), used for w2, w3, w4 and the start-up runs; `chloro-e21c` (`0eadd9d`, 2,291,240 B), used for w5; copies under the scratchpad's `e21/bin/` |
+| binaries | `chloro-base` (`73f8a85` (was `8ebd3bb`), 2,147,536 B); `chloro-e21` (`326615c`, 2,290,328 B, +142,792 B), used for w1 and the identity runs; `chloro-e21b` (`a7a3b7a`, 2,290,328 B; `9be1290` changes no source of the binary), used for w2, w3, w4 and the start-up runs; `chloro-e21c` (`0eadd9d`, 2,291,240 B), used for w5; copies under the scratchpad's `e21/bin/` |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz", Linux 6.18.44, shared with three other agents' builds and measurements: 1-minute load 2.1–15.0 during the windows, recorded per row. Absolute times are **measured, provisional** (protocol §6) and are not quiet-host figures; the claims rest on modes measured in the same window, interleaved from w2 on |
 | rustfmt | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)` |
 

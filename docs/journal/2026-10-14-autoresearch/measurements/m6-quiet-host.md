@@ -17,13 +17,13 @@ Labels used throughout:
 | label | build |
 |---|---|
 | `base` | `884f9c9` (master at the programme start), default release profile — the binary users had |
-| `head` | `2cb0ba3` (the integration branch after the wave-5 merges; one docs-only commit above the E30 merge `96c9abc`, the ledger's best-known-good, same code; the formatter code is M5's `e96b530` plus E31 and E30; E29 changed no code) |
+| `head` | `3c0ae68` (was `2cb0ba3`) (the integration branch after the wave-5 merges; one docs-only commit above the E30 merge `2e1bc8f` (was `96c9abc`), the ledger's best-known-good, same code; the formatter code is M5's `a26b460` (was `e96b530`) plus E31 and E30; E29 changed no code) |
 | `head-pgo` | `head` built by `benchmarks/pgo.sh` (`-Cprofile-generate`, training on the fixtures through `--check` and `bench -n 1`, `-Cprofile-use`; the script also builds the profile-guided `bench`) |
 | `rustfmt` | `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`, the toolchain binary, `--edition 2024 --config-path <empty file>` |
 
 ## Identity
 
-- **Commits:** `head` `2cb0ba3753e4abe51b90d2674c59f1fe7918a253` (worktree clean,
+- **Commits:** `head` `3c0ae6838b777a611471749b26615790b0988cc8` (was `2cb0ba3753e4abe51b90d2674c59f1fe7918a253`) (worktree clean,
   `worktree_dirty=0`; `git diff --stat 96c9abc HEAD` touches five documentation files and no
   source; `git diff --stat e96b530 HEAD`, M5's code, touches 23 files: E31's `cst/lex.rs` and
   its harness, E30's width rule, E29's schedule scripts, the records); `base`
@@ -660,14 +660,14 @@ chloro build reads above rustfmt, in mean, minimum, CPU or peak RSS (`head-pgo` 
 
 ## Against M5
 
-M5 ([m5-quiet-host.md](m5-quiet-host.md)) measured `d2f6fa0` (the code of `e96b530`, the wave-4
-head) on this host class in a slow window; this record measures `2cb0ba3` (the code of
-`96c9abc`: M5's head plus E31's lexer front end and E30's width rule) in a window between M4's
+M5 ([m5-quiet-host.md](m5-quiet-host.md)) measured `d1cf9cf` (was `d2f6fa0`) (the code of `a26b460` (was `e96b530`), the wave-4
+head) on this host class in a slow window; this record measures `3c0ae68` (was `2cb0ba3`) (the code of
+`2e1bc8f` (was `96c9abc`): M5's head plus E31's lexer front end and E30's width rule) in a window between M4's
 and M5's (Load). Protocol §3 keeps absolute figures within one window, so the records' ratios
 are set side by side and the absolute figures are not; `base` is the same binary (same sha256)
 in all records:
 
-| ratio (means) | M4, `6b78728` | M5, `d2f6fa0` | M6, `2cb0ba3` |
+| ratio (means) | M4, `e39a54a` (was `6b78728`) | M5, `d1cf9cf` (was `d2f6fa0`) | M6, `3c0ae68` (was `2cb0ba3`) |
 |---|---|---|---|
 | crates, `mc`, head/base | 0.25–0.52 | 0.219–0.441 | 0.209–0.421 |
 | crates, `1c`, head/base (wall; CPU) | 0.38–0.60; 0.38–0.59 | 0.294–0.462; 0.297–0.470 | 0.280–0.408; 0.278–0.407 |
@@ -722,7 +722,7 @@ in all records:
   fixtures` to all three binaries, so `base`'s `bench` reads the head's fixture tree. The
   harness's own `inproc-bench` rows use each binary's compiled-in root, as in M3–M5.
 - `profile.sh` is E27's; the counts are comparable with the ledger's from E27 on (the ledger's
-  `96c9abc` count, 202,822,327–202,822,529 over three runs, was taken by the same script on the
+  `2e1bc8f` (was `96c9abc`) count, 202,822,327–202,822,529 over three runs, was taken by the same script on the
   same code before this chain; this record's two runs read 202,822,485 and 202,824,156).
 - The trace rows at 4 threads are unpinned and the 1-thread rows pinned to core 3, as
   `collect.sh` does; `diag.py` records the 1-minute load average beside each run (0.95–2.2

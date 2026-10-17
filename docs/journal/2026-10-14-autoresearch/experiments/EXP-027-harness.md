@@ -16,11 +16,11 @@ the per-file co-metric of EXP-019 (branch `20261015-cliffs`, its record and the 
 
 | field | value |
 |---|---|
-| branch | `20261015-harness` from `2f00988` (integration branch; its code is the BKG `9d78713`, the commit above it is documentation), worktree `/home/user/wt/harness` |
-| commits | `1103485` (path-independent count), `3487091` (`--per-file`), `e615b5e` (the registry sample, `--sample-list`, protocol §3 and §4), `f0ce72e` (`chloro_core::parse_only`, `bench --phase parse`, `profile.sh --phase parse`), `96ce5de` (`--shuffle N`), then this file and the ledger row |
+| branch | `20261015-harness` from `efc206c` (was `2f00988`) (integration branch; its code is the BKG `275690f` (was `9d78713`), the commit above it is documentation), worktree `/home/user/wt/harness` |
+| commits | `5a2a680` (was `1103485`) (path-independent count), `dd6bde0` (was `3487091`) (`--per-file`), `bc7bae4` (was `e615b5e`) (the registry sample, `--sample-list`, protocol §3 and §4), `b99eda2` (was `f0ce72e`) (`chloro_core::parse_only`, `bench --phase parse`, `profile.sh --phase parse`), `eef66cc` (was `96ce5de`) (`--shuffle N`), then this file and the ledger row |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`; linker `rust-lld` through `cc -fuse-ld=lld` (rustc's default on this target); valgrind 3.22.0; `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU Xeon @ 2.80GHz; other experiments built and ran throughout (load average 4.8–8.1). `Ir` is unaffected by load; the two wall-clock figures are **provisional** (protocol §6) |
-| binaries | `bench` of `2f00988` (sha256 `59c7d602…`, the BKG's code; "base" below) and of `f0ce72e` (sha256 `8145d035…`, with `parse_only`; "this branch's binary") |
+| binaries | `bench` of `efc206c` (was `2f00988`) (sha256 `59c7d602…`, the BKG's code; "base" below) and of `b99eda2` (was `f0ce72e`) (sha256 `8145d035…`, with `parse_only`; "this branch's binary") |
 | `Ir` commands | `benchmarks/profile.sh --core 3 [--runs 3] [--per-file] [--sample-list benchmarks/samples/registry49.txt] [--phase parse] [--sim --shuffle 4]` |
 | golden hashes | `scratchpad/golden/fixtures-e8d87c2.tsv` (1238 fixtures) and `registry-e8d87c2.tsv` (25,024 registry files present, 20,850 recorded, 4,174 reported as not recorded) |
 
@@ -28,7 +28,7 @@ the per-file co-metric of EXP-019 (branch `20261015-cliffs`, its record and the 
 
 1. The same binary reads the same `Ir` from differently named sample directories, to within
    the run-to-run spread, and the count at the old default stays what it was (237,768,533
-   for `9d78713`) or a new baseline is stated with its reason.
+   for `275690f` (was `9d78713`)) or a new baseline is stated with its reason.
 2. A per-file figure (one process per file, a fresh heap each) printed beside the whole
    sample's, with a stated way to read the two together.
 3. A committed registry sample chosen by a stated deterministic rule, a flag that builds a
@@ -37,7 +37,7 @@ the per-file co-metric of EXP-019 (branch `20261015-cliffs`, its record and the 
    and per-file) and the parser's share they imply, with no formatting path changed.
 5. Time-boxed (60 minutes): the co-metric's mean and spread over N shuffled relinks.
 
-## 1. The count, independent of where the sample lives (`1103485`)
+## 1. The count, independent of where the sample lives (`5a2a680` (was `1103485`))
 
 ### What moved it (measured)
 
@@ -45,7 +45,7 @@ Before this change the script ran `bench -n 1 --root <sample>` with the binary w
 built and the sample at `--sample` (default `/tmp/chloro-bench/sample49`). The process holds
 those strings, and only their **lengths** reach the count:
 
-| string | measured effect (`9d78713`, one binary) | mechanism |
+| string | measured effect (`275690f` (was `9d78713`), one binary) | mechanism |
 |---|---|---|
 | the root path (and so every file path) | sample at a 6-character name 239,510,992, 8 (the default's) 237,768,585, 12 237,901,113; a relative root of 25 bytes 240,366,953, 26 bytes 237,770,406, 27 bytes 239,759,513 | each path is a heap allocation; the sizes (malloc's size classes) set the heap layout the parser's vector growth meets later (EXP-020's term), worth ±2.6 M |
 | `argv[0]` | 46, 47 and 51 bytes: 237,770,241, 237,770,406, 237,770,154 (same class); 7 bytes with another root: 237.96 M | `std::env::args()` copies every argument to the heap; 41–56 bytes share malloc's 64-byte chunk |
@@ -60,7 +60,7 @@ bytes, removed at exit) and runs `<stage>/bench_…` (47 bytes) with `--root <st
 bytes), from the stage. The lengths are those of the strings the script used before at its
 default (`/home/user/chloro/target/release/examples/bench`, the integration checkout, and
 `/tmp/chloro-bench/sample49`), so the count at the old default is unchanged: 237,768,412,
-237,768,605 and 237,768,430 (three runs of `9d78713`) against the ledger's 237,768,533.
+237,768,605 and 237,768,430 (three runs of `275690f` (was `9d78713`)) against the ledger's 237,768,533.
 `--sample` is accepted and ignored with a note, so existing commands keep working. The script
 checks that `bench` reports every file of the sample.
 
@@ -102,7 +102,7 @@ runs. The README says to take the minimum of
 `--runs 3` when a difference under about 2K matters; `bench`'s report was not changed, since
 that would move the count every record compares against (follow-up below).
 
-## 2. Per-file mode (`3487091`)
+## 2. Per-file mode (`dd6bde0` (was `3487091`))
 
 EXP-019 formatted each sample file in its own `bench -n 1` process under the same callgrind
 invocation and summed (`tools/perfile.sh` in the scratch directory: each file copied flat to
@@ -125,7 +125,7 @@ The per-run sums differ by up to 8.6K (each of 49 processes can land in the repo
 so the per-file figure is the sum of each file's minimum over three runs, which lies 15–28K
 under any single run's sum.
 
-| `9d78713`, base binary, three runs | fixture sample | registry sample |
+| `275690f` (was `9d78713`), base binary, three runs | fixture sample | registry sample |
 |---|---|---|
 | whole `W` (min; runs) | 237,768,390 (390, 459, 439) | 322,851,667 (667, 806, 792) |
 | per-run sums | 253,357,534; 253,354,200; 253,359,842 | 336,138,490; 336,136,974; 336,145,538 |
@@ -139,7 +139,7 @@ The term has either sign: on the fixture sample the shared process is 0.17% chea
 heaps, on the registry sample 0.59% dearer. A per-file run takes 50 processes (1 min 51 s on a
 loaded host against about 6 s for the whole sample).
 
-## 3. The registry validation sample (`e615b5e`)
+## 3. The registry validation sample (`bc7bae4` (was `e615b5e`))
 
 **The rule** (`benchmarks/samples/registry49.sh`, stated in the list's header): the `.rs` files
 (`find -type f`) of the 577 crates of the registry corpus
@@ -172,7 +172,7 @@ step becomes "confirmation run, then merge": the integrator re-measures from a c
 both samples, and a change under about 2 M instructions is reported with the per-file figure,
 the per-file figure being the lever's own effect where the two disagree.
 
-## 4. The parse-only phase (`f0ce72e`)
+## 4. The parse-only phase (`b99eda2` (was `f0ce72e`))
 
 **API (read):** `chloro_core::parse_only(source: &str, config: &Config) -> Option<usize>` runs
 what `format_source_with_config` runs before it formats anything (`Settings::new`, the
@@ -222,12 +222,12 @@ it in calls from `<&str as Pattern>::is_contained_in` (`str::contains`), at the 
 calls from the same callers on the fixture sample; `bench::main` −594; `Timespec::now` +1,666.
 The new string literals moved `.rodata`, so the needles `str::contains` compares against sit at
 other alignments, and the AVX2 `memcmp`'s cost depends on its operands' alignment; the other
-two are `bench`'s own timing code. **New baseline for `9d78713`'s formatter with this branch's
+two are `bench`'s own timing code. **New baseline for `275690f` (was `9d78713`)'s formatter with this branch's
 `bench`: 237,765,019–237,767,204 on the fixture sample (eight runs, five of them in
 237,765,019–237,765,296), 322,841,566–322,843,756 on the registry sample (four runs); parse phase
 86,529,504–86,529,724 and 139,886,738–139,886,802**; the integrator re-records the BKG figure at the merge (protocol §4.6).
 
-## 5. Shuffled relinks (`96ce5de`, within the 60-minute box)
+## 5. Shuffled relinks (`eef66cc` (was `96ce5de`), within the 60-minute box)
 
 **Mechanism (read, measured).** `cargo rustc --release -p chloro-core --example bench
 --target-dir target/shuffle -- -C save-temps --print link-args` keeps the fat-LTO object
@@ -242,7 +242,7 @@ script removes the example's outputs before building: 31 s once the dependencies
 expansion), checks the unshuffled relink against cargo's binary, and runs each order once
 under the simulator, staged at the same paths as every other run.
 
-**Figures (measured, `f0ce72e`, `--core 3 --sim --shuffle 4`):**
+**Figures (measured, `b99eda2` (was `f0ce72e`), `--core 3 --sim --shuffle 4`):**
 
 | sample | order | `Ir` | `Bcm` | `Bim` | `I1mr` | `D1mr` | `D1mw` |
 |---|---|---|---|---|---|---|---|
@@ -258,7 +258,7 @@ under the simulator, staged at the same paths as every other run.
 The cargo-order relink reads what the main `--sim` run of the same binary reads (`Bcm`
 2,984,285 against 2,984,287, `I1mr` 4,710,936 against 4,710,936). Seeds 1 and 2 read the same
 counts in a functional run on core 2 and in this one: an order is a function of the seed and
-the object. The spread is EXP-022's (`I1mr` s.d. 51K, `Bcm` 11–22K on `8ebd3bb`); on the
+the object. The spread is EXP-022's (`I1mr` s.d. 51K, `Bcm` 11–22K on `73f8a85` (was `8ebd3bb`)); on the
 registry sample `Bcm` varies twice as much (46K). Cargo's order is better than random for
 `I1mr` on both samples (−0.6% and −2.7% against the means), as EXP-022 found on the fixture
 sample (−2.6%). A full run took 2 min 4 s (fixtures) and 2 min 22 s (registry).
@@ -281,17 +281,17 @@ sample (−2.6%). A full run took 2 min 4 s (fixtures) and 2 min 22 s (registry)
 
 | gate | result |
 |---|---|
-| `cargo fmt --all --check` | clean on both Rust trees: `2f00988`'s (commits 1–3) and `f0ce72e`'s (commits 4–6) |
+| `cargo fmt --all --check` | clean on both Rust trees: `efc206c` (was `2f00988`)'s (commits 1–3) and `b99eda2` (was `f0ce72e`)'s (commits 4–6) |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | clean on both |
-| `cargo test --workspace --all-features` | 291 passed, 0 failed (`2f00988`'s tree); 292 passed, 0 failed (`f0ce72e`'s; one test added) |
-| `bench --check fixtures-e8d87c2.tsv`, sequential and `--threads 4` | 0 of 1238 changed; 0 differ between 4 threads and `format_source` (base build and `f0ce72e`) |
-| `bench --check registry-e8d87c2.tsv` | 0 of 25,024 changed, 4,174 not recorded (base build and `f0ce72e`) |
-| `conform -i`, `conform -i -V 1.8.0` | 1220/1220 identical, 0 not idempotent, at both versions (base build and `f0ce72e`) |
-| `benchmarks/profile.sh --core 3` | 237,768,412–237,768,605 at commits 1–3 (the base binary; the ledger's 237,768,533); 237,765,019–237,767,204 with `f0ce72e`'s binary (§4), the committed script at `96ce5de` included |
+| `cargo test --workspace --all-features` | 291 passed, 0 failed (`efc206c` (was `2f00988`)'s tree); 292 passed, 0 failed (`b99eda2` (was `f0ce72e`)'s; one test added) |
+| `bench --check fixtures-e8d87c2.tsv`, sequential and `--threads 4` | 0 of 1238 changed; 0 differ between 4 threads and `format_source` (base build and `b99eda2` (was `f0ce72e`)) |
+| `bench --check registry-e8d87c2.tsv` | 0 of 25,024 changed, 4,174 not recorded (base build and `b99eda2` (was `f0ce72e`)) |
+| `conform -i`, `conform -i -V 1.8.0` | 1220/1220 identical, 0 not idempotent, at both versions (base build and `b99eda2` (was `f0ce72e`)) |
+| `benchmarks/profile.sh --core 3` | 237,768,412–237,768,605 at commits 1–3 (the base binary; the ledger's 237,768,533); 237,765,019–237,767,204 with `b99eda2` (was `f0ce72e`)'s binary (§4), the committed script at `eef66cc` (was `96ce5de`) included |
 
 Commits 1, 2, 3, 5 and 6 change only `benchmarks/` and the journal: the Rust of commits 1–3 is
-`2f00988`'s (`git diff 2f00988 e615b5e -- chloro-core chloro` is empty; its cargo gates were run
-with those sources restored in the worktree) and that of commits 5 and 6 is `f0ce72e`'s.
+`efc206c` (was `2f00988`)'s (`git diff 2f00988 e615b5e -- chloro-core chloro` is empty; its cargo gates were run
+with those sources restored in the worktree) and that of commits 5 and 6 is `b99eda2` (was `f0ce72e`)'s.
 
 ## Follow-ups
 

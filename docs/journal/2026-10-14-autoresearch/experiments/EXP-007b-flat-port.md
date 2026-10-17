@@ -10,13 +10,13 @@ builds below), **read** (from source), **derived** (arithmetic on measured numbe
 | field | value |
 |---|---|
 | branch | `20261014-flat-port` |
-| base | `dc20cd7` (head of `claude/chloro-perf-research-swarm-nrscj8` when the branch opened: E6, E1, E2 merged); the integration branch moved to `aa1e058` (E4 merged) during the port and is merged into the branch (`e259666`) |
-| commits | `b327b02` substrate; `9031948` the sweep; `ac5c15a` tests, examples, lints; `0fc5056` dependencies; `e259666` the E4 merge; `353a18e` a clippy nit; then the records |
-| compared builds | **base**: `aa1e058` built in a worktree (`/home/user/wt-base`); **port**: the branch head. Both `cargo build --release -p chloro-core --examples` and `cargo build --release -p chloro --features cli` under the workspace release profile (`codegen-units = 1`, `lto = "fat"`, E2) |
+| base | `5f24cc9` (was `dc20cd7`) (head of `claude/chloro-perf-research-swarm-nrscj8` when the branch opened: E6, E1, E2 merged); the integration branch moved to `966a7d5` (was `aa1e058`) (E4 merged) during the port and is merged into the branch (`3332409` (was `e259666`)) |
+| commits | `6708ebf` (was `b327b02`) substrate; `2492f79` (was `9031948`) the sweep; `1e1fa00` (was `ac5c15a`) tests, examples, lints; `09d6406` (was `0fc5056`) dependencies; `3332409` (was `e259666`) the E4 merge; `c7288fa` (was `353a18e`) a clippy nit; then the records |
+| compared builds | **base**: `966a7d5` (was `aa1e058`) built in a worktree (`/home/user/wt-base`); **port**: the branch head. Both `cargo build --release -p chloro-core --examples` and `cargo build --release -p chloro --features cli` under the workspace release profile (`codegen-units = 1`, `lto = "fat"`, E2) |
 | toolchain | `rustc 1.97.0`, `cargo 1.97.0`, valgrind 3.22.0, Python 3 (the generator and its test) |
 | host | 4 vCPU Intel Xeon @ 2.80GHz, 15 GB, the host of the E4 and E7 records; callgrind pinned to core 3, `bench -n 5` pairs to core 1 |
 | sample | `benchmarks/profile.sh`'s 49 files (every 25th of the C-sorted fixture list, 650,213 bytes) |
-| golden hashes | recorded from the unmodified `dc20cd7` build: 1,238 fixture outputs and 19,463 registry outputs (`bench --record`); the orchestrator's note that E4 changed no output makes them valid for `aa1e058` too |
+| golden hashes | recorded from the unmodified `5f24cc9` (was `dc20cd7`) build: 1,238 fixture outputs and 19,463 registry outputs (`bench --record`); the orchestrator's note that E4 changed no output makes them valid for `966a7d5` (was `aa1e058`) too |
 
 Lineage: the design is the change-of-direction entry's option 2
 ([../../2026-10-10-change-of-direction.md](../../2026-10-10-change-of-direction.md)), measured
@@ -134,7 +134,7 @@ The orchestrator's decisions (EXP-007 §4b, ownership option i) as they stand in
 | `closures.rs` | 18/11 | `plain_block` takes the context |
 | `visitor.rs` | 19/19 | `RunState<'a>`; the parent failure flag as `Rc` |
 | `stmt.rs`, `patterns.rs`, `printer.rs`, `pairs.rs`, `reorder.rs`, `config.rs`, `utils.rs` | 13/13, 13/13, 13/13, 12/8, 7/5, 5/5, 4/4 | lifetimes, imports, `node_text` owners, `is_assign_op` |
-| total, formatter | 1,099/1,051 | 25 of 29 modules (`comment`, `lists`, `missed_spans`, `shape`, `sort` untouched); against the merged base (`aa1e058`, with E4's green code) the diff is 1,219/2,107 |
+| total, formatter | 1,099/1,051 | 25 of 29 modules (`comment`, `lists`, `missed_spans`, `shape`, `sort` untouched); against the merged base (`966a7d5` (was `aa1e058`), with E4's green code) the diff is 1,219/2,107 |
 
 Examples: `dump_tree` prints the flat tree, `spacing` parses with `Tree::parse`; `bench`,
 `conform`, `config_matrix`, `alloc_count`, `fmt_dir`, `fmt_stdin` are unchanged.
@@ -165,9 +165,9 @@ The registry corpus was fetched by `corpus/registry-manifest.toml` into a fresh
 `~/.cargo/registry/src` (19,463 `.rs` files at recording time; later builds added
 crates, and `--check` reports the added files as "not recorded").
 
-## Gates (measured, port build at `353a18e`)
+## Gates (measured, port build at `c7288fa` (was `353a18e`))
 
-| gate | result | base (`aa1e058`) |
+| gate | result | base (`966a7d5` (was `aa1e058`)) |
 |---|---|---|
 | `bench --check` fixtures | 0 of 1,238 outputs changed | — |
 | `bench --check` registry | 0 of 20,022 outputs changed (19,463 recorded, the rest not recorded) | — |
@@ -179,10 +179,10 @@ crates, and `--check` reports the added files as "not recorded").
 | `cargo tree -e no-dev -i syn` | empty | empty |
 | `cst` equality test | every third fixture (≥ 300 files): kind, range, node/token class, token text, `parent`, `first_token`, `last_token`, `text` equal to rowan's | |
 
-### After the E8 merge (`bc6c76e`, measured)
+### After the E8 merge (`80f42e3` (was `bc6c76e`), measured)
 
 The integration branch moved again (E8: `rustfmt_version`, rustfmt 1.8.0 support, head
-`bf3e8fd`) and is merged into the branch at `bc6c76e`; the conflicts are resolved for the
+`0b9e242` (was `bf3e8fd`)) and is merged into the branch at `80f42e3` (was `bc6c76e`); the conflicts are resolved for the
 flat substrate with E8's behaviour kept (its `Toolchain`/`Walker` in `rustc_compat.rs`
 re-expressed over `Node`, the `format_failure` flag in `RunState<'a>`, `format_file`
 returning `Option`, `sort_use_trees` over `UseTree<'_>`). On the merged tree:
@@ -198,7 +198,7 @@ returning `Option`, `sort_use_trees` over `UseTree<'_>`). On the merged tree:
 
 ## Measurements
 
-| metric | base `aa1e058` | port | change |
+| metric | base `966a7d5` (was `aa1e058`) | port | change |
 |---|---|---|---|
 | `Ir`, sample, `benchmarks/profile.sh` (measured) | 518,953,599 | 391,198,779 | −127,754,820 (−24.62%) |
 | `bench -n 5`, 1,238 fixtures (13.9 MB), best of 5, core 1, 3 interleaved pairs, load 0 (measured) | 2.607, 2.505, 2.593 s (5.33, 5.55, 5.36 MB/s) | 1.982, 1.977, 1.843 s (7.01, 7.03, 7.54 MB/s) | the ranges 2.505–2.607 s and 1.843–1.982 s do not overlap; −20.9% to −28.9% per pair |
@@ -212,7 +212,7 @@ returning `Option`, `sort_use_trees` over `UseTree<'_>`). On the merged tree:
 | dependencies, `chloro --features cli` no-dev | 69 | 48 | |
 
 The `Ir` figure of the base matches the orchestrator's best-known-good (518,951,890 at
-`6a12d86`) to 0.0003%. E7 estimated 146.5 M of the then 587 M (24.9%) with the red-node
+`c02db07` (was `6a12d86`)) to 0.0003%. E7 estimated 146.5 M of the then 587 M (24.9%) with the red-node
 term computed before E4 halved the red-node count; the port removes 127.8 M of the 519 M
 after E4 (24.6%).
 
@@ -271,7 +271,7 @@ of the port are `CharClasses::next` (7.1%), `unicode_str_width` (5.3%), `event::
 ## Current State
 
 - The formatter reads `crate::cst` only; `rowan` and `ra_ap_syntax` are dev-dependencies
-- All gates pass at `353a18e`: both goldens, conform, config_matrix, tests, fmt, clippy
+- All gates pass at `c7288fa` (was `353a18e`): both goldens, conform, config_matrix, tests, fmt, clippy
 - `Ir` on the sample: 518,953,599 → 391,198,779 (−24.62%); `bench -n 5` ahead in 3 of 3
   pairs with non-overlapping ranges; allocations on the fixtures −43%
 

@@ -16,9 +16,9 @@ documentation), **hypothesis**.
 
 | field | value |
 |---|---|
-| branch | `20261015-allocators` from `a36b5e8` (integration branch at the start), worktree `/home/user/wt/allocators` |
-| base BKG | `92fdef0`; `Ir` 312,734,032 on the sample |
-| commits | `0d78c92` (`perf(bench)`: the `alloc-timing` wrapper and the `alloc-*` features), the following commit (this file, the ledger row) |
+| branch | `20261015-allocators` from `ff5a369` (was `a36b5e8`) (integration branch at the start), worktree `/home/user/wt/allocators` |
+| base BKG | `397159b` (was `92fdef0`); `Ir` 312,734,032 on the sample |
+| commits | `bdf8d70` (was `0d78c92`) (`perf(bench)`: the `alloc-timing` wrapper and the `alloc-*` features), the following commit (this file, the ledger row) |
 | crates | `mimalloc` 0.1.52 with `libmimalloc-sys` 0.1.49 (default features: mimalloc C **v3**, `MI_MALLOC_VERSION 30302`; `v2` is a feature); `tikv-jemallocator` 0.7.0 with `tikv-jemalloc-sys` 0.7.1+5.3.1 (jemalloc 5.3.1, symbols prefixed `_rjem_`, so the environment variable is `_RJEM_MALLOC_CONF`); `snmalloc-rs` 0.7.6 with `snmalloc-sys` 0.7.6 (default features: `build_cmake`, `usewait-on-address`). All three fetched through the proxy and built offline afterwards; each built in under 2 minutes |
 | glibc | 2.39 (Ubuntu 2.39-0ubuntu8.9) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`; release profile of the workspace (fat LTO, one codegen unit) for every binary |
@@ -27,7 +27,7 @@ documentation), **hypothesis**.
 
 Binaries (copied out of the worktree's `target/` to the session scratchpad `e14/<variant>/`;
 the `bench-timing` builds of the four variants predate a clippy-only rewrite of the
-report loop in `0d78c92`; `glibc/bench-timing-final` is the committed code and prints the
+report loop in `bdf8d70` (was `0d78c92`); `glibc/bench-timing-final` is the committed code and prints the
 same call and byte counts):
 
 | binary | bytes | sha256 (first 16) |
@@ -63,7 +63,7 @@ workload and its wall time is below glibc's with **non-overlapping** ranges on *
 workloads. Otherwise the result is a measurement, not a change. Whatever the outcome the
 default stays glibc: every feature added here is off by default.
 
-## What was built (`0d78c92`)
+## What was built (`bdf8d70` (was `0d78c92`))
 
 - `chloro-core` features `alloc-timing`, `alloc-mimalloc`, `alloc-jemalloc`,
   `alloc-snmalloc` (with the three crates as optional dependencies), used by
@@ -465,7 +465,7 @@ allocator lever at the process level for this formatter; what remains is fewer a
 in the formatter itself (the `String`-creation and growth sites of
 [../profile-flat.md](../profile-flat.md) § 3, 63.4% of blocks).
 
-## Gates (measured, on `0d78c92`)
+## Gates (measured, on `bdf8d70` (was `0d78c92`))
 
 | gate | result |
 |---|---|

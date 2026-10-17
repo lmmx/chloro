@@ -9,7 +9,7 @@ vCPUs); they are provisional until rerun on a quiet host.
 
 ## Identity
 
-- **Code:** `884f9c9`. The runs happened at HEAD `76e31d6`, `b8c8531` and `ee99c87`; the
+- **Code:** `884f9c9`. The runs happened at HEAD `3b336a5` (was `76e31d6`), `565d4d2` (was `b8c8531`) and `d006bdd` (was `ee99c87`); the
   commits after `884f9c9` touch only `docs/` and `benchmarks/` (`git diff --stat 884f9c9
   HEAD -- chloro chloro-core Cargo.toml Cargo.lock` is empty).
 - **Binaries:** `target/release/chloro` (sha256 `26d25ca997cecebe…`),

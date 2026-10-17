@@ -66,7 +66,7 @@ citation shows the behaviour the shipped 1.8.0 builds have unless stated otherwi
   at the time of the run (`S/registry_all.list`, `LC_ALL=C sort`; the protocol's figure of
   20,570 predates this listing). The subset `S/registry_q.list` holds lines 1, 5, 9, ...
   of that list (every 4th file starting with the first, 5149 files).
-- chloro line citations are against `HEAD` = `fbe8685`; another session had uncommitted
+- chloro line citations are against `HEAD` = `c4ed735` (was `fbe8685`); another session had uncommitted
   edits in `imports.rs`, `missed_spans.rs`, `reorder.rs` and `visitor.rs` while this was
   written, which shift some of those lines in the working tree.
 - "Accepted" means exit status 0. Two runs are compared on files both accept; a file one

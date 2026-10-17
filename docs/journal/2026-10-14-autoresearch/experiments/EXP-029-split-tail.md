@@ -51,21 +51,21 @@ resumed.
   100 KB); (d) the split file's parse on four threads at no cost: `fx-ide-db` tail −60%
   (−60…−91%), span −0.3% (−0.3…−6.9%), `fx-hir` tail −40% (−37…−60%) with idle +140% and span
   +1.1% (+1.0…+1.4%, up in 21–26 of 30 runs).
-- **Lever (a) built and measured** (`0a6080c`): output identical to the base CLI (193 of 193
+- **Lever (a) built and measured** (`68889e1` (was `0a6080c`)): output identical to the base CLI (193 of 193
   comparisons). Its own traces, interleaved with the base's, reconstruct on the quiet host
   (Q2) `fx-hir`'s tail 1.28 → 1.54 ms and idle 0.71 → 1.71 core-ms, `fx-ide-db`'s tail 0.41 →
   0.21 ms and idle 1.04 → 0.48 (L2, loaded: 2.30 → 2.06 and 2.39 → 2.69); the wall-view tail
   rises on both crates in both builds (release Q2: 5.20 → 5.96 ms and 3.36 → 4.73 ms). What it
   measurably removes is one thread start per split file (the worker's spawn-and-join CPU 0.23
   → 0.16 ms on `fx-hir`, 0.21 → 0.16 ms on `fx-ide-db`). Not halved on `fx-hir` in any view:
-  **reverted** (`1c1405e`) under the keep rule.
-- **Lever (b) built and measured** (`67853b6`, the cap taken when a large file starts: its own
+  **reverted** (`241fe3f` (was `1c1405e`)) under the keep rule.
+- **Lever (b) built and measured** (`47636ed` (was `67853b6`), the cap taken when a large file starts: its own
   worker, the threads no worker was started for, and the workers that have found the queue
   empty): the split file starts first, so it gets no helper and its units run on its worker.
   Interleaved with the base (L3, load 7.6–8.7): reconstructed span `fx-hir` 22.30 → 31.20 ms
   (+39.9%; the replay of the same collection's base costs predicted +49.4%), `fx-ide-db`
   20.79 → 24.48 ms (+17.8%; predicted +28.1%); tails 1.66 → 13.36 and 0.19 → 6.13 ms; release
-  wall +6.2% and −0.1%. **Reverted** (`efd781c`). The measured build confirms the replay's
+  wall +6.2% and −0.1%. **Reverted** (`d61d0a7` (was `efd781c`)). The measured build confirms the replay's
   direction and most of its size.
 - **(c) and (d) not built:** (c) cannot change `fx-hir` (no unit of 100 KB) and (d) raises its
   span in the replay, so neither can pass the keep rule; on the quiet host both bound
@@ -79,17 +79,17 @@ resumed.
   `benchmarks/schedule/split_sim.py` (the lever replays, `--blind`, `--compare`),
   `collect_ab.sh`, `identity_start.sh`, `trace_patch.py`'s `owner` variant and a README note on
   reading a tail from an unpatched trace. The branch head's Rust code is the base's (its CLI and `bench` are
-  byte-identical to `03c61be`'s).
+  byte-identical to `4ad3b54` (was `03c61be`)'s).
 
 ## Identity
 
 | field | value |
 |---|---|
-| branch | `20261015-split-tail` from `03c61be` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; code head `e96b530`, the best-known-good), worktree `/home/user/wt/split-tail` |
-| commits | `0a6080c` (lever (a)), `1c1405e` (its revert, with the reason), `fc29026` (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), `a158b1d` (`split_sim.py`'s parts table for the lever (a) build), `53d50f4` (this record's first revision and the ledger row), `67853b6` (lever (b)), `efd781c` (its revert, with the reason), `4dcec09` (the record's lever (b) revision), `84824ec` (`identity_start.sh`), `2b1f6cb` (the gates) and this revision |
+| branch | `20261015-split-tail` from `4ad3b54` (was `03c61be`) (integration branch `claude/chloro-perf-research-swarm-nrscj8`; code head `a26b460` (was `e96b530`), the best-known-good), worktree `/home/user/wt/split-tail` |
+| commits | `68889e1` (was `0a6080c`) (lever (a)), `241fe3f` (was `1c1405e`) (its revert, with the reason), `c611aac` (was `fc29026`) (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), `3f73396` (was `a158b1d`) (`split_sim.py`'s parts table for the lever (a) build), `4b971f9` (was `53d50f4`) (this record's first revision and the ledger row), `47636ed` (was `67853b6`) (lever (b)), `d61d0a7` (was `efd781c`) (its revert, with the reason), `8f73895` (was `4dcec09`) (the record's lever (b) revision), `6eee456` (was `84824ec`) (`identity_start.sh`), `1f10504` (was `2b1f6cb`) (the gates) and this revision |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, valgrind 3.22.0, hyperfine 2.0.0; `cargo build --release -p chloro --features cli` and `cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz", 15 GiB; Linux 6.18.44-fc-v114 on 2026-10-15 (Q1, L1, L2), 6.18.44-fc-v139 after the reboot of 2026-10-17 (Q2). The on-CPU costs on the second are about 30% lower (the parse of `lib.rs` 13.0 against 18.4 ms): Q2 is compared with no other collection, only within itself |
-| binaries (scratchpad `e29/bin/`) | `chloro-base`: `03c61be`'s CLI, sha256 `f48f3593…0bde00`, 2,196,120 B; `chloro-diag-base`: `03c61be` + `trace_patch.py base`, `e0813080…74fa0f4ea`, 2,207,992 B (rebuilt from the committed patch: the same sha256); `chloro-a`: `0a6080c`'s CLI, `5928cbdd…f2c6b29`, 2,193,072 B; `chloro-diag-a2`: `0a6080c` + the committed `trace_patch.py owner`, `e63db4b6…41c82b18`, used in Q2; `chloro-diag-a`: the same from a scratch copy of that patch with one more comment line (which moves source line numbers), `ee089c90…9c3537b`, 2,205,208 B, used in L2; `chloro-b`: `67853b6`'s CLI, `e3b2edfd…2883ef92`, 2,195,504 B; `chloro-diag-b`: `67853b6` + `trace_patch.py base`, `3e5c0c07…83700f0f`; `bench-base`: `03c61be`'s `bench`, `6816ff8a…a32fa7`, 1,882,072 B. The head's CLI and `bench` (rebuilt at `efd781c` after the reboot): `f48f3593…` and `6816ff8a…`, byte-identical to the base's |
+| binaries (scratchpad `e29/bin/`) | `chloro-base`: `4ad3b54` (was `03c61be`)'s CLI, sha256 `f48f3593…0bde00`, 2,196,120 B; `chloro-diag-base`: `4ad3b54` (was `03c61be`) + `trace_patch.py base`, `e0813080…74fa0f4ea`, 2,207,992 B (rebuilt from the committed patch: the same sha256); `chloro-a`: `68889e1` (was `0a6080c`)'s CLI, `5928cbdd…f2c6b29`, 2,193,072 B; `chloro-diag-a2`: `68889e1` (was `0a6080c`) + the committed `trace_patch.py owner`, `e63db4b6…41c82b18`, used in Q2; `chloro-diag-a`: the same from a scratch copy of that patch with one more comment line (which moves source line numbers), `ee089c90…9c3537b`, 2,205,208 B, used in L2; `chloro-b`: `47636ed` (was `67853b6`)'s CLI, `e3b2edfd…2883ef92`, 2,195,504 B; `chloro-diag-b`: `47636ed` (was `67853b6`) + `trace_patch.py base`, `3e5c0c07…83700f0f`; `bench-base`: `4ad3b54` (was `03c61be`)'s `bench`, `6816ff8a…a32fa7`, 1,882,072 B. The head's CLI and `bench` (rebuilt at `d61d0a7` (was `efd781c`) after the reboot): `f48f3593…` and `6816ff8a…`, byte-identical to the base's |
 | workloads | `/tmp/chloro-bench/formatted/<crate>/tree` (M4's and M5's copies). `fx-hir`: 15 files, `src/lib.rs` (236,066 B) split, `semantics.rs` (105,416 B) and `source_analyzer.rs` (74,746 B) below the 128 KiB threshold; `fx-ide-db`: 33 files, `src/generated/lints.rs` (639,771 B) split |
 
 ### Collections
@@ -317,13 +317,13 @@ except (d) (−60%), which raises `fx-hir`'s span; (c) reaches −40%; for `fx-h
 halves only under schedules that leave its idle time and span where they are ((b) dynamic,
 (a) + join) or raise its span ((d)), because its tail is busy.
 
-## Lever (a): the split file's worker formats units (`0a6080c`, reverted in `1c1405e`)
+## Lever (a): the split file's worker formats units (`68889e1` (was `0a6080c`), reverted in `241fe3f` (was `1c1405e`))
 
 `format_units` (`chloro-core/src/formatter/parallel.rs`) spawned `threads` item threads and
 waited in `join`; it now spawns `threads − 1` and runs the same worker closure on the calling
 thread before joining (14 lines). Units, order and stitch are unchanged.
 
-Output: `benchmarks/schedule/identity.sh chloro-base chloro-a` (the CLI against `03c61be`'s
+Output: `benchmarks/schedule/identity.sh chloro-base chloro-a` (the CLI against `4ad3b54` (was `03c61be`)'s
 at 1, 2 and 4 threads on the nine crates, the nine raw crates and the fixtures): **0 of 193
 comparisons differ** (**measured**).
 
@@ -367,10 +367,10 @@ comparisons differ** (**measured**).
   blocks a minute apart, not the lever: the replay of equal costs says its schedule changes
   nothing.
 - **Keep rule:** the tail falls by half on neither crate in L2 and on one of two in Q2, and the
-  wall-view tail rises: **reverted** (`1c1405e`).
+  wall-view tail rises: **reverted** (`241fe3f` (was `1c1405e`)).
 - Per-run rows: appendix B (Q2) and C (L2).
 
-## Lever (b): item threads capped at the free cores (`67853b6`, reverted in `efd781c`)
+## Lever (b): item threads capped at the free cores (`47636ed` (was `67853b6`), reverted in `d61d0a7` (was `efd781c`))
 
 `format_all` (`chloro/src/cli/orchestrate.rs`) gave a file of 128 KiB or more `--threads`
 item threads whatever the other workers were doing. With the lever it gets at most its own
@@ -420,7 +420,7 @@ four binaries in 5 blocks of 6 runs, load 2.19–2.41, provisional), medians of 
   it does not pay for the lost parallelism.
 - The release wall view moves the same way in L4, the quieter window: wall +17.8% and +7.5%,
   the wall-view tail 1.7x and 4.3x.
-- **Keep rule:** the tails grow on both crates and two spans rise: **reverted** (`efd781c`).
+- **Keep rule:** the tails grow on both crates and two spans rise: **reverted** (`d61d0a7` (was `efd781c`)).
 - Per-run rows: appendix D.
 
 ## Levers (c) and (d): not built
@@ -457,7 +457,7 @@ whose target is a large file's chain (Follow-up 2):
 
 ## Gates
 
-All on the head `efd781c` (its `chloro-core` and `chloro/src` are `03c61be`'s byte for byte:
+All on the head `d61d0a7` (was `efd781c`) (its `chloro-core` and `chloro/src` are `4ad3b54` (was `03c61be`)'s byte for byte:
 `git diff 03c61be efd781c -- chloro chloro-core` is empty), run on 2026-10-17 after the
 reboot; the release CLI and `bench` rebuilt there have the base's sha256 (`f48f3593…0bde00`,
 `6816ff8a…a32fa7`). Each built lever was checked for output before it was measured.
@@ -466,17 +466,17 @@ reboot; the release CLI and `bench` rebuilt there have the base's sha256 (`f48f3
 |---|---|---|
 | format | `cargo fmt --all --check` | clean |
 | lint | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | clean |
-| tests | `cargo test --workspace --all-features` | 308 passed, 0 failed: the CLI's 24 unit tests, `cli_cache` 11, `cli_files` 5, `cli_trace` 3, `cli_unit_cache` 3; `chloro-core`'s 208, `basic` 4, conformance 19, `dead_candidates` 5, `nodes` 10, `parallel_equivalence` 1, `rustfmt_version` 10, `unit_cache_equivalence` 1, `width_bound` 3 (also 308 at `fc29026`) |
+| tests | `cargo test --workspace --all-features` | 308 passed, 0 failed: the CLI's 24 unit tests, `cli_cache` 11, `cli_files` 5, `cli_trace` 3, `cli_unit_cache` 3; `chloro-core`'s 208, `basic` 4, conformance 19, `dead_candidates` 5, `nodes` 10, `parallel_equivalence` 1, `rustfmt_version` 10, `unit_cache_equivalence` 1, `width_bound` 3 (also 308 at `c611aac` (was `fc29026`)) |
 | goldens, fixtures | `target/release/examples/bench -n 1 --check $GOLDEN/fixtures-e8d87c2.tsv --root /home/user/chloro/chloro-core/tests/conformance/fixtures`, and with `--threads 4` | 0 of 1238 outputs changed; at 4 threads also 0 of 1238 differ from `format_source` |
 | goldens, registry | `target/release/examples/bench -n 1 --check $GOLDEN/registry-e8d87c2.tsv --root /root/.cargo/registry/src` | 0 of 25,077 outputs changed (20,850 recorded, 4,227 present and not recorded, reported and not counted) |
 | conformance | `target/release/examples/conform -i`; `conform -i -V 1.8.0` | 1220/1220 identical, 0 not idempotent, at 1.9.0 and at 1.8.0 |
 | CLI identity, the base | `benchmarks/schedule/identity.sh $E29/bin/chloro-base target/release/chloro $OUT` | 0 of 193 comparisons differ (and 0 of 193 for `chloro-a` and for `chloro-b`) |
 | CLI identity, the start | `identity.sh` cannot run against `/home/user/wt/base/target/release/chloro` (`884f9c9`, sha256 `26d25ca9…610c1b7c`): that CLI has no `--threads` and no `--no-cache` and exits 1 with "Could not parse CLI arguments" on every comparison. Run instead: `benchmarks/schedule/identity_start.sh /home/user/wt/base/target/release/chloro target/release/chloro $OUT` (the start's `--write` against the head's `--write --no-cache --threads N`, N = 1, 2, 4, on the nine formatted and raw crates and the fixtures, written trees compared) | 57 tree comparisons, 3 differing lines, 1 file: `rust-analyzer/parser/test_data/parser/err/0024_many_type_parens.rs` at each thread count, the R2 fixture fix; the 12 registry files of R2 are not in these trees |
-| instructions, fixture sample | `benchmarks/profile.sh --core 3 --runs 2 --per-file --bench $E29/bin/bench-head` | 220,957,335 and 220,957,563 (min 220,957,335); per file 236,243,340 over 49 processes, empty process 316,072, net 220,755,812; cross-file term −114,549. `bench-head` is byte-identical to `bench-base`, so the base's count is the same binary's; the record of the BKG (`e96b530`): 220,958,649–220,958,706, per file 220,755,045 net |
+| instructions, fixture sample | `benchmarks/profile.sh --core 3 --runs 2 --per-file --bench $E29/bin/bench-head` | 220,957,335 and 220,957,563 (min 220,957,335); per file 236,243,340 over 49 processes, empty process 316,072, net 220,755,812; cross-file term −114,549. `bench-head` is byte-identical to `bench-base`, so the base's count is the same binary's; the record of the BKG (`a26b460` (was `e96b530`)): 220,958,649–220,958,706, per file 220,755,045 net |
 | instructions, registry sample | `benchmarks/profile.sh --core 3 --runs 2 --per-file --bench $E29/bin/bench-head --sample-list benchmarks/samples/registry49.txt` | 299,933,904 and 299,933,794 (min 299,933,794); per file 314,321,965, net 298,834,437; cross-file term +783,285; the BKG's: 299,933,504, per file 298,833,058 net |
 | CPU at 4 threads | `hyperfine -N -i -w 2 -r 10 --metrics time_user,time_system`, base and head in both orders, nine crates (load 9.1–9.5, provisional) | head/base CPU 0.886–1.181 for two byte-identical binaries (below): the noise floor of this window; the CPU is the base's by construction |
 
-The fixture count is 246 above M5's for the same code (220,957,089, `03c61be`'s commit
+The fixture count is 246 above M5's for the same code (220,957,089, `4ad3b54` (was `03c61be`)'s commit
 message) and 1.3 K below the BKG's record taken at the E25 merge; the registry count is 290
 above that record; the per-file figures are 767 and 1,379 above it. All within or near the
 run-to-run spread, for a `bench` built from the formatter code of the base: the sequential
@@ -535,9 +535,9 @@ provisional):
   `fx-ide-db`'s span at −0.3%.
 - Kept for the integrator: `split_sim.py`, `collect_ab.sh`, `identity_start.sh`,
   `trace_patch.py owner` and the README notes; `chloro-core` and `chloro/src` at the head are
-  `03c61be`'s.
+  `4ad3b54` (was `03c61be`)'s.
 
-Merged as a record at `5dddfc9` (the harness files and this record; no formatter or CLI code,
+Merged as a record at `21f6f0e` (was `5dddfc9`) (the harness files and this record; no formatter or CLI code,
 `git diff 03c61be fac58b1 -- chloro chloro-core` empty). The M6 record reads its trace
 section with this experiment's correction.
 

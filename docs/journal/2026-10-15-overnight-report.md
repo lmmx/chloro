@@ -11,28 +11,28 @@ unless the sentence says so. Times are UTC.
 
 Integration branch `claude/chloro-perf-research-swarm-nrscj8`, PR
 [lmmx/chloro#88](https://github.com/lmmx/chloro/pull/88) (open, ready for review, mergeable
-against `master` `884f9c9`). The code head is the E16 merge `e640fbf`; the commits above it
+against `master` `884f9c9`). The code head is the E16 merge `f4be63e` (was `e640fbf`); the commits above it
 are documentation (ledger, journal, README, this entry). Merges since the previous session's
-end (`bdfb9d1`, R5), in order, each reproduced on the integration host before merging:
+end (`bd9c768` (was `bdfb9d1`), R5), in order, each reproduced on the integration host before merging:
 
 | merge | time | experiment | record | what it changes |
 |---|---|---|---|---|
-| `6802902` | 00:22 | M3 | [measurements/m3-quiet-host.md](2026-10-14-autoresearch/measurements/m3-quiet-host.md) | the quiet-host measurement of the E3 + R2 head |
-| `92fdef0` | 02:10 | E12, CLI waste | [EXP-012-cli-waste.md](2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md) | one canonicalisation per root and symlink, one sort, the executable's digest recorded under an identity stamp (`<hex>.chloro-exe`) |
-| `45e8470` | 02:34 | E13, PGO in CI | [EXP-013-pgo-release.md](2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md) | a "Train PGO profile" step in `.github/workflows/binaries.yml` for the three natively built targets; `benchmarks/pgo.sh --phase train\|use` |
-| `4e48bdb` | 02:50 | E15, item cache | [EXP-015-item-cache.md](2026-10-14-autoresearch/experiments/EXP-015-item-cache.md) | `format_source_with_unit_cache`, the `UnitCache` trait, the opt-in `--unit-cache` CLI flag and `.chloro-units` file, `examples/unit_cache.rs` identity harness |
-| `a3a60bd` | 03:16 | E17, parse floor | [EXP-017-parse-floor.md](2026-10-14-autoresearch/experiments/EXP-017-parse-floor.md) | `in_trait` passed down (P8), macro arguments lexed and parsed once (P5), trivia interspersal fused with the tree build (P1; old path kept as `steps_interspersed`, element-equality tests over both corpora) |
-| `387d723` | 03:29 | E18, dead candidates | [EXP-018-dead-candidates.md](2026-10-14-autoresearch/experiments/EXP-018-dead-candidates.md) | the chain's dead vertical candidate skipped under a run-level guard (`RunState::whole_file`, `may_skip_dead_candidates()`) |
-| `3fd39b4` | 03:42 | E14, allocators | [EXP-014-allocators.md](2026-10-14-autoresearch/experiments/EXP-014-allocators.md) | measurement only: `alloc-timing` and `alloc-{mimalloc,jemalloc,snmalloc}` features, all off by default; glibc stays |
-| `e640fbf` | 04:12 | E16, scanner paths | [EXP-016-scanner-paths.md](2026-10-14-autoresearch/experiments/EXP-016-scanner-paths.md) | eleven local levers in the comment scanner, list gaps, `line_number`, width checks and string assembly; one SSE2 block |
+| `0353bad` (was `6802902`) | 00:22 | M3 | [measurements/m3-quiet-host.md](2026-10-14-autoresearch/measurements/m3-quiet-host.md) | the quiet-host measurement of the E3 + R2 head |
+| `397159b` (was `92fdef0`) | 02:10 | E12, CLI waste | [EXP-012-cli-waste.md](2026-10-14-autoresearch/experiments/EXP-012-cli-waste.md) | one canonicalisation per root and symlink, one sort, the executable's digest recorded under an identity stamp (`<hex>.chloro-exe`) |
+| `3479ddb` (was `45e8470`) | 02:34 | E13, PGO in CI | [EXP-013-pgo-release.md](2026-10-14-autoresearch/experiments/EXP-013-pgo-release.md) | a "Train PGO profile" step in `.github/workflows/binaries.yml` for the three natively built targets; `benchmarks/pgo.sh --phase train\|use` |
+| `20cb3f7` (was `4e48bdb`) | 02:50 | E15, item cache | [EXP-015-item-cache.md](2026-10-14-autoresearch/experiments/EXP-015-item-cache.md) | `format_source_with_unit_cache`, the `UnitCache` trait, the opt-in `--unit-cache` CLI flag and `.chloro-units` file, `examples/unit_cache.rs` identity harness |
+| `eb505dc` (was `a3a60bd`) | 03:16 | E17, parse floor | [EXP-017-parse-floor.md](2026-10-14-autoresearch/experiments/EXP-017-parse-floor.md) | `in_trait` passed down (P8), macro arguments lexed and parsed once (P5), trivia interspersal fused with the tree build (P1; old path kept as `steps_interspersed`, element-equality tests over both corpora) |
+| `eebc9cb` (was `387d723`) | 03:29 | E18, dead candidates | [EXP-018-dead-candidates.md](2026-10-14-autoresearch/experiments/EXP-018-dead-candidates.md) | the chain's dead vertical candidate skipped under a run-level guard (`RunState::whole_file`, `may_skip_dead_candidates()`) |
+| `9e22b3d` (was `3fd39b4`) | 03:42 | E14, allocators | [EXP-014-allocators.md](2026-10-14-autoresearch/experiments/EXP-014-allocators.md) | measurement only: `alloc-timing` and `alloc-{mimalloc,jemalloc,snmalloc}` features, all off by default; glibc stays |
+| `f4be63e` (was `e640fbf`) | 04:12 | E16, scanner paths | [EXP-016-scanner-paths.md](2026-10-14-autoresearch/experiments/EXP-016-scanner-paths.md) | eleven local levers in the comment scanner, list gaps, `line_number`, width checks and string assembly; one SSE2 block |
 
-Also committed: the lineage of the flat syntax array (`31ce20e`), six theory records under
-`2026-10-15-extensions-theory/` (`383fa28`, `cf79ced`, `27b6221`, `af68024`, `5309fc3`,
-`b27bcc8`), the synthesis entry with its ranked bounds, and the M4 record (see item 3).
+Also committed: the lineage of the flat syntax array (`1b89e4c` (was `31ce20e`)), six theory records under
+`2026-10-15-extensions-theory/` (`4dd27c1` (was `383fa28`), `7dddd9c` (was `cf79ced`), `a600926` (was `27b6221`), `136ce0a` (was `af68024`), `26c847b` (was `5309fc3`),
+`3dd142f` (was `b27bcc8`)), the synthesis entry with its ranked bounds, and the M4 record (see item 3).
 
 ## 2. Gates on the final head (verified, not inferred)
 
-On `e640fbf` after the last merge, on the integration host (the same commands as every
+On `f4be63e` (was `e640fbf`) after the last merge, on the integration host (the same commands as every
 earlier merge; protocol.md):
 
 | gate | result |
@@ -59,10 +59,10 @@ within a few thousand), the programme's gate metric:
 | build | Ir | share of the start | record |
 |---|---|---|---|
 | `884f9c9`, the start | 587,988,576 | 1.000 | baseline.md |
-| `113367a` / `4867896`, M3's head (E1–E8, R2) | 312,734,032 | 0.532 | M3 |
-| `a3a60bd` (+ E12, E13, E15, E17) | 290,493,068 | 0.494 | ledger |
-| `387d723` (+ E18) | 280,278,276 | 0.477 | ledger |
-| `e640fbf` (+ E14, E16), the final head | 248,202,094 | 0.422 | ledger, M4 |
+| `af52d66` (was `113367a`) / `069f5a7` (was `4867896`), M3's head (E1–E8, R2) | 312,734,032 | 0.532 | M3 |
+| `eb505dc` (was `a3a60bd`) (+ E12, E13, E15, E17) | 290,493,068 | 0.494 | ledger |
+| `eebc9cb` (was `387d723`) (+ E18) | 280,278,276 | 0.477 | ledger |
+| `f4be63e` (was `e640fbf`) (+ E14, E16), the final head | 248,202,094 | 0.422 | ledger, M4 |
 | the final head, profile-guided | 206,922,054 | 0.352 | M4 |
 
 Tonight's merges took the count from 312,734,032 to 248,202,094 (−20.6%); the programme as a
@@ -73,7 +73,7 @@ class), rustfmt-formatted input, `--check`, cache disabled, n = 30 per cell
 (`benchmarks/compare_rustfmt.sh`); M3 measured M3's head, M4 the final head, in separate
 windows (protocol §3: ratios within a window, not absolute times across windows):
 
-| quantity | M3 (`4867896`) | M4 (final head) | M4, profile-guided |
+| quantity | M3 (`069f5a7` (was `4867896`)) | M4 (final head) | M4, profile-guided |
 |---|---|---|---|
 | nine crates, one core, chloro / rustfmt wall (range of means) | 0.32–0.54, every run below on all nine | 0.26–0.44, every run below on all nine | 0.24–0.38, every run below on all nine |
 | nine crates, four cores (chloro one thread per core) | 0.105–0.203, every run below | 0.092–0.179, every run below on all nine | 0.072–0.175, every run below on all nine |
@@ -142,7 +142,7 @@ replaced the earlier instruction-share inference with direct measurement, as ask
 | E18 row 7 | literal widths computed once per literal | +1.75% Ir on top of row 5 (1,448 misses against 58 hits) | rejected, reverted; diff kept in the record |
 | E16 S10 | `from_context` without the file-sized buffer | +481,878 Ir: `memcpy` from `_int_realloc` +1.44 M (blocks that grew in place now move) | reverted |
 | E16 S16 | `contains('\r') && contains("\r\n")` in `normalize_src`; then `find_any_byte` | +333,280 and +50,562 Ir | reverted |
-| E16 S12, the study's form | `rewrite_path` buffer sized from the source path | +205,695 Ir (the `reserve` calls belong to `single_ident_path`) | reverted; replaced by the kept `5950f4c` |
+| E16 S12, the study's form | `rewrite_path` buffer sized from the source path | +205,695 Ir (the `reserve` calls belong to `single_ident_path`) | reverted; replaced by the kept `af9ae1b` (was `5950f4c`) |
 | E16 S7, second round | 18 more `format!` sites | +1,184,202 Ir (`memcpy` from `_int_realloc` +1.54 M) | reverted |
 | E16 S5 without intrinsics | a flag loop for the compiler to vectorise | +7,562,583 Ir (no longer inlined) | replaced by the SSE2 form before commit |
 | E15 as stated | the item cache as a default path with a 1.5x process-level falsifier on every file over 128 KiB | exact everywhere; in process 0.26–0.47; at process level the falsifier is met (pinned 1.19–2.03x against `--no-cache`, unpinned 0.90–1.71x; cold pass +10–15% wall, +4.6% Ir, 8.6 MB unit file) | refuted as stated; kept opt-in (`--unit-cache`) |

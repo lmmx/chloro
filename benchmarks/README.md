@@ -219,7 +219,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   587,211,777 in `profile-baseline.md` (files copied flat as `NN_<basename>.rs`). Counts are
   compared only between runs of `profile.sh` itself.
 - **Run-to-run spread.** Repeated runs of one binary agree to within about 450 instructions,
-  except that about one run in five reads about 1.8K more (53 runs of `9d78713` in
+  except that about one run in five reads about 1.8K more (53 runs of `275690f` (was `9d78713`) in
   EXP-027: 43 in 237,768,233–237,768,687, 10 in 237,770,0xx–237,770,2xx). Both come from `bench`'s own report,
   not from the formatter: the order in which it sorts the files by their measured time (the
   smaller spread) and the decimal printing of the timings, which takes `core`'s exact
@@ -240,8 +240,8 @@ does not depend on where the binary, the fixtures or `--out` are.
   bytes) with `--root <stage>/s` (26 bytes). Those are the lengths of the strings the script
   used before at its default (`/home/user/chloro/target/release/examples/bench` and
   `/tmp/chloro-bench/sample49`), so the count at the old default is unchanged: 237,768,412–
-  237,768,605 for `9d78713` (three runs; the ledger's 237,768,533). `--sample` is accepted
-  and ignored. Verification (`9d78713`, three runs each, `--core 3`):
+  237,768,605 for `275690f` (was `9d78713`) (three runs; the ledger's 237,768,533). `--sample` is accepted
+  and ignored. Verification (`275690f` (was `9d78713`), three runs each, `--core 3`):
 
   | script | where the sample was (`--sample`, or `--out` for the new script) | binary | `Ir` of three runs |
   |---|---|---|---|
@@ -303,7 +303,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   by files under one directory. Reading them together: a lever that changes the code's own
   work moves `W` and `S` by about the same amount; a difference between the two changes is
   a change in the cross-file term, which is layout, not work (EXP-019's first two levers
-  read +0.19% and +0.24% on `W` and −0.0007% and −0.30% on `S`). For `9d78713`: `W`
+  read +0.19% and +0.24% on `W` and −0.0007% and −0.30% on `S`). For `275690f` (was `9d78713`): `W`
   237,768,646, `S` 253,356,154 over 49 processes, `E` 315,812, net 237,452,834 against
   237,881,366, cross-file term −428,532 (one run; the record has three). The 50 processes
   of a per-file run took 1 min 51 s on a loaded host, against about 6 s for the whole
@@ -330,7 +330,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   One candidate was rejected: line 10,920, `rand-0.8.8/src/rngs/thread.rs` (rustfmt exits
   1: `r.gen::<i32>()`, `gen` is reserved in 2024). The list names the index directory of
   this container's registry; on a host whose cargo names it otherwise the script stops at
-  the first missing file. Baseline (`9d78713`, three runs): whole sample 322,851,667–322,851,806; per-file sum
+  the first missing file. Baseline (`275690f` (was `9d78713`), three runs): whole sample 322,851,667–322,851,806; per-file sum
   336,117,569 (each file's minimum over the runs), empty sample 315,812; net 322,535,855
   against 320,642,781, cross-file term +1,893,074 (the fixture sample's is −402,241: the
   layout term has either sign). One file, `windows-sys-0.48.0/src/Windows/Win32/System/Rpc/
@@ -341,7 +341,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   syntax checks) and not formatted, under the same invocation, so the count is the parse
   phase's own and, with `--per-file`, its per-file and net figures too. `bench --phase
   parse -n 5` gives the parse phase's MB/s the same way. The parser's share of the count is
-  (parse − E) / (format − E), E being each phase's empty sample. For `9d78713` (three runs,
+  (parse − E) / (format − E), E being each phase's empty sample. For `275690f` (was `9d78713`) (three runs,
   this branch's binary):
 
   | sample | phase | whole `Ir` (min) | per-file sum | empty sample | whole net | per-file net | cross-file term |
@@ -378,7 +378,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   order for the same object (seeds 1 and 2 read the same counts in two invocations), and
   unrelated orders for different objects, so a candidate and its base are compared as two
   sets of N draws. `--bench` does not apply to the orders: they are this checkout's code
-  (the script notes when `--bench` is another build). For `f0ce72e` (`--sim --shuffle 4`,
+  (the script notes when `--bench` is another build). For `b99eda2` (was `f0ce72e`) (`--sim --shuffle 4`,
   2 min 4 s on the fixture sample, 2 min 22 s on the registry sample):
 
   | sample | order | `Ir` | `Bcm` | `Bim` | `I1mr` | `D1mr` | `D1mw` |
@@ -388,7 +388,7 @@ does not depend on where the binary, the fixtures or `--out` are.
   | registry | cargo | 322,843,783 | 3,438,200 | 1,155,697 | 3,950,802 | 803,527 | 545,806 |
   | registry | mean of 4 (s.d.) | 322,840,538 (51) | 3,432,636 (46,120) | 1,162,050 (14,925) | 4,062,006 (56,857) | 805,860 (348) | 546,359 (142) |
 
-  The spread matches EXP-022's on `8ebd3bb` (`I1mr` s.d. 51K, `Bcm` 11–22K): a change to
+  The spread matches EXP-022's on `73f8a85` (was `8ebd3bb`) (`I1mr` s.d. 51K, `Bcm` 11–22K): a change to
   `I1mr` or `Bcm` within one standard deviation of the orders is not resolved by one
   cargo-order build. Compare the means of N orders of each build: the standard error of a
   difference of two 4-order means is about 0.7 standard deviations (`I1mr` ≈ 38K, `Bcm`
