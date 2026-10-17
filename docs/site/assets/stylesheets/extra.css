@@ -285,8 +285,8 @@
   font-weight: 500;
 }
 
-/* A bar per row: its length is the speed relative to rustfmt, on one scale for every panel
-   (26.5x full), with a lighter extension for the spread across crates */
+/* A bar per row: its length is wall time, with the panel's baseline as the full bar, and a
+   lighter extension for the spread across crates */
 .chl-meter {
   position: relative;
   display: inline-block;
