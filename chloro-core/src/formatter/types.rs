@@ -1,8 +1,10 @@
 //! Types, paths, generics and bounds (rustfmt's `types.rs`).
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, AstToken, HasGenericArgs, HasName, HasTypeBounds};
-use ra_ap_syntax::{SyntaxKind, SyntaxToken};
+use crate::cst::ast::{self, AstNode, HasGenericArgs, HasName, HasTypeBounds};
+use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
+
+use crate::cst::{Node, NodeOrToken, Token};
 
 use super::attr::rewrite_attrs;
 use super::comment::{combine_strs_with_missing_comments, contains_comment};
@@ -18,10 +20,11 @@ use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
+use super::scratch::{Bump, ScratchString, ScratchVec, with_scratch};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp, rustc_span, token_span};
 use super::utils::{
-    colon_spaces, extra_offset, first_line_width, last_line_extendable, last_line_width,
+    colon_spaces, concat, extra_offset, first_line_width, last_line_extendable, last_line_width,
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -32,9 +35,13 @@ pub(crate) enum PathContext {
 }
 
 /// The segments of a path, outermost qualifier first.
-pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
-    let mut segments = Vec::new();
-    let mut cur = Some(path.clone());
+pub(crate) fn path_segments<'a, 'b>(
+    path: &ast::Path<'a>,
+    bump: &'b Bump,
+) -> ScratchVec<'b, ast::PathSegment<'a>> {
+    // Room for four, as `Vec` gives on its first push.
+    let mut segments = ScratchVec::with_capacity_in(4, bump);
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
@@ -47,28 +54,31 @@ pub(crate) fn path_segments(path: &ast::Path) -> Vec<ast::PathSegment> {
 
 /// The text of a path segment's name as written (`r#type` keeps its prefix).
 pub(crate) fn segment_ident(segment: &ast::PathSegment) -> Option<String> {
-    child::<ast::NameRef>(segment.syntax()).map(|n| node_text(n.syntax()))
+    child::<ast::NameRef>(segment.syntax()).map(|n| node_text(n.syntax()).to_owned())
 }
 
 /// The identifier of a path that is nothing else (`x`, `String`, `self`): one segment with
-/// a name and no qualifier, `::` or arguments. Reads the green tree.
+/// a name and no qualifier, `::` or arguments.
 fn single_ident_path(path: &ast::Path) -> Option<String> {
-    use ra_ap_syntax::{NodeOrToken, RustLanguage};
-    use rowan::Language;
-    let only_node = |green: &rowan::GreenNodeData, kind: SyntaxKind| {
-        let mut children = green.children();
+    fn only_node<'t>(node: Node<'t>, kind: SyntaxKind) -> Option<Node<'t>> {
+        let mut children = node.children_with_tokens();
         match (children.next(), children.next()) {
-            (Some(NodeOrToken::Node(n)), None) if RustLanguage::kind_from_raw(n.kind()) == kind => {
-                Some(n.to_owned())
-            }
+            (Some(NodeOrToken::Node(n)), None) if n.kind() == kind => Some(n),
             _ => None,
         }
-    };
-    let segment = only_node(&path.syntax().green(), SyntaxKind::PATH_SEGMENT)?;
-    let name_ref = only_node(&segment, SyntaxKind::NAME_REF)?;
+    }
+    let segment = only_node(path.syntax(), SyntaxKind::PATH_SEGMENT)?;
+    let name_ref = only_node(segment, SyntaxKind::NAME_REF)?;
     let mut text = String::new();
-    for child in name_ref.children() {
-        text.push_str(child.as_token()?.text());
+    for child in name_ref.children_with_tokens() {
+        let token = child.as_token()?.text();
+        // The first token is copied with one exact allocation (a `NAME_REF` is nearly
+        // always one token); `push_str` onto an empty string would go through `reserve`.
+        if text.is_empty() {
+            text = token.to_owned();
+        } else {
+            text.push_str(token);
+        }
     }
     Some(text)
 }
@@ -84,7 +94,17 @@ pub(crate) fn rewrite_path(
     if let Some(ident) = single_ident_path(path) {
         return (ident.len() <= shape.width).then_some(ident);
     }
-    let segments = path_segments(path);
+    with_scratch(|bump| rewrite_path_in(context, path_context, path, shape, bump))
+}
+
+fn rewrite_path_in(
+    context: &RewriteContext<'_>,
+    path_context: PathContext,
+    path: &ast::Path,
+    shape: Shape,
+    bump: &Bump,
+) -> Option<String> {
+    let segments = path_segments(path, bump);
     let first = segments.first()?;
     let is_global =
         has_token(first.syntax(), T![::]) && child::<ast::TypeAnchor>(first.syntax()).is_none();
@@ -113,7 +133,7 @@ pub(crate) fn rewrite_path(
         if let Some(ast::Type::PathType(trait_ty)) = anchor_types.next() {
             result.push_str(" as ");
             let trait_path = trait_ty.path()?;
-            let trait_segments = path_segments(&trait_path);
+            let trait_segments = path_segments(&trait_path, bump);
             if trait_segments
                 .first()
                 .is_some_and(|s| has_token(s.syntax(), T![::]))
@@ -133,6 +153,7 @@ pub(crate) fn rewrite_path(
                 path_span.hi(),
                 context,
                 shape,
+                bump,
             )?;
         }
 
@@ -149,9 +170,11 @@ pub(crate) fn rewrite_path(
         path_span.hi(),
         context,
         shape,
+        bump,
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn rewrite_path_segments(
     path_context: PathContext,
     mut buffer: String,
@@ -160,6 +183,7 @@ fn rewrite_path_segments(
     span_hi: BytePos,
     context: &RewriteContext<'_>,
     shape: Shape,
+    bump: &Bump,
 ) -> Option<String> {
     let mut first = true;
     let shape = shape.visual_indent(0);
@@ -180,6 +204,7 @@ fn rewrite_path_segments(
             span_hi,
             context,
             new_shape,
+            bump,
         )?;
 
         buffer.push_str(&segment_string);
@@ -190,25 +215,25 @@ fn rewrite_path_segments(
 
 /// A generic argument of a path segment.
 #[derive(Clone, Debug)]
-pub(crate) enum SegmentParam {
-    Const(ast::ConstArg),
-    LifeTime(ast::LifetimeArg),
-    Type(ast::Type),
-    Binding(ast::AssocTypeArg),
+pub(crate) enum SegmentParam<'a> {
+    Const(ast::ConstArg<'a>),
+    LifeTime(ast::LifetimeArg<'a>),
+    Type(ast::Type<'a>),
+    Binding(ast::AssocTypeArg<'a>),
 }
 
-impl SegmentParam {
-    pub(crate) fn from_generic_arg(arg: &ast::GenericArg) -> Option<SegmentParam> {
+impl<'a> SegmentParam<'a> {
+    pub(crate) fn from_generic_arg(arg: &ast::GenericArg<'a>) -> Option<SegmentParam<'a>> {
         Some(match arg {
-            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(lt.clone()),
+            ast::GenericArg::LifetimeArg(lt) => SegmentParam::LifeTime(*lt),
             ast::GenericArg::TypeArg(ty) => SegmentParam::Type(child::<ast::Type>(ty.syntax())?),
-            ast::GenericArg::ConstArg(c) => SegmentParam::Const(c.clone()),
-            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(a.clone()),
+            ast::GenericArg::ConstArg(c) => SegmentParam::Const(*c),
+            ast::GenericArg::AssocTypeArg(a) => SegmentParam::Binding(*a),
         })
     }
 }
 
-impl Spanned for SegmentParam {
+impl Spanned for SegmentParam<'_> {
     fn span(&self) -> Span {
         match self {
             SegmentParam::Const(c) => c.span(),
@@ -219,7 +244,7 @@ impl Spanned for SegmentParam {
     }
 }
 
-impl Rewrite for SegmentParam {
+impl Rewrite for SegmentParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             SegmentParam::Const(c) => c.expr()?.rewrite(context, shape),
@@ -230,7 +255,7 @@ impl Rewrite for SegmentParam {
     }
 }
 
-impl Rewrite for ast::UseBoundGenericArg {
+impl Rewrite for ast::UseBoundGenericArg<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, _shape: Shape) -> Option<String> {
         Some(context.snippet(self.span()).to_owned())
     }
@@ -242,7 +267,7 @@ fn rewrite_assoc_type_arg(
     shape: Shape,
 ) -> Option<String> {
     let mut result = String::with_capacity(128);
-    result.push_str(&node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
+    result.push_str(node_text(child::<ast::NameRef>(atc.syntax())?.syntax()));
 
     if let Some(gen_args) = atc.generic_arg_list() {
         let budget = shape.width.checked_sub(result.len())?;
@@ -292,15 +317,16 @@ fn rewrite_assoc_type_arg(
 ///
 /// When the segment contains a positive number of parameters, we update span_lo
 /// so that invariants described above will hold for the next segment.
-fn rewrite_segment(
+fn rewrite_segment<'b>(
     path_context: PathContext,
     segment: &ast::PathSegment,
     span_lo: &mut BytePos,
     span_hi: BytePos,
     context: &RewriteContext<'_>,
     shape: Shape,
-) -> Option<String> {
-    let mut result = String::with_capacity(128);
+    bump: &'b Bump,
+) -> Option<ScratchString<'b>> {
+    let mut result = ScratchString::with_capacity_in(128, bump);
     result.push_str(&segment_ident(segment)?);
 
     let ident_len = result.len();
@@ -475,7 +501,7 @@ fn get_tactics(item_vec: &[ListItem], output: &str, shape: Shape) -> DefinitiveL
     }
 }
 
-impl Rewrite for ast::WherePred {
+impl Rewrite for ast::WherePred<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let attrs = outer_attributes(self.syntax());
         let attrs_str = rewrite_attrs(&attrs, context, shape)?;
@@ -587,9 +613,9 @@ fn rewrite_bounded_lifetime(
 }
 
 /// A list of bounds, rewritten with `join_bounds`.
-pub(crate) struct Bounds(pub(crate) Vec<ast::TypeBound>);
+pub(crate) struct Bounds<'a>(pub(crate) Vec<ast::TypeBound<'a>>);
 
-impl Rewrite for Bounds {
+impl Rewrite for Bounds<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_bounds(&self.0, context, shape)
     }
@@ -623,7 +649,7 @@ fn bound_kind(bound: &ast::TypeBound) -> BoundKind {
     }
 }
 
-impl Rewrite for ast::TypeBound {
+impl Rewrite for ast::TypeBound<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match bound_kind(self) {
             BoundKind::Outlives => Some(context.snippet(self.lifetime()?.span()).to_owned()),
@@ -639,20 +665,45 @@ impl Rewrite for ast::TypeBound {
                 let has_paren = self
                     .syntax()
                     .children_with_tokens()
-                    .any(|el| el.kind() == SyntaxKind::L_PAREN);
+                    .any(|el| el.kind() == SyntaxKind::L_PAREN)
+                    && !parens_left_by_rustc(self);
                 let shape = if has_paren {
                     shape.offset_left(1)?.sub_width(1)?
                 } else {
                     shape
                 };
-                rewrite_poly_trait_ref(self, context, shape)
-                    .map(|s| if has_paren { format!("({s})") } else { s })
+                rewrite_poly_trait_ref(self, context, shape).map(|s| {
+                    if has_paren {
+                        concat(&["(", &s, ")"])
+                    } else {
+                        s
+                    }
+                })
             }
         }
     }
 }
 
-fn token_text_of(bound: &ast::TypeBound, kind: SyntaxKind) -> Option<SyntaxToken> {
+/// The first bound of a bare trait object written in parentheses, `(?Sized) + Send` or
+/// `(for<'a> Tr<'a>) + Send`, when what the parentheses hold is a trait object to rustc (a
+/// `?` bound or a `for<..>` binder; a plain path keeps them). rustc's
+/// `parse_ty_tuple_or_parens` reads the parenthesized trait object and continues its bounds
+/// with `parse_remaining_bounds`, so the bound's span excludes the parentheses and rustfmt,
+/// which looks for them in the span's text, prints none.
+fn parens_left_by_rustc(bound: &ast::TypeBound<'_>) -> bool {
+    let Some(list) = bound.syntax().parent() else {
+        return false;
+    };
+    let bare_trait_object = list
+        .parent()
+        .is_some_and(|ty| ty.kind() == SyntaxKind::DYN_TRAIT_TYPE && !has_token(ty, T![dyn]));
+    let first = list.children().next() == Some(bound.syntax());
+    bare_trait_object
+        && first
+        && (token_text_of(bound, SyntaxKind::QUESTION).is_some() || bound.for_binder().is_some())
+}
+
+fn token_text_of<'a>(bound: &ast::TypeBound<'a>, kind: SyntaxKind) -> Option<Token<'a>> {
     super::nodes::child_token(bound.syntax(), kind)
 }
 
@@ -668,7 +719,7 @@ fn rewrite_poly_trait_ref(
             // 6 is "for<> ".len()
             let extra_offset = lifetime_str.len() + 6;
             let shape = shape.offset_left(extra_offset)?;
-            (format!("for<{lifetime_str}> "), shape)
+            (concat(&["for<", &lifetime_str, "> "]), shape)
         } else if bound.for_binder().is_some() {
             ("for<> ".to_owned(), shape.offset_left(6)?)
         } else {
@@ -713,7 +764,7 @@ fn rewrite_poly_trait_ref(
     ))
 }
 
-impl Rewrite for ast::GenericParam {
+impl Rewrite for ast::GenericParam<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         // FIXME: If there are more than one attributes, this will force multiline.
         let attrs = outer_attributes(self.syntax());
@@ -737,7 +788,7 @@ impl Rewrite for ast::GenericParam {
         let param_start = match self {
             ast::GenericParam::ConstParam(cp) => {
                 param.push_str("const ");
-                param.push_str(&node_text(cp.name()?.syntax()));
+                param.push_str(node_text(cp.name()?.syntax()));
                 param.push_str(": ");
                 param.push_str(&child::<ast::Type>(cp.syntax())?.rewrite(context, shape)?);
                 if let Some(default) = cp.default_val() {
@@ -748,7 +799,7 @@ impl Rewrite for ast::GenericParam {
                         .rewrite(context, Shape::legacy(budget, shape.indent))?;
                     param.push_str(&rewrite);
                 }
-                token_span(&cp.const_token()?).lo()
+                token_span(cp.const_token()?).lo()
             }
             ast::GenericParam::LifetimeParam(lp) => {
                 let lt = child::<ast::Lifetime>(lp.syntax())?;
@@ -757,7 +808,7 @@ impl Rewrite for ast::GenericParam {
             }
             ast::GenericParam::TypeParam(tp) => {
                 let name = tp.name()?;
-                param.push_str(&node_text(name.syntax()));
+                param.push_str(node_text(name.syntax()));
                 name.span().lo()
             }
         };
@@ -807,7 +858,7 @@ pub(crate) fn generic_param_span(param: &ast::GenericParam) -> Span {
     rustc_span(param.syntax())
 }
 
-impl Rewrite for ast::Type {
+impl Rewrite for ast::Type<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             ast::Type::DynTraitType(dt) => {
@@ -974,7 +1025,7 @@ fn rewrite_ref_type(
     }
 
     if is_mut {
-        let mut_hi = token_span(&rt.mut_token()?).hi();
+        let mut_hi = token_span(rt.mut_token()?).hi();
         let before_mut_span = mk_sp(cmnt_lo, mut_hi - 3);
         if contains_comment(context.snippet(before_mut_span)) {
             result = combine_strs_with_missing_comments(
@@ -1018,7 +1069,7 @@ pub(crate) fn format_abi(abi: Option<&ast::Abi>, context: &RewriteContext<'_>) -
     };
     match abi.abi_string() {
         Some(s) => {
-            let text = s.syntax().text();
+            let text = s.text();
             if !context.config.force_explicit_abi() && (text == "\"C\"") {
                 "extern ".to_owned()
             } else {
@@ -1152,14 +1203,16 @@ fn join_bounds_inner(
             let Some(path) = pt.path() else {
                 return false;
             };
-            let segments = path_segments(&path);
-            if segments.len() > 1 {
-                true
-            } else {
-                segments[0]
-                    .generic_arg_list()
-                    .is_some_and(|args| args.generic_args().count() > 1)
-            }
+            with_scratch(|bump| {
+                let segments = path_segments(&path, bump);
+                if segments.len() > 1 {
+                    true
+                } else {
+                    segments[0]
+                        .generic_arg_list()
+                        .is_some_and(|args| args.generic_args().count() > 1)
+                }
+            })
         }
         BoundKind::Use => item
             .use_bound_generic_args()
@@ -1277,7 +1330,7 @@ fn join_bounds_inner(
 }
 
 /// The bounds of an `impl Trait` type, if `ty` is one.
-pub(crate) fn opaque_ty(ty: Option<&ast::Type>) -> Option<Vec<ast::TypeBound>> {
+pub(crate) fn opaque_ty<'a>(ty: Option<&ast::Type<'a>>) -> Option<Vec<ast::TypeBound<'a>>> {
     match ty? {
         ast::Type::ImplTraitType(it) => {
             Some(child::<ast::TypeBoundList>(it.syntax())?.bounds().collect())

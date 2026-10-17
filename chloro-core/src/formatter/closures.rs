@@ -9,14 +9,14 @@
 //!     statement without needing a semi-colon), then adding or removing braces
 //!     can change whether it is treated as an expression or statement.
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::T;
 
-use super::config::StyleEdition;
+use super::config::{RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::expr::{
-    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block_with_visitor,
-    rewrite_cond,
+    block_contains_comment, expr_attrs, expr_span, is_simple_block, rewrite_block,
+    rewrite_block_with_visitor, rewrite_cond,
 };
 use super::items::{span_hi_for_param, span_lo_for_param};
 use super::lists::{
@@ -27,16 +27,20 @@ use super::nodes::has_token;
 use super::nodes::{Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child};
 use super::overflow::OverflowableItem;
 use super::shape::Shape;
-use super::span::{Span, Spanned};
+use super::span::{Span, Spanned, node_range_span};
 use super::types::{binder_params, rewrite_bound_params};
-use super::utils::{last_line_width, left_most_sub_expr};
+use super::utils::{concat, last_line_width, left_most_sub_expr};
+use super::width::{never_one_line, one_line_fits_checked_and_exceeds};
 
 /// The body of a closure as a plain block, if it is one (rustc's `ExprKind::Block`; `async`,
 /// `const`, `gen` and `try` blocks are distinct expression kinds in rustc).
-fn plain_block(expr: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn plain_block<'a>(
+    context: &RewriteContext<'_>,
+    expr: &ast::Expr<'a>,
+) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match expr {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((*b, context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -53,12 +57,12 @@ pub(crate) fn rewrite_closure(
     // 1 = space between `|...|` and body.
     let body_shape = shape.offset_left(extra_offset)?;
 
-    if let Some((_, block)) = plain_block(&body) {
+    if let Some((_, block)) = plain_block(context, &body) {
         // The body of the closure is an empty block.
         if block.stmts.is_empty() && !block_contains_comment(context, &block) {
             return body
                 .rewrite(context, shape)
-                .map(|s| format!("{prefix} {s}"));
+                .map(|s| concat(&[&prefix, " ", &s]));
         }
 
         let result = if child::<ast::RetType>(closure.syntax()).is_none() && !context.inside_macro()
@@ -97,11 +101,19 @@ fn try_rewrite_without_block(
     }
 }
 
-fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) -> ast::Expr {
-    if let Some((block_expr, block)) = plain_block(expr)
+fn get_inner_expr<'a>(
+    expr: &ast::Expr<'a>,
+    prefix: &str,
+    context: &RewriteContext<'_>,
+) -> ast::Expr<'a> {
+    if let Some((block_expr, block)) = plain_block(context, expr)
         && !needs_block(
             &block,
-            child::<ast::Label>(block_expr.syntax()).is_some(),
+            // F2: rustfmt 1.9.0 keeps a labelled block as the closure body (commit
+            // `5619b644`, PR #6468, CHANGELOG 1.9.0 Fixed #6465); rustfmt 1.8.0's
+            // `needs_block` (`v1.8.0 src/closures.rs:123`) does not see the label.
+            child::<ast::Label>(block_expr.syntax()).is_some()
+                && context.config.rustfmt_version() >= RustfmtVersion::V1_9_0,
             prefix,
             context,
         )
@@ -113,7 +125,7 @@ fn get_inner_expr(expr: &ast::Expr, prefix: &str, context: &RewriteContext<'_>) 
         }
     }
 
-    expr.clone()
+    *expr
 }
 
 /// Figure out if a block is necessary.
@@ -161,7 +173,7 @@ fn rewrite_closure_with_block(
     let block = Block::synthetic(body);
     let attrs = expr_attrs(body);
     let block = rewrite_block_with_visitor(context, "", &block, Some(&attrs), None, shape, false)?;
-    Some(format!("{prefix} {block}"))
+    Some(concat(&[prefix, " ", &block]))
 }
 
 /// Rewrite closure with a single expression without wrapping its body with block.
@@ -189,9 +201,33 @@ fn rewrite_closure_expr(
     // unless it is a block-like expression or we are inside macro call.
     let veto_multiline = (!allow_multi_line(expr) && !context.inside_macro())
         || context.config.force_multiline_blocks();
-    expr.rewrite(context, shape)
-        .filter(|rw| !(veto_multiline && rw.contains('\n')))
-        .map(|rw| format!("{prefix} {rw}"))
+    // Under the veto only a one-line rewrite is kept. When a one-line rewrite of `expr` is at
+    // most a column wider than `shape` and every one-line rendering of it is wider than that,
+    // or when `expr` renders a `match` with arms, which is never one line (`width.rs`), no
+    // rewrite can be one line, so the attempt fails whatever it renders; it is not made
+    // where its effects on the run cannot reach the output. Debug builds make it and check.
+    // Both tests are made only for a body whose source is longer than the shape is wide: the
+    // source length bounds the width bound from above, and a shorter body mostly fits, so
+    // the source length spares the scans where they would rarely find anything.
+    let skip = veto_multiline
+        && context.may_skip_dead_candidates()
+        && expr.syntax().text_range().len() as usize > shape.width + 1
+        && (one_line_fits_checked_and_exceeds(expr.syntax(), shape.width)
+            || never_one_line(expr.syntax()));
+    #[cfg(not(debug_assertions))]
+    if skip {
+        return None;
+    }
+    let result = expr
+        .rewrite(context, shape)
+        .filter(|rw| !(veto_multiline && rw.contains('\n')));
+    debug_assert!(
+        !skip || result.is_none(),
+        "a closure body skipped by its width bound or as never one line has a one-line \
+         rewrite: {:?} -> {result:?}",
+        expr.syntax()
+    );
+    result.map(|rw| concat(&[prefix, " ", &rw]))
 }
 
 /// Rewrite closure whose body is block.
@@ -201,7 +237,23 @@ fn rewrite_closure_block(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    Some(format!("{} {}", prefix, block.rewrite(context, shape)?))
+    // F2: rustfmt 1.8.0 passes the inner `ast::Block` (`v1.8.0 src/closures.rs:77`), so a
+    // label is dropped, and rustc's span for the block of a labelled block expression
+    // starts at the label: the visitor starts one byte into the label and copies the rest
+    // of it, with the `{`, as code it could not format (`rewrite_block_with_visitor`,
+    // `v1.8.0 src/expr.rs:526`). rustfmt 1.9.0 passes the expression (commit `5619b644`).
+    if context.config.rustfmt_version() < RustfmtVersion::V1_9_0
+        && let Some((block_expr, mut inner)) = plain_block(context, block)
+        && let Some(label) = child::<ast::Label>(block_expr.syntax())
+    {
+        inner.span = inner.span.with_lo(node_range_span(label.syntax()).lo());
+        return Some(format!(
+            "{} {}",
+            prefix,
+            rewrite_block(&inner, None, None, context, shape)?
+        ));
+    }
+    Some(concat(&[prefix, " ", &block.rewrite(context, shape)?]))
 }
 
 /// Return type is (prefix, extra_offset)
@@ -216,7 +268,7 @@ fn rewrite_closure_fn_decl(
         Some(binder) => {
             let generic_params = binder_params(Some(binder));
             match rewrite_bound_params(context, shape, &generic_params) {
-                Some(lifetime_str) => format!("for<{lifetime_str}> "),
+                Some(lifetime_str) => concat(&["for<", &lifetime_str, "> "]),
                 None if generic_params.is_empty() => "for<> ".to_owned(),
                 None => return None,
             }
@@ -250,7 +302,7 @@ fn rewrite_closure_fn_decl(
         .syntax()
         .children_with_tokens()
         .filter_map(|e| e.into_token())
-        .any(|t| t.kind() == ra_ap_syntax::SyntaxKind::USE_KW)
+        .any(|t| t.kind() == ra_ap_parser::SyntaxKind::USE_KW)
     {
         "use "
     } else {
@@ -269,7 +321,7 @@ fn rewrite_closure_fn_decl(
             let ty = child::<ast::Type>(ret.syntax())?;
             let arrow_width = "-> ".len();
             let shape = param_shape.offset_left(arrow_width)?;
-            format!("-> {}", ty.rewrite(context, shape)?)
+            concat(&["-> ", &ty.rewrite(context, shape)?])
         }
         None => String::new(),
     };
@@ -308,7 +360,16 @@ fn rewrite_closure_fn_decl(
         .tactic(tactic)
         .preserve_newline(true);
     let list_str = write_list(&item_vec, &fmt)?;
-    let mut prefix = format!("{binder}{const_}{immovable}{coro}{capture_str}|{list_str}|");
+    let mut prefix = concat(&[
+        &binder,
+        const_,
+        immovable,
+        coro,
+        capture_str,
+        "|",
+        &list_str,
+        "|",
+    ]);
 
     if !ret_str.is_empty() {
         if prefix.contains('\n') {
@@ -336,15 +397,18 @@ pub(crate) fn rewrite_last_closure(
         return None;
     };
     let body = closure.body()?;
-    let body = match plain_block(&body) {
+    let body = match plain_block(context, &body) {
         Some((block_expr, block))
             if !block.is_unsafe()
                 && !context.inside_macro()
                 && is_simple_block(context, &block, Some(&expr_attrs(&body)))
-                && child::<ast::Label>(block_expr.syntax()).is_none() =>
+                // F2: rustfmt 1.9.0 keeps a labelled simple block (`v1.9.0
+                // src/closures.rs:385`, commit `5619b644`); rustfmt 1.8.0 unwraps it.
+                && (child::<ast::Label>(block_expr.syntax()).is_none()
+                    || context.config.rustfmt_version() < RustfmtVersion::V1_9_0) =>
         {
             match &block.stmts[0].kind {
-                StmtKind::Expr(e) => e.clone(),
+                StmtKind::Expr(e) => *e,
                 _ => body,
             }
         }

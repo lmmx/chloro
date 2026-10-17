@@ -29,15 +29,26 @@ pkg-fmt = "zip"
 pkg-url = "https://github.com/lmmx/chloro/releases/download/chloro-v{ version }/chloro-x86_64-pc-windows-msvc-v{ version }.zip"
 
 [features]
-cli = ["dep:facet", "dep:facet-args"]
+# The CLI binary's global allocator, off by default (glibc's malloc). Measurement only
+# (EXP-014); the first enabled of mimalloc, jemalloc, snmalloc wins.
+alloc-jemalloc = ["cli", "dep:tikv-jemallocator"]
+alloc-mimalloc = ["cli", "dep:mimalloc"]
+alloc-snmalloc = ["cli", "dep:snmalloc-rs"]
+cli = ["dep:blake3", "dep:facet", "dep:facet-args"]
 default = []
 
 [dependencies]
 chloro-core = { workspace = true }
 
 # Optional dependencies for CLI
+blake3 = { optional = true, workspace = true }
 facet = { optional = true, workspace = true }
 facet-args = { optional = true, workspace = true }
+
+# Optional global allocators for the `alloc-*` features
+mimalloc = { optional = true, workspace = true }
+snmalloc-rs = { optional = true, workspace = true }
+tikv-jemallocator = { optional = true, workspace = true }
 
 [dev-dependencies]
 assert_cmd.workspace = true

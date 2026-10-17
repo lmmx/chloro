@@ -1,7 +1,7 @@
 //! Patterns (rustfmt's `patterns.rs`).
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasName};
+use crate::cst::ast::{self, AstNode, HasName};
+use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::combine_strs_with_missing_comments;
@@ -20,6 +20,7 @@ use super::nodes::outer_attributes;
 use super::nodes::{child, has_token, node_text};
 use super::overflow::{self, OverflowableItem};
 use super::pairs::{PairParts, rewrite_pair};
+use super::scratch::with_scratch;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{PathContext, path_segments, rewrite_path};
@@ -56,7 +57,9 @@ fn is_short_pattern_inner(context: &RewriteContext<'_>, pat: &ast::Pat) -> bool 
         | ast::Pat::RangePat(..) => false,
         ast::Pat::TuplePat(t) => t.fields().count() <= 1,
         ast::Pat::TupleStructPat(t) => {
-            t.path().is_some_and(|p| path_segments(&p).len() <= 1) && t.fields().count() <= 1
+            t.path()
+                .is_some_and(|p| with_scratch(|bump| path_segments(&p, bump).len()) <= 1)
+                && t.fields().count() <= 1
         }
         ast::Pat::BoxPat(p) => {
             child::<ast::Pat>(p.syntax()).is_some_and(|p| is_short_pattern_inner(context, &p))
@@ -72,11 +75,11 @@ fn is_short_pattern_inner(context: &RewriteContext<'_>, pat: &ast::Pat) -> bool 
 }
 
 /// One side of a range pattern; empty when the side is omitted.
-pub(crate) struct RangeOperand {
-    pub(crate) operand: Option<ast::Pat>,
+pub(crate) struct RangeOperand<'a> {
+    pub(crate) operand: Option<ast::Pat<'a>>,
 }
 
-impl Rewrite for RangeOperand {
+impl Rewrite for RangeOperand<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match &self.operand {
             None => Some(String::new()),
@@ -85,7 +88,7 @@ impl Rewrite for RangeOperand {
     }
 }
 
-impl Rewrite for ast::Pat {
+impl Rewrite for ast::Pat<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             ast::Pat::OrPat(or) => {
@@ -278,14 +281,14 @@ fn rewrite_ident_pat(
         let hi = context.snippet_provider.span_before(span, "@");
         combine_strs_with_missing_comments(
             context,
-            &id_str,
+            id_str,
             &sub_pat,
             mk_sp(name_span.hi(), hi),
             shape,
             true,
         )?
     } else {
-        id_str
+        id_str.to_owned()
     };
 
     combine_strs_with_missing_comments(
@@ -407,7 +410,7 @@ fn rewrite_struct_pat(
     Some(format!("{path_str} {{{fields_str}}}"))
 }
 
-impl Rewrite for ast::RecordPatField {
+impl Rewrite for ast::RecordPatField<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let attrs = outer_attributes(self.syntax());
         let pat = self.pat()?;
@@ -463,21 +466,21 @@ impl Rewrite for ast::RecordPatField {
 
 /// An element of a tuple or tuple struct pattern.
 #[derive(Clone, Debug)]
-pub(crate) struct TuplePatField(pub(crate) ast::Pat);
+pub(crate) struct TuplePatField<'a>(pub(crate) ast::Pat<'a>);
 
-impl Rewrite for TuplePatField {
+impl Rewrite for TuplePatField<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         self.0.rewrite(context, shape)
     }
 }
 
-impl Spanned for TuplePatField {
+impl Spanned for TuplePatField<'_> {
     fn span(&self) -> Span {
         self.0.span()
     }
 }
 
-impl TuplePatField {
+impl TuplePatField<'_> {
     fn is_dotdot(&self) -> bool {
         matches!(self.0, ast::Pat::RestPat(_))
     }

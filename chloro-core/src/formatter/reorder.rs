@@ -7,11 +7,11 @@
 
 use std::cmp::Ordering;
 
-use ra_ap_syntax::ast::{self, AstNode, HasName};
+use crate::cst::ast::{self, AstNode, HasName};
 
 use super::config::{Settings, StyleEdition};
 use super::context::RewriteContext;
-use super::imports::UseTree;
+use super::imports::{UseTree, sort_use_trees};
 use super::items::{is_mod_decl, rewrite_extern_crate, rewrite_mod};
 use super::lists::{ListFormatting, ListItem, itemize_list, write_list};
 use super::nodes::node_text;
@@ -31,7 +31,7 @@ fn symbol(text: String) -> String {
 
 fn mod_name(item: &ast::Item) -> String {
     match item {
-        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()))),
+        ast::Item::Module(m) => m.name().map(|n| symbol(node_text(n.syntax()).to_owned())),
         _ => None,
     }
     .unwrap_or_default()
@@ -42,11 +42,13 @@ fn extern_crate_names(item: &ast::Item) -> (String, Option<String>) {
     match item {
         ast::Item::ExternCrate(e) => (
             child::<ast::NameRef>(e.syntax())
-                .map(|n| symbol(node_text(n.syntax())))
+                .map(|n| symbol(node_text(n.syntax()).to_owned()))
                 .unwrap_or_default(),
             e.rename().map(|r| {
-                r.name()
-                    .map_or_else(|| "_".to_owned(), |n| symbol(node_text(n.syntax())))
+                r.name().map_or_else(
+                    || "_".to_owned(),
+                    |n| symbol(node_text(n.syntax()).to_owned()),
+                )
             }),
         ),
         _ => (String::new(), None),
@@ -147,7 +149,7 @@ fn rewrite_reorderable_items(
             }
 
             if context.config.reorder_imports() {
-                normalized_items.sort();
+                sort_use_trees(&mut normalized_items, context.config.rustfmt_version());
             }
 
             // 4 = "use ", 1 = ";"
@@ -244,18 +246,7 @@ impl FmtVisitor<'_> {
         items: &[ast::Item],
         item_kind: ReorderableItemKind,
     ) -> usize {
-        let mut last = self.line_range(items[0].span());
-        let item_length = items
-            .iter()
-            .take_while(|ppi| {
-                item_kind.is_same_item_kind(ppi) && {
-                    let current = self.line_range(ppi.span());
-                    let in_same_group = current.0 < last.1 + 2;
-                    last = current;
-                    in_same_group
-                }
-            })
-            .count();
+        let item_length = self.reorderable_group_len(items, item_kind);
         let items = &items[..item_length];
 
         let lo = items[0].span().lo();
@@ -267,10 +258,47 @@ impl FmtVisitor<'_> {
         item_length
     }
 
+    /// The number of leading items of `items` that form one reorderable group: items of
+    /// `item_kind` not separated by a blank line.
+    fn reorderable_group_len(&self, items: &[ast::Item], item_kind: ReorderableItemKind) -> usize {
+        let mut last = self.line_range(items[0].span());
+        items
+            .iter()
+            .take_while(|ppi| {
+                item_kind.is_same_item_kind(ppi) && {
+                    let current = self.line_range(ppi.span());
+                    let in_same_group = current.0 < last.1 + 2;
+                    last = current;
+                    in_same_group
+                }
+            })
+            .count()
+    }
+
+    /// The units `visit_items_with_reordering` would format, as `(first, len)` ranges
+    /// into `items`: a reorderable group is one unit, any other item is a unit of its own.
+    pub(crate) fn unit_ranges(&self, items: &[ast::Item]) -> Vec<(usize, usize)> {
+        let mut units = Vec::new();
+        let mut first = 0;
+        while first < items.len() {
+            let item_kind = ReorderableItemKind::from(&items[first]);
+            let len = if item_kind.is_reorderable(self.config) {
+                self.reorderable_group_len(&items[first..], item_kind)
+            } else {
+                1
+            };
+            units.push((first, len));
+            first += len;
+        }
+        units
+    }
+
     /// Visits and format the given items. Items are reordered If they are
     /// consecutive and reorderable.
     pub(crate) fn visit_items_with_reordering(&mut self, mut items: &[ast::Item]) {
         while !items.is_empty() {
+            // Nothing allocated in the scratch arena outlives a unit (EXP-025).
+            super::scratch::reset_scratch();
             // If the next item is a `use`, `extern crate` or `mod`, then extract it and any
             // subsequent items that have the same item kind to be reordered within
             // `walk_reorderable_items`. Otherwise, just format the next item for output.

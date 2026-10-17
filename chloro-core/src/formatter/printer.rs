@@ -1,6 +1,6 @@
 //! A trait-based printer to reduce repetitive formatting patterns.
 
-use ra_ap_syntax::ast::{AstNode, AstToken, HasAttrs, HasDocComments, HasVisibility};
+use crate::cst::ast::{AstNode, AstToken, HasAttrs, HasDocComments, HasVisibility};
 
 use crate::formatter::write_indent;
 
@@ -19,16 +19,16 @@ pub trait Printer {
     fn blank(&mut self);
 
     /// Write doc comments from a node that implements HasDocComments.
-    fn doc_comments<T: HasDocComments>(&mut self, item: &T, indent: usize);
+    fn doc_comments<'t, T: HasDocComments<'t>>(&mut self, item: &T, indent: usize);
 
     /// Write attributes from a node that implements HasAttrs.
-    fn attrs<T: HasAttrs>(&mut self, item: &T, indent: usize);
+    fn attrs<'t, T: HasAttrs<'t>>(&mut self, item: &T, indent: usize);
 
     /// Write visibility if present, followed by a space.
-    fn visibility<T: HasVisibility>(&mut self, item: &T);
+    fn visibility<'t, T: HasVisibility<'t>>(&mut self, item: &T);
 
     /// Write doc comments, attributes, indentation, and visibility - the common preamble.
-    fn item_preamble<T: HasDocComments + HasAttrs + HasVisibility>(
+    fn item_preamble<'t, T: HasDocComments<'t> + HasAttrs<'t> + HasVisibility<'t>>(
         &mut self,
         item: &T,
         indent: usize,
@@ -67,26 +67,26 @@ impl Printer for String {
         self.push('\n');
     }
 
-    fn doc_comments<T: HasDocComments>(&mut self, item: &T, indent: usize) {
+    fn doc_comments<'t, T: HasDocComments<'t>>(&mut self, item: &T, indent: usize) {
         for doc in item.doc_comments() {
             self.line(indent, doc.text().trim());
         }
     }
 
-    fn attrs<T: HasAttrs>(&mut self, item: &T, indent: usize) {
+    fn attrs<'t, T: HasAttrs<'t>>(&mut self, item: &T, indent: usize) {
         for attr in item.attrs() {
-            self.line(indent, &attr.syntax().text().to_string());
+            self.line(indent, attr.syntax().text());
         }
     }
 
-    fn visibility<T: HasVisibility>(&mut self, item: &T) {
+    fn visibility<'t, T: HasVisibility<'t>>(&mut self, item: &T) {
         if let Some(vis) = item.visibility() {
-            self.push_str(&vis.syntax().text().to_string());
+            self.push_str(vis.syntax().text());
             self.push(' ');
         }
     }
 
-    fn item_preamble<T: HasDocComments + HasAttrs + HasVisibility>(
+    fn item_preamble<'t, T: HasDocComments<'t> + HasAttrs<'t> + HasVisibility<'t>>(
         &mut self,
         item: &T,
         indent: usize,
@@ -119,10 +119,10 @@ impl Printer for String {
 }
 
 /// Collect attributes as a prefix string (for expressions).
-pub fn expr_attrs_prefix<T: HasAttrs>(node: &T) -> String {
+pub fn expr_attrs_prefix<'t, T: HasAttrs<'t>>(node: &T) -> String {
     let mut result = String::new();
     for attr in node.attrs() {
-        result.push_str(&attr.syntax().text().to_string());
+        result.push_str(attr.syntax().text());
         result.push(' ');
     }
     result

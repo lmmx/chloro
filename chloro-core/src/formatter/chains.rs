@@ -19,7 +19,7 @@
 use std::borrow::Cow;
 use std::cmp::min;
 
-use ra_ap_syntax::ast::{self, AstNode, HasGenericArgs, RangeItem};
+use crate::cst::ast::{self, AstNode, HasGenericArgs, RangeItem};
 
 use super::comment::{CharClasses, FullCodeCharKind, rewrite_comment};
 use super::config::StyleEdition;
@@ -30,11 +30,12 @@ use super::macros::convert_try_mac;
 use super::nodes::child;
 use super::nodes::node_text;
 use super::overflow::OverflowableItem;
+use super::scratch::{Bump, ScratchString, ScratchVec, with_scratch};
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::types::SegmentParam;
 use super::utils::{
-    first_line_width, last_line_extendable, last_line_width, unicode_str_width, wrap_str,
+    first_line_width, last_line_extendable, last_line_width, trim, unicode_str_width, wrap_str,
 };
 
 /// Provides the original input contents from the span
@@ -80,7 +81,7 @@ pub(crate) fn rewrite_chain(
     context: &RewriteContext<'_>,
     shape: Shape,
 ) -> Option<String> {
-    rewrite_chain_from(SubExpr::new(expr.clone(), false), context, shape)
+    rewrite_chain_from(SubExpr::new(*expr, false), context, shape)
 }
 
 /// Rewrites `inner?`, where the `?` stands for a `try!(inner)` invocation that
@@ -92,7 +93,7 @@ pub(crate) fn rewrite_try_shorthand(
     shape: Shape,
 ) -> Option<String> {
     let top = SubExpr {
-        expr: inner.clone(),
+        expr: *inner,
         is_method_call_receiver: false,
         synthetic_try: true,
     };
@@ -100,7 +101,16 @@ pub(crate) fn rewrite_try_shorthand(
 }
 
 fn rewrite_chain_from(top: SubExpr, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
-    let chain = Chain::from_ast(top, context)?;
+    with_scratch(|bump| rewrite_chain_in(top, context, shape, bump))
+}
+
+fn rewrite_chain_in(
+    top: SubExpr,
+    context: &RewriteContext<'_>,
+    shape: Shape,
+    bump: &Bump,
+) -> Option<String> {
+    let chain = Chain::from_ast(top, context, bump)?;
 
     // If this is just an expression with some `?`s, then format it trivially and
     // return early.
@@ -118,16 +128,16 @@ enum CommentPosition {
 }
 
 /// Information about an expression in a chain.
-struct SubExpr {
-    expr: ast::Expr,
+struct SubExpr<'a> {
+    expr: ast::Expr<'a>,
     is_method_call_receiver: bool,
     /// `true` when this entry is the `?` of a converted `try!(expr)`; `expr` then holds
     /// the macro argument, which is also the next entry of the list.
     synthetic_try: bool,
 }
 
-impl SubExpr {
-    fn new(expr: ast::Expr, is_method_call_receiver: bool) -> SubExpr {
+impl<'a> SubExpr<'a> {
+    fn new(expr: ast::Expr<'a>, is_method_call_receiver: bool) -> SubExpr<'a> {
         SubExpr {
             expr,
             is_method_call_receiver,
@@ -142,23 +152,30 @@ impl SubExpr {
 
 /// An expression plus trailing `?`s to be formatted together.
 #[derive(Debug)]
-struct ChainItem {
-    kind: ChainItemKind,
+struct ChainItem<'a> {
+    kind: ChainItemKind<'a>,
     tries: usize,
     span: Span,
 }
 
 #[derive(Debug)]
-enum ChainItemKind {
-    Parent { expr: ast::Expr, parens: bool },
-    MethodCall(ast::NameRef, Vec<SegmentParam>, Vec<ast::Expr>),
-    StructField(ast::NameRef),
-    TupleField(ast::NameRef, bool),
+enum ChainItemKind<'a> {
+    Parent {
+        expr: ast::Expr<'a>,
+        parens: bool,
+    },
+    MethodCall(
+        ast::NameRef<'a>,
+        ScratchVec<'a, SegmentParam<'a>>,
+        ScratchVec<'a, ast::Expr<'a>>,
+    ),
+    StructField(ast::NameRef<'a>),
+    TupleField(ast::NameRef<'a>, bool),
     Await,
     Comment(String, CommentPosition),
 }
 
-impl ChainItemKind {
+impl<'a> ChainItemKind<'a> {
     fn is_block_like(&self, context: &RewriteContext<'_>, reps: &str) -> bool {
         match self {
             ChainItemKind::Parent { expr, .. } => super::utils::is_block_expr(context, expr, reps),
@@ -177,24 +194,28 @@ impl ChainItemKind {
 
     fn from_ast(
         context: &RewriteContext<'_>,
-        expr: &ast::Expr,
+        expr: &ast::Expr<'a>,
         is_method_call_receiver: bool,
-    ) -> Option<(ChainItemKind, Span)> {
+        bump: &'a Bump,
+    ) -> Option<(ChainItemKind<'a>, Span)> {
         let full = expr_span(expr);
         let (kind, span) = match expr {
             ast::Expr::MethodCallExpr(call) => {
                 let types = call
                     .generic_arg_list()
                     .map(|args| {
-                        args.generic_args()
-                            .filter(|a| !matches!(a, ast::GenericArg::AssocTypeArg(_)))
-                            .filter_map(|a| SegmentParam::from_generic_arg(&a))
-                            .collect()
+                        ScratchVec::from_iter_in(
+                            args.generic_args()
+                                .filter(|a| !matches!(a, ast::GenericArg::AssocTypeArg(_)))
+                                .filter_map(|a| SegmentParam::from_generic_arg(&a)),
+                            bump,
+                        )
                     })
-                    .unwrap_or_default();
+                    .unwrap_or_else(|| ScratchVec::new_in(bump));
                 let receiver = child::<ast::Expr>(call.syntax())?;
                 let span = mk_sp(expr_span(&receiver).hi(), full.hi());
-                let args = child::<ast::ArgList>(call.syntax())?.args().collect();
+                let args =
+                    ScratchVec::from_iter_in(child::<ast::ArgList>(call.syntax())?.args(), bump);
                 (
                     ChainItemKind::MethodCall(child::<ast::NameRef>(call.syntax())?, types, args),
                     span,
@@ -204,9 +225,9 @@ impl ChainItemKind {
                 let nested = field.expr()?;
                 let name = child::<ast::NameRef>(field.syntax())?;
                 let kind = if Self::is_tup_field_access(expr) {
-                    ChainItemKind::TupleField(name.clone(), Self::is_tup_field_access(&nested))
+                    ChainItemKind::TupleField(name, Self::is_tup_field_access(&nested))
                 } else {
-                    ChainItemKind::StructField(name.clone())
+                    ChainItemKind::StructField(name)
                 };
                 let span = mk_sp(expr_span(&nested).hi(), name.span().hi());
                 (kind, span)
@@ -219,7 +240,7 @@ impl ChainItemKind {
             _ => {
                 return Some((
                     ChainItemKind::Parent {
-                        expr: expr.clone(),
+                        expr: *expr,
                         parens: is_method_call_receiver && should_add_parens(expr),
                     },
                     full,
@@ -233,7 +254,7 @@ impl ChainItemKind {
     }
 }
 
-impl Rewrite for ChainItem {
+impl Rewrite for ChainItem<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let shape = shape.sub_width(self.tries)?;
         let rewrite = match self.kind {
@@ -249,12 +270,18 @@ impl Rewrite for ChainItem {
                 ref expr,
                 parens: false,
             } => expr.rewrite(context, shape)?,
-            ChainItemKind::MethodCall(ref name, ref types, ref exprs) => {
-                Self::rewrite_method_call(name, types, exprs, self.span, context, shape)?
-            }
+            ChainItemKind::MethodCall(ref name, ref types, ref exprs) => Self::rewrite_method_call(
+                name,
+                types,
+                exprs,
+                self.span,
+                context,
+                shape,
+                exprs.bump(),
+            )?,
             ChainItemKind::StructField(ref ident) => {
                 let mut field = String::from(".");
-                field.push_str(&node_text(ident.syntax()));
+                field.push_str(node_text(ident.syntax()));
                 field
             }
             ChainItemKind::TupleField(ref ident, nested) => {
@@ -263,7 +290,7 @@ impl Rewrite for ChainItem {
                     field.push(' ');
                 }
                 field.push('.');
-                field.push_str(&node_text(ident.syntax()));
+                field.push_str(node_text(ident.syntax()));
                 field
             }
             ChainItemKind::Await => ".await".to_owned(),
@@ -277,14 +304,19 @@ impl Rewrite for ChainItem {
     }
 }
 
-impl ChainItem {
-    fn new(context: &RewriteContext<'_>, expr: &SubExpr, tries: usize) -> Option<ChainItem> {
+impl<'a> ChainItem<'a> {
+    fn new(
+        context: &RewriteContext<'_>,
+        expr: &SubExpr<'a>,
+        tries: usize,
+        bump: &'a Bump,
+    ) -> Option<ChainItem<'a>> {
         let (kind, span) =
-            ChainItemKind::from_ast(context, &expr.expr, expr.is_method_call_receiver)?;
+            ChainItemKind::from_ast(context, &expr.expr, expr.is_method_call_receiver, bump)?;
         Some(ChainItem { kind, tries, span })
     }
 
-    fn comment(span: Span, comment: String, pos: CommentPosition) -> ChainItem {
+    fn comment(span: Span, comment: String, pos: CommentPosition) -> ChainItem<'a> {
         ChainItem {
             kind: ChainItemKind::Comment(comment, pos),
             tries: 0,
@@ -303,6 +335,7 @@ impl ChainItem {
         span: Span,
         context: &RewriteContext<'_>,
         shape: Shape,
+        bump: &Bump,
     ) -> Option<String> {
         let type_str = if types.is_empty() {
             String::new()
@@ -314,8 +347,10 @@ impl ChainItem {
 
             format!("::<{}>", type_list.join(", "))
         };
-        let mut callee_str = String::from(".");
-        callee_str.push_str(&node_text(method_name.syntax()));
+        let name = node_text(method_name.syntax());
+        let mut callee_str = ScratchString::with_capacity_in(1 + name.len() + type_str.len(), bump);
+        callee_str.push('.');
+        callee_str.push_str(name);
         callee_str.push_str(&type_str);
         let args = args.iter().cloned().map(OverflowableItem::Expr).collect();
         rewrite_call(context, &callee_str, args, span, shape)
@@ -323,23 +358,27 @@ impl ChainItem {
 }
 
 #[derive(Debug)]
-struct Chain {
-    parent: ChainItem,
-    children: Vec<ChainItem>,
+struct Chain<'a> {
+    parent: ChainItem<'a>,
+    children: ScratchVec<'a, ChainItem<'a>>,
 }
 
-impl Chain {
-    fn from_ast(top: SubExpr, context: &RewriteContext<'_>) -> Option<Chain> {
-        let subexpr_list = Self::make_subexpr_list(top, context);
+impl<'a> Chain<'a> {
+    fn from_ast<'c: 'a>(
+        top: SubExpr<'a>,
+        context: &RewriteContext<'c>,
+        bump: &'a Bump,
+    ) -> Option<Chain<'a>> {
+        let subexpr_list = Self::make_subexpr_list(top, context, bump);
 
         // Un-parse the expression tree into ChainItems
-        let mut rev_children = vec![];
+        let mut rev_children = ScratchVec::with_capacity_in(subexpr_list.len(), bump);
         let mut sub_tries = 0;
         for subexpr in &subexpr_list {
             if subexpr.is_try() {
                 sub_tries += 1;
             } else {
-                rev_children.push(ChainItem::new(context, subexpr, sub_tries)?);
+                rev_children.push(ChainItem::new(context, subexpr, sub_tries, bump)?);
                 sub_tries = 0;
             }
         }
@@ -362,7 +401,7 @@ impl Chain {
             post_comment_span: Span,
             post_comment_snippet: &str,
             prev_span_end: &mut BytePos,
-            children: &mut Vec<ChainItem>,
+            children: &mut ScratchVec<'_, ChainItem<'_>>,
         ) {
             let white_spaces: &[_] = &[' ', '\t'];
             if post_comment_snippet
@@ -372,11 +411,11 @@ impl Chain {
                 // No post comment.
                 return;
             }
-            let trimmed_snippet = trim_tries(post_comment_snippet);
+            let trimmed_snippet = trim_tries(post_comment_snippet, children.bump());
             if is_post_comment(&trimmed_snippet) {
                 children.push(ChainItem::comment(
                     post_comment_span,
-                    trimmed_snippet.trim().to_owned(),
+                    trim(&trimmed_snippet).to_owned(),
                     CommentPosition::Back,
                 ));
                 *prev_span_end = post_comment_span.hi();
@@ -384,13 +423,15 @@ impl Chain {
         }
 
         let parent = rev_children.pop()?;
-        let mut children = vec![];
+        // Room for every remaining item; a comment between two items grows it.
+        let mut children = ScratchVec::with_capacity_in(rev_children.len(), bump);
         let mut prev_span_end = parent.span.hi();
-        let mut iter = rev_children.into_iter().rev().peekable();
-        if let Some(first_chain_item) = iter.peek() {
+        // The remaining entries from the end of `rev_children`: `pop` is the next one and
+        // `last` the one after it.
+        if let Some(first_chain_item) = rev_children.last() {
             let comment_span = mk_sp(prev_span_end, first_chain_item.span.lo());
             let comment_snippet = context.snippet(comment_span);
-            if !is_tries(comment_snippet.trim()) {
+            if !is_tries(trim(comment_snippet)) {
                 handle_post_comment(
                     comment_span,
                     comment_snippet,
@@ -399,16 +440,16 @@ impl Chain {
                 );
             }
         }
-        while let Some(chain_item) = iter.next() {
+        while let Some(chain_item) = rev_children.pop() {
             let comment_snippet = context.snippet(chain_item.span);
             // FIXME: Figure out the way to get a correct span when converting `try!` to `?`.
             let handle_comment =
-                !(context.config.use_try_shorthand() || is_tries(comment_snippet.trim()));
+                !(context.config.use_try_shorthand() || is_tries(trim(comment_snippet)));
 
             // Pre-comment
             if handle_comment {
                 let pre_comment_span = mk_sp(prev_span_end, chain_item.span.lo());
-                let pre_comment_snippet = trim_tries(context.snippet(pre_comment_span));
+                let pre_comment_snippet = trim_tries(context.snippet(pre_comment_span), bump);
                 let (pre_comment, _) = extract_pre_comment(&pre_comment_snippet);
                 match pre_comment {
                     Some(ref comment) if !comment.is_empty() => {
@@ -426,11 +467,11 @@ impl Chain {
             children.push(chain_item);
 
             // Post-comment
-            if !handle_comment || iter.peek().is_none() {
+            if !handle_comment || rev_children.is_empty() {
                 continue;
             }
 
-            let next_lo = iter.peek()?.span.lo();
+            let next_lo = rev_children.last()?.span.lo();
             let post_comment_span = mk_sp(prev_span_end, next_lo);
             let post_comment_snippet = context.snippet(post_comment_span);
             handle_post_comment(
@@ -446,8 +487,15 @@ impl Chain {
 
     /// Returns a Vec of the prefixes of the chain.
     /// E.g., for input `a.b.c` we return [`a.b.c`, `a.b`, 'a']
-    fn make_subexpr_list(top: SubExpr, context: &RewriteContext<'_>) -> Vec<SubExpr> {
-        let mut subexpr_list = vec![top];
+    fn make_subexpr_list<'c: 'a>(
+        top: SubExpr<'a>,
+        context: &RewriteContext<'c>,
+        bump: &'a Bump,
+    ) -> ScratchVec<'a, SubExpr<'a>> {
+        // `vec![top]` holds one entry and every chain has two or more: room for eight, so
+        // that the list does not grow (and move) while the chain is walked.
+        let mut subexpr_list = ScratchVec::with_capacity_in(8, bump);
+        subexpr_list.push(top);
 
         while let Some(subexpr) = subexpr_list
             .last()
@@ -461,9 +509,12 @@ impl Chain {
 
     /// Returns the expression's subexpression, if it exists. When the subexpr
     /// is a try! macro, we'll convert it to shorthand when the option is set.
-    fn pop_expr_chain(expr: &SubExpr, context: &RewriteContext<'_>) -> Option<SubExpr> {
+    fn pop_expr_chain<'c: 'a>(
+        expr: &SubExpr<'a>,
+        context: &RewriteContext<'c>,
+    ) -> Option<SubExpr<'a>> {
         if expr.synthetic_try {
-            return Some(Self::convert_try(expr.expr.clone(), false, context));
+            return Some(Self::convert_try(expr.expr, false, context));
         }
         match &expr.expr {
             ast::Expr::MethodCallExpr(call) => Some(Self::convert_try(
@@ -478,11 +529,11 @@ impl Chain {
         }
     }
 
-    fn convert_try(
-        expr: ast::Expr,
+    fn convert_try<'c: 'a>(
+        expr: ast::Expr<'a>,
         is_method_call_receiver: bool,
-        context: &RewriteContext<'_>,
-    ) -> SubExpr {
+        context: &RewriteContext<'c>,
+    ) -> SubExpr<'a> {
         if let ast::Expr::MacroExpr(mac) = &expr
             && context.config.use_try_shorthand()
             && let Some(inner) = mac
@@ -499,7 +550,7 @@ impl Chain {
     }
 }
 
-impl Rewrite for Chain {
+impl Rewrite for Chain<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let mut formatter = ChainFormatterBlock::new(self);
 
@@ -523,10 +574,10 @@ impl Rewrite for Chain {
 /// formatters can delegate much behaviour to `ChainFormatterShared`.
 struct ChainFormatterShared<'a> {
     /// The current working set of child items.
-    children: &'a [ChainItem],
+    children: &'a [ChainItem<'a>],
     /// The current rewrites of items (includes trailing `?`s, but not any way to
     /// connect the rewrites together).
-    rewrites: Vec<String>,
+    rewrites: ScratchVec<'a, String>,
     /// Whether the chain can fit on one line.
     fits_single_line: bool,
     /// The number of children in the chain. This is not equal to `self.children.len()`
@@ -540,7 +591,7 @@ impl<'a> ChainFormatterShared<'a> {
     fn new(chain: &'a Chain) -> ChainFormatterShared<'a> {
         ChainFormatterShared {
             children: &chain.children,
-            rewrites: Vec::with_capacity(chain.children.len() + 1),
+            rewrites: ScratchVec::with_capacity_in(chain.children.len() + 1, chain.children.bump()),
             fits_single_line: false,
             child_count: chain.children.len(),
             allow_overflow: false,
@@ -655,6 +706,19 @@ impl<'a> ChainFormatterShared<'a> {
                     // better.
                     let last_shape =
                         child_shape.sub_width(shape.rhs_overhead(context.config) + last.tries)?;
+                    // When `rw` fits and has at most one line, every arm of the `match` below
+                    // keeps `rw`: a child's rewrite is never empty (it starts with `.`, ` .`
+                    // or a comment), so `new_rw` has at least one line, and a `None` keeps
+                    // `rw` as well. `new_rw` is then a dead candidate; it is not rendered
+                    // where its effects on the run cannot reach the output.
+                    if could_fit_single_line
+                        && line_count <= 1
+                        && context.may_skip_dead_candidates()
+                    {
+                        self.fits_single_line = all_in_one_line;
+                        self.rewrites.push(rw);
+                        return Some(());
+                    }
                     match last.rewrite(context, last_shape) {
                         Some(ref new_rw) if !could_fit_single_line => {
                             last_subexpr_str = Some(new_rw.clone());
@@ -696,7 +760,13 @@ impl<'a> ChainFormatterShared<'a> {
         };
 
         let mut rewrite_iter = self.rewrites.iter();
-        let mut result = rewrite_iter.next()?.clone();
+        let first = rewrite_iter.next()?;
+        // Room for every rewrite and a separator before each but the first, so the loop
+        // below does not grow the buffer.
+        let parts_len: usize = self.rewrites.iter().map(String::len).sum();
+        let mut result =
+            String::with_capacity(parts_len + (self.rewrites.len() - 1) * connector.len().max(1));
+        result.push_str(first);
         let children_iter = self.children.iter();
         let iter = rewrite_iter.zip(children_iter);
 
@@ -799,13 +869,13 @@ impl<'a> ChainFormatterBlock<'a> {
 /// Removes try operators (`?`s) that appear in the given string. If removing
 /// them leaves an empty line, remove that line as well unless it is the first
 /// line (we need the first newline for detecting pre/post comment).
-fn trim_tries(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut line_buffer = String::with_capacity(s.len());
+fn trim_tries<'b>(s: &str, bump: &'b Bump) -> ScratchString<'b> {
+    let mut result = ScratchString::with_capacity_in(s.len(), bump);
+    let mut line_buffer = ScratchString::with_capacity_in(s.len(), bump);
     for (kind, _, c) in CharClasses::new(s) {
         match c {
             '\n' => {
-                if result.is_empty() || !line_buffer.trim().is_empty() {
+                if result.is_empty() || !trim(&line_buffer).is_empty() {
                     result.push_str(&line_buffer);
                     result.push('\n')
                 }
@@ -815,7 +885,7 @@ fn trim_tries(s: &str) -> String {
             c => line_buffer.push(c),
         }
     }
-    if !line_buffer.trim().is_empty() {
+    if !trim(&line_buffer).is_empty() {
         result.push_str(&line_buffer);
     }
     result

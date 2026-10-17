@@ -2,8 +2,8 @@
 
 use std::iter::repeat_n;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode};
+use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::T;
 
 use super::attr::rewrite_attrs;
 use super::comment::{FindUncommented, combine_strs_with_missing_comments, rewrite_comment};
@@ -17,18 +17,18 @@ use super::lists::{ListFormatting, SeparatorTactic, itemize_list, write_list};
 use super::nodes::has_token;
 use super::nodes::{
     Attribute, Block, BlockExprKind, StmtKind, block_expr_kind, block_kind_of, child,
-    contains_skip, inner_attributes, outer_attributes,
+    contains_skip, inner_attributes, is_repeat_array, outer_attributes,
 };
 use super::shape::Shape;
 use super::span::{BytePos, Span, Spanned, mk_sp};
 use super::utils::{
-    extra_offset, first_line_width, last_line_extendable, semicolon_for_expr,
+    concat, extra_offset, first_line_width, last_line_extendable, semicolon_for_expr, trim,
     trimmed_last_line_width, unicode_str_width,
 };
 
 /// A simple wrapper type against `ast::MatchArm`. Used inside `write_list()`.
-struct ArmWrapper {
-    arm: ast::MatchArm,
+struct ArmWrapper<'a> {
+    arm: ast::MatchArm<'a>,
     /// `true` if the arm is the last one in match expression. Used to decide on whether we should
     /// add trailing comma to the match arm when `config.trailing_comma() == Never`.
     is_last: bool,
@@ -46,7 +46,7 @@ fn arm_span(arm: &ast::MatchArm) -> Span {
     }
 }
 
-impl Spanned for ArmWrapper {
+impl Spanned for ArmWrapper<'_> {
     fn span(&self) -> Span {
         let span = arm_span(&self.arm);
         if let Some(lo) = self.beginning_vert {
@@ -57,7 +57,7 @@ impl Spanned for ArmWrapper {
     }
 }
 
-impl Rewrite for ArmWrapper {
+impl Rewrite for ArmWrapper<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_match_arm(
             context,
@@ -126,7 +126,8 @@ pub(crate) fn rewrite_match(
         } else {
             shape.block_indent(context.config.tab_spaces())
         };
-        rewrite_attrs(&inner_attrs, context, shape).map(|s| format!("{nested_indent_str}{s}\n"))?
+        rewrite_attrs(&inner_attrs, context, shape)
+            .map(|s| concat(&[&nested_indent_str, &s, "\n"]))?
     };
 
     let cond_span = expr_span(&cond);
@@ -146,22 +147,26 @@ pub(crate) fn rewrite_match(
     if arms.is_empty() {
         let snippet = context.snippet(mk_sp(open_brace_pos, span.hi() - 1));
         if snippet.trim().is_empty() {
-            Some(format!("match {cond_str} {{}}"))
+            Some(concat(&["match ", &cond_str, " {}"]))
         } else {
             // Empty match with comments or inner attributes? We are not going to bother, sorry ;)
             Some(context.snippet(span).to_owned())
         }
     } else {
         let span_after_cond = mk_sp(cond_span.hi(), span.hi());
-        Some(format!(
-            "match {}{}{{\n{}{}{}\n{}}}",
-            cond_str,
+        let arms_str = rewrite_match_arms(context, &arms, shape, span_after_cond, open_brace_pos)?;
+        Some(concat(&[
+            "match ",
+            &cond_str,
             block_sep,
-            inner_attrs_str,
-            nested_indent_str,
-            rewrite_match_arms(context, &arms, shape, span_after_cond, open_brace_pos)?,
-            shape.indent.to_string(context.config),
-        ))
+            "{\n",
+            &inner_attrs_str,
+            &nested_indent_str,
+            &arms_str,
+            "\n",
+            &shape.indent.to_string(context.config),
+            "}",
+        ]))
     }
 }
 
@@ -172,10 +177,13 @@ fn is_default_block(body: &ast::Expr) -> bool {
 }
 
 /// rustc's `ExprKind::Block` of any rules (but not `async`/`const`/`gen`/`try` blocks).
-fn as_block(body: &ast::Expr) -> Option<(ast::BlockExpr, Block)> {
+fn as_block<'a>(
+    context: &RewriteContext<'_>,
+    body: &ast::Expr<'a>,
+) -> Option<(ast::BlockExpr<'a>, Block<'a>)> {
     match body {
         ast::Expr::BlockExpr(b) if block_expr_kind(b) == BlockExprKind::Block => {
-            Some((b.clone(), Block::from_block_expr(b)?))
+            Some((*b, context.run.block_of(b)?))
         }
         _ => None,
     }
@@ -231,7 +239,7 @@ fn rewrite_match_arms(
         .zip(is_last_iter)
         .zip(beginning_verts)
         .map(|((arm, is_last), beginning_vert)| ArmWrapper {
-            arm: arm.clone(),
+            arm: *arm,
             is_last,
             beginning_vert,
         })
@@ -303,9 +311,7 @@ fn rewrite_match_arm(
             // Some block with a label ` => 'label: {`
             // 7 = ` => : {`
             let label_len = label.syntax().text().len();
-            shape
-                .sub_width(7 + usize::from(label_len))?
-                .offset_left(pipe_offset)?
+            shape.sub_width(7 + label_len)?.offset_left(pipe_offset)?
         }
         None => {
             // 5 = ` => {`
@@ -329,7 +335,7 @@ fn rewrite_match_arm(
     let lhs_str = combine_strs_with_missing_comments(
         context,
         &attrs_str,
-        &format!("{pipe_str}{pats_str}{guard_str}"),
+        &concat(&[pipe_str, &pats_str, &guard_str]),
         missing_span,
         shape,
         false,
@@ -351,8 +357,11 @@ fn stmt_is_expr_mac(kind: &StmtKind) -> bool {
     matches!(kind, StmtKind::Expr(ast::Expr::MacroExpr(_)))
 }
 
-fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Option<Block> {
-    let (block_expr, block) = as_block(expr)?;
+fn block_can_be_flattened<'a>(
+    context: &RewriteContext<'_>,
+    expr: &ast::Expr<'a>,
+) -> Option<Block<'a>> {
+    let (block_expr, block) = as_block(context, expr)?;
     (child::<ast::Label>(block_expr.syntax()).is_none()
         && !block.is_unsafe()
         && !context.inside_macro()
@@ -364,11 +373,11 @@ fn block_can_be_flattened(context: &RewriteContext<'_>, expr: &ast::Expr) -> Opt
 /// (extend, body)
 /// @extend: true if the arm body can be put next to `=>`
 /// @body: flattened body, if the body is block with a single expression
-fn flatten_arm_body(
+fn flatten_arm_body<'a>(
     context: &RewriteContext<'_>,
-    body: &ast::Expr,
+    body: &ast::Expr<'a>,
     opt_shape: Option<Shape>,
-) -> (bool, ast::Expr) {
+) -> (bool, ast::Expr<'a>) {
     let can_extend = |expr: &ast::Expr| {
         !context.config.force_multiline_blocks() && can_flatten_block_around_this(expr)
     };
@@ -379,23 +388,23 @@ fn flatten_arm_body(
                 if outer_attributes(expr.syntax()).is_empty() {
                     flatten_arm_body(context, expr, None)
                 } else {
-                    (true, body.clone())
+                    (true, *body)
                 }
             } else {
                 let cond_becomes_multi_line = opt_shape
                     .and_then(|shape| rewrite_cond(context, expr, shape))
                     .is_some_and(|cond| cond.contains('\n'));
                 if cond_becomes_multi_line {
-                    (false, body.clone())
+                    (false, *body)
                 } else {
-                    (can_extend(expr), expr.clone())
+                    (can_extend(expr), *expr)
                 }
             }
         } else {
-            (false, body.clone())
+            (false, *body)
         }
     } else {
-        (can_extend(body), body.clone())
+        (can_extend(body), *body)
     }
 }
 
@@ -413,7 +422,7 @@ fn rewrite_match_body(
         body,
         shape.offset_left(extra_offset(pats_str, shape) + 4),
     );
-    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(&body) {
+    let (is_block, is_empty_block) = if let Some((_, block)) = as_block(context, &body) {
         (
             true,
             is_empty_block(context, &block, Some(&expr_attrs(&body))),
@@ -426,7 +435,7 @@ fn rewrite_match_body(
     let alt_block_sep = &shape.indent.to_string_with_newline(context.config);
 
     // `control_brace_style` is fixed at `AlwaysSameLine`.
-    let combine_orig_body = |body_str: &str| Some(format!("{pats_str} => {body_str}{comma}"));
+    let combine_orig_body = |body_str: &str| Some(concat(&[pats_str, " => ", body_str, comma]));
 
     let next_line_indent = if !is_block || is_empty_block {
         shape.indent.block_indent(context.config)
@@ -439,7 +448,7 @@ fn rewrite_match_body(
 
     // Look for comments between `=>` and the start of the body.
     let arrow_comment = {
-        let arrow_snippet = context.snippet(arrow_span).trim();
+        let arrow_snippet = trim(context.snippet(arrow_span));
         // search for the arrow starting from the end of the snippet since there may be a match
         // expression within the guard
         let arrow_index = if context.config.style_edition() <= StyleEdition::Edition2021 {
@@ -448,7 +457,7 @@ fn rewrite_match_body(
             arrow_snippet.find_last_uncommented("=>")
         }?;
         // 2 = `=>`
-        let comment_str = arrow_snippet[arrow_index + 2..].trim();
+        let comment_str = trim(&arrow_snippet[arrow_index + 2..]);
         if comment_str.is_empty() {
             String::new()
         } else {
@@ -487,7 +496,7 @@ fn rewrite_match_body(
                 } else {
                     ""
                 };
-                ("{", format!("{semicolon}{indent_str}}}{comma}"))
+                ("{", concat(&[semicolon, &indent_str, "}", comma]))
             } else {
                 ("", String::from(","))
             };
@@ -495,9 +504,9 @@ fn rewrite_match_body(
         let block_sep = if body_prefix.is_empty() {
             String::new()
         } else if forbid_same_line || !arrow_comment.is_empty() {
-            format!("{alt_block_sep}{body_prefix}")
+            concat(&[alt_block_sep, body_prefix])
         } else {
-            format!(" {body_prefix}")
+            concat(&[" ", body_prefix])
         } + &nested_indent_str;
 
         let mut result = pats_str.to_owned();
@@ -587,7 +596,7 @@ fn rewrite_guard(
         && let Some(cond_str) = guard.rewrite(context, cond_shape)
         && (!cond_str.contains('\n') || pattern_width <= context.config.tab_spaces())
     {
-        return Some(format!(" if {cond_str}"));
+        return Some(concat(&[" if ", &cond_str]));
     }
 
     // Not enough space to put the guard after the pattern, try a newline.
@@ -627,12 +636,12 @@ fn can_flatten_block_around_this(body: &ast::Expr) -> bool {
         ast::Expr::LoopExpr(..)
         | ast::Expr::MatchExpr(..)
         | ast::Expr::ClosureExpr(..)
-        | ast::Expr::ArrayExpr(..)
         | ast::Expr::CallExpr(..)
         | ast::Expr::MethodCallExpr(..)
         | ast::Expr::MacroExpr(..)
         | ast::Expr::RecordExpr(..)
         | ast::Expr::TupleExpr(..) => true,
+        ast::Expr::ArrayExpr(a) => !is_repeat_array(a),
         ast::Expr::BlockExpr(b) => block_expr_kind(b) == BlockExprKind::Block,
         ast::Expr::RefExpr(r) => r.expr().is_some_and(|e| can_flatten_block_around_this(&e)),
         ast::Expr::TryExpr(t) => t.expr().is_some_and(|e| can_flatten_block_around_this(&e)),

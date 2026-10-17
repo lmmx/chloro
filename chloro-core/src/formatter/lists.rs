@@ -3,7 +3,7 @@
 use std::cmp;
 use std::iter::Peekable;
 
-use super::comment::{FindUncommented, find_comment_end, rewrite_comment};
+use super::comment::{FindUncommented, find_any_byte, find_comment_end, rewrite_comment};
 use super::config::Settings;
 use super::context::RewriteContext;
 use super::shape::{Indent, Shape};
@@ -298,11 +298,26 @@ where
         ListTactic::Mixed | ListTactic::HorizontalVertical => width,
     };
 
-    let (sep_count, total_width) = calculate_width(items.clone());
-    let total_sep_len = sep.len() * sep_count.saturating_sub(1);
-    let real_total = total_width + total_sep_len;
+    // rustfmt sums the widths of all items and their separators, then tests every item for
+    // a newline: horizontal iff the sum fits `limit` and no item is multi-line. Both tests
+    // are made item by item here and stop at the first item that decides: a multi-line
+    // item, or a prefix whose widths and separators already exceed `limit` (the sum only
+    // grows). Neither test has an effect, so the answer is rustfmt's.
+    let mut total_width = 0;
+    let mut sep_total = 0;
+    let horizontal = items.into_iter().enumerate().all(|(i, item)| {
+        let item = item.as_ref();
+        if item.is_multiline() {
+            return false;
+        }
+        if i > 0 {
+            sep_total += sep.len();
+        }
+        total_width += total_item_width(item);
+        total_width + sep_total <= limit
+    });
 
-    if real_total <= limit && !items.into_iter().any(|item| item.as_ref().is_multiline()) {
+    if horizontal {
         DefinitiveListTactic::Horizontal
     } else {
         match tactic {
@@ -318,13 +333,74 @@ where
     I: IntoIterator<Item = T> + Clone,
     T: AsRef<ListItem>,
 {
+    // At least rustfmt's 128 bytes.
+    let mut result = String::with_capacity(128.max(write_list_capacity(items.clone(), formatting)));
+    write_list_into(items, formatting, &mut result).then_some(result)
+}
+
+/// Room for every item with its comments, a separator, a newline and an indent: what
+/// [`write_list_into`] writes for these items, or more, so a buffer reserved with it rarely
+/// grows while the list is written.
+#[inline(always)]
+pub(crate) fn write_list_capacity<I, T>(items: I, formatting: &ListFormatting<'_>) -> usize
+where
+    I: IntoIterator<Item = T>,
+    T: AsRef<ListItem>,
+{
+    let indent_len = formatting.shape.indent.to_string(formatting.config).len();
+    let per_item = formatting.separator.len() + 1 + indent_len;
+    items
+        .into_iter()
+        .map(|item| {
+            let item = item.as_ref();
+            let len = |s: &Option<String>| s.as_deref().map_or(0, str::len);
+            len(&item.item) + len(&item.pre_comment) + len(&item.post_comment) + per_item
+        })
+        .sum()
+}
+
+/// [`write_list`] writing at the end of `out`: appends the list and returns `true`, or
+/// returns `false` with `out` as it was (the list's text is truncated away) where
+/// `write_list` returns `None`. Reads of the list's own text (`is_empty`, the width of its
+/// last line) read only what this call appended.
+pub(crate) fn write_list_into<I, T>(
+    items: I,
+    formatting: &ListFormatting<'_>,
+    out: &mut String,
+) -> bool
+where
+    I: IntoIterator<Item = T> + Clone,
+    T: AsRef<ListItem>,
+{
+    // The buffer is moved into a local while the list is written, as `write_list`'s own
+    // `result` was: through `&mut String` its length and pointer stay in memory.
+    let mut result = std::mem::take(out);
+    let start = result.len();
+    let written = write_list_at(items, formatting, &mut result, start).is_some();
+    if !written {
+        result.truncate(start);
+    }
+    *out = result;
+    written
+}
+
+#[inline(always)]
+fn write_list_at<I, T>(
+    items: I,
+    formatting: &ListFormatting<'_>,
+    result: &mut String,
+    start: usize,
+) -> Option<()>
+where
+    I: IntoIterator<Item = T> + Clone,
+    T: AsRef<ListItem>,
+{
     let tactic = formatting.tactic;
     let sep_len = formatting.separator.len();
 
     // Now that we know how we will layout, we can decide for sure if there
     // will be a trailing separator.
     let mut trailing_separator = formatting.needs_trailing_separator();
-    let mut result = String::with_capacity(128);
     let cloned_items = items.clone();
     let mut iter = items.into_iter().enumerate().peekable();
     let mut item_max_width: Option<usize> = None;
@@ -345,18 +421,6 @@ where
             SeparatorPlace::Back => !last || trailing_separator,
         };
         let item_sep_len = if separate { sep_len } else { 0 };
-
-        // Item string may be multi-line. Its length (used for block comment alignment)
-        // should be only the length of the last line.
-        let item_last_line = if item.is_multiline() {
-            inner_item.lines().last().unwrap_or("")
-        } else {
-            inner_item
-        };
-        let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
-        if item_last_line.starts_with(&**indent_str) {
-            item_last_line_width -= unicode_str_width(indent_str);
-        }
 
         if !item.is_substantial() {
             continue;
@@ -379,7 +443,7 @@ where
                 }
             }
             DefinitiveListTactic::Vertical
-                if !first && !inner_item.is_empty() && !result.is_empty() =>
+                if !first && !inner_item.is_empty() && result.len() > start =>
             {
                 result.push('\n');
                 result.push_str(indent_str);
@@ -391,7 +455,8 @@ where
                 if (line_len > 0 && line_len + 1 + total_width > formatting.shape.width)
                     || prev_item_had_post_comment
                     || (formatting.nested
-                        && (prev_item_is_nested_import || (!first && inner_item.contains("::"))))
+                        && (prev_item_is_nested_import
+                            || (!first && inner_item.contains(':') && inner_item.contains("::"))))
                 {
                     result.push('\n');
                     result.push_str(indent_str);
@@ -479,7 +544,20 @@ where
         if tactic != DefinitiveListTactic::Horizontal
             && let Some(comment) = item.post_comment.as_ref()
         {
-            let overhead = last_line_width(&result) + first_line_width(comment.trim());
+            let overhead = last_line_width(&result[start..]) + first_line_width(comment.trim());
+
+            // Item string may be multi-line. Its length (used for block comment alignment)
+            // should be only the length of the last line. rustfmt measures it for every
+            // item; it is read only here, for a post-comment, and is measured here.
+            let item_last_line = if item.is_multiline() {
+                inner_item.lines().last().unwrap_or("")
+            } else {
+                inner_item
+            };
+            let mut item_last_line_width = unicode_str_width(item_last_line) + item_sep_len;
+            if item_last_line.starts_with(&**indent_str) {
+                item_last_line_width -= unicode_str_width(indent_str);
+            }
 
             let rewrite_post_comment = |item_max_width: &mut Option<usize>| {
                 if item_max_width.is_none() && !last && !inner_item.contains('\n') {
@@ -525,7 +603,7 @@ where
                     let mut comment_alignment =
                         post_comment_alignment(item_max_width, unicode_str_width(inner_item));
                     if first_line_width(&formatted_comment)
-                        + last_line_width(&result)
+                        + last_line_width(&result[start..])
                         + comment_alignment
                         + 1
                         > formatting.config.max_width()
@@ -571,10 +649,13 @@ where
         }
 
         prev_item_had_post_comment = item.post_comment.is_some();
-        prev_item_is_nested_import = inner_item.contains("::");
+        // Read only for nested (import) lists. `contains(':')` is a `memchr`; most items
+        // have no `:` and skip the substring search.
+        prev_item_is_nested_import =
+            formatting.nested && inner_item.contains(':') && inner_item.contains("::");
     }
 
-    Some(result)
+    Some(())
 }
 
 fn max_width_of_item_with_post_comment<I, T>(
@@ -631,6 +712,20 @@ where
 }
 
 pub(crate) fn extract_pre_comment(pre_snippet: &str) -> (Option<String>, ListItemCommentStyle) {
+    // Each of the three tests below needs a `/` in the snippet.
+    if !has_byte(pre_snippet, b'/') {
+        return (None, ListItemCommentStyle::None);
+    }
+    extract_pre_comment_full(pre_snippet)
+}
+
+/// Whether `s` contains the ASCII byte `b`, eight bytes at a time.
+#[inline]
+fn has_byte(s: &str, b: u8) -> bool {
+    find_any_byte(s.as_bytes(), 0, [b]) < s.len()
+}
+
+fn extract_pre_comment_full(pre_snippet: &str) -> (Option<String>, ListItemCommentStyle) {
     let trimmed_pre_snippet = pre_snippet.trim();
     // Both start and end are checked to support keeping a block comment inline with
     // the item, even if there are preceding line comments, while still supporting
@@ -663,6 +758,19 @@ pub(crate) fn extract_pre_comment(pre_snippet: &str) -> (Option<String>, ListIte
 }
 
 pub(crate) fn extract_post_comment(
+    post_snippet: &str,
+    comment_end: usize,
+    separator: &str,
+    is_last: bool,
+) -> Option<String> {
+    // A post-comment is returned only when a part of the snippet starts with `//` or `/*`.
+    if !has_byte(&post_snippet[..comment_end], b'/') {
+        return None;
+    }
+    extract_post_comment_full(post_snippet, comment_end, separator, is_last)
+}
+
+fn extract_post_comment_full(
     post_snippet: &str,
     comment_end: usize,
     separator: &str,
@@ -715,6 +823,46 @@ pub(crate) fn get_comment_end(
     terminator: &str,
     is_last: bool,
 ) -> usize {
+    // Without `/` the snippet holds no comment: `CharClasses` yields every character as
+    // `Normal` (code and character literals) or `InString` (strings, raw strings and
+    // their prefixes), the two kinds `find_uncommented` matches, so its result for a
+    // one-byte pattern is `find`'s; and there is no block comment.
+    let pattern = if is_last { terminator } else { separator };
+    if let [pattern] = *pattern.as_bytes()
+        && !has_byte(post_snippet, b'/')
+    {
+        let bytes = post_snippet.as_bytes();
+        if is_last {
+            return memchr_or(bytes, pattern, bytes.len());
+        }
+        let newline_index = memchr_or(bytes, b'\n', usize::MAX);
+        return match memchr_or(bytes, pattern, usize::MAX) {
+            usize::MAX if newline_index != usize::MAX => newline_index + 1,
+            usize::MAX => 0,
+            separator_index if newline_index != usize::MAX && newline_index > separator_index => {
+                newline_index + 1
+            }
+            _ => bytes.len(),
+        };
+    }
+    get_comment_end_full(post_snippet, separator, terminator, is_last)
+}
+
+/// The position of the first `b` in `bytes`, or `default`.
+#[inline]
+fn memchr_or(bytes: &[u8], b: u8, default: usize) -> usize {
+    match find_any_byte(bytes, 0, [b]) {
+        i if i < bytes.len() => i,
+        _ => default,
+    }
+}
+
+fn get_comment_end_full(
+    post_snippet: &str,
+    separator: &str,
+    terminator: &str,
+    is_last: bool,
+) -> usize {
     if is_last {
         return post_snippet
             .find_uncommented(terminator)
@@ -759,6 +907,37 @@ pub(crate) fn get_comment_end(
 /// Account for extra whitespace between items. This is fiddly
 /// because of the way we divide pre- and post- comments.
 pub(crate) fn has_extra_newline(post_snippet: &str, comment_end: usize) -> bool {
+    if post_snippet.is_empty() || comment_end == 0 {
+        return false;
+    }
+    // The same steps on bytes while the characters met are ASCII: the last character
+    // before `comment_end` is one byte, the first line ends at the first `\n`, and the
+    // whitespace that follows is `char::is_whitespace`'s ASCII set, which has `\x0B` and
+    // `\x0C`. A non-ASCII byte on the way takes the character-based steps.
+    let bytes = post_snippet.as_bytes();
+    if bytes[comment_end - 1].is_ascii() {
+        let rest = &bytes[comment_end - 1..];
+        let first_newline = memchr_or(rest, b'\n', rest.len());
+        let mut newlines = 0;
+        for &b in &rest[first_newline..] {
+            match b {
+                b'\n' => {
+                    newlines += 1;
+                    if newlines > 1 {
+                        return true;
+                    }
+                }
+                b' ' | b'\t' | b'\r' | b'\x0B' | b'\x0C' => {}
+                0x80.. => return has_extra_newline_full(post_snippet, comment_end),
+                _ => return false,
+            }
+        }
+        return false;
+    }
+    has_extra_newline_full(post_snippet, comment_end)
+}
+
+fn has_extra_newline_full(post_snippet: &str, comment_end: usize) -> bool {
     if post_snippet.is_empty() || comment_end == 0 {
         return false;
     }
@@ -869,6 +1048,7 @@ where
 }
 
 /// Returns the count and total width of the list items.
+#[cfg(test)]
 fn calculate_width<I, T>(items: I) -> (usize, usize)
 where
     I: IntoIterator<Item = T>,
@@ -980,5 +1160,282 @@ pub(crate) fn struct_lit_formatting<'a>(
         nested: false,
         align_comments: true,
         config: context.config,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// rustfmt's `definitive_tactic`: the sum of every width, then the newline test.
+    fn definitive_tactic_reference(
+        items: &[ListItem],
+        tactic: ListTactic,
+        sep: Separator,
+        width: usize,
+    ) -> DefinitiveListTactic {
+        let pre_line_comments = items.iter().any(|item| item.has_single_line_comment());
+        let limit = match tactic {
+            _ if pre_line_comments => return DefinitiveListTactic::Vertical,
+            ListTactic::Horizontal => return DefinitiveListTactic::Horizontal,
+            ListTactic::Vertical => return DefinitiveListTactic::Vertical,
+            ListTactic::LimitedHorizontalVertical(limit) => cmp::min(width, limit),
+            ListTactic::Mixed | ListTactic::HorizontalVertical => width,
+        };
+        let (sep_count, total_width) = calculate_width(items);
+        let real_total = total_width + sep.len() * sep_count.saturating_sub(1);
+        if real_total <= limit && !items.iter().any(|item| item.is_multiline()) {
+            DefinitiveListTactic::Horizontal
+        } else {
+            match tactic {
+                ListTactic::Mixed => DefinitiveListTactic::Mixed,
+                _ => DefinitiveListTactic::Vertical,
+            }
+        }
+    }
+
+    /// `definitive_tactic`'s early exits answer as the full sum does, on every list of up to
+    /// three items over items of several widths, multi-line and non-ASCII items and items
+    /// with block and line comments, at every tactic, both separators and every width up
+    /// to 40.
+    #[test]
+    fn definitive_tactic_matches_the_full_sum() {
+        let mut kinds: Vec<ListItem> = [
+            "",
+            "a",
+            "abcd",
+            "abcdefghijklmnop",
+            "x\ny",
+            "\u{e9}\u{3000}z",
+            "a\r\nb",
+        ]
+        .iter()
+        .map(|s| ListItem::from_str(*s))
+        .collect();
+        kinds.push(ListItem::from_item(None));
+        let mut commented = ListItem::from_str("abc");
+        commented.post_comment = Some("/* note */".to_owned());
+        kinds.push(commented);
+        let mut line_comment = ListItem::from_str("ab");
+        line_comment.pre_comment = Some("// first".to_owned());
+        kinds.push(line_comment);
+        let mut multi_comment = ListItem::from_str("ab");
+        multi_comment.post_comment = Some("/* a\nb */".to_owned());
+        kinds.push(multi_comment);
+        let mut lists: Vec<Vec<ListItem>> = vec![vec![]];
+        for len in 1..=3 {
+            let mut next = Vec::new();
+            for list in lists.iter().filter(|l| l.len() == len - 1) {
+                for kind in &kinds {
+                    let mut list = list.clone();
+                    list.push(kind.clone());
+                    next.push(list);
+                }
+            }
+            lists.extend(next);
+        }
+        let tactics = [
+            ListTactic::Vertical,
+            ListTactic::Horizontal,
+            ListTactic::HorizontalVertical,
+            ListTactic::LimitedHorizontalVertical(10),
+            ListTactic::LimitedHorizontalVertical(25),
+            ListTactic::Mixed,
+        ];
+        for list in &lists {
+            for tactic in tactics {
+                for sep in [Separator::Comma, Separator::VerticalBar] {
+                    for width in 0..=40 {
+                        assert_eq!(
+                            definitive_tactic(list.as_slice(), tactic, sep, width),
+                            definitive_tactic_reference(list, tactic, sep, width),
+                            "{:?} {tactic:?} {sep:?} {width}",
+                            list.iter().map(|i| i.item.clone()).collect::<Vec<_>>()
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    fn item(
+        pre: Option<&str>,
+        text: Option<&str>,
+        post: Option<&str>,
+        new_lines: bool,
+    ) -> ListItem {
+        ListItem {
+            pre_comment: pre.map(str::to_owned),
+            pre_comment_style: if pre.is_some_and(|c| c.starts_with("//")) {
+                ListItemCommentStyle::DifferentLine
+            } else if pre.is_some() {
+                ListItemCommentStyle::SameLine
+            } else {
+                ListItemCommentStyle::None
+            },
+            item: text.map(str::to_owned),
+            post_comment: post.map(str::to_owned),
+            new_lines,
+        }
+    }
+
+    /// `write_list_into` appends exactly `write_list`'s text after any prefix (the list's
+    /// own emptiness and last-line width are read from what it appended), and leaves the
+    /// buffer as it was where `write_list` fails.
+    #[test]
+    fn write_list_into_appends_write_list_or_leaves_the_buffer() {
+        let config = Settings::default();
+        let lists: Vec<Vec<ListItem>> = vec![
+            vec![
+                item(None, Some("a"), None, false),
+                item(None, Some("bb"), None, false),
+            ],
+            vec![
+                item(None, Some(""), None, false),
+                item(None, Some("a"), None, false),
+            ],
+            vec![
+                item(None, Some("first"), Some("// one"), false),
+                item(None, Some("second_item"), Some("/* two */"), true),
+                item(Some("// before"), Some("third"), Some("// three"), false),
+                item(Some("/* pre */"), Some("x"), None, false),
+            ],
+            vec![
+                item(None, Some("foo::bar"), None, false),
+                item(None, Some("multi\n    line"), Some("// after"), false),
+                item(None, Some("baz"), None, false),
+            ],
+            vec![
+                item(None, Some("aaaa"), Some("// c1"), false),
+                item(None, Some("b"), Some("// c2"), false),
+            ],
+            vec![
+                item(None, Some("a"), None, false),
+                item(None, None, None, false),
+            ],
+        ];
+        let tactics = [
+            DefinitiveListTactic::Horizontal,
+            DefinitiveListTactic::Vertical,
+            DefinitiveListTactic::Mixed,
+            DefinitiveListTactic::SpecialMacro(1),
+            DefinitiveListTactic::SpecialMacro(2),
+        ];
+        let prefixes = ["", "f(", "line\n    g(", &"p".repeat(120)];
+        let mut compared = 0;
+        for items in &lists {
+            for tactic in tactics {
+                for trailing in [
+                    SeparatorTactic::Always,
+                    SeparatorTactic::Never,
+                    SeparatorTactic::Vertical,
+                ] {
+                    for (separator, place) in
+                        [(",", SeparatorPlace::Back), (" |", SeparatorPlace::Front)]
+                    {
+                        for width in [8, 40, 100] {
+                            for flag in [false, true] {
+                                let shape = Shape::legacy(width, Indent::new(4, 0));
+                                let fmt = ListFormatting::new(shape, &config)
+                                    .tactic(tactic)
+                                    .separator(separator)
+                                    .separator_place(place)
+                                    .trailing_separator(trailing)
+                                    .ends_with_newline(flag)
+                                    .preserve_newline(flag)
+                                    .nested(flag)
+                                    .align_comments(!flag);
+                                let alone = write_list(items, &fmt);
+                                for prefix in prefixes {
+                                    let mut out = prefix.to_owned();
+                                    let written = write_list_into(items, &fmt, &mut out);
+                                    match &alone {
+                                        Some(list) => {
+                                            assert!(written);
+                                            assert_eq!(out, format!("{prefix}{list}"));
+                                        }
+                                        None => {
+                                            assert!(!written);
+                                            assert_eq!(out, prefix);
+                                        }
+                                    }
+                                    compared += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(compared, 6 * 5 * 3 * 2 * 3 * 2 * 4);
+    }
+
+    /// Every string of up to five characters over the bytes that drive the list-gap
+    /// functions, and a few with `\r`, `\x0B` and non-ASCII characters.
+    fn gap_strings() -> Vec<String> {
+        const ALPHABET: [char; 13] = [
+            ',', ';', ')', ']', '}', ' ', '\n', '/', '*', '"', '\'', 'r', '#',
+        ];
+        let mut strings: Vec<String> = [
+            ", // c\n",
+            ",\n\n    ",
+            ",\r\n\r\n",
+            ",\n\x0B\n",
+            ",\n\x0C \n",
+            ",\n\u{a0}\n",
+            ",\n\u{3000}\n x",
+            "é,\n\n",
+            ", é\n",
+            ",é",
+            "/* a */,\n",
+            ", r#\"a,\"#\n",
+            ", 'a',\n",
+            " r#, \n",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        for len in 0..=5 {
+            for mut n in 0..ALPHABET.len().pow(len) {
+                let mut s = String::new();
+                for _ in 0..len {
+                    s.push(ALPHABET[n % ALPHABET.len()]);
+                    n /= ALPHABET.len();
+                }
+                strings.push(s);
+            }
+        }
+        strings
+    }
+
+    #[test]
+    fn list_gap_fast_paths_match_the_full_functions() {
+        let patterns = [(",", ")"), (";", "}"), ("|", "}"), (",", ""), (",", "|")];
+        for s in &gap_strings() {
+            assert_eq!(extract_pre_comment(s), extract_pre_comment_full(s), "{s:?}");
+            for (separator, terminator) in patterns {
+                for is_last in [false, true] {
+                    assert_eq!(
+                        get_comment_end(s, separator, terminator, is_last),
+                        get_comment_end_full(s, separator, terminator, is_last),
+                        "{s:?} {separator:?} {terminator:?} {is_last}"
+                    );
+                }
+            }
+            for comment_end in (0..=s.len()).filter(|&i| s.is_char_boundary(i)) {
+                assert_eq!(
+                    has_extra_newline(s, comment_end),
+                    has_extra_newline_full(s, comment_end),
+                    "{s:?} {comment_end}"
+                );
+                for is_last in [false, true] {
+                    assert_eq!(
+                        extract_post_comment(s, comment_end, ",", is_last),
+                        extract_post_comment_full(s, comment_end, ",", is_last),
+                        "{s:?} {comment_end} {is_last}"
+                    );
+                }
+            }
+        }
     }
 }

@@ -4,20 +4,68 @@
 
 #![allow(clippy::multiple_crate_versions)]
 
+// The binary's global allocator: glibc's `malloc` unless an `alloc-*` feature is enabled
+// (all off by default; measured in EXP-014). The first enabled of mimalloc, jemalloc and
+// snmalloc wins, so `--all-features` builds.
+#[cfg(feature = "alloc-mimalloc")]
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+#[cfg(all(feature = "alloc-jemalloc", not(feature = "alloc-mimalloc")))]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+#[cfg(all(
+    feature = "alloc-snmalloc",
+    not(any(feature = "alloc-mimalloc", feature = "alloc-jemalloc"))
+))]
+#[global_allocator]
+static GLOBAL: snmalloc_rs::SnMalloc = snmalloc_rs::SnMalloc;
+
 /// Command-line interface for formatting Rust source files.
 #[cfg(feature = "cli")]
 pub mod cli {
     pub mod args;
+    pub mod cache;
     pub mod logs;
     pub mod orchestrate;
     pub mod report;
+    pub mod trace;
+    pub mod units;
     pub mod worker;
 
+    use crate::vlog;
     use args::{Args, print_usage};
-    use orchestrate::{discover_rust_files, format_all};
+    use cache::Cache;
+    use orchestrate::{SourceFile, discover_rust_files, format_all};
     use report::{aggregate_results, print_summary};
     use std::io;
     use std::path::Path;
+    use units::Units;
+
+    /// Open the fixed-point cache named by the arguments, or `None` when it is disabled by
+    /// `--no-cache`, when no cache directory resolves, or when the running executable cannot
+    /// be hashed.
+    fn open_cache(args: &Args, config: &chloro_core::Config) -> Option<Cache> {
+        if args.no_cache {
+            vlog!(args, { "Cache: disabled (--no-cache)" });
+            return None;
+        }
+        let Some(dir) = cache::resolve_dir(&args.cache_dir) else {
+            vlog!(args, {
+                "Cache: disabled (no cache directory; set CHLORO_CACHE_DIR or --cache-dir)"
+            });
+            return None;
+        };
+        let cache = Cache::open(&dir, config);
+        match &cache {
+            Some(cache) => {
+                vlog!(args, {"Cache: {} ({} entries)", cache.path().display(), cache.len()})
+            }
+            None => vlog!(args, {
+                "Cache: disabled (cannot read the running executable)"
+            }),
+        }
+        cache
+    }
 
     /// Entry point for the chloro CLI
     ///
@@ -33,6 +81,7 @@ pub mod cli {
     ///
     /// The process will also exit with a non-zero status if migration fails.
     pub fn main() -> io::Result<()> {
+        trace::init();
         let args: Args = facet_args::from_std_args()
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{e}")))?;
 
@@ -41,10 +90,13 @@ pub mod cli {
             std::process::exit(0);
         }
 
-        if let Err(e) = args.formatting_config() {
-            eprintln!("Error: invalid --config: {e}");
-            std::process::exit(1);
-        }
+        let config = match args.formatting_config() {
+            Ok(config) => config,
+            Err(e) => {
+                eprintln!("Error: invalid --config: {e}");
+                std::process::exit(1);
+            }
+        };
 
         if args.verbose {
             eprintln!("Sources: {}", args.sources.join(", "));
@@ -61,6 +113,12 @@ pub mod cli {
             eprintln!();
         }
 
+        // Opened before the files are discovered: the executable is hashed as soon after
+        // start-up as possible (`cache::tool_key`).
+        trace::mark("args");
+        let cache = open_cache(&args, &config);
+        trace::mark("cache");
+
         // Collect all files from all source paths
         let mut all_files = Vec::new();
 
@@ -72,11 +130,19 @@ pub mod cli {
             }
 
             if source_path.is_file() {
-                all_files.push(source_path.to_path_buf());
+                all_files.push(SourceFile::at(source_path.canonicalize()?));
             } else {
                 all_files.extend(discover_rust_files(source_path)?);
             }
         }
+        // A file reachable twice (named twice, through a symlink, or both named and
+        // discovered) is processed once: every entry is canonical, so equal files compare
+        // equal. Two workers writing one path could otherwise read a truncated file. The one
+        // sort of the list: discovery yields each tree in this order already.
+        trace::mark("walk");
+        all_files.sort_by(|a, b| a.path.cmp(&b.path));
+        all_files.dedup_by(|a, b| a.path == b.path);
+        trace::mark("sort");
 
         if all_files.is_empty() {
             if args.verbose {
@@ -87,26 +153,60 @@ pub mod cli {
 
         if args.verbose {
             eprintln!("Found {} Rust file(s)", all_files.len());
-            let num_threads = std::thread::available_parallelism().map_or(1, |n| n.get());
-
-            // Calculate chunk info for display
-            let oversubscribe = 4;
-            let total_chunks = num_threads * oversubscribe;
-            let chunk_size = all_files.len().div_ceil(total_chunks);
-
-            eprintln!(
-                "Processing with {} threads ({} chunks of ~{} files)",
-                num_threads, total_chunks, chunk_size
-            );
+            eprintln!("Processing with {} threads", args.thread_count());
             eprintln!();
         }
 
+        // The unit cache lives next to the fixed-point cache and is read on the first file
+        // the fixed-point cache does not answer.
+        let units = match &cache {
+            Some(cache) if args.unit_cache => Some(Units::new(cache)),
+            Some(_) => {
+                vlog!(args, { "Unit cache: off (enable with --unit-cache)" });
+                None
+            }
+            None => None,
+        };
+
         // Format files in parallel
-        let results = format_all(&all_files, &args);
+        let results = format_all(&all_files, &args, cache.as_ref(), units.as_ref());
+        trace::mark("formatted");
         let agg = aggregate_results(results);
 
+        if let (Some(units), Some(cache)) = (units, &cache) {
+            if let Some(stats) = units.stats() {
+                vlog!(args, {
+                    "Unit cache: {} ({} entries read, {} bytes); units looked up: {}, found: {}, stored: {}; {} entries, {} record bytes held",
+                    units.path().display(),
+                    stats.entries_read,
+                    stats.file_len,
+                    stats.lookups,
+                    stats.hits,
+                    stats.stores,
+                    stats.entries,
+                    stats.record_bytes
+                });
+            }
+            let path = units.path().to_path_buf();
+            match units.save(cache) {
+                Ok(true) => vlog!(args, {"Unit cache written: {}", path.display()}),
+                Ok(false) => {}
+                Err(e) => vlog!(args, {"Unit cache not written: {}: {e}", path.display()}),
+            }
+        }
+
+        if let Some(cache) = cache {
+            let path = cache.path().to_path_buf();
+            match cache.save(agg.fixed_points.iter().copied()) {
+                Ok(()) => vlog!(args, {"Cache written: {}", path.display()}),
+                Err(e) => vlog!(args, {"Cache not written: {}: {e}", path.display()}),
+            }
+        }
+
+        trace::mark("saved");
         // Print summary
         print_summary(&agg, &args);
+        trace::finish();
 
         // Exit with error if in check mode and files need formatting
         if args.check && agg.files_changed > 0 {

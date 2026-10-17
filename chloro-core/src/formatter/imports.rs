@@ -10,11 +10,11 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fmt;
 
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasName};
+use crate::cst::ast::{self, AstNode, HasName};
+use ra_ap_parser::T;
 
 use super::comment::combine_strs_with_missing_comments;
-use super::config::{Edition, StyleEdition};
+use super::config::{Edition, RustfmtVersion, StyleEdition};
 use super::context::{Rewrite, RewriteContext};
 use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, Separator, definitive_tactic, itemize_list,
@@ -22,13 +22,41 @@ use super::lists::{
 };
 use super::nodes::{Attribute, child, outer_attributes};
 use super::nodes::{has_token, node_text};
+use super::parallel::GapOp;
 use super::shape::Shape;
 use super::sort::version_sort;
 use super::span::{BytePos, Span, Spanned, mk_sp, node_range_span};
-use super::utils::format_visibility;
+use super::utils::{concat, format_visibility};
 use super::visitor::FmtVisitor;
 
 impl FmtVisitor<'_> {
+    /// The gap before a `use` item at `lo` whose rewrite is empty: the text up to the last
+    /// newline before the item, less the newline the removed import leaves behind.
+    pub(crate) fn format_missing_before_removed_import(&mut self, lo: BytePos) {
+        if self.defer_gap(GapOp::RemovedImport(lo), lo) {
+            return;
+        }
+        // Format up to last newline
+        let prev_span = mk_sp(self.last_pos, lo);
+        let trimmed_snippet = self.snippet(prev_span).trim_end();
+        let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
+        self.format_missing(span_end);
+        // We have an excessive newline from the removed import.
+        if self.buffer.ends_with('\n') {
+            // A worker's buffer starts as an uncounted newline (`parallel.rs`), so the
+            // count can be 0 here; it then stays 0, and the popped newline was uncounted.
+            let line_number = self.line_number();
+            self.buffer.pop();
+            if line_number == 0 {
+                self.uncounted_newlines -= 1;
+            }
+            #[cfg(debug_assertions)]
+            {
+                self.counted_line_number = self.counted_line_number.saturating_sub(1);
+            }
+        }
+    }
+
     pub(crate) fn format_import(&mut self, item: &ast::Use) {
         // The span includes the attributes, which `rewrite_top_level` formats.
         let span = item.span();
@@ -38,16 +66,7 @@ impl FmtVisitor<'_> {
             .and_then(|tree| tree.rewrite_top_level(&context, shape));
         match rw {
             Some(ref s) if s.is_empty() => {
-                // Format up to last newline
-                let prev_span = mk_sp(self.last_pos, span.lo());
-                let trimmed_snippet = self.snippet(prev_span).trim_end();
-                let span_end = self.last_pos + trimmed_snippet.len() as BytePos;
-                self.format_missing(span_end);
-                // We have an excessive newline from the removed import.
-                if self.buffer.ends_with('\n') {
-                    self.buffer.pop();
-                    self.line_number -= 1;
-                }
+                self.format_missing_before_removed_import(span.lo());
                 self.last_pos = span.hi();
             }
             Some(ref s) => {
@@ -71,24 +90,25 @@ impl FmtVisitor<'_> {
 // are otherwise identical.
 
 #[derive(Clone, Eq, Hash, PartialEq)]
-pub(crate) enum UseSegmentKind {
+pub(crate) enum UseSegmentKind<'a> {
     Ident(String, Option<String>),
     Slf(Option<String>),
     Super(Option<String>),
     Crate(Option<String>),
     Glob,
-    List(Vec<UseTree>),
+    List(Vec<UseTree<'a>>),
 }
 
 #[derive(Clone, Eq, PartialEq, Hash)]
-pub(crate) struct UseSegment {
-    pub(crate) kind: UseSegmentKind,
+pub(crate) struct UseSegment<'a> {
+    pub(crate) kind: UseSegmentKind<'a>,
     pub(crate) style_edition: StyleEdition,
+    pub(crate) rustfmt_version: RustfmtVersion,
 }
 
 #[derive(Clone)]
-pub(crate) struct UseTree {
-    pub(crate) path: Vec<UseSegment>,
+pub(crate) struct UseTree<'a> {
+    pub(crate) path: Vec<UseSegment<'a>>,
     pub(crate) span: Span,
     // Comment information within nested use tree.
     pub(crate) list_item: Option<ListItem>,
@@ -96,24 +116,24 @@ pub(crate) struct UseTree {
     /// rustc's `Option<Visibility>`: `Some` for the tree of a `use` item, holding `None` when
     /// no visibility is written (rustc's `VisibilityKind::Inherited`); `None` for a nested
     /// tree.
-    visibility: Option<Option<ast::Visibility>>,
-    attrs: Option<Vec<Attribute>>,
+    visibility: Option<Option<ast::Visibility<'a>>>,
+    attrs: Option<Vec<Attribute<'a>>>,
 }
 
-impl PartialEq for UseTree {
-    fn eq(&self, other: &UseTree) -> bool {
+impl PartialEq for UseTree<'_> {
+    fn eq(&self, other: &UseTree<'_>) -> bool {
         self.path == other.path
     }
 }
-impl Eq for UseTree {}
+impl Eq for UseTree<'_> {}
 
-impl std::hash::Hash for UseTree {
+impl std::hash::Hash for UseTree<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.path.hash(state);
     }
 }
 
-impl Spanned for UseTree {
+impl Spanned for UseTree<'_> {
     fn span(&self) -> Span {
         let lo = match &self.attrs {
             Some(attrs) => attrs.first().map_or(self.span.lo(), |a| a.span().lo()),
@@ -123,9 +143,76 @@ impl Spanned for UseTree {
     }
 }
 
-impl UseSegment {
+impl<'a> UseSegment<'a> {
+    /// The order of two identifier segments by their names alone (`cmp`'s first test for
+    /// two `Ident` segments).
+    fn ident_cmp(&self, pia: &str, pib: &str) -> Ordering {
+        fn is_upper_snake_case(s: &str) -> bool {
+            s.chars()
+                .all(|c| c.is_uppercase() || c == '_' || c.is_numeric())
+        }
+
+        let (ia, ib) = if self.style_edition >= StyleEdition::Edition2024 {
+            (trim_raw_prefix(pia), trim_raw_prefix(pib))
+        } else {
+            (pia, pib)
+        };
+
+        if self.style_edition >= StyleEdition::Edition2024 {
+            version_sort(ia, ib)
+        } else if self.rustfmt_version < RustfmtVersion::V1_9_0 {
+            // F5: rustfmt 1.8.0 compares with early returns (`v1.8.0
+            // src/imports.rs:945-958`), which is not a total order once a name
+            // starts with `_` (`Ab < _x < ab < Ab`); rustfmt 1.9.0 compares a
+            // key (commit `a57ce886`, CHANGELOG 1.9.0 Fixed #6668).
+            // snake_case < CamelCase < UPPER_SNAKE_CASE
+            if ia.starts_with(char::is_uppercase) && ib.starts_with(char::is_lowercase) {
+                return Ordering::Greater;
+            }
+            if ia.starts_with(char::is_lowercase) && ib.starts_with(char::is_uppercase) {
+                return Ordering::Less;
+            }
+            if is_upper_snake_case(ia) && !is_upper_snake_case(ib) {
+                return Ordering::Greater;
+            }
+            if !is_upper_snake_case(ia) && is_upper_snake_case(ib) {
+                return Ordering::Less;
+            }
+            ia.cmp(ib)
+        } else {
+            fn sorting_key(ident: &str) -> (bool, bool, &str) {
+                // snake_case < CamelCase < UPPER_SNAKE_CASE
+                (
+                    is_upper_snake_case(ident),
+                    ident.starts_with(char::is_uppercase),
+                    ident,
+                )
+            }
+
+            sorting_key(ia).cmp(&sorting_key(ib))
+        }
+    }
+
+    /// `self.remove_alias().cmp(&other.remove_alias())` without copying either segment
+    /// (`remove_alias` clones a name, or a whole nested list); `ord` is `self.cmp(other)`.
+    /// `remove_alias` drops the alias of an `Ident`, `self`, `super` or `crate` segment and
+    /// keeps every other segment as it is, and `cmp` reads aliases only when both segments
+    /// are of one of those kinds.
+    fn cmp_without_alias(&self, other: &UseSegment<'_>, ord: Ordering) -> Ordering {
+        use self::UseSegmentKind::*;
+        match (&self.kind, &other.kind) {
+            // Without aliases, `cmp` compares `None` with `None`.
+            (Slf(_), Slf(_)) | (Super(_), Super(_)) | (Crate(_), Crate(_)) => Ordering::Equal,
+            // Equal aliases compare equal, so `ord` is already the order of the names.
+            (Ident(_, aa), Ident(_, ab)) if aa == ab => ord,
+            (Ident(ia, _), Ident(ib, _)) => self.ident_cmp(ia, ib),
+            _ => ord,
+        }
+    }
+
     // Clone a version of self with any top-level alias removed.
-    fn remove_alias(&self) -> UseSegment {
+    #[cfg(test)]
+    fn remove_alias(&self) -> UseSegment<'_> {
         let kind = match self.kind {
             UseSegmentKind::Ident(ref s, _) => UseSegmentKind::Ident(s.clone(), None),
             UseSegmentKind::Slf(_) => UseSegmentKind::Slf(None),
@@ -136,10 +223,11 @@ impl UseSegment {
         UseSegment {
             kind,
             style_edition: self.style_edition,
+            rustfmt_version: self.rustfmt_version,
         }
     }
 
-    fn from_name(context: &RewriteContext<'_>, name: &str, modsep: bool) -> Option<UseSegment> {
+    fn from_name(context: &RewriteContext<'_>, name: &str, modsep: bool) -> Option<UseSegment<'a>> {
         if name.is_empty() {
             return None;
         }
@@ -149,42 +237,43 @@ impl UseSegment {
             "crate" => UseSegmentKind::Crate(None),
             _ => {
                 let mod_sep = if modsep { "::" } else { "" };
-                UseSegmentKind::Ident(format!("{mod_sep}{name}"), None)
+                UseSegmentKind::Ident(concat(&[mod_sep, name]), None)
             }
         };
 
         Some(UseSegment {
             kind,
             style_edition: context.config.style_edition(),
+            rustfmt_version: context.config.rustfmt_version(),
         })
     }
 }
 
-impl fmt::Debug for UseTree {
+impl fmt::Debug for UseTree<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-impl fmt::Debug for UseSegment {
+impl fmt::Debug for UseSegment<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.kind, f)
     }
 }
 
-impl fmt::Display for UseSegment {
+impl fmt::Display for UseSegment<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.kind, f)
     }
 }
 
-impl fmt::Debug for UseSegmentKind {
+impl fmt::Debug for UseSegmentKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-impl fmt::Display for UseSegmentKind {
+impl fmt::Display for UseSegmentKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             UseSegmentKind::Glob => write!(f, "*"),
@@ -207,7 +296,7 @@ impl fmt::Display for UseSegmentKind {
     }
 }
 
-impl fmt::Display for UseTree {
+impl fmt::Display for UseTree<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, segment) in self.path.iter().enumerate() {
             if i != 0 {
@@ -226,7 +315,7 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
     let mut global = false;
     // Segments are nested: `a::b::c` is Path(Path(Path(a), b), c).
     let mut segments: Vec<ast::PathSegment> = Vec::new();
-    let mut cur = Some(path.clone());
+    let mut cur = Some(*path);
     while let Some(p) = cur {
         if let Some(seg) = child::<ast::PathSegment>(p.syntax()) {
             segments.push(seg);
@@ -240,13 +329,13 @@ fn path_segment_names(path: &ast::Path) -> (Vec<String>, bool) {
         }
         let text = seg
             .name_ref()
-            .map_or_else(String::new, |n| node_text(n.syntax()));
+            .map_or_else(String::new, |n| node_text(n.syntax()).to_owned());
         names.push(text);
     }
     (names, global)
 }
 
-impl UseTree {
+impl<'a> UseTree<'a> {
     // Rewrite use tree with `use ` and a trailing `;`.
     pub(crate) fn rewrite_top_level(
         &self,
@@ -264,7 +353,7 @@ impl UseTree {
                 if s.is_empty() {
                     s
                 } else {
-                    format!("{vis}use {s};")
+                    concat(&[&vis, "use ", &s, ";"])
                 }
             })?;
         match self.attrs {
@@ -298,9 +387,9 @@ impl UseTree {
     /// The tree of a `use` item, normalised when the item takes part in reordering.
     pub(crate) fn from_use_item(
         context: &RewriteContext<'_>,
-        item: &ast::Use,
+        item: &ast::Use<'a>,
         normalize: bool,
-    ) -> Option<UseTree> {
+    ) -> Option<UseTree<'a>> {
         let attrs = outer_attributes(item.syntax());
         let tree = UseTree::from_ast(
             context,
@@ -317,10 +406,10 @@ impl UseTree {
         context: &RewriteContext<'_>,
         a: &ast::UseTree,
         list_item: Option<ListItem>,
-        visibility: Option<Option<ast::Visibility>>,
+        visibility: Option<Option<ast::Visibility<'a>>>,
         opt_lo: Option<BytePos>,
-        attrs: Option<Vec<Attribute>>,
-    ) -> UseTree {
+        attrs: Option<Vec<Attribute<'a>>>,
+    ) -> UseTree<'a> {
         let a_span = node_range_span(a.syntax());
         let span = match opt_lo {
             Some(lo) => mk_sp(lo, a_span.hi()),
@@ -353,6 +442,7 @@ impl UseTree {
         }
 
         let style_edition = context.config.style_edition();
+        let rustfmt_version = context.config.rustfmt_version();
 
         if has_token(a.syntax(), T![*]) {
             // in case of a global path and the glob starts at the root, e.g., "::*"
@@ -360,11 +450,13 @@ impl UseTree {
                 result.path.push(UseSegment {
                     kind: UseSegmentKind::Ident(String::new(), None),
                     style_edition,
+                    rustfmt_version,
                 });
             }
             result.path.push(UseSegment {
                 kind: UseSegmentKind::Glob,
                 style_edition,
+                rustfmt_version,
             });
         } else if let Some(list) = a.use_tree_list() {
             let trees: Vec<ast::UseTree> = list.use_trees().collect();
@@ -389,6 +481,7 @@ impl UseTree {
                 result.path.push(UseSegment {
                     kind: UseSegmentKind::Ident(String::new(), None),
                     style_edition,
+                    rustfmt_version,
                 });
             }
             let kind = UseSegmentKind::List(
@@ -403,6 +496,7 @@ impl UseTree {
             result.path.push(UseSegment {
                 kind,
                 style_edition,
+                rustfmt_version,
             });
         } else if let Some(last) = names.last() {
             // If the path has leading double colons and is composed of only 2 segments, then we
@@ -417,7 +511,7 @@ impl UseTree {
             };
             let alias = a.rename().and_then(|rename| {
                 let alias = match rename.name() {
-                    Some(n) => node_text(n.syntax()),
+                    Some(n) => node_text(n.syntax()).to_owned(),
                     // for impl-only-use
                     None => "_".to_owned(),
                 };
@@ -435,13 +529,14 @@ impl UseTree {
             result.path.push(UseSegment {
                 kind,
                 style_edition,
+                rustfmt_version,
             });
         }
         result
     }
 
     // Do the adjustments that rustfmt does elsewhere to use paths.
-    pub(crate) fn normalize(mut self) -> UseTree {
+    pub(crate) fn normalize(mut self) -> UseTree<'a> {
         let Some(mut last) = self.path.pop() else {
             return self;
         };
@@ -466,7 +561,12 @@ impl UseTree {
         if let UseSegmentKind::Slf(None) = last.kind
             && let Some(second_last) = self.path.pop()
         {
-            if matches!(second_last.kind, UseSegmentKind::Slf(_)) {
+            // F3: rustfmt 1.9.0 keeps a `self` that follows `self` (`use self::self;`,
+            // commit `334670e0`, PR #6573, CHANGELOG 1.9.0 Fixed #6558); rustfmt 1.8.0
+            // drops the trailing `self` after any segment (`v1.8.0 src/imports.rs:572`).
+            if matches!(second_last.kind, UseSegmentKind::Slf(_))
+                && last.rustfmt_version >= RustfmtVersion::V1_9_0
+            {
                 self.path.push(second_last);
             } else {
                 self.path.push(second_last);
@@ -514,11 +614,12 @@ impl UseTree {
         // Recursively normalize elements of a list use (including sorting the list).
         if let UseSegmentKind::List(list) = last.kind {
             let mut list = list.into_iter().map(UseTree::normalize).collect::<Vec<_>>();
-            list.sort();
+            sort_use_trees(&mut list, last.rustfmt_version);
             list.dedup();
             last = UseSegment {
                 kind: UseSegmentKind::List(list),
                 style_edition: last.style_edition,
+                rustfmt_version: last.rustfmt_version,
             };
         }
 
@@ -531,30 +632,49 @@ impl UseTree {
     }
 }
 
-impl PartialOrd for UseSegment {
-    fn partial_cmp(&self, other: &UseSegment) -> Option<Ordering> {
+/// Sorts `use` trees as rustfmt's `list.sort()` does.
+///
+/// Under `rustfmt_version = "1.8.0"` and a style edition before 2024, the comparator (F5)
+/// is not a total order for lists that mix `_`-prefixed names with others, so the result
+/// depends on the sorting algorithm. `slice::sort` in the standard library of Rust 1.88.0
+/// and later runs an insertion sort on at most 20 elements (`core::slice::sort::stable`,
+/// `MAX_LEN_ALWAYS_INSERTION_SORT`), which this reproduces for every length: longer lists
+/// go through driftsort in rustfmt 1.8.0, whose merges may order such a list differently
+/// or detect the violated order and panic (#6668), which this does not model.
+pub(crate) fn sort_use_trees(list: &mut [UseTree<'_>], rustfmt_version: RustfmtVersion) {
+    match rustfmt_version {
+        RustfmtVersion::V1_9_0 => list.sort(),
+        RustfmtVersion::V1_8_0 => {
+            for i in 1..list.len() {
+                let mut j = i;
+                while j > 0 && list[j] < list[j - 1] {
+                    list.swap(j, j - 1);
+                    j -= 1;
+                }
+            }
+        }
+    }
+}
+
+impl PartialOrd for UseSegment<'_> {
+    fn partial_cmp(&self, other: &UseSegment<'_>) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl PartialOrd for UseTree {
-    fn partial_cmp(&self, other: &UseTree) -> Option<Ordering> {
+impl PartialOrd for UseTree<'_> {
+    fn partial_cmp(&self, other: &UseTree<'_>) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl Ord for UseSegment {
+impl Ord for UseSegment<'_> {
     fn cmp(&self, other: &UseSegment) -> Ordering {
         use self::UseSegmentKind::*;
-
-        fn is_upper_snake_case(s: &str) -> bool {
-            s.chars()
-                .all(|c| c.is_uppercase() || c == '_' || c.is_numeric())
-        }
 
         match (&self.kind, &other.kind) {
             (Slf(a), Slf(b)) | (Super(a), Super(b)) | (Crate(a), Crate(b)) => match (a, b) {
                 (Some(sa), Some(sb)) => {
                     if self.style_edition >= StyleEdition::Edition2024 {
-                        version_sort(sa.trim_start_matches("r#"), sb.trim_start_matches("r#"))
+                        version_sort(trim_raw_prefix(sa), trim_raw_prefix(sb))
                     } else {
                         a.cmp(b)
                     }
@@ -563,26 +683,7 @@ impl Ord for UseSegment {
             },
             (Glob, Glob) => Ordering::Equal,
             (Ident(pia, aa), Ident(pib, ab)) => {
-                let (ia, ib) = if self.style_edition >= StyleEdition::Edition2024 {
-                    (pia.trim_start_matches("r#"), pib.trim_start_matches("r#"))
-                } else {
-                    (pia.as_str(), pib.as_str())
-                };
-
-                let ident_ord = if self.style_edition >= StyleEdition::Edition2024 {
-                    version_sort(ia, ib)
-                } else {
-                    fn sorting_key(ident: &str) -> (bool, bool, &str) {
-                        // snake_case < CamelCase < UPPER_SNAKE_CASE
-                        (
-                            is_upper_snake_case(ident),
-                            ident.starts_with(char::is_uppercase),
-                            ident,
-                        )
-                    }
-
-                    sorting_key(ia).cmp(&sorting_key(ib))
-                };
+                let ident_ord = self.ident_cmp(pia, pib);
 
                 if ident_ord != Ordering::Equal {
                     return ident_ord;
@@ -592,7 +693,7 @@ impl Ord for UseSegment {
                     (Some(_), None) => Ordering::Greater,
                     (Some(aas), Some(abs)) => {
                         if self.style_edition >= StyleEdition::Edition2024 {
-                            version_sort(aas.trim_start_matches("r#"), abs.trim_start_matches("r#"))
+                            version_sort(trim_raw_prefix(aas), trim_raw_prefix(abs))
                         } else {
                             aas.cmp(abs)
                         }
@@ -614,21 +715,28 @@ impl Ord for UseSegment {
         }
     }
 }
-impl Ord for UseTree {
-    fn cmp(&self, other: &UseTree) -> Ordering {
+impl Ord for UseTree<'_> {
+    fn cmp(&self, other: &UseTree<'_>) -> Ordering {
         for (a, b) in self.path.iter().zip(other.path.iter()) {
             let ord = a.cmp(b);
             // The comparison without aliases is a hack to avoid situations like
             // comparing `a::b` to `a as c` - where the latter should be ordered
             // first since it is shorter.
-            if ord != Ordering::Equal && a.remove_alias().cmp(&b.remove_alias()) != Ordering::Equal
-            {
+            if ord != Ordering::Equal && a.cmp_without_alias(b, ord) != Ordering::Equal {
                 return ord;
             }
         }
 
         self.path.len().cmp(&other.path.len())
     }
+}
+
+/// `s.trim_start_matches("r#")` without building a substring searcher for the pattern.
+fn trim_raw_prefix(mut s: &str) -> &str {
+    while let Some(rest) = s.strip_prefix("r#") {
+        s = rest;
+    }
+    s
 }
 
 /// `imports_indent` is fixed at `Block` and `imports_layout` at `Mixed`.
@@ -689,31 +797,31 @@ fn rewrite_nested_use_tree(
         || list_str.len() > remaining_width
         || tactic == DefinitiveListTactic::Vertical
     {
-        format!(
-            "{{\n{}{}\n{}}}",
-            nested_shape.indent.to_string(context.config),
-            list_str,
-            shape.indent.to_string(context.config)
-        )
+        concat(&[
+            "{\n",
+            &nested_shape.indent.to_string(context.config),
+            &list_str,
+            "\n",
+            &shape.indent.to_string(context.config),
+            "}",
+        ])
     } else {
-        format!("{{{list_str}}}")
+        concat(&["{", &list_str, "}"])
     };
 
     Some(result)
 }
 
-impl Rewrite for UseSegment {
+impl Rewrite for UseSegment<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         Some(match self.kind {
-            UseSegmentKind::Ident(ref ident, Some(ref rename)) => {
-                format!("{ident} as {rename}")
-            }
+            UseSegmentKind::Ident(ref ident, Some(ref rename)) => concat(&[ident, " as ", rename]),
             UseSegmentKind::Ident(ref ident, None) => ident.clone(),
-            UseSegmentKind::Slf(Some(ref rename)) => format!("self as {rename}"),
+            UseSegmentKind::Slf(Some(ref rename)) => concat(&["self as ", rename]),
             UseSegmentKind::Slf(None) => "self".to_owned(),
-            UseSegmentKind::Super(Some(ref rename)) => format!("super as {rename}"),
+            UseSegmentKind::Super(Some(ref rename)) => concat(&["super as ", rename]),
             UseSegmentKind::Super(None) => "super".to_owned(),
-            UseSegmentKind::Crate(Some(ref rename)) => format!("crate as {rename}"),
+            UseSegmentKind::Crate(Some(ref rename)) => concat(&["crate as ", rename]),
             UseSegmentKind::Crate(None) => "crate".to_owned(),
             UseSegmentKind::Glob => "*".to_owned(),
             UseSegmentKind::List(ref use_tree_list) => rewrite_nested_use_tree(
@@ -726,7 +834,7 @@ impl Rewrite for UseSegment {
     }
 }
 
-impl Rewrite for UseTree {
+impl Rewrite for UseTree<'_> {
     // This does NOT format attributes and visibility or add a trailing `;`.
     fn rewrite(&self, context: &RewriteContext<'_>, mut shape: Shape) -> Option<String> {
         let mut result = String::with_capacity(256);
@@ -741,5 +849,70 @@ impl Rewrite for UseTree {
             }
         }
         Some(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Segments of every kind with and without aliases, names that differ only in a raw
+    /// prefix, in case, in digits and leading zeros, and in underscores.
+    fn segments(
+        style_edition: StyleEdition,
+        rustfmt_version: RustfmtVersion,
+    ) -> Vec<UseSegment<'static>> {
+        let names = [
+            "a", "b", "r#a", "r#r#a", "A", "_a", "a_b", "ab", "x8", "x08", "x10", "AB_C", "Ab",
+        ];
+        let aliases = [None, Some("z"), Some("r#z"), Some("y1"), Some("y01")];
+        let mut kinds = vec![UseSegmentKind::Glob];
+        for alias in aliases {
+            let alias = alias.map(str::to_owned);
+            kinds.push(UseSegmentKind::Slf(alias.clone()));
+            kinds.push(UseSegmentKind::Super(alias.clone()));
+            kinds.push(UseSegmentKind::Crate(alias.clone()));
+            for name in names {
+                kinds.push(UseSegmentKind::Ident(name.to_owned(), alias.clone()));
+            }
+        }
+        kinds
+            .into_iter()
+            .map(|kind| UseSegment {
+                kind,
+                style_edition,
+                rustfmt_version,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn cmp_without_alias_matches_comparing_copies_without_aliases() {
+        for (style_edition, rustfmt_version) in [
+            (StyleEdition::Edition2024, RustfmtVersion::V1_9_0),
+            (StyleEdition::Edition2021, RustfmtVersion::V1_9_0),
+            (StyleEdition::Edition2021, RustfmtVersion::V1_8_0),
+        ] {
+            let segments = segments(style_edition, rustfmt_version);
+            for (i, a) in segments.iter().enumerate() {
+                for (j, b) in segments.iter().enumerate() {
+                    let ord = a.cmp(b);
+                    assert_eq!(
+                        a.cmp_without_alias(b, ord),
+                        a.remove_alias().cmp(&b.remove_alias()),
+                        "segments {i} and {j}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn trim_raw_prefix_matches_trim_start_matches() {
+        for s in [
+            "", "r", "r#", "r#r#", "r#a", "r#r#a", "rr#a", "a r#", "#r#a", "r#\u{e9}",
+        ] {
+            assert_eq!(trim_raw_prefix(s), s.trim_start_matches("r#"), "{s}");
+        }
     }
 }

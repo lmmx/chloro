@@ -1,0 +1,62 @@
+# The registry validation sample of benchmarks/profile.sh (EXP-027): 49 files, 731733 bytes.
+# root: cargo-registry
+# Paths are relative to ${CARGO_HOME:-~/.cargo}/registry/src. Written by
+# benchmarks/samples/registry49.sh with rustfmt 1.9.0-stable (2d8144b788 2026-07-07).
+# Rule: the .rs files (find -type f) of the 577 crates of
+# docs/journal/2026-10-14-autoresearch/corpus/registry-crates.txt under
+# index.crates.io-1949cf8c6b5b557f, sorted bytewise: 20593 files; N = 20593 / 49 = 420;
+# candidate k is line k*N (k = 1..49), and a candidate that fails a check is replaced by the
+# next line that passes. A file passes when rustfmt --edition 2024 (stdin, empty
+# configuration) exits 0, its output is a fixed point of rustfmt, and chloro's output
+# (examples/fmt_stdin) is byte-identical to rustfmt's.
+# Rejected (1; line, path, reason):
+#   10920 index.crates.io-1949cf8c6b5b557f/rand-0.8.8/src/rngs/thread.rs: rustfmt exits 1
+index.crates.io-1949cf8c6b5b557f/base64-0.22.1/src/engine/general_purpose/mod.rs
+index.crates.io-1949cf8c6b5b557f/borsh-1.5.7/tests/schema/test_box.rs
+index.crates.io-1949cf8c6b5b557f/clap-4.6.7/examples/tutorial_derive/03_05_default_values.rs
+index.crates.io-1949cf8c6b5b557f/crossbeam-utils-0.8.21/build.rs
+index.crates.io-1949cf8c6b5b557f/darling_core-0.20.11/src/usage/options.rs
+index.crates.io-1949cf8c6b5b557f/diesel-2.3.14/src/pg/connection/cursor.rs
+index.crates.io-1949cf8c6b5b557f/env_filter-2.0.0/src/filtered_log.rs
+index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/quality.rs
+index.crates.io-1949cf8c6b5b557f/getrandom-0.4.3/src/backends/wasi_p1.rs
+index.crates.io-1949cf8c6b5b557f/hyper-1.12.0/src/ffi/http_types.rs
+index.crates.io-1949cf8c6b5b557f/imara-diff-0.2.0/src/sink.rs
+index.crates.io-1949cf8c6b5b557f/jiff-0.2.38/src/util/sync.rs
+index.crates.io-1949cf8c6b5b557f/libc-0.2.190/src/new/mod.rs
+index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.11.0/src/aarch64/bootparam.rs
+index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.12.1/src/arm/prctl.rs
+index.crates.io-1949cf8c6b5b557f/linux-raw-sys-0.12.1/src/x86_64/xdp.rs
+index.crates.io-1949cf8c6b5b557f/matrixmultiply-0.3.11/src/threading.rs
+index.crates.io-1949cf8c6b5b557f/naga-22.1.0/src/back/msl/keywords.rs
+index.crates.io-1949cf8c6b5b557f/nix-0.29.0/test/sys/test_inotify.rs
+index.crates.io-1949cf8c6b5b557f/once_cell-1.21.3/examples/bench.rs
+index.crates.io-1949cf8c6b5b557f/pin-project-1.1.13/tests/ui/pin_project/overlapping_unpin_struct.rs
+index.crates.io-1949cf8c6b5b557f/polars-arrow-0.43.1/src/io/ipc/write/common.rs
+index.crates.io-1949cf8c6b5b557f/portable-atomic-1.15.0/build.rs
+index.crates.io-1949cf8c6b5b557f/pxfm-0.1.30/src/square_root/sqrt1pm1f.rs
+index.crates.io-1949cf8c6b5b557f/ra_ap_parser-0.0.307/test_data/parser/inline/ok/binop_resets_statementness.rs
+index.crates.io-1949cf8c6b5b557f/rand-0.8.8/src/rngs/xoshiro128plusplus.rs
+index.crates.io-1949cf8c6b5b557f/redis-0.27.6/src/sentinel.rs
+index.crates.io-1949cf8c6b5b557f/ring-0.17.14/tests/aead_tests.rs
+index.crates.io-1949cf8c6b5b557f/rustix-0.38.44/src/process/mod.rs
+index.crates.io-1949cf8c6b5b557f/rustix-1.1.5/src/backend/libc/system/syscalls.rs
+index.crates.io-1949cf8c6b5b557f/rustyline-14.0.0/examples/numeric_input.rs
+index.crates.io-1949cf8c6b5b557f/serde_json-1.0.154/tests/stream.rs
+index.crates.io-1949cf8c6b5b557f/syn-1.0.109/src/path.rs
+index.crates.io-1949cf8c6b5b557f/thiserror-1.0.69/tests/ui/source-struct-unnamed-field-not-error.rs
+index.crates.io-1949cf8c6b5b557f/tokio-1.53.3/src/io/util/write_buf.rs
+index.crates.io-1949cf8c6b5b557f/tokio-1.53.3/tests/task_id.rs
+index.crates.io-1949cf8c6b5b557f/tower-0.5.3/src/lib.rs
+index.crates.io-1949cf8c6b5b557f/tracing-subscriber-0.3.23/src/fmt/time/chrono_crate.rs
+index.crates.io-1949cf8c6b5b557f/uuid-1.28.0/src/rng.rs
+index.crates.io-1949cf8c6b5b557f/web-sys-0.3.106/src/features/gen_EcKeyGenParams.rs
+index.crates.io-1949cf8c6b5b557f/web-sys-0.3.106/src/features/gen_IntersectionObserverEntry.rs
+index.crates.io-1949cf8c6b5b557f/web-sys-0.3.106/src/features/gen_RtcPeerConnection.rs
+index.crates.io-1949cf8c6b5b557f/web-sys-0.3.106/src/features/gen_WaveShaperOptions.rs
+index.crates.io-1949cf8c6b5b557f/winapi-0.3.9/src/um/portabledevicetypes.rs
+index.crates.io-1949cf8c6b5b557f/windows-sys-0.48.0/src/Windows/Win32/System/Rpc/mod.rs
+index.crates.io-1949cf8c6b5b557f/windows-sys-0.59.0/src/Windows/Win32/Storage/IscsiDisc/mod.rs
+index.crates.io-1949cf8c6b5b557f/winnow-0.6.26/examples/ini/parser.rs
+index.crates.io-1949cf8c6b5b557f/yoke-0.8.3/src/utils.rs
+index.crates.io-1949cf8c6b5b557f/zlib-rs-0.6.8/src/inflate/window.rs

@@ -8,13 +8,16 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use ra_ap_syntax::SyntaxKind;
-use ra_ap_syntax::T;
-use ra_ap_syntax::ast::{self, AstNode, HasModuleItem, HasName};
+use crate::cst::ast::{self, AstNode, HasModuleItem, HasName};
+use ra_ap_parser::SyntaxKind;
+use ra_ap_parser::T;
 
-use super::comment::{CodeCharKind, CommentCodeSlices, contains_comment, rewrite_comment};
+use super::comment::{
+    CodeCharKind, CommentCodeSlices, contains_comment, recover_comment_removed, rewrite_comment,
+};
 use super::config::{Settings, StyleEdition};
 use super::context::{Rewrite, RewriteContext, RunState};
+use super::expr::rewrite_block;
 use super::items::{
     ItemVisitorKind, StaticParts, StructParts, format_impl, format_trait, format_trait_alias,
     is_mod_decl, is_use_item, item_span, rewrite_extern_crate, rewrite_type_alias,
@@ -23,20 +26,25 @@ use super::macros::{
     MacroDef, MacroPosition, mac_span, macro_style, rewrite_macro, rewrite_macro_def,
 };
 use super::nodes::{
-    AttrStyle, Attribute, Block, StmtKind, child, contains_skip, inner_attributes,
-    outer_attributes, span_without_attrs,
+    AttrStyle, Attribute, Block, StmtKind, child, const_block_item, contains_skip,
+    inner_attributes, outer_attributes, span_without_attrs,
 };
 use super::nodes::{has_token, node_text};
 use super::overflow::Delimiter;
+use super::parallel::{GapOp, UnitRecord};
 use super::shape::{Indent, Shape};
-use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span};
+use super::skip::{SkipContext, may_list_skip_names};
+use super::span::{BytePos, SnippetProvider, Span, Spanned, mk_sp, node_range_span, token_span};
 use super::stmt::Stmt;
-use super::utils::{count_newlines, format_visibility, last_line_width, starts_with_newline};
+use super::utils::{
+    count_newline_bytes, count_newlines, format_visibility, last_line_width, starts_with_newline,
+    trim,
+};
 
 pub(crate) struct FmtVisitor<'a> {
     /// Receives `macro_rewrite_failure` when the visitor is dropped (rustfmt's
     /// `parent_context`).
-    parent_macro_failure: Option<&'a Cell<bool>>,
+    parent_macro_failure: Option<Rc<Cell<bool>>>,
     pub(crate) buffer: String,
     pub(crate) last_pos: BytePos,
     pub(crate) block_indent: Indent,
@@ -44,15 +52,30 @@ pub(crate) struct FmtVisitor<'a> {
     pub(crate) is_if_else_block: bool,
     pub(crate) is_loop_block: bool,
     pub(crate) snippet_provider: SnippetProvider<'a>,
-    pub(crate) line_number: usize,
+    /// The `\n` bytes of `buffer` that `line_number` does not count: a worker's leading
+    /// newline (`parallel.rs`) and the newlines of text written without `push_str`.
+    pub(crate) uncounted_newlines: usize,
+    /// `(n, c)`: the first `n` bytes of `buffer` hold `c` newlines. The buffer changes
+    /// only by appending, by `pop` and by replacement; the last two leave `n` beyond the
+    /// end or keep the first `n` bytes, so the cache is valid while `n <= buffer.len()`.
+    newline_cache: (usize, usize),
+    /// Debug builds keep rustfmt's running count and check `line_number` against it.
+    #[cfg(debug_assertions)]
+    pub(crate) counted_line_number: usize,
     pub(crate) macro_rewrite_failure: bool,
     pub(crate) is_macro_def: bool,
-    pub(crate) run: Rc<RunState>,
+    /// Macro and attribute names left as written (rustfmt's `skip_context`).
+    pub(crate) skip_context: Option<Rc<SkipContext>>,
+    pub(crate) run: Rc<RunState<'a>>,
+    /// Set while a worker formats one top-level unit on its own (`parallel.rs`): the
+    /// unit's first `format_missing*` call, which writes the gap before the unit, is
+    /// recorded here and skipped, for the stitching visitor to replay on the real buffer.
+    pub(crate) unit: Option<UnitRecord>,
 }
 
 impl Drop for FmtVisitor<'_> {
     fn drop(&mut self) {
-        if let Some(parent) = self.parent_macro_failure
+        if let Some(parent) = &self.parent_macro_failure
             && self.macro_rewrite_failure
         {
             parent.set(true);
@@ -61,21 +84,21 @@ impl Drop for FmtVisitor<'_> {
 }
 
 /// The outer and inner attributes of an item, as rustc's `item.attrs`.
-fn item_attrs(item: &ast::Item) -> Vec<Attribute> {
+fn item_attrs<'a>(item: &ast::Item<'a>) -> Vec<Attribute<'a>> {
     let mut attrs = outer_attributes(item.syntax());
     let container = match item {
-        ast::Item::Module(m) => m.item_list().map(|l| l.syntax().clone()),
-        ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax().clone()),
-        ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax().clone()),
-        ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax().clone()),
+        ast::Item::Module(m) => m.item_list().map(|l| l.syntax()),
+        ast::Item::Impl(i) => i.assoc_item_list().map(|l| l.syntax()),
+        ast::Item::Trait(t) => t.assoc_item_list().map(|l| l.syntax()),
+        ast::Item::ExternBlock(e) => e.extern_item_list().map(|l| l.syntax()),
         ast::Item::Fn(f) => f
             .body()
             .and_then(|b| child::<ast::StmtList>(b.syntax()))
-            .map(|l| l.syntax().clone()),
+            .map(|l| l.syntax()),
         _ => None,
     };
     if let Some(container) = container {
-        attrs.extend(inner_attributes(&container));
+        attrs.extend(inner_attributes(container));
     }
     attrs
 }
@@ -84,7 +107,7 @@ impl<'a> FmtVisitor<'a> {
     pub(crate) fn new(
         config: &'a Settings,
         snippet_provider: SnippetProvider<'a>,
-        run: Rc<RunState>,
+        run: Rc<RunState<'a>>,
     ) -> FmtVisitor<'a> {
         FmtVisitor {
             parent_macro_failure: None,
@@ -95,18 +118,48 @@ impl<'a> FmtVisitor<'a> {
             is_if_else_block: false,
             is_loop_block: false,
             snippet_provider,
-            line_number: 0,
+            uncounted_newlines: 0,
+            newline_cache: (0, 0),
+            #[cfg(debug_assertions)]
+            counted_line_number: 0,
             macro_rewrite_failure: false,
             is_macro_def: false,
+            skip_context: None,
             run,
+            unit: None,
         }
     }
 
-    pub(crate) fn from_context(ctx: &'a RewriteContext<'_>) -> FmtVisitor<'a> {
+    /// On a worker formatting one unit (`parallel.rs`), records the unit's first gap call
+    /// as `op` instead of writing it, moves `last_pos` past the gap, and returns `true`.
+    /// Returns `false` otherwise: the caller writes the gap as usual.
+    pub(crate) fn defer_gap(&mut self, op: GapOp, end: BytePos) -> bool {
+        match &mut self.unit {
+            Some(unit) if unit.gap.is_none() && !unit.broken => {
+                if self.buffer != "\n" {
+                    // Text before the first gap call: replaying the gap on the main
+                    // buffer would put it before that text. The gap is written here
+                    // and `parallel.rs` formats the file sequentially instead.
+                    unit.broken = true;
+                    return false;
+                }
+                unit.gap = Some(op);
+                self.last_pos = end;
+                true
+            }
+            _ => false,
+        }
+    }
+
+    /// A visitor for a nested block or item list. As in rustfmt, whose `from_context` builds
+    /// the visitor with `from_psess`, `is_macro_def` is not inherited: only the top-level
+    /// visitor of a macro definition body omits the semicolons rustfmt adds after a
+    /// trailing `return`, `break` or `continue`.
+    pub(crate) fn from_context(ctx: &RewriteContext<'a>) -> FmtVisitor<'a> {
         let mut visitor = FmtVisitor::new(ctx.config, ctx.snippet_provider, ctx.run.clone());
         visitor.buffer = String::with_capacity(256);
-        visitor.is_macro_def = ctx.is_macro_def;
-        visitor.parent_macro_failure = Some(&ctx.macro_rewrite_failure);
+        visitor.skip_context = ctx.skip_context.clone();
+        visitor.parent_macro_failure = Some(ctx.macro_rewrite_failure.clone());
         visitor
     }
 
@@ -261,7 +314,7 @@ impl<'a> FmtVisitor<'a> {
         let mut extra_newline = false;
 
         let skip_normal = |s: &str| {
-            let trimmed = s.trim();
+            let trimmed = trim(s);
             trimmed.is_empty() || trimmed.chars().all(|c| c == ';')
         };
 
@@ -376,6 +429,25 @@ impl<'a> FmtVisitor<'a> {
             self.run.clear_memo();
         }
         let attrs = item_attrs(item);
+        // The item's `rustfmt::skip::macros`/`attributes` names apply inside it.
+        let skip_context_saved = self.skip_context.clone();
+        self.update_skip_context(&attrs);
+        self.visit_item_with_attrs(item, attrs);
+        self.skip_context = skip_context_saved;
+    }
+
+    pub(crate) fn update_skip_context(&mut self, attrs: &[Attribute<'_>]) {
+        if !attrs.iter().any(may_list_skip_names) {
+            return;
+        }
+        let mut skip_context = self.skip_context.as_deref().cloned().unwrap_or_default();
+        skip_context.update_with_attrs(attrs);
+        if !skip_context.is_empty() && self.skip_context.as_deref() != Some(&skip_context) {
+            self.skip_context = Some(Rc::new(skip_context));
+        }
+    }
+
+    fn visit_item_with_attrs<'t>(&mut self, item: &ast::Item<'t>, attrs: Vec<Attribute<'t>>) {
         let span = item_span(item.syntax());
         let full_span = item.span();
 
@@ -455,6 +527,25 @@ impl<'a> FmtVisitor<'a> {
                 Some(parts) => self.visit_static(&parts),
                 None => self.push_rewrite(span, None),
             },
+            ast::Item::Const(c) if let Some(block) = const_block_item(c) => {
+                // rustfmt formats `ItemKind::ConstBlock` with `get_context`, not
+                // `with_context`: a macro failure inside the block is not this visitor's.
+                let context = self.get_context();
+                let offset = self.block_indent;
+                let shape = Shape::legacy(context.budget(offset.block_indent), offset.block_only());
+                let const_span = c
+                    .const_token()
+                    .map(|t| mk_sp(token_span(t).lo(), span.hi()))
+                    .unwrap_or(span);
+                let rewrite = context
+                    .run
+                    .block_of(&block)
+                    .and_then(|b| rewrite_block(&b, None, None, &context, shape))
+                    .map(|rhs| {
+                        recover_comment_removed(format!("const {rhs}"), const_span, &context)
+                    });
+                self.push_rewrite(span, rewrite);
+            }
             ast::Item::Const(c) => match StaticParts::from_const(c) {
                 Some(parts) => self.visit_static(&parts),
                 None => self.push_rewrite(span, None),
@@ -480,10 +571,10 @@ impl<'a> FmtVisitor<'a> {
                 self.push_rewrite(span, snippet);
             }
             ast::Item::MacroRules(m) => {
-                self.visit_macro_def(&MacroDef::Rules(m.clone()), span);
+                self.visit_macro_def(&MacroDef::Rules(*m), span);
             }
             ast::Item::MacroDef(m) => {
-                self.visit_macro_def(&MacroDef::Def(m.clone()), span);
+                self.visit_macro_def(&MacroDef::Def(*m), span);
             }
         }
     }
@@ -494,13 +585,17 @@ impl<'a> FmtVisitor<'a> {
         self.push_rewrite(span, rewrite);
     }
 
-    /// An associated item of a trait or impl.
-    pub(crate) fn visit_assoc_item(&mut self, ai: &ast::AssocItem) {
-        let in_trait = ai
-            .syntax()
-            .parent()
-            .and_then(|list| list.parent())
-            .is_some_and(|p| p.kind() == SyntaxKind::TRAIT);
+    /// An associated item of a trait (`in_trait`) or impl. The caller iterates the item
+    /// list of the trait or impl, so it knows which; rustfmt's visitor takes the same fact
+    /// as its `ItemVisitorKind`.
+    pub(crate) fn visit_assoc_item(&mut self, ai: &ast::AssocItem, in_trait: bool) {
+        debug_assert_eq!(
+            in_trait,
+            ai.syntax()
+                .parent()
+                .and_then(|list| list.parent())
+                .is_some_and(|p| p.kind() == SyntaxKind::TRAIT)
+        );
         let visitor_kind = if in_trait {
             ItemVisitorKind::AssocTraitItem
         } else {
@@ -575,8 +670,41 @@ impl<'a> FmtVisitor<'a> {
     }
 
     pub(crate) fn push_str(&mut self, s: &str) {
-        self.line_number += count_newlines(s);
+        #[cfg(debug_assertions)]
+        {
+            self.counted_line_number += count_newlines(s);
+        }
         self.buffer.push_str(s);
+    }
+
+    /// The number of newlines written to the buffer by `push_str` (rustfmt's
+    /// `line_number`, which `push_str` maintains). Only the skip records read it, so it is
+    /// counted here, from the cached count of the buffer's prefix.
+    pub(crate) fn line_number(&mut self) -> usize {
+        let line_number = self.buffer_newlines() - self.uncounted_newlines;
+        #[cfg(debug_assertions)]
+        assert_eq!(line_number, self.counted_line_number);
+        line_number
+    }
+
+    /// The number of `\n` bytes in the buffer.
+    fn buffer_newlines(&mut self) -> usize {
+        let (counted, newlines) = self.newline_cache;
+        let newlines = match self.buffer.as_bytes().get(counted..) {
+            Some(rest) => newlines + count_newline_bytes(rest),
+            None => count_newline_bytes(self.buffer.as_bytes()),
+        };
+        self.newline_cache = (self.buffer.len(), newlines);
+        newlines
+    }
+
+    /// Sets `line_number` to 0 for the text in the buffer.
+    pub(crate) fn reset_line_number(&mut self) {
+        #[cfg(debug_assertions)]
+        {
+            self.counted_line_number = 0;
+        }
+        self.uncounted_newlines = self.buffer_newlines();
     }
 
     fn push_rewrite_inner(&mut self, span: Span, rewrite: Option<String>) {
@@ -584,7 +712,7 @@ impl<'a> FmtVisitor<'a> {
             self.push_str(s);
         } else {
             let snippet = self.snippet(span);
-            self.push_str(snippet.trim());
+            self.push_str(trim(snippet));
         }
         self.last_pos = span.hi();
     }
@@ -613,8 +741,12 @@ impl<'a> FmtVisitor<'a> {
         // So here we need to take a minimum between the two.
         let lo = std::cmp::min(attrs_end + 1, first_line);
         self.push_rewrite_inner(item_span, None);
-        let hi = self.line_number + 1;
-        self.run.skipped_range.borrow_mut().push((lo, hi));
+        let hi = self.line_number() + 1;
+        let mut skipped = self.run.skipped_range.borrow_mut();
+        if let Some(unit) = &mut self.unit {
+            unit.output_line_ranges.push(skipped.len());
+        }
+        skipped.push((lo, hi));
     }
 
     /// Returns `true` if the following item should be skipped (it has a skip attribute);
@@ -689,7 +821,7 @@ impl<'a> FmtVisitor<'a> {
         }
         self.push_str("mod ");
         let name = m.name().map(|n| node_text(n.syntax())).unwrap_or_default();
-        self.push_str(&name);
+        self.push_str(name);
 
         if let Some(item_list) = m.item_list() {
             let inner_span = node_range_span(item_list.syntax());
@@ -720,7 +852,10 @@ impl<'a> FmtVisitor<'a> {
     /// Formats the items of a source file.
     pub(crate) fn format_separate_mod(&mut self, file: &ast::SourceFile, end_pos: BytePos) {
         self.block_indent = Indent::empty();
-        self.visit_attrs(&inner_attributes(file.syntax()), AttrStyle::Inner);
+        // rustfmt's `format_file` reads the crate's attributes into the skip context.
+        let attrs = inner_attributes(file.syntax());
+        self.update_skip_context(&attrs);
+        self.visit_attrs(&attrs, AttrStyle::Inner);
         let items: Vec<ast::Item> = file.items().collect();
         self.walk_mod_items(&items);
         self.format_missing_with_indent(end_pos);
@@ -752,6 +887,7 @@ impl<'a> FmtVisitor<'a> {
     pub(crate) fn get_context(&self) -> RewriteContext<'a> {
         let mut context = RewriteContext::new(self.config, self.snippet_provider, self.run.clone());
         context.is_macro_def = self.is_macro_def;
+        context.skip_context = self.skip_context.clone();
         context
     }
 

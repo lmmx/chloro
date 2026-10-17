@@ -95,12 +95,12 @@ pub enum StyleEdition {
 
 impl Edition {
     /// The parser edition passed to `ra_ap_syntax`.
-    pub(crate) fn to_ra(self) -> ra_ap_syntax::Edition {
+    pub(crate) fn to_ra(self) -> ra_ap_parser::Edition {
         match self {
-            Edition::Edition2015 => ra_ap_syntax::Edition::Edition2015,
-            Edition::Edition2018 => ra_ap_syntax::Edition::Edition2018,
-            Edition::Edition2021 => ra_ap_syntax::Edition::Edition2021,
-            Edition::Edition2024 => ra_ap_syntax::Edition::Edition2024,
+            Edition::Edition2015 => ra_ap_parser::Edition::Edition2015,
+            Edition::Edition2018 => ra_ap_parser::Edition::Edition2018,
+            Edition::Edition2021 => ra_ap_parser::Edition::Edition2021,
+            Edition::Edition2024 => ra_ap_parser::Edition::Edition2024,
         }
     }
 }
@@ -126,6 +126,34 @@ impl From<Edition> for StyleEdition {
             Edition::Edition2018 => StyleEdition::Edition2018,
             Edition::Edition2021 => StyleEdition::Edition2021,
             Edition::Edition2024 => StyleEdition::Edition2024,
+        }
+    }
+}
+
+/// The rustfmt release whose output is reproduced.
+///
+/// A chloro option: rustfmt has no such setting, so a `rustfmt.toml` never carries it.
+/// Each variant names a stable release and the rustc toolchain whose build it reproduces;
+/// the two builds of 1.8.0 (Rust 1.85.0 and 1.88.0) format every file they both accept
+/// alike and differ only in what the toolchain's parser accepts, which chloro models after
+/// the 1.88.0 build. rustfmt 1.7.0 has no Style Guide 2024 rules and refuses `version =
+/// "Two"` on stable, so it is not supported (see the README's conformance section).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum RustfmtVersion {
+    /// rustfmt 1.8.0 as shipped with Rust 1.88.0 (`rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)`).
+    V1_8_0,
+    /// rustfmt 1.9.0 (`rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`): the release the
+    /// formatter is ported from and the one that produced the reference snapshots.
+    #[default]
+    V1_9_0,
+}
+
+impl RustfmtVersion {
+    /// The release number as written in `Config::set("rustfmt_version", ..)`.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            RustfmtVersion::V1_8_0 => "1.8.0",
+            RustfmtVersion::V1_9_0 => "1.9.0",
         }
     }
 }
@@ -191,6 +219,8 @@ pub struct Config {
     pub force_explicit_abi: bool,
     /// Don't reformat anything.
     pub disable_all_formatting: bool,
+    /// The rustfmt release whose output is reproduced (a chloro option; rustfmt has none).
+    pub rustfmt_version: RustfmtVersion,
 }
 
 impl Default for Config {
@@ -223,6 +253,7 @@ impl Default for Config {
             use_field_init_shorthand: false,
             force_explicit_abi: true,
             disable_all_formatting: false,
+            rustfmt_version: RustfmtVersion::V1_9_0,
         }
     }
 }
@@ -291,6 +322,124 @@ impl WidthHeuristics {
 }
 
 impl Config {
+    /// Deterministic serialisation of every field, in declaration order: equal configurations
+    /// (however they were spelled) give equal bytes, and any two configurations that can
+    /// format differently give different bytes. The key of the CLI's caches and of the
+    /// unit cache ([`crate::UnitCache`]).
+    ///
+    /// The destructuring pattern names every field without `..`, so adding a field to `Config`
+    /// fails to compile here until the field is added to the key.
+    pub fn key_bytes(&self) -> Vec<u8> {
+        let Config {
+            max_width,
+            hard_tabs,
+            tab_spaces,
+            newline_style,
+            use_small_heuristics,
+            fn_call_width,
+            attr_fn_like_width,
+            struct_lit_width,
+            struct_variant_width,
+            array_width,
+            chain_width,
+            single_line_if_else_max_width,
+            single_line_let_else_max_width,
+            reorder_imports,
+            reorder_modules,
+            remove_nested_parens,
+            short_array_element_width_threshold,
+            match_arm_leading_pipes,
+            fn_params_layout,
+            match_block_trailing_comma,
+            edition,
+            style_edition,
+            merge_derives,
+            use_try_shorthand,
+            use_field_init_shorthand,
+            force_explicit_abi,
+            disable_all_formatting,
+            rustfmt_version,
+        } = self;
+
+        let mut out = Vec::with_capacity(128);
+        let usize_ = |out: &mut Vec<u8>, v: usize| out.extend_from_slice(&(v as u64).to_le_bytes());
+        let bool_ = |out: &mut Vec<u8>, v: bool| out.push(u8::from(v));
+        let opt = |out: &mut Vec<u8>, v: Option<usize>| match v {
+            None => out.push(0),
+            Some(v) => {
+                out.push(1);
+                out.extend_from_slice(&(v as u64).to_le_bytes());
+            }
+        };
+        let newline = |v: NewlineStyle| match v {
+            NewlineStyle::Auto => 0u8,
+            NewlineStyle::Native => 1,
+            NewlineStyle::Unix => 2,
+            NewlineStyle::Windows => 3,
+        };
+        let heuristics = |v: Heuristics| match v {
+            Heuristics::Default => 0u8,
+            Heuristics::Max => 1,
+            Heuristics::Off => 2,
+        };
+        let pipes = |v: MatchArmLeadingPipe| match v {
+            MatchArmLeadingPipe::Always => 0u8,
+            MatchArmLeadingPipe::Never => 1,
+            MatchArmLeadingPipe::Preserve => 2,
+        };
+        let density = |v: Density| match v {
+            Density::Compressed => 0u8,
+            Density::Tall => 1,
+            Density::Vertical => 2,
+        };
+        let edition_ = |v: Edition| match v {
+            Edition::Edition2015 => 0u8,
+            Edition::Edition2018 => 1,
+            Edition::Edition2021 => 2,
+            Edition::Edition2024 => 3,
+        };
+        let style = |v: Option<StyleEdition>| match v {
+            None => 0u8,
+            Some(StyleEdition::Edition2015) => 1,
+            Some(StyleEdition::Edition2018) => 2,
+            Some(StyleEdition::Edition2021) => 3,
+            Some(StyleEdition::Edition2024) => 4,
+        };
+
+        usize_(&mut out, *max_width);
+        bool_(&mut out, *hard_tabs);
+        usize_(&mut out, *tab_spaces);
+        out.push(newline(*newline_style));
+        out.push(heuristics(*use_small_heuristics));
+        opt(&mut out, *fn_call_width);
+        opt(&mut out, *attr_fn_like_width);
+        opt(&mut out, *struct_lit_width);
+        opt(&mut out, *struct_variant_width);
+        opt(&mut out, *array_width);
+        opt(&mut out, *chain_width);
+        opt(&mut out, *single_line_if_else_max_width);
+        opt(&mut out, *single_line_let_else_max_width);
+        bool_(&mut out, *reorder_imports);
+        bool_(&mut out, *reorder_modules);
+        bool_(&mut out, *remove_nested_parens);
+        usize_(&mut out, *short_array_element_width_threshold);
+        out.push(pipes(*match_arm_leading_pipes));
+        out.push(density(*fn_params_layout));
+        bool_(&mut out, *match_block_trailing_comma);
+        out.push(edition_(*edition));
+        out.push(style(*style_edition));
+        bool_(&mut out, *merge_derives);
+        bool_(&mut out, *use_try_shorthand);
+        bool_(&mut out, *use_field_init_shorthand);
+        bool_(&mut out, *force_explicit_abi);
+        bool_(&mut out, *disable_all_formatting);
+        out.push(match rustfmt_version {
+            RustfmtVersion::V1_8_0 => 0u8,
+            RustfmtVersion::V1_9_0 => 1,
+        });
+        out
+    }
+
     /// Resolve the width heuristics against `max_width` and `use_small_heuristics`.
     pub(crate) fn width_heuristics(&self) -> WidthHeuristics {
         let base = match self.use_small_heuristics {
@@ -410,6 +559,23 @@ impl Config {
             "use_field_init_shorthand" => self.use_field_init_shorthand = bool_()?,
             "force_explicit_abi" => self.force_explicit_abi = bool_()?,
             "disable_all_formatting" => self.disable_all_formatting = bool_()?,
+            "rustfmt_version" => {
+                self.rustfmt_version = match value {
+                    "1.8.0" => RustfmtVersion::V1_8_0,
+                    "1.9.0" => RustfmtVersion::V1_9_0,
+                    "1.7.0" => {
+                        return Err(
+                            "rustfmt 1.7.0 is not supported: it has no Style Guide 2024 rules \
+                             and refuses `version = \"Two\"` on stable, so its output is not \
+                             reachable from the 2024 rules by a few branch points (540 of the \
+                             981 rust-analyzer fixtures both releases accept differ); \
+                             supported: 1.8.0, 1.9.0"
+                                .to_owned(),
+                        );
+                    }
+                    _ => return Err(bad()),
+                }
+            }
             _ => match UNSTABLE_DEFAULTS.iter().find(|(k, _)| *k == key) {
                 Some((_, default)) if *default == value => {}
                 Some((_, default)) => {
@@ -591,6 +757,13 @@ impl Settings {
     pub(crate) fn disable_all_formatting(&self) -> bool {
         self.config.disable_all_formatting
     }
+    /// The rustfmt release reproduced. Formatting code branches on it next to the
+    /// rustfmt code it reproduces, with a comment naming the difference class (F1–F6,
+    /// P1–P8 in `docs/journal/2026-10-14-autoresearch/rustfmt-versions.md`) and the
+    /// rustfmt change.
+    pub(crate) fn rustfmt_version(&self) -> RustfmtVersion {
+        self.config.rustfmt_version
+    }
 
     // Unstable options, fixed at rustfmt's defaults.
     pub(crate) fn comment_width(&self) -> usize {
@@ -733,6 +906,28 @@ mod tests {
         assert!(config.set("wrap_comments", "true").is_err());
         assert!(config.set("wrap_comments", "false").is_ok());
         assert!(config.set("no_such_option", "1").is_err());
+    }
+
+    #[test]
+    fn rustfmt_version_accepts_supported_releases_only() {
+        let mut config = Config::default();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        config.set("rustfmt_version", "1.8.0").unwrap();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_8_0);
+        assert_eq!(
+            Settings::new(&config).rustfmt_version(),
+            RustfmtVersion::V1_8_0
+        );
+        config.set("rustfmt_version", "\"1.9.0\"").unwrap();
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        let err = config.set("rustfmt_version", "1.7.0").unwrap_err();
+        assert!(err.contains("1.7.0 is not supported"), "{err}");
+        assert!(err.contains("Style Guide 2024"), "{err}");
+        assert!(config.set("rustfmt_version", "1.6.0").is_err());
+        assert!(config.set("rustfmt_version", "2.0.0").is_err());
+        assert_eq!(config.rustfmt_version, RustfmtVersion::V1_9_0);
+        assert!(RustfmtVersion::V1_8_0 < RustfmtVersion::V1_9_0);
+        assert_eq!(RustfmtVersion::V1_8_0.as_str(), "1.8.0");
     }
 
     #[test]

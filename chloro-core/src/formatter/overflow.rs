@@ -7,7 +7,7 @@
 
 use std::cmp::min;
 
-use ra_ap_syntax::ast;
+use crate::cst::ast;
 
 use super::attr::MetaItemInner;
 use super::closures;
@@ -18,14 +18,15 @@ use super::expr::{
 };
 use super::lists::{
     DefinitiveListTactic, ListFormatting, ListItem, ListTactic, Separator, SeparatorTactic,
-    definitive_tactic, itemize_list, total_item_width, write_list,
+    definitive_tactic, itemize_list, total_item_width, write_list_capacity, write_list_into,
 };
 use super::macros::MacroArg;
 use super::patterns::{TuplePatField, can_be_overflowed_pat};
+use super::scratch::{Bump, ScratchVec, with_scratch};
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp};
 use super::types::{SegmentParam, can_be_overflowed_type};
-use super::utils::{count_newlines, extra_offset, first_line_width, last_line_width};
+use super::utils::{extra_offset, first_line_width, has_one_newline, last_line_width};
 
 /// A list of `format!`-like macros, that take a long format string and a list of arguments to
 /// format.
@@ -74,20 +75,20 @@ const SPECIAL_CASE_ATTR: &[(&str, usize)] = &[
 
 /// An element of a call-like list.
 #[derive(Clone, Debug)]
-pub(crate) enum OverflowableItem {
-    Expr(ast::Expr),
-    GenericParam(ast::GenericParam),
-    MacroArg(MacroArg),
+pub(crate) enum OverflowableItem<'a> {
+    Expr(ast::Expr<'a>),
+    GenericParam(ast::GenericParam<'a>),
+    MacroArg(MacroArg<'a>),
     MetaItemInner(MetaItemInner),
-    SegmentParam(SegmentParam),
-    FieldDef(ast::TupleField),
-    TuplePatField(TuplePatField),
-    Ty(ast::Type),
-    Pat(ast::Pat),
-    PreciseCapturingArg(ast::UseBoundGenericArg),
+    SegmentParam(SegmentParam<'a>),
+    FieldDef(ast::TupleField<'a>),
+    TuplePatField(TuplePatField<'a>),
+    Ty(ast::Type<'a>),
+    Pat(ast::Pat<'a>),
+    PreciseCapturingArg(ast::UseBoundGenericArg<'a>),
 }
 
-impl Rewrite for OverflowableItem {
+impl Rewrite for OverflowableItem<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         match self {
             OverflowableItem::Expr(expr) => expr.rewrite(context, shape),
@@ -104,7 +105,7 @@ impl Rewrite for OverflowableItem {
     }
 }
 
-impl Spanned for OverflowableItem {
+impl Spanned for OverflowableItem<'_> {
     fn span(&self) -> Span {
         match self {
             OverflowableItem::Expr(expr) => expr.span(),
@@ -121,10 +122,10 @@ impl Spanned for OverflowableItem {
     }
 }
 
-impl OverflowableItem {
+impl OverflowableItem<'_> {
     fn has_attrs(&self) -> bool {
         use super::nodes::outer_attributes;
-        use ra_ap_syntax::AstNode;
+        use crate::cst::AstNode;
         match self {
             OverflowableItem::Expr(expr) => !outer_attributes(expr.syntax()).is_empty(),
             OverflowableItem::GenericParam(gp) => !outer_attributes(gp.syntax()).is_empty(),
@@ -167,7 +168,7 @@ impl OverflowableItem {
         }
     }
 
-    pub(crate) fn to_expr(&self) -> Option<&ast::Expr> {
+    pub(crate) fn to_expr(&self) -> Option<&ast::Expr<'_>> {
         match self {
             OverflowableItem::Expr(expr) | OverflowableItem::MacroArg(MacroArg::Expr(expr)) => {
                 Some(expr)
@@ -223,10 +224,10 @@ pub(crate) fn is_every_expr_simple(lists: &[OverflowableItem]) -> bool {
     lists.iter().all(OverflowableItem::is_simple)
 }
 
-pub(crate) fn rewrite_with_parens(
+pub(crate) fn rewrite_with_parens<'a>(
     context: &RewriteContext<'_>,
     ident: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
     item_max_width: usize,
@@ -247,10 +248,10 @@ pub(crate) fn rewrite_with_parens(
     .rewrite(shape)
 }
 
-pub(crate) fn rewrite_with_angle_brackets(
+pub(crate) fn rewrite_with_angle_brackets<'a>(
     context: &RewriteContext<'_>,
     ident: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
 ) -> Option<String> {
@@ -277,10 +278,10 @@ pub(crate) enum Delimiter {
     Bracket,
 }
 
-pub(crate) fn rewrite_with_square_brackets(
+pub(crate) fn rewrite_with_square_brackets<'a>(
     context: &RewriteContext<'_>,
     name: &str,
-    items: impl IntoIterator<Item = OverflowableItem>,
+    items: impl IntoIterator<Item = OverflowableItem<'a>>,
     shape: Shape,
     span: Span,
     force_separator_tactic: Option<SeparatorTactic>,
@@ -306,9 +307,9 @@ pub(crate) fn rewrite_with_square_brackets(
     .rewrite(shape)
 }
 
-struct Context<'a, 'b> {
+struct Context<'a, 'b, 'c> {
     context: &'a RewriteContext<'b>,
-    items: Vec<OverflowableItem>,
+    items: Vec<OverflowableItem<'c>>,
     ident: &'a str,
     prefix: &'static str,
     suffix: &'static str,
@@ -321,11 +322,11 @@ struct Context<'a, 'b> {
     custom_delims: Option<(&'static str, &'static str)>,
 }
 
-impl<'a, 'b> Context<'a, 'b> {
+impl<'a, 'b, 'c> Context<'a, 'b, 'c> {
     #[allow(clippy::too_many_arguments)]
     fn new(
         context: &'a RewriteContext<'b>,
-        items: impl IntoIterator<Item = OverflowableItem>,
+        items: impl IntoIterator<Item = OverflowableItem<'c>>,
         ident: &'a str,
         shape: Shape,
         span: Span,
@@ -361,7 +362,7 @@ impl<'a, 'b> Context<'a, 'b> {
         }
     }
 
-    fn last_item(&self) -> Option<&OverflowableItem> {
+    fn last_item(&self) -> Option<&OverflowableItem<'_>> {
         self.items.last()
     }
 
@@ -490,16 +491,15 @@ impl<'a, 'b> Context<'a, 'b> {
         // Replace the stub with the full overflowing last argument if the rewrite
         // succeeded and its first line fits with the other arguments.
         match (overflow_last, tactic, placeholder) {
-            (true, DefinitiveListTactic::Horizontal, Some(ref overflowed))
-                if self.items.len() == 1 =>
-            {
+            // The overflowed rewrite is moved into the list, not copied.
+            (true, DefinitiveListTactic::Horizontal, Some(overflowed)) if self.items.len() == 1 => {
                 // When we are rewriting a nested function call, we restrict the
                 // budget for the inner function to avoid them being deeply nested.
                 // However, when the inner function has a prefix or a suffix
                 // (e.g., `foo() as u32`), this budget reduction may produce poorly
                 // formatted code, where a prefix or a suffix being left on its own
                 // line. Here we explicitly check those cases.
-                if count_newlines(overflowed) == 1 {
+                if has_one_newline(&overflowed) {
                     let rw = self
                         .items
                         .last()
@@ -508,10 +508,10 @@ impl<'a, 'b> Context<'a, 'b> {
                     if no_newline {
                         list_items[self.items.len() - 1].item = rw;
                     } else {
-                        list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                        list_items[self.items.len() - 1].item = Some(overflowed);
                     }
                 } else {
-                    list_items[self.items.len() - 1].item = Some(overflowed.to_owned());
+                    list_items[self.items.len() - 1].item = Some(overflowed);
                 }
             }
             (true, DefinitiveListTactic::Horizontal, placeholder @ Some(..)) => {
@@ -574,7 +574,13 @@ impl<'a, 'b> Context<'a, 'b> {
         tactic
     }
 
-    fn rewrite_items(&self) -> Option<(bool, String)> {
+    /// rustfmt's `rewrite_items` up to its `write_list`: the list items, their formatting
+    /// and whether the list is horizontal (extendable). The list itself is written by
+    /// [`Context::rewrite`], into the buffer that `wrap_items` returns in rustfmt.
+    fn rewrite_items<'s>(
+        &self,
+        bump: &'s Bump,
+    ) -> (ScratchVec<'s, ListItem>, ListFormatting<'_>, bool) {
         let span = self.items_span();
         let items = itemize_list(
             self.context.snippet_provider,
@@ -588,7 +594,8 @@ impl<'a, 'b> Context<'a, 'b> {
             span.hi(),
             true,
         );
-        let mut list_items: Vec<_> = items.collect();
+        // Made and dropped in this module: in the scratch arena (EXP-025).
+        let mut list_items = ScratchVec::from_iter_in(items, bump);
 
         // Try letting the last argument overflow to the next line with block
         // indentation. If its first line fits on one line with the other arguments,
@@ -613,39 +620,39 @@ impl<'a, 'b> Context<'a, 'b> {
             .trailing_separator(trailing_separator)
             .ends_with_newline(ends_with_newline);
 
-        write_list(&list_items, &fmt)
-            .map(|items_str| (tactic == DefinitiveListTactic::Horizontal, items_str))
+        (list_items, fmt, tactic == DefinitiveListTactic::Horizontal)
     }
 
-    fn wrap_items(&self, items_str: &str, shape: Shape, is_extendable: bool) -> String {
+    fn delims(&self) -> (&'static str, &'static str) {
+        match self.custom_delims {
+            Some((lhs, rhs)) => (lhs, rhs),
+            _ => (self.prefix, self.suffix),
+        }
+    }
+
+    /// rustfmt's `wrap_items`, on a buffer that already holds the callee, the opening
+    /// delimiter and, from `items_start`, the list: puts the list on the opening line or
+    /// between indented lines, and closes it.
+    fn wrap_items(
+        &self,
+        result: &mut String,
+        items_start: usize,
+        shape: Shape,
+        is_extendable: bool,
+        nested_indent_str: &str,
+        indent_str: &str,
+    ) {
         let shape = Shape {
             width: shape.width.saturating_sub(last_line_width(self.ident)),
             ..shape
         };
-
-        let (prefix, suffix) = match self.custom_delims {
-            Some((lhs, rhs)) => (lhs, rhs),
-            _ => (self.prefix, self.suffix),
-        };
+        let items_str = &result[items_start..];
 
         let extend_width = if items_str.is_empty() {
             2
         } else {
             first_line_width(items_str) + 1
         };
-        let nested_indent_str = self
-            .nested_shape
-            .indent
-            .to_string_with_newline(self.context.config);
-        let indent_str = shape
-            .block()
-            .indent
-            .to_string_with_newline(self.context.config);
-        let mut result = String::with_capacity(
-            self.ident.len() + items_str.len() + 2 + indent_str.len() + nested_indent_str.len(),
-        );
-        result.push_str(self.ident);
-        result.push_str(prefix);
         let force_single_line = if self.context.config.style_edition() >= StyleEdition::Edition2024
         {
             !self.context.use_block_indent() || (is_extendable && extend_width <= shape.width)
@@ -656,22 +663,55 @@ impl<'a, 'b> Context<'a, 'b> {
                 || (self.context.inside_macro() && !items_str.contains('\n') && fits_one_line)
                 || (is_extendable && extend_width <= shape.width)
         };
-        if force_single_line {
-            result.push_str(items_str);
-        } else {
+        if !force_single_line {
             if !items_str.is_empty() {
-                result.push_str(&nested_indent_str);
-                result.push_str(items_str);
+                result.insert_str(items_start, nested_indent_str);
             }
-            result.push_str(&indent_str);
+            result.push_str(indent_str);
         }
-        result.push_str(suffix);
-        result
+        result.push_str(self.delims().1);
     }
 
     fn rewrite(&self, shape: Shape) -> Option<String> {
-        let (extendable, items_str) = self.rewrite_items()?;
-        Some(self.wrap_items(&items_str, shape, extendable))
+        with_scratch(|bump| self.rewrite_in(shape, bump))
+    }
+
+    fn rewrite_in(&self, shape: Shape, bump: &Bump) -> Option<String> {
+        let (list_items, fmt, extendable) = self.rewrite_items(bump);
+        let (prefix, suffix) = self.delims();
+        let nested_indent_str = self
+            .nested_shape
+            .indent
+            .to_string_with_newline(self.context.config);
+        let indent_str = shape
+            .block()
+            .indent
+            .to_string_with_newline(self.context.config);
+        // One buffer for the callee, the delimiters, the list and its indents: the list is
+        // written in place instead of into a string of its own that is then copied.
+        let mut result = String::with_capacity(
+            self.ident.len()
+                + prefix.len()
+                + write_list_capacity(&list_items[..], &fmt)
+                + nested_indent_str.len()
+                + indent_str.len()
+                + suffix.len(),
+        );
+        result.push_str(self.ident);
+        result.push_str(prefix);
+        let items_start = result.len();
+        if !write_list_into(&list_items[..], &fmt, &mut result) {
+            return None;
+        }
+        self.wrap_items(
+            &mut result,
+            items_start,
+            shape,
+            extendable,
+            &nested_indent_str,
+            &indent_str,
+        );
+        Some(result)
     }
 }
 

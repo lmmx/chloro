@@ -22,6 +22,24 @@ pub struct Args {
     #[facet(named, long, default)]
     pub config: String,
 
+    /// Do not read or write the fixed-point cache
+    #[facet(named, long, default)]
+    pub no_cache: bool,
+
+    /// Also keep the formatted output of each top-level item, so that a changed file
+    /// formats only the items not seen before (off by default; `--no-cache` overrides it)
+    #[facet(named, long, default)]
+    pub unit_cache: bool,
+
+    /// Directory of the fixed-point cache (default: `CHLORO_CACHE_DIR`, else the user cache
+    /// directory)
+    #[facet(named, long, default)]
+    pub cache_dir: String,
+
+    /// Threads to use (default: one per core)
+    #[facet(named, long, default)]
+    pub threads: usize,
+
     /// Show this help message
     #[facet(named, short = 'h', long, default)]
     pub help: bool,
@@ -40,6 +58,12 @@ pub fn print_usage() {
     println!("  -w, --write        Write formatted output back to files");
     println!("  -v, --verbose      Show verbose output");
     println!("      --config OPTS  rustfmt options as comma-separated key=value pairs");
+    println!("      --no-cache     Format every file; do not read or write the caches");
+    println!("      --unit-cache   Also cache each formatted top-level item, so that a changed");
+    println!("                     file formats only the items not seen before (off by default)");
+    println!("      --cache-dir D  Cache directory (default: $CHLORO_CACHE_DIR, else the");
+    println!("                     user cache directory, e.g. ~/.cache/chloro)");
+    println!("      --threads N    Threads to use (default: one per core)");
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");
@@ -57,9 +81,30 @@ pub fn print_usage() {
     println!();
     println!("  # Format with rustfmt options");
     println!("  chloro --config max_width=80,tab_spaces=2 src/lib.rs");
+    println!();
+    println!("Cache:");
+    println!("  chloro records the content hash of every file it finds already formatted,");
+    println!("  keyed by the chloro binary and the --config options, and skips formatting");
+    println!("  files whose content it has seen formatted before. The output and exit code");
+    println!("  are the same with and without the cache.");
+    println!();
+    println!("  With --unit-cache, chloro also keeps the formatted output of each top-level");
+    println!("  item (or group of `use`/`mod`/`extern crate` items) under the same key and");
+    println!("  the item's text, and formats only the items of a changed file it has not");
+    println!("  seen. The output and exit code are the same. It is off by default: a run that");
+    println!("  finds nothing in it (a cold CI run) costs 10-15% more with it on.");
 }
 
 impl Args {
+    /// `--threads`, or one thread per core.
+    pub fn thread_count(&self) -> usize {
+        if self.threads > 0 {
+            self.threads
+        } else {
+            std::thread::available_parallelism().map_or(1, |n| n.get())
+        }
+    }
+
     /// The formatting configuration given by `--config`.
     ///
     /// # Errors

@@ -5,8 +5,10 @@
 //! rust-analyzer keeps attribute arguments as an unstructured token tree, so this module
 //! includes a small parser that rebuilds rustc's meta item tree from it.
 
-use ra_ap_syntax::ast::{self, AstNode};
-use ra_ap_syntax::{NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
+use crate::cst::ast::{self, AstNode};
+use ra_ap_parser::SyntaxKind;
+
+use crate::cst::{Element, Node, NodeOrToken};
 
 use super::comment::{contains_comment, recover_missing_comment_in_span, rewrite_doc_comment};
 use super::context::{Rewrite, RewriteContext};
@@ -19,7 +21,7 @@ use super::nodes::{AttrStyle, Attribute, child, non_trivia_text};
 use super::overflow;
 use super::shape::Shape;
 use super::span::{Span, Spanned, mk_sp, node_range_span, token_span};
-use super::utils::count_newlines;
+use super::utils::{concat, count_newlines};
 
 /// A literal inside a meta item.
 #[derive(Clone, Debug)]
@@ -90,14 +92,14 @@ fn lit_kind(kind: SyntaxKind) -> Option<LitKind> {
 }
 
 /// A cursor over the significant elements of a token tree.
-struct MetaParser {
-    elems: Vec<NodeOrToken<SyntaxNode, SyntaxToken>>,
+struct MetaParser<'a> {
+    elems: Vec<Element<'a>>,
     pos: usize,
 }
 
-impl MetaParser {
+impl<'a> MetaParser<'a> {
     /// Elements strictly between the delimiters of a `TOKEN_TREE`.
-    fn new(tt: &SyntaxNode) -> Option<MetaParser> {
+    fn new(tt: Node<'a>) -> Option<MetaParser<'a>> {
         let children: Vec<_> = tt
             .children_with_tokens()
             .filter(|e| !matches!(e, NodeOrToken::Token(t) if t.kind() == SyntaxKind::WHITESPACE))
@@ -113,7 +115,7 @@ impl MetaParser {
         })
     }
 
-    fn peek(&self) -> Option<&NodeOrToken<SyntaxNode, SyntaxToken>> {
+    fn peek(&self) -> Option<&Element<'a>> {
         self.elems.get(self.pos)
     }
 
@@ -121,7 +123,7 @@ impl MetaParser {
         self.peek().map(|e| e.kind())
     }
 
-    fn bump(&mut self) -> Option<NodeOrToken<SyntaxNode, SyntaxToken>> {
+    fn bump(&mut self) -> Option<Element<'a>> {
         let e = self.elems.get(self.pos).cloned();
         self.pos += 1;
         e
@@ -133,15 +135,15 @@ impl MetaParser {
 
     /// `Lit | Path ['=' Lit | '(' list ')']`
     fn parse_inner(&mut self) -> Option<MetaItemInner> {
-        let first = self.peek()?.as_token()?.clone();
+        let first = *self.peek()?.as_token()?;
         if let Some(kind) = lit_kind(first.kind()) {
             self.bump();
             return Some(MetaItemInner::Lit(MetaLit {
                 kind,
-                span: token_span(&first),
+                span: token_span(first),
             }));
         }
-        let lo = token_span(&first).lo();
+        let lo = token_span(first).lo();
         let mut path = String::new();
         let mut hi;
         if first.kind() == SyntaxKind::COLON {
@@ -150,12 +152,12 @@ impl MetaParser {
         loop {
             let seg = self.bump()?.into_token()?;
             if !(seg.kind() == SyntaxKind::IDENT
-                || seg.kind().is_keyword(ra_ap_syntax::Edition::CURRENT))
+                || seg.kind().is_keyword(ra_ap_parser::Edition::CURRENT))
             {
                 return None;
             }
             path.push_str(seg.text());
-            hi = token_span(&seg).hi();
+            hi = token_span(seg).hi();
             if self.peek_kind() == Some(SyntaxKind::COLON) {
                 self.eat_path_sep(&mut path)?;
             } else {
@@ -167,17 +169,17 @@ impl MetaParser {
                 self.bump();
                 let lit = self.bump()?.into_token()?;
                 let kind = lit_kind(lit.kind())?;
-                hi = token_span(&lit).hi();
+                hi = token_span(lit).hi();
                 MetaItemKind::NameValue(MetaLit {
                     kind,
-                    span: token_span(&lit),
+                    span: token_span(lit),
                 })
             }
             Some(NodeOrToken::Node(n)) if n.kind() == SyntaxKind::TOKEN_TREE => {
-                let n = n.clone();
+                let n = *n;
                 self.bump();
-                hi = node_range_span(&n).hi();
-                MetaItemKind::List(parse_meta_list(&n)?)
+                hi = node_range_span(n).hi();
+                MetaItemKind::List(parse_meta_list(n)?)
             }
             _ => MetaItemKind::Word,
         };
@@ -202,7 +204,7 @@ impl MetaParser {
 }
 
 /// Parses the comma-separated contents of a parenthesised token tree as meta items.
-fn parse_meta_list(tt: &SyntaxNode) -> Option<Vec<MetaItemInner>> {
+fn parse_meta_list(tt: Node<'_>) -> Option<Vec<MetaItemInner>> {
     let mut parser = MetaParser::new(tt)?;
     let mut items = Vec::new();
     while !parser.at_end() {
@@ -232,7 +234,7 @@ pub(crate) fn attr_meta(attr: &ast::Attr) -> Option<MetaItem> {
         let kind = lit_kind(token.kind())?;
         MetaItemKind::NameValue(MetaLit {
             kind,
-            span: token_span(&token),
+            span: token_span(token),
         })
     } else {
         MetaItemKind::Word
@@ -248,7 +250,7 @@ pub(crate) fn attr_meta(attr: &ast::Attr) -> Option<MetaItem> {
 }
 
 /// Returns the meta items listed inside a list attribute such as `#[derive(A, B)]`.
-fn meta_item_list(attr: &ast::Attr) -> Option<Vec<MetaItemInner>> {
+pub(crate) fn meta_item_list(attr: &ast::Attr) -> Option<Vec<MetaItemInner>> {
     match attr_meta(attr)?.kind {
         MetaItemKind::List(list) => Some(list),
         _ => None,
@@ -411,11 +413,11 @@ fn format_derive(
 /// We consider two doc comments are in different group if they are separated by normal comments.
 fn take_while_with_pred<'a, P>(
     context: &RewriteContext<'_>,
-    attrs: &'a [Attribute],
+    attrs: &'a [Attribute<'a>],
     pred: P,
-) -> &'a [Attribute]
+) -> &'a [Attribute<'a>]
 where
-    P: Fn(&Attribute) -> bool,
+    P: Fn(&Attribute<'a>) -> bool,
 {
     let mut len = 0;
     let mut iter = attrs.iter().peekable();
@@ -488,7 +490,7 @@ fn has_newlines_before_after_comment(comment: &str) -> (&str, &str) {
     (if mlb { "\n" } else { "" }, if mla { "\n" } else { "" })
 }
 
-impl Rewrite for Attribute {
+impl Rewrite for Attribute<'_> {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         let snippet = context.snippet(self.span());
         let attr = match self {
@@ -499,7 +501,13 @@ impl Rewrite for Attribute {
         };
         let prefix = attr_prefix(self);
 
-        if contains_comment(snippet) {
+        // `#[rustfmt::skip::attributes(name)]` leaves attributes named `name` as written.
+        let should_skip = context.skip_context.is_some()
+            && self
+                .path_text()
+                .filter(|path| !path.contains("::"))
+                .is_some_and(|name| context.skips_attribute(&name));
+        if should_skip || contains_comment(snippet) {
             return Some(snippet.to_owned());
         }
 
@@ -514,8 +522,8 @@ impl Rewrite for Attribute {
             .and_then(|m| m.unsafe_token())
             .is_some();
         Some(match meta.rewrite(context, shape) {
-            Some(rw) if is_unsafe => format!("{prefix}[unsafe({rw})]"),
-            Some(rw) => format!("{prefix}[{rw}]"),
+            Some(rw) if is_unsafe => concat(&[prefix, "[unsafe(", &rw, ")]"]),
+            Some(rw) => concat(&[prefix, "[", &rw, "]"]),
             None => snippet.to_owned(),
         })
     }
@@ -534,6 +542,10 @@ pub(crate) fn rewrite_attrs(
     // The current remaining attributes.
     let mut attrs = attrs;
     let mut result = String::new();
+
+    // Determine if the source text is annotated with `#[rustfmt::skip::attributes(derive)]`
+    // or `#![rustfmt::skip::attributes(derive)]`
+    let skip_derives = context.skips_attribute("derive");
 
     // This is not just a simple map because we need to handle doc comments
     // (where we take as many doc comment attributes as possible) and possibly
@@ -577,7 +589,7 @@ pub(crate) fn rewrite_attrs(
 
         // Handle derives if we will merge them.
         let is_derive = |a: &Attribute| a.has_name("derive");
-        if context.config.merge_derives() && is_derive(&attrs[0]) {
+        if !skip_derives && context.config.merge_derives() && is_derive(&attrs[0]) {
             let derives = take_while_with_pred(context, attrs, is_derive);
             let derive_str = format_derive(derives, shape, context)?;
             result.push_str(&derive_str);
@@ -639,7 +651,7 @@ pub(crate) fn rewrite_attrs(
     }
 }
 
-impl Rewrite for [Attribute] {
+impl Rewrite for [Attribute<'_>] {
     fn rewrite(&self, context: &RewriteContext<'_>, shape: Shape) -> Option<String> {
         rewrite_attrs(self, context, shape)
     }
@@ -648,23 +660,21 @@ impl Rewrite for [Attribute] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ra_ap_syntax::{Edition, SourceFile};
+    use crate::cst::Tree;
+    use ra_ap_parser::Edition;
 
-    fn first_attr(src: &str) -> ast::Attr {
-        SourceFile::parse(src, Edition::CURRENT)
-            .tree()
-            .syntax()
-            .descendants()
-            .find_map(ast::Attr::cast)
-            .unwrap()
+    fn first_attr<'a>(tree: &'a Tree<'a>) -> ast::Attr<'a> {
+        tree.root().descendants().find_map(ast::Attr::cast).unwrap()
+    }
+
+    fn parse(src: &str) -> Tree<'_> {
+        Tree::parse(src, Edition::CURRENT).unwrap()
     }
 
     #[test]
     fn meta_items_parse_like_rustc() {
-        let meta = attr_meta(&first_attr(
-            "#[cfg_attr(feature = \"x\", derive(Debug, ::a::B), true)] fn f() {}",
-        ))
-        .unwrap();
+        let tree = parse("#[cfg_attr(feature = \"x\", derive(Debug, ::a::B), true)] fn f() {}");
+        let meta = attr_meta(&first_attr(&tree)).unwrap();
         assert_eq!(meta.path, "cfg_attr");
         let MetaItemKind::List(list) = meta.kind else {
             panic!("expected a list");
@@ -682,8 +692,13 @@ mod tests {
 
     #[test]
     fn non_literal_values_are_not_meta_items() {
-        assert!(attr_meta(&first_attr("#[path = -1] fn f() {}")).is_none());
-        assert!(attr_meta(&first_attr("#[doc = concat!(\"a\")] fn f() {}")).is_none());
-        assert!(attr_meta(&first_attr("#[foo(a + b)] fn f() {}")).is_none());
+        for src in [
+            "#[path = -1] fn f() {}",
+            "#[doc = concat!(\"a\")] fn f() {}",
+            "#[foo(a + b)] fn f() {}",
+        ] {
+            let tree = parse(src);
+            assert!(attr_meta(&first_attr(&tree)).is_none(), "{src}");
+        }
     }
 }

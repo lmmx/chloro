@@ -13,20 +13,42 @@ version = "0.8.0"
 
 [features]
 default = []
+# Measurement only, used by `examples/bench.rs` and nothing in the library (EXP-014):
+# `alloc-timing` wraps the global allocator to count calls, bytes and `rdtsc` cycles;
+# `alloc-mimalloc`, `alloc-jemalloc` and `alloc-snmalloc` replace glibc's malloc as the
+# example's global allocator (first enabled in that order wins).
+alloc-jemalloc = ["dep:tikv-jemallocator"]
+alloc-mimalloc = ["dep:mimalloc"]
+alloc-snmalloc = ["dep:snmalloc-rs"]
+alloc-timing = []
 
 [dependencies]
+# The formatter's scratch arena (formatter/scratch.rs, EXP-025).
+bumpalo = { features = ["collections"], version = "3.20.3" }
 ctor = { default-features = false, version = "0.6.1" }
 
 ra_ap_parser = "0.0.307"
-ra_ap_syntax = "0.0.307"
-rowan = "0.15.15"
+# The lexer and escape checks ra_ap_parser's `LexedStr` runs, at the versions ra_ap_parser
+# 0.0.307 already brings into the tree (no crate added): `cst::lex` converts their output
+# itself (EXP-031).
+ra-ap-rustc_lexer = "0.137.0"
+rustc-literal-escaper = "0.0.4"
+typed-arena = "2.0"
 unicode-width = "0.1"
+
+# Optional, for the `alloc-*` features above (the `bench` example only).
+mimalloc = { optional = true, workspace = true }
+snmalloc-rs = { optional = true, workspace = true }
+tikv-jemallocator = { optional = true, workspace = true }
 
 [dev-dependencies]
 braces = "0.2.6"
 duct = "1.1.1"
 imara-diff = "0.2.0"
 insta.workspace = true
+# The equality test of `cst` against rowan's tree, and `examples/parse_floor.rs`.
+ra_ap_syntax = "0.0.307"
+rowan = "0.15.15"
 rust-format = "0.3.4"
 tempfile.workspace = true
 walkdir = "2.5.0"
