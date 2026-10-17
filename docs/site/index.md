@@ -98,7 +98,7 @@ keep their default values. By default it reproduces rustfmt 1.9.0; with
 `rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
 
 The command line is not a replacement for the `rustfmt` binary: chloro has no `--emit`
-modes, and does not format standard input.
+modes, and formats standard input only with `--stdin`.
 [rustfmt compatibility](compatibility.md#what-is-not-covered) lists the other differences.
 
 ## Documentation

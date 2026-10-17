@@ -49,6 +49,14 @@ pub struct Args {
     #[facet(named, long, default)]
     pub threads: usize,
 
+    /// Format standard input and write the result to standard output
+    #[facet(named, long, default)]
+    pub stdin: bool,
+
+    /// With `--stdin`: the path the text belongs to, for its configuration and its messages
+    #[facet(named, long, default)]
+    pub stdin_filepath: String,
+
     /// Show this help message
     #[facet(named, short = 'h', long, default)]
     pub help: bool,
@@ -77,6 +85,10 @@ pub fn print_usage() {
     println!("      --config-path PATH");
     println!("                     The rustfmt.toml for every file, or a directory holding one");
     println!("      --isolated     Read no rustfmt.toml and no Cargo.toml edition");
+    println!("      --stdin        Format standard input to standard output");
+    println!("      --stdin-filepath PATH");
+    println!("                     With --stdin: the file the text belongs to, whose");
+    println!("                     configuration applies (default: the current directory's)");
     println!("      --no-cache     Format every file; do not read or write the caches");
     println!("      --unit-cache   Also cache each formatted top-level item, so that a changed");
     println!("                     file formats only the items not seen before (off by default)");
@@ -98,6 +110,9 @@ pub fn print_usage() {
     println!();
     println!("  # Format files in-place");
     println!("  chloro --write src/");
+    println!();
+    println!("  # Format an editor's buffer, under the configuration of its file");
+    println!("  chloro --stdin --stdin-filepath src/lib.rs < buffer.rs");
     println!();
     println!("  # Format with rustfmt options");
     println!("  chloro --config max_width=80,tab_spaces=2 src/lib.rs");

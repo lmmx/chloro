@@ -93,9 +93,11 @@ compared.
   release with `rustfmt_version`.
 - **Unstable options.** chloro always uses rustfmt's defaults for them, and setting one to
   another value is an error ([Configuration](guide/configuration.md#unstable-rustfmt-options)).
-- **rustfmt's command line.** There are no `--emit`, `--files-with-diff`, `--edition` or
-  standard input modes; `--check` reports a count, not a diff. An edition comes from the
-  crate's `Cargo.toml` or from `--config edition=…`.
+- **rustfmt's command line.** There are no `--emit`, `--files-with-diff` or `--edition`
+  options; `--check` reports a count, not a diff. An edition comes from the crate's
+  `Cargo.toml` or from `--config edition=…`. Standard input needs `--stdin`, since chloro
+  with no source formats the current directory; with `--check`, chloro exits with 1 when it
+  needs formatting, where rustfmt 1.9.0 prints the diff and exits with 0.
 - **Out-of-line modules.** rustfmt formats the files a crate's `mod` declarations lead to;
   chloro formats the files and directories you name, whatever modules they declare.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's
