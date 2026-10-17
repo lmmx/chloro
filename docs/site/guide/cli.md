@@ -1,7 +1,8 @@
 # Command line
 
-<p class="lede">One command, three modes. chloro formats the <code>.rs</code> files under the
-paths you give it and prints them, checks them, or writes them back.</p>
+<p class="lede">chloro formats the <code>.rs</code> files under the paths you give it.
+Depending on the flags, it prints the formatted files, checks them against what is on disk,
+or writes them back.</p>
 
 ```text
 chloro [OPTIONS] [SOURCES]...
@@ -51,7 +52,7 @@ A file that does not parse, or that contains syntax rustc's parser rejects, is l
 unchanged, as rustfmt leaves it. Unlike rustfmt, which prints the parse error and exits with
 status 1, chloro does not report such a file, even with `--verbose`, and counts it as
 formatted; that is a known issue ([#87](https://github.com/lmmx/chloro/issues/87)). A file
-with an inner `#![rustfmt::skip]` attribute is also left unchanged, as intended.
+with an inner `#![rustfmt::skip]` attribute is also left unchanged.
 
 ## Options
 
@@ -84,9 +85,9 @@ text.
 | `XDG_CACHE_HOME` | when set, the default cache directory is `$XDG_CACHE_HOME/chloro` (on every platform) |
 | `CHLORO_TRACE=FILE` | write a per-file, per-worker timeline of the run to `FILE` (a diagnostic for [scheduling](parallelism.md#seeing-the-schedule)) |
 
-## What chloro does to a file
+## Byte order marks and line endings
 
-The output is rustfmt's, so the rules are rustfmt's. Two that are easy to miss:
+chloro handles both as rustfmt does:
 
 - A byte order mark at the start of a file is dropped.
 - Line endings follow the `newline_style` option. The default, `Auto`, uses the style of the

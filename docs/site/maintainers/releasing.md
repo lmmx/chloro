@@ -1,10 +1,10 @@
 # Releasing
 
-<p class="lede">chloro is released with release-plz from the master branch: both crates move
-together, each gets a tag and a GitHub release, and publishing the <code>chloro</code>
-release builds the binaries.</p>
+<p class="lede">chloro is released with release-plz from the master branch. Both crates are
+released together at the same version, each gets a tag and a GitHub release, and publishing
+the <code>chloro</code> release builds the binaries.</p>
 
-## The flow
+## Release process
 
 ```sh
 just ship            # release-plz picks the version from the commits

@@ -1,10 +1,10 @@
 # The formatting engine
 
-<p class="lede">A port of rustfmt 1.9.0, module for module, with an adaptation layer
-underneath and a few additions that make it cheaper to run without changing what it
-decides.</p>
+<p class="lede">chloro's formatter is a module-by-module port of rustfmt 1.9.0. An adaptation
+layer translates rust-analyzer's syntax tree for it, and a few additions make it faster
+without changing any formatting decision.</p>
 
-## rustfmt's modules, ported
+## Modules ported from rustfmt
 
 The modules of `chloro-core/src/formatter/` carry the names of the rustfmt source files they
 reproduce, so a decision in chloro can be compared line by line with rustfmt's:
@@ -38,27 +38,28 @@ flow:
 
 - **`span`** computes rustc's spans. rustfmt recovers comments, blank lines and code it
   gives up on by slicing the source between nodes, so spans must start and end where rustc's
-  do. The main difference: rust-analyzer attaches leading comments to the following item,
-  while a rustc span starts at the first attribute.
+  do. The main difference is that rust-analyzer attaches leading comments to the following
+  item, while a rustc span starts at the first attribute.
 - **`nodes`** presents rust-analyzer's nodes in rustc's shape: doc comments as attributes,
   a block as a list of statements with its tail expression, rustc's classification of
   statements.
 - **`macro_args`** parses macro call arguments as rustc's parser would (expression, then
   type, pattern or item), laying each argument's tree out at its offset in the file.
 
-## Making the same decisions cheaply
+## Performance
 
-rustfmt's way of choosing a layout is to render candidates and measure them. Each attempt
-rewrites every subexpression again, so the work grows with nesting, exponentially in the
-worst case. chloro must make the same choices, so it cannot skip attempts that might
-succeed; it can avoid repeating work, and avoid attempts that provably fail.
+rustfmt chooses a layout by rendering candidates and measuring them. Each attempt rewrites
+every subexpression again, so the work grows with nesting, exponentially in the worst case.
+chloro has to make the same choices, so it cannot skip an attempt that might succeed. It
+saves time by not repeating work and by skipping attempts that cannot succeed.
 
 ### A memo for deep nesting
 
 A rewrite of an expression at a given shape is stored and reused when the same expression is
 asked for at the same shape again. On ordinary code that rarely happens (3.2% of lookups
 hit), and storing every result costs about as much as the hits save, so the memo only
-stores rewrites nested six or more deep (`MEMO_MIN_DEPTH`), where repeated attempts gather.
+stores rewrites nested six or more deep (`MEMO_MIN_DEPTH`), where most repeated attempts
+happen.
 The memo is cleared at each top-level item.
 
 ### A lower bound on one-line width
@@ -76,9 +77,9 @@ synthetic worst cases (`tests/width_bound.rs`). Its main effect is on deeply nes
 closures: a 2,000-byte file of closures nested 16 deep went from 105.4 million instructions
 to 5.7 million.
 
-One structural rule complements it: a closure body that renders a `match` with an arm is
-never one line, an argument taken from rustfmt's `rewrite_match`, checked by debug
-assertions on every rewrite.
+One case is also decided by structure alone: a closure body that renders a `match` with an
+arm is never one line. The argument for this comes from rustfmt's `rewrite_match`, and
+debug builds check it on every rewrite.
 
 ### Fewer, cheaper allocations
 
@@ -92,10 +93,10 @@ assertions on every rewrite.
   `chloro-core`'s only `unsafe` block: a 16-byte SSE2 load in the comment scanner, used only
   where the target supports it, with a randomised test against the scalar search.
 
-None of these changes what any rewrite returns. Every one was checked by formatting both
-corpora and comparing each file's output with the output recorded before the change.
+None of these changes affects what a rewrite returns. Each was checked by formatting both
+corpora and comparing every file's output with the output recorded before the change.
 
-## Not from rustfmt
+## Modules not from rustfmt
 
 - `width` and `scratch`, above.
 - `parallel` and `unit_cache`: formatting top-level items on several threads, and reusing

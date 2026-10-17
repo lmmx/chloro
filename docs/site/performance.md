@@ -1,7 +1,7 @@
 # Performance
 
-<p class="lede">chloro does the work rustfmt does, in less time and memory. These are the
-measured numbers, the conditions they were measured under, and what was not measured.</p>
+<p class="lede">chloro's speed and memory use measured against rustfmt, the conditions of the
+measurements, and what was not measured.</p>
 
 ## Summary
 
@@ -21,7 +21,7 @@ core.
 
 !!! info "Conditions"
 
-    All figures are from the sixth quiet-host measurement ([M6][m6], 2026-10-17), taken with
+    All figures are from measurement [M6][m6] (2026-10-17), taken with
     `benchmarks/compare_rustfmt.sh` on an idle 4-core KVM guest (Intel Xeon, 2.80 GHz class,
     Linux), with rustfmt `1.9.0-stable (2d8144b788 2026-07-07)` and chloro built with the
     workspace's release profile. Each cell is 30 timed runs with hyperfine (15 runs in each of
@@ -29,9 +29,9 @@ core.
     check copies of the same files, formatted by rustfmt first, with `--check`; chloro's cache
     is off. One-core rows pin both tools to the same core. Ratios are of mean wall times.
 
-    Absolute times are this host's and move between measurement windows by up to 20–40%,
-    so the comparisons that matter are the ratios, taken with both tools interleaved in the
-    same window.
+    Absolute times depend on this host and varied by up to 20–40% between measurement
+    sessions, so compare the ratios, which were taken with both tools interleaved in the
+    same session.
 
 ## Per crate
 
@@ -120,11 +120,10 @@ core.
 | clap_builder 4.6.7 | 57 | 944 KB | 0.318 | 0.126 | 210.2 | 66.9 |
 | winnow 0.7.15 | 61 | 1005 KB | 0.345 | 0.127 | 211.5 | 73.0 |
 
-The first five crates are rust-analyzer's. The ratios are chloro's mean wall time over
-rustfmt's; the last two columns are mean wall times in milliseconds.
-
-Five of the crates are from rust-analyzer, whose files are chloro's conformance corpus; the
-other four come from crates.io, code chloro was not developed against.
+The ratios are chloro's mean wall time divided by rustfmt's; the last two columns are mean
+wall times in milliseconds. The first five crates are from rust-analyzer, whose files make up
+chloro's conformance corpus. The other four come from crates.io and were not used during
+chloro's development.
 
 ## Other measurements
 
@@ -140,10 +139,10 @@ other four come from crates.io, code chloro was not developed against.
 
 ## Instruction counts
 
-Wall time on a shared virtual machine is noisy; the number of instructions executed is not.
-chloro's performance work was steered by instruction counts from callgrind
-(`benchmarks/profile.sh`) on two fixed samples of 49 files each, one from the conformance
-corpus and one from four crates.io crates:
+Wall-time measurements on a shared virtual machine are noisy, so chloro's performance work
+was guided by the number of instructions executed, which barely varies between runs. The
+counts come from callgrind (`benchmarks/profile.sh`) on two fixed samples of 49 files each,
+one from the conformance corpus and one from four crates.io crates:
 
 | sample | chloro 0.8.0 | now | profile-guided build |
 |---|---|---|---|
@@ -161,21 +160,20 @@ rustfmt's wall time on one core and 0.07–0.16 on four. The release workflow ap
 training to the targets whose runners execute them natively; see
 [Releasing](maintainers/releasing.md#profile-guided-builds).
 
-## Not measured, and not claimed
+## What was not measured
 
 - macOS and Windows: every figure here is from x86-64 Linux.
 - rustfmt's throughput in process: rustfmt is only timed as a process, including its
   start-up (loading `librustc_driver` costs it about 30 ms and 34 MiB).
 - Memory bandwidth, and runs on more than four cores.
 - Unformatted input. The inputs are formatted by rustfmt first, because rustfmt's `--check`
-  builds a diff of every file that would change, which would charge it for the diff rather
-  than the formatting.
+  builds a diff of every file that would change, and that would add the cost of the diff to
+  rustfmt's time.
 
-## Why it is faster
+## Optimisations
 
-chloro makes the same decisions rustfmt does, so it cannot skip rustfmt's work; it does
-that work more cheaply. In short: it reads syntax from one flat array instead of
-pointer-linked nodes, lexes and builds the tree in one pass, memoises rewrites that deep
+chloro makes the same formatting decisions as rustfmt, so it does the same work, with less
+overhead. It reads syntax from one flat array instead of pointer-linked nodes, lexes and builds the tree in one pass, memoises rewrites that deep
 nesting would otherwise repeat, proves from a node's tokens when a one-line layout cannot
 fit instead of rendering it to find out, keeps short-lived strings in a per-thread arena,
 formats files and large files' items on all cores, and skips files it has already seen

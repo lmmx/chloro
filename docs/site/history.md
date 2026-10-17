@@ -1,8 +1,8 @@
 # Project history
 
 <p class="lede">chloro keeps a development journal: dated records of what was decided, what
-was measured, and what was tried and did not work. This page is a guide to it. The website
-describes chloro as it is; the journal records how and why it got there.</p>
+was measured, and what was tried and did not work. This page explains how the journal is
+organised and where to start reading it.</p>
 
 The journal is the [`docs/journal/`][journal] directory of the repository. Entries are
 Markdown files named `YYYY-MM-DD-title.md`, written to the format in
@@ -14,13 +14,13 @@ support them, and no recommendations.
 | when | what happened | entries |
 |---|---|---|
 | November–December 2025 | 0.5 to 0.7: a hand-written formatter over rust-analyzer's `rowan` trees, matching rustfmt on 233 of 1220 conformance files | the per-crate changelogs |
-| 9–11 October 2026 | The rustfmt port: rustfmt 1.9.0's formatting logic ported module by module onto rust-analyzer's syntax trees, reaching 1219 of 1220. Then an investigation of where the port's time goes, and whether the proof of concept was a better foundation (it was not: most of its speed came from skipping work). Released as 0.8.0. | [rustfmt port][port], [performance checkpoint][checkpoint], [change of direction][direction], [item independence][items], [representations][repr], [phase 2 close][close] |
-| 14–17 October 2026 | The performance and conformance programme: 31 experiments run in parallel on separate branches, each kept only if it passed every check twice and changed no output it was not meant to change; six full measurements against rustfmt on a quiet machine. Result: 1220 of 1220, rustfmt 1.8.0 support, and 66% fewer instructions. | [programme][programme], [handoff][handoff] |
+| 9–11 October 2026 | The rustfmt port: rustfmt 1.9.0's formatting logic ported module by module onto rust-analyzer's syntax trees, reaching 1219 of 1220. Then an investigation of where the port's time goes, and whether the proof of concept was a better foundation. It was not: most of its speed came from work it skipped. Released as 0.8.0. | [rustfmt port][port], [performance checkpoint][checkpoint], [change of direction][direction], [item independence][items], [representations][repr], [phase 2 close][close] |
+| 14–17 October 2026 | The performance and conformance programme: 31 experiments run in parallel on separate branches, each kept only if it passed every check twice and changed no output it was not meant to change; six full measurements against rustfmt on an idle machine. It reached 1220 of 1220, added rustfmt 1.8.0 support, and cut instructions by 66%. | [programme][programme], [handoff][handoff] |
 
 ## Reading the performance programme
 
-The programme's records use short codes. The [handoff][handoff] is the place to start: it is
-written for a reader who did not follow the work, translates every code, and summarises each
+The programme's records use short codes. Start with the [handoff][handoff], which is written
+for a reader who did not follow the work: it explains every code and summarises each
 experiment, failure and measurement with its source.
 
 | code | meaning | where |
@@ -33,17 +33,17 @@ experiment, failure and measurement with its source.
 | "best-known-good" | the latest commit whose checks were reproduced on the merged branch | [ledger][ledger] |
 | `Ir` | instructions executed, as counted by callgrind | |
 
-Some records worth knowing about on their own:
+Other records that are useful on their own:
 
 - The [protocol][protocol]: what counts as a result, the checks a change must pass, and how
-  a direction of work is closed.
+  work on an approach is stopped.
 - The [conformance ledger][conformance]: every mismatch with rustfmt found, its root cause,
   and the six cases still open.
 - The [rustfmt versions record][versions]: where rustfmt 1.7.0, 1.8.0 and 1.9.0 differ on real
   code, and why 1.7.0 is not supported.
-- The records of directions that did not pay, with the measurement that closed each: a
-  faster allocator, code layout, a resident server process, scheduling, an exact width
-  model. The handoff's sections 7 and 12 list them.
+- The records of approaches that did not improve performance, each with the measurement
+  that ruled it out: a faster allocator, code layout, a resident server process, scheduling,
+  an exact width model. The handoff's sections 7 and 12 list them.
 
 !!! note "Commit hashes in the journal"
 

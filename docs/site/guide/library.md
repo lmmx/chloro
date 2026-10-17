@@ -1,8 +1,8 @@
 # Library
 
-<p class="lede">The formatter is a library first. Every entry point takes source text and
-returns formatted text. None of them reads or writes files, and none starts a thread
-unless you ask for threads.</p>
+<p class="lede">Each of chloro's library functions takes source text and returns formatted
+text. None of them reads or writes files, and none starts a thread unless you ask for
+threads.</p>
 
 ## Which crate
 
@@ -11,7 +11,7 @@ unless you ask for threads.</p>
 | [`chloro`](https://docs.rs/chloro) | `format_source`, `format_source_with_config`, `Config`; and the command line behind the `cli` feature |
 | [`chloro-core`](https://docs.rs/chloro-core) | all of the above, plus the parallel and cached entry points, `parse_only`, and the syntax tree |
 
-`chloro` re-exports from `chloro-core`, so a `Config` from one is the `Config` of the other.
+`chloro` re-exports these items from `chloro-core`, so both crates use the same `Config` type.
 The examples on this page that use only `format_source*` and `Config` work with either.
 
 ## Format a string
@@ -24,7 +24,7 @@ assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
 `format_source` formats with rustfmt's defaults at edition 2024, the same as
 `format_source_with_config(source, &Config::default())`.
 
-Formatting does not fail. Source that does not parse, or that rustc's parser would reject,
+The formatting functions do not return errors. Source that does not parse, or that rustc's parser would reject,
 comes back unchanged, as rustfmt leaves such a file alone; so does a file with an inner
 `#![rustfmt::skip]` attribute, or any file when `disable_all_formatting` is set. To find out
 whether anything changed, compare the output with the input:
@@ -148,7 +148,7 @@ assert_eq!(parse_only("fn main( {", &Config::default()), None);
 the syntax tree, and the checks for syntax rustc's parser handles differently) and returns
 the number of nodes and tokens in the file's tree, or `None` where formatting would return
 the source unchanged without formatting it. It exists to measure the parser's share of
-the formatter's cost, and to ask cheaply whether chloro would format a file at all.
+the formatter's cost, and to check quickly whether chloro would format a file at all.
 
 ## Debug output
 

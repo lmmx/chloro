@@ -1,9 +1,9 @@
 # Documentation
 
-<p class="lede">chloro has three kinds of documentation, each with one job, and this website
-is built from Markdown in the repository and published to GitHub Pages.</p>
+<p class="lede">Where chloro's documentation lives, and how this website is built, checked
+and published to GitHub Pages.</p>
 
-## What lives where
+## Where documentation lives
 
 | where | for | source |
 |---|---|---|
@@ -13,8 +13,8 @@ is built from Markdown in the repository and published to GitHub Pages.</p>
 | `CHANGELOG.md` | what changed in each release, for users; shown on the [Changelog](../changelog.md) page | `CHANGELOG.md` |
 | `docs/journal/` | the record of decisions, experiments and measurements | dated Markdown entries, see the [project history](../history.md) |
 
-A fact belongs in one place. The website states what chloro does and links to the journal
-for the evidence; it does not copy experiment records.
+Each fact should be documented in one place. The website describes what chloro does and
+links to the journal for the evidence, rather than copying experiment records.
 
 ## Building the site
 
@@ -29,7 +29,7 @@ just site-build        # build into site/ (ignored by git)
 The recipes pin Zensical's version (`ZENSICAL` in `.just/site.just`), and the deployment
 workflow pins the same one. To upgrade, change both and check the site.
 
-## Checking it
+## Checks
 
 ```sh
 just site-check        # nav, links and the CLI help snippet
@@ -62,7 +62,7 @@ When the CLI's help text changes, `just site-snippets` regenerates the snippet t
   files are not part of the site.
 - State measured figures with their conditions, and link to the record they come from.
 
-## The look
+## Design
 
 The site follows the design of nave's documentation: Zensical's modern theme, Instrument
 Serif for page titles, Encode Sans Condensed for headings, Work Sans for text, commands set
@@ -78,6 +78,5 @@ they follow the scheme, and each chart has its data in a table beside it.
 every push to `master` builds it and deploys it to GitHub Pages with
 `actions/deploy-pages`. It can also be run by hand from the Actions tab.
 
-The repository's Pages source must be set to **GitHub Actions** (Settings → Pages → Build and
-deployment → Source) for the deploy job to publish. Until it is, the build job still runs
-and the deploy job fails.
+The deploy job needs the repository's Pages source to be set to **GitHub Actions**
+(Settings → Pages → Build and deployment → Source).

@@ -1,6 +1,6 @@
 ---
 title: chloro
-description: A Rust code formatter that reproduces rustfmt's output, byte for byte, without the compiler.
+description: A fast Rust code formatter that matches the output of rustfmt, byte for byte.
 ---
 
 <h1 id="chloro-home">chloro</h1>
@@ -9,12 +9,12 @@ description: A Rust code formatter that reproduces rustfmt's output, byte for by
 ![The chloro mark: a leaf whose veins branch like a syntax tree](assets/images/chloro.svg){ width="132" height="132" }
 </div>
 
-<p class="chl-tagline">rustfmt's output, byte for byte, in a fraction of rustfmt's time.</p>
+<p class="chl-tagline">A fast Rust code formatter that matches the output of rustfmt.</p>
 
-chloro is a Rust code formatter. It reproduces what `rustfmt --edition 2024` writes, but it
-does not link the Rust compiler: it is a module-for-module port of rustfmt 1.9.0's
-formatting logic onto the syntax trees of rust-analyzer's parser. The result is a 2 MB binary and a library you can call from Rust, both of which give the same bytes rustfmt
-would, faster and in less memory.
+chloro formats Rust several times faster than rustfmt, in a fraction of the memory, and
+writes the same bytes as `rustfmt --edition 2024`. It is a module-by-module port of rustfmt
+1.9.0's formatting code onto the syntax trees of rust-analyzer's parser, so it does not need
+the Rust compiler. It comes as a 2 MB command-line tool and as a library.
 
 <div class="chl-stats">
 <div class="chl-stat">
@@ -23,14 +23,14 @@ would, faster and in less memory.
 <span class="chl-note">and to rustfmt 1.8.0; default options, 0 non-idempotent</span>
 </div>
 <div class="chl-stat">
-<span class="chl-figure">0.21–0.35</span>
+<span class="chl-figure">21–35%</span>
 <span class="chl-label">of rustfmt's wall time, one core</span>
 <span class="chl-note">nine crates of 215 KB–2.9 MB, <code>--check</code> on formatted input</span>
 </div>
 <div class="chl-stat">
-<span class="chl-figure">0.08–0.17</span>
+<span class="chl-figure">8–17%</span>
 <span class="chl-label">of rustfmt's wall time, four cores</span>
-<span class="chl-note">chloro one thread per core, rustfmt as it runs (one thread)</span>
+<span class="chl-note">chloro with one thread per core; rustfmt runs on one thread</span>
 </div>
 <div class="chl-stat">
 <span class="chl-figure">4–23 MiB</span>
@@ -44,7 +44,7 @@ would, faster and in less memory.
 limits of these numbers are on the <a href="performance/">Performance</a> page; the
 conformance matrix is on <a href="compatibility/">rustfmt compatibility</a>.</p>
 
-## Try it
+## Getting started
 
 === "Command line"
 
@@ -61,22 +61,24 @@ conformance matrix is on <a href="compatibility/">rustfmt compatibility</a>.</p>
     assert_eq!(formatted, "fn main() {\n    let x = 1;\n}\n");
     ```
 
-## What it is, and what it is not
+## Compatibility with rustfmt
 
-- **A reproduction, not a reinterpretation.** chloro's modules mirror rustfmt's source files
-  (`items`, `expr`, `chains`, `lists`, `comment`, …) so that each formatting decision can be
-  traced to the rustfmt code it reproduces. Where chloro's output differs from rustfmt's, that
-  is a bug, and the [known cases](compatibility.md#known-differences) are listed.
-- **rustfmt's stable options, by rustfmt's names.** `max_width`, `tab_spaces`,
-  `use_small_heuristics`, `edition`, `style_edition` and the rest, passed as
-  `--config key=value` or set on a `Config`. Unstable options keep their defaults.
-- **Two rustfmt releases.** 1.9.0 by default, and 1.8.0 (the one shipped with Rust 1.88) with
-  `rustfmt_version = "1.8.0"`.
-- **Not a drop-in `rustfmt` binary.** chloro does not read `rustfmt.toml`, has no `--emit`
-  modes, and does not format from standard input on the command line. See
-  [rustfmt compatibility](compatibility.md#what-is-not-covered) for the full list.
+chloro's formatting modules follow rustfmt's source files (`items`, `expr`, `chains`,
+`lists`, `comment` and so on), so each formatting decision can be checked against the rustfmt
+code it comes from. Any output that differs from rustfmt's is a bug; the
+[known differences](compatibility.md#known-differences) are listed.
 
-## Where to go next
+It takes rustfmt's stable options under their rustfmt names (`max_width`, `tab_spaces`,
+`use_small_heuristics`, `edition`, `style_edition` and the rest), either as
+`--config key=value` on the command line or on a `Config` in the library. Unstable options
+keep their default values. By default it reproduces rustfmt 1.9.0; with
+`rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
+
+The command line is not a replacement for the `rustfmt` binary: chloro does not read
+`rustfmt.toml`, has no `--emit` modes, and does not format standard input.
+[rustfmt compatibility](compatibility.md#what-is-not-covered) lists the other differences.
+
+## Documentation
 
 <div class="chl-cards">
 <a href="getting-started/installation/"><strong>Install</strong><span>Pre-built binaries, building from source, and the two crates.</span></a>

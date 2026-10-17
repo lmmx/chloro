@@ -2,7 +2,8 @@
 
 <p class="lede">chloro reimplements two pieces of rust-analyzer's parser crate for speed:
 its lexing step and its tree building. Both are pinned to the behaviour of one
-<code>ra_ap_parser</code> release, and a version bump must prove they still agree.</p>
+<code>ra_ap_parser</code> release, so after a version bump they must be checked against the
+new release.</p>
 
 ## What is pinned
 
@@ -14,13 +15,13 @@ its lexing step and its tree building. Both are pinned to the behaviour of one
 | `ra_ap_syntax`, `rowan` (dev) | 0.0.307, 0.15.15 | the reference the equality tests compare chloro's tree with |
 | `cst/rust.ungram` | copied from the `ra_ap_syntax` 0.0.307 crate | the grammar the typed layer is generated from |
 
-The three runtime crates move together: `ra-ap-rustc_lexer` and `rustc-literal-escaper` are
+The three runtime crates are upgraded together: `ra-ap-rustc_lexer` and `rustc-literal-escaper` are
 the versions `ra_ap_parser` itself depends on.
 
 ## The equality harnesses
 
 Each reimplementation has a harness that compares it with the code it replaces. Release
-builds trust them; debug builds also run the comparisons inline.
+builds do not run these comparisons; debug builds also run them inline, on every input.
 
 | what | harness | what it compares |
 |---|---|---|
