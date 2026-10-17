@@ -91,7 +91,7 @@
 //! # Renderings that are never one line
 //!
 //! The bound decides an attempt by width. An attempt can also fail on structure: the node
-//! has no one-line rendering at any shape. [`never_one_line`] holds for a node in which a
+//! has no one-line rendering at any shape. [`renders_match_arm`] holds for a node in which a
 //! `match` with at least one arm is rendered, and which has no comment, no attribute and
 //! no `asm!`:
 //!
@@ -119,10 +119,36 @@
 //! under every option: an attempt that keeps only a one-line result fails whatever it
 //! renders.
 //!
-//! None of the three predicates looks at the shape or the options, so all are functions of
-//! the node.
+//! A chain wider than `chain_width` is never one line either ([`chain_too_wide`]), under
+//! these conditions (`chains.rs`; rustfmt chains.rs):
 //!
-//! Debug builds check the three facts on every expression rewrite (`format_expr`), and
+//! - the chain has at least two items after its parent (method calls, fields, `.await`; a
+//!   `?` belongs to the item before it), so `ChainFormatterShared::child_count` is above one
+//!   and `format_last_child` measures against `min(shape.width, chain_width)`;
+//! - the receiver of the last item has a bound above `tab_spaces`: `format_root` moves items
+//!   into the root only while the root is at most `tab_spaces - shape.offset` bytes, so the
+//!   last item stays a child and the chain is not a pure root (which `wrap_str` alone
+//!   measures);
+//! - the parent is a path, an index expression or a call of a path, so a one-line root never
+//!   ends in `"#` or consists of closing delimiters only, and `last_line_extendable` is false
+//!   for it: the budget is then `min(shape.width, chain_width)` less the width of every
+//!   rewrite but the last (and the last item's `?`s), and `fits_single_line` is set only if
+//!   the last item's first line fits the rest; otherwise `join_rewrites` puts every item on a
+//!   line of its own, or returns `None` under `force_one_line_chain`;
+//! - the node has no comment (no chain item is a comment, `recover_comment_removed` keeps the
+//!   rewrite, and the bound is not 0) and no attribute of its own (`#[rustfmt::skip]` would
+//!   return the source).
+//!
+//! A one-line result is the items joined with nothing, so its width is at most the budget's
+//! `chain_width`, and at least the node's bound: a bound above `chain_width` rules it out.
+//! The options this reads are `chain_width` (with `use_small_heuristics` and `max_width`,
+//! through `Settings::chain_width`) and `tab_spaces`, taken from the run's options at the
+//! site.
+//!
+//! None of the predicates looks at the shape; the chain rule reads two options, the others
+//! none.
+//!
+//! Debug builds check these facts on every expression rewrite (`format_expr`), and
 //! render every attempt the bound or [`never_one_line`] skips and check that it fails
 //! (`closures.rs`, `expr.rs`).
 
@@ -362,11 +388,18 @@ pub(crate) fn one_line_fits_checked_and_exceeds(node: Node<'_>, width: usize) ->
         && min_width_up_to(node, limit) > limit
 }
 
-/// Whether every rewrite of `node` that returns text has a line break: a `match` with an
-/// arm is rendered in it, and it has no comment, attribute or `asm!` (see the module
-/// documentation). One pass over the node's elements, made only when its source has a `=>`,
-/// which every arm has (a byte search for the `>` first, the cheapest test).
-pub(crate) fn never_one_line(node: Node<'_>) -> bool {
+/// Whether every rewrite of `node` that returns text has a line break, under options with
+/// these `chain_width` and `tab_spaces`: [`renders_match_arm`] or [`chain_too_wide`] (see the
+/// module documentation).
+#[inline]
+pub(crate) fn never_one_line(node: Node<'_>, chain_width: usize, tab_spaces: usize) -> bool {
+    renders_match_arm(node) || chain_too_wide(node, chain_width, tab_spaces)
+}
+
+/// A `match` with an arm is rendered in `node`, and it has no comment, attribute or `asm!`.
+/// One pass over the node's elements, made only when its source has a `=>`, which every arm
+/// has (a byte search for the `>` first, the cheapest test).
+fn renders_match_arm(node: Node<'_>) -> bool {
     let text = node.text();
     if !text.as_bytes().contains(&b'>') || !text.contains("=>") {
         return false;
@@ -398,16 +431,75 @@ pub(crate) fn never_one_line(node: Node<'_>) -> bool {
     arm
 }
 
-/// Debug builds: checks the three facts of the module documentation on a rewrite of `node`
-/// at `shape` that returned `result`.
+/// `node` is a chain (`chains.rs`) of at least two items after its parent, the parent a
+/// path, an index expression or a call of a path, without attributes, whose receiver of the
+/// last item has a bound above `tab_spaces` and whose own bound exceeds `chain_width` (so
+/// it has no comment either). The checks run cheapest first: the kind, the source length
+/// (which bounds the bound from above), the walk down the receivers, the receiver's bound
+/// with an early exit, and the node's bound, with an early exit when its source has no `/`
+/// (and so no comment, the one case in which a later token lowers the bound).
+fn chain_too_wide(node: Node<'_>, chain_width: usize, tab_spaces: usize) -> bool {
+    if !matches!(
+        node.kind(),
+        METHOD_CALL_EXPR | FIELD_EXPR | AWAIT_EXPR | TRY_EXPR
+    ) || node.text_range().len() as usize <= chain_width
+    {
+        return false;
+    }
+    let mut items = 0;
+    let mut last_receiver = None;
+    let mut cur = node;
+    let parent = loop {
+        let receiver = match cur.first_child() {
+            Some(c) if c.kind() != ATTR => c,
+            _ => return false,
+        };
+        match cur.kind() {
+            TRY_EXPR => {}
+            METHOD_CALL_EXPR | FIELD_EXPR | AWAIT_EXPR => {
+                items += 1;
+                last_receiver.get_or_insert(receiver);
+            }
+            _ => break cur,
+        }
+        cur = receiver;
+    };
+    let parent_ok = match parent.kind() {
+        PATH_EXPR | INDEX_EXPR => true,
+        CALL_EXPR => parent.first_child().is_some_and(|c| c.kind() == PATH_EXPR),
+        _ => false,
+    };
+    parent_ok
+        && items >= 2
+        && last_receiver.is_some_and(|r| min_width_up_to(r, tab_spaces) > tab_spaces)
+        && if node.text().as_bytes().contains(&b'/') {
+            one_line_min_width(node) > chain_width
+        } else {
+            min_width_up_to(node, chain_width) > chain_width
+        }
+}
+
+/// Debug builds: checks the facts of the module documentation on a rewrite of `node` at
+/// `shape`, under options with these `chain_width` and `tab_spaces`, that returned `result`.
 #[cfg(debug_assertions)]
-pub(crate) fn debug_check(node: Node<'_>, shape: super::shape::Shape, result: &str) {
+pub(crate) fn debug_check(
+    node: Node<'_>,
+    shape: super::shape::Shape,
+    chain_width: usize,
+    tab_spaces: usize,
+    result: &str,
+) {
     if result.contains('\n') {
         return;
     }
     assert!(
-        !never_one_line(node),
+        !renders_match_arm(node),
         "a node with a rendered `match` arm has a one-line rendering: {node:?} -> {result:?}"
+    );
+    assert!(
+        !chain_too_wide(node, chain_width, tab_spaces),
+        "a chain wider than chain_width {chain_width} has a one-line rendering: \
+         {node:?} -> {result:?}"
     );
     let width = super::utils::unicode_str_width(result);
     let min = one_line_min_width(node);
@@ -489,7 +581,7 @@ mod tests {
                 .find(|n| n.kind() == EXPR_STMT)
                 .and_then(|n| n.first_child())
                 .unwrap();
-            never_one_line(node)
+            renders_match_arm(node)
         };
         assert!(nl("a.map(|x| match x { _ => 1 })"));
         assert!(nl("f(S { a: match x { A => 1, B => 2 } })"));
@@ -503,6 +595,39 @@ mod tests {
         assert!(!nl("f::<{ match N { _ => 1 } }>()"));
         assert!(!nl("f({ fn g() { match x { _ => 1 } } })"));
         assert!(!nl("a.map(|x| x + 1)"));
+    }
+
+    #[test]
+    fn chain_too_wide_needs_two_items_a_long_receiver_and_a_wide_bound() {
+        let ctw = |expr: &str, chain_width: usize| {
+            let src = format!("fn f() {{ {expr}; }}");
+            let tree = Tree::parse(&src, Edition::Edition2024).unwrap();
+            let node = tree
+                .root()
+                .descendants()
+                .find(|n| n.kind() == EXPR_STMT)
+                .and_then(|n| n.first_child())
+                .unwrap();
+            chain_too_wide(node, chain_width, 4)
+        };
+        // `items.iter().map(f).count()`: bound 27, every byte.
+        assert!(ctw("items.iter().map(f).count()", 26));
+        assert!(!ctw("items.iter().map(f).count()", 27));
+        // The `?`s belong to the items; `.await` and fields are items.
+        assert!(ctw("items.iter()?.map(f)?.count()?", 25));
+        assert!(ctw("state.inner.wait().await", 10));
+        // One item after the parent: `chain_width` does not apply.
+        assert!(!ctw("items.iter_with_a_long_name()", 10));
+        // The receiver of the last item no longer than `tab_spaces` may be absorbed.
+        assert!(!ctw("a.b.into_iter_with_a_long_name()", 10));
+        // Parents: a path, an index, a call of a path; not a literal or a closure.
+        assert!(ctw("f(x).iter().count()", 10));
+        assert!(ctw("v[0].iter().count()", 10));
+        assert!(!ctw("r#\"abcdef\"#.trim().len()", 10));
+        assert!(!ctw("(|| x)().iter().count()", 10));
+        // A comment: no bound; a division is not one.
+        assert!(!ctw("items.iter() /* c */ .map(f).count()", 10));
+        assert!(ctw("items.iter().map(a / b).count()", 10));
     }
 
     #[test]
