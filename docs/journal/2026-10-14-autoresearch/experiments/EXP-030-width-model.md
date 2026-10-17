@@ -13,7 +13,7 @@ source), **derived**.
 | field | value |
 |---|---|
 | branch | `20261015-width-model` from `03c61be` (integration head; its code is the best-known-good `e96b530`), worktree `/home/user/wt/width-model` |
-| kept commit | `2c6bc21` (a closure body that renders a `match` arm is never one line: the S1 pre-check skips it); then this record |
+| kept commits | `2c6bc21` (a closure body that renders a `match` arm is never one line: the S1 pre-check skips it), `5274f96` (a line reference in its documentation; the release `bench` is byte-identical); then this record |
 | rejected | the chain-width rule (a chain wider than `chain_width` is never one line): committed as `3d471d9`, reverted in `d6b4d73` on the registry condition (also `scratchpad/e30/chain-width-rule.patch`) |
 | not built | the exact width `W(n)` and its three uses, the negative memo, the bound cache: every one has a measured bound under the brief's 0.3% (§ 1) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
@@ -41,7 +41,7 @@ the 47 failing renders on the fixtures (1.02% of the run) have no one-line rende
 shape. A width cannot say so; a structural predicate can, and two were built: a body that
 renders a `match` arm (kept, −801,783 `Ir` per file, −0.363%, registry −2,718) and a chain wider
 than `chain_width` (−688,476 per file on the fixtures, rejected for +10,135 on the registry,
-which the decomposition puts in libc's `memcmp` and startup, not in the lever). The kept total,
+which the decomposition puts in libc's `memcmp` and `malloc`, not in the lever's code). The kept total,
 −0.363%, is below the 1.0% the hypothesis needs; the step-1 ceiling of every decidable render
 together (2,915,778 `Ir`, 1.30% of the fixture run; 1,181,541, 0.39% of the registry run) left no
 room for it once the structural part proved to be five constructs of a few attempts each.
@@ -154,8 +154,8 @@ structural rules below (the 12 are mostly repeats of the `match` and chain bodie
 
 Every use a width (exact or the bound) decides is under the brief's 0.3% per use, and their
 sum, 637,364 `Ir` (0.28%) of the fixture run and 1,181,541 (0.39%) of the registry run before the
-model's own cost, is under the 1.0% the hypothesis needs; so `W(n)` was not built and its harness has nothing to check. The volume E26
-named, "the S1 attempts whose bound is below the width but which fail on structure (47 of 132)",
+model's own cost, is under the 1.0% the hypothesis needs; so `W(n)` was not built and its
+harness has nothing to check. The volume E26 named, "the S1 attempts whose bound is below the width but which fail on structure (47 of 132)",
 is 41 attempts without a one-line rendering and 6 others: structure, not width.
 
 ## 2. The structural predicates (read)
@@ -166,7 +166,7 @@ exactness argument per construct, in the module documentation:
 
 | rule | holds when | why no rewrite is one line | the source fallbacks excluded |
 |---|---|---|---|
-| M: a rendered `match` arm (`renders_match_arm`, kept) | a `MATCH_ARM` node in the subtree, outside a pattern's `const` block, a generic argument list or an item; no `COMMENT` token, no `ATTR`, no `ASM_EXPR` | `rewrite_match` writes `"{\n"` after the condition on every path that returns text when the arm list is not empty (matches.rs:72; the one source path, `match x { /* c */ }`, has no arm); every rewrite of an expression contains the rewrites of the subexpressions it writes (calls, chains, closures with or without the block, pairs, prefixes, parentheses, index, fields, struct literal values, `return`/`break` values): delimiters, labels, field names and attributes are dropped, subexpressions never; a block is written through its expression on one line or through a nested visitor, whose result has a line break before `}` once the block has a statement | `recover_comment_removed` (only with a comment in the source), `#[rustfmt::skip]` (an attribute), `asm!` (returned as written), the 2021 slice-pattern fallback, type and generic-argument rewrites that copy source (`const` block patterns, generic argument lists and items are not counted); a `match` in a macro call is in the token tree, not a node of the tree |
+| M: a rendered `match` arm (`renders_match_arm`, kept) | a `MATCH_ARM` node in the subtree, outside a pattern's `const` block, a generic argument list or an item; no `COMMENT` token, no `ATTR`, no `ASM_EXPR` | `rewrite_match` writes `"{\n"` after the condition on every path that returns text when the arm list is not empty (chloro matches.rs:72, rustfmt matches.rs:73; the one source path, `match x { /* c */ }`, has no arm); every rewrite of an expression contains the rewrites of the subexpressions it writes (calls, chains, closures with or without the block, pairs, prefixes, parentheses, index, fields, struct literal values, `return`/`break` values): delimiters, labels, field names and attributes are dropped, subexpressions never; a block is written through its expression on one line or through a nested visitor, whose result has a line break before `}` once the block has a statement | `recover_comment_removed` (only with a comment in the source), `#[rustfmt::skip]` (an attribute), `asm!` (returned as written), the 2021 slice-pattern fallback, type and generic-argument rewrites that copy source (`const` block patterns, generic argument lists and items are not counted); a `match` in a macro call is in the token tree, not a node of the tree |
 | C: a chain wider than `chain_width` (`chain_too_wide`, rejected) | a method call, field, `.await` or `?` chain with at least two items after its parent; the parent a path, an index, or a call of a path; no attribute of its own; the bound of the receiver of the last item above `tab_spaces`; the node's bound above `chain_width` (so no comment) | `child_count` > 1, so `format_last_child` measures against `min(shape.width, chain_width)`; `format_root` absorbs items only while the root is at most `tab_spaces − offset` bytes, so the last item stays a child; the parent rules out a one-line root for which `last_line_extendable` holds (one ending in `"#`, or of closing delimiters only), so the budget subtracts every rewrite but the last; `fits_single_line` needs the whole line within `chain_width`, otherwise `join_rewrites` puts items on lines of their own or returns `None` under `force_one_line_chain` | `#[rustfmt::skip]` on the node; comments (no chain item is a comment, `recover_comment_removed` keeps the rewrite) |
 
 Both read no shape; rule M reads no option, rule C reads `chain_width` and `tab_spaces` from the
@@ -294,12 +294,11 @@ Kept on the branch, for the integrator: `2c6bc21`, −801,783 `Ir` per file on t
 (−0.363%), −2,718 on the registry sample, no output change on either corpus or any option value.
 Rejected: the chain-width rule (`3d471d9`, reverted in `d6b4d73`; −688,476 per file on the
 fixtures, +10,135 and +14,637 on the registry in two measurements, a layout term by its
-decomposition but above the spread). Not built: the exact width `W(n)` and its
-uses at S1, S3 and `choose_rhs`, the negative memo and the bound cache, each under 0.3% by step 1.
-The hypothesis is falsified: the kept total is under 1.0%, and step 1 put the ceiling of every
+decomposition but above the spread). Not built: the exact width `W(n)` and its uses at S1, S3
+and `choose_rhs`, the negative memo and the bound cache, each under 0.3% by step 1. The
+hypothesis is falsified: the kept total is under 1.0%, and step 1 put the ceiling of every
 width-decidable attempt at 0.28% of the fixture run and 0.39% of the registry run before the
-model's own cost; the volume beyond E26's bound
-is structural, not a matter of width.
+model's own cost; the volume beyond E26's bound is structural, not a matter of width.
 
 ## Follow-up
 
@@ -309,9 +308,10 @@ is structural, not a matter of width.
   `else`, `if`/`else` over `single_line_if_else_max_width`); each needs its own argument like
   rule C's, and the chain case needs the exact width of the chain, which is where a width model
   would first pay.
-- **Rule C** is worth re-measuring with a layout-independent figure (`profile.sh --shuffle` on
-  the registry sample): its own code costs +805 on the registry and it removes 688 K per file on
-  the fixtures.
+- **Rule C** needs a registry figure free of the data-layout term before it can be kept: its own
+  code moves the registry by −678 per file (+805 whole) by the split of § 3, and it removes 688 K
+  per file on the fixtures. The split itself (code against libc and `bench`'s output, per file)
+  would serve as that figure if the protocol adopted it; function-order shuffling does not.
 - **`choose_rhs`** (0.18% / 0.27%): the bound alone decides 12 / 7 of the dead same-line
   candidates and the order change is exact (§ 1); the registry's 31 that need an exact width are
   the larger part there.
