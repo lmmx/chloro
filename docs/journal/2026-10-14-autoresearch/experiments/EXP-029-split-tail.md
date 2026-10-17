@@ -59,11 +59,23 @@ resumed.
   measurably removes is one thread start per split file (the worker's spawn-and-join CPU 0.23
   → 0.16 ms on `fx-hir`, 0.21 → 0.16 ms on `fx-ide-db`). Not halved on `fx-hir` in any view:
   **reverted** (`1c1405e`) under the keep rule.
+- **Lever (b) built and measured** (`67853b6`, the cap taken when a large file starts: its own
+  worker, the threads no worker was started for, and the workers that have found the queue
+  empty): the split file starts first, so it gets no helper and its units run on its worker.
+  Interleaved with the base (L3, load 7.6–8.7): reconstructed span `fx-hir` 22.30 → 31.20 ms
+  (+39.9%; the replay of the same collection's base costs predicted +49.4%), `fx-ide-db`
+  20.79 → 24.48 ms (+17.8%; predicted +28.1%); tails 1.66 → 13.36 and 0.19 → 6.13 ms; release
+  wall +6.2% and −0.1%. **Reverted** (`efd781c`). The measured build confirms the replay's
+  direction and most of its size.
+- **(c) and (d) not built:** (c) cannot change `fx-hir` (no unit of 100 KB) and (d) raises its
+  span in the replay, so neither can pass the keep rule; on the quiet host both bound
+  `fx-ide-db`'s span at −0.3%. Their place is a single large file run alone, where the replay
+  gives `lints.rs` −13.3% (c) and −43.0% (d), and `hir/src/lib.rs` −51.5% (d) (Follow-up 2).
 - **Decision: the hypothesis is refuted as stated.** On the quiet host the reconstructed
   tails are 0.71 and 1.04 idle core-ms per run: there is no tail of M5's size to halve, and no
   lever's replay halves both crates' tails without raising a span ((d) comes closest, −40% and
-  −60%, and raises `fx-hir`'s span; (c) and (b) cannot touch one crate each). Nothing beyond
-  (a) was built (the brief's "record and stop building"). Kept:
+  −60%, and raises `fx-hir`'s span; (c) and (b) cannot touch one crate each); the two built
+  levers were measured and reverted. Kept:
   `benchmarks/schedule/split_sim.py` (the lever replays, `--blind`, `--compare`),
   `collect_ab.sh`, `trace_patch.py`'s `owner` variant and a README note on reading a tail from
   an unpatched trace. The branch head's Rust code is the base's (its CLI and `bench` are
@@ -74,10 +86,10 @@ resumed.
 | field | value |
 |---|---|
 | branch | `20261015-split-tail` from `03c61be` (integration branch `claude/chloro-perf-research-swarm-nrscj8`; code head `e96b530`, the best-known-good), worktree `/home/user/wt/split-tail` |
-| commits | `0a6080c` (lever (a)), `1c1405e` (its revert, with the reason), `fc29026` (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), then `split_sim.py`'s accounting fix for the lever build, this record and the ledger row |
+| commits | `0a6080c` (lever (a)), `1c1405e` (its revert, with the reason), `fc29026` (`split_sim.py`, `collect_ab.sh`, `trace_patch.py owner`, README), `a158b1d` (`split_sim.py`'s parts table for the lever (a) build), `53d50f4` (this record's first revision and the ledger row), `67853b6` (lever (b)), `efd781c` (its revert, with the reason), then this revision |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, `cargo 1.97.0`, valgrind 3.22.0, hyperfine 2.0.0; `cargo build --release -p chloro --features cli` and `cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU "Intel(R) Xeon(R) Processor @ 2.80GHz", 15 GiB; Linux 6.18.44-fc-v114 on 2026-10-15 (Q1, L1, L2), 6.18.44-fc-v139 after the reboot of 2026-10-17 (Q2). The on-CPU costs on the second are about 30% lower (the parse of `lib.rs` 13.0 against 18.4 ms): Q2 is compared with no other collection, only within itself |
-| binaries (scratchpad `e29/bin/`) | `chloro-base`: `03c61be`'s CLI, sha256 `f48f3593…0bde00`, 2,196,120 B; `chloro-diag-base`: `03c61be` + `trace_patch.py base`, `e0813080…74fa0f4ea`, 2,207,992 B (rebuilt from the committed patch: the same sha256); `chloro-a`: `0a6080c`'s CLI, `5928cbdd…f2c6b29`, 2,193,072 B; `chloro-diag-a2`: `0a6080c` + the committed `trace_patch.py owner`, `e63db4b6…41c82b18`, used in Q2; `chloro-diag-a`: the same from a scratch copy of that patch with one more comment line (which moves source line numbers), `ee089c90…9c3537b`, 2,205,208 B, used in L2; `bench-base`: `03c61be`'s `bench`, `6816ff8a…a32fa7`, 1,882,072 B. The head's CLI and `bench` (built at `fc29026`): `f48f3593…` and `6816ff8a…`, byte-identical to the base's |
+| binaries (scratchpad `e29/bin/`) | `chloro-base`: `03c61be`'s CLI, sha256 `f48f3593…0bde00`, 2,196,120 B; `chloro-diag-base`: `03c61be` + `trace_patch.py base`, `e0813080…74fa0f4ea`, 2,207,992 B (rebuilt from the committed patch: the same sha256); `chloro-a`: `0a6080c`'s CLI, `5928cbdd…f2c6b29`, 2,193,072 B; `chloro-diag-a2`: `0a6080c` + the committed `trace_patch.py owner`, `e63db4b6…41c82b18`, used in Q2; `chloro-diag-a`: the same from a scratch copy of that patch with one more comment line (which moves source line numbers), `ee089c90…9c3537b`, 2,205,208 B, used in L2; `chloro-b`: `67853b6`'s CLI, `e3b2edfd…2883ef92`, 2,195,504 B; `chloro-diag-b`: `67853b6` + `trace_patch.py base`, `3e5c0c07…83700f0f`; `bench-base`: `03c61be`'s `bench`, `6816ff8a…a32fa7`, 1,882,072 B. The head's CLI and `bench` (rebuilt at `efd781c` after the reboot): `f48f3593…` and `6816ff8a…`, byte-identical to the base's |
 | workloads | `/tmp/chloro-bench/formatted/<crate>/tree` (M4's and M5's copies). `fx-hir`: 15 files, `src/lib.rs` (236,066 B) split, `semantics.rs` (105,416 B) and `source_analyzer.rs` (74,746 B) below the 128 KiB threshold; `fx-ide-db`: 33 files, `src/generated/lints.rs` (639,771 B) split |
 
 ### Collections
@@ -91,6 +103,7 @@ runs per crate and binary.
 | Q1 | 2026-10-15 17:57:33–17:57:39 | 1.46–1.67 (5 min: 4.66) | `chloro-base` then `chloro-diag-base`, `fx-hir` and `fx-ide-db` |
 | L1 | 2026-10-15 17:54:34–17:55:06 | 7.57–8.53 | `chloro-diag-base`, nine crates |
 | L2 | 2026-10-15 18:03:53–18:05:07 | 4.63–7.56 | `collect_ab.sh`, 5 blocks of 6 runs of `chloro-diag-base` and `chloro-diag-a`, nine crates |
+| L3 | 2026-10-17 06:47:49–06:49:33 | 7.6–8.7 (the other agents' callgrind runs) | `collect_ab.sh`, 5 blocks of 6 runs of `chloro-base`, `chloro-b`, `chloro-diag-base`, `chloro-diag-b` in turn, nine crates |
 
 ## Hypothesis and falsifiers
 
@@ -356,17 +369,58 @@ comparisons differ** (**measured**).
   wall-view tail rises: **reverted** (`1c1405e`).
 - Per-run rows: appendix B (Q2) and C (L2).
 
-## Levers (b), (c), (d): not built
+## Lever (b): item threads capped at the free cores (`67853b6`, reverted in `efd781c`)
 
-The falsifier "no lever halves both tails in the reconstruction" holds on the replays above
-in every collection, and the brief's instruction for a refuted hypothesis is to record it
-and stop building. What each would need, for a later experiment that takes `fx-ide-db`'s
-chain alone as its target:
+`format_all` (`chloro/src/cli/orchestrate.rs`) gave a file of 128 KiB or more `--threads`
+item threads whatever the other workers were doing. With the lever it gets at most its own
+worker, the threads no worker was started for (a run with fewer files than threads, so a
+single large file keeps its four), and the workers that have found the file queue empty, the
+count taken when the file starts (9 lines). A file given one thread takes the sequential path,
+as a file below the threshold does. The cap is taken at the file's start, not when its units
+are ready: the replay's static cap (`bs`, taken when the units phase starts) found no idle
+worker at that moment in any run of either crate either, so the two give the same schedule
+here.
 
-- **(b)** is dominated in the replay by (a) with idle workers joining (no cap), which itself
-  changes no idle time on `fx-hir` and nothing on `fx-ide-db`; the cap's purpose (no
-  oversubscription while other files run) costs the split file its helpers exactly when its
-  units are ready. Not worth building on these crates.
+Output: `identity.sh chloro-base chloro-b`: **0 of 193 comparisons differ** (the same 1, 2 and 4 threads, nine crates, nine raw crates, the fixtures; **measured**).
+
+### L3 (loaded, provisional), medians of 30 runs per crate and build
+
+The lever build's split file is formatted on one thread, so its traces have no split file and
+are replayed under A; the prediction is the replay of the static cap on the base's costs from
+the same collection.
+
+| crate | replay of the cap on the base's costs: span (change), tail, idle | base build: span, tail, idle | lever build: span (change), tail, idle | patched builds: wall, CPU | release builds: wall, CPU, wall tail | load |
+|---|---|---|---|---|---|---|
+| fx-hir | 33.51 (+49.4%), 15.21, 44.46 | 22.30, 1.66, 0.53 | 31.20 (+39.9%), 13.36, 39.13 | 51.5 → 57.5 (+11.7%), 93.6 → 90.2 (−3.6%) | 57.3 → 60.9 (+6.2%), 101.1 → 98.5 (−2.5%), 11.12 → 16.11 | 8.0–8.7 |
+| fx-ide-db | 26.33 (+28.1%), 8.21, 24.42 | 20.79, 0.19, 0.38 | 24.48 (+17.8%), 6.13, 18.22 | 49.0 → 49.7 (+1.5%), 87.3 → 85.0 (−2.7%) | 48.9 → 48.9 (−0.1%), 86.9 → 85.7 (−1.4%), 2.67 → 5.57 | 8.0–8.4 |
+| fx-hir-ty | 69.86 (−0.0%), 0.04, 0.09 | 69.87, 0.03, 0.08 | 69.84 (−0.0%), 0.04, 0.10 | 157.4 → 159.6, 286.5 → 284.8 (−0.6%) | 156.4 → 162.2, 287.5 → 295.4 (+2.8%), 1.11 → 1.23 | 7.8–8.4 |
+| reg-regex-syntax | 48.12 (−0.3%), 0.11, 0.22 | 48.25, 0.15, 0.40 | 47.98 (−0.6%), 0.12, 0.29 | 206.1 → 220.3, 200.4 → 197.4 (−1.5%) | 199.7 → 215.8, 195.6 → 187.7 (−4.0%), 7.44 → 5.72 | 7.9–8.5 |
+| reg-clap-builder | 20.02 (−0.1%), 0.03, 0.06 | 20.06, 0.03, 0.07 | 19.63 (−2.1%), 0.05, 0.10 | 66.9 → 84.3, 86.2 → 83.1 (−3.6%) | 67.2 → 74.4, 84.8 → 81.1 (−4.3%), 3.65 → 5.51 | 8.5–8.6 |
+
+The four crates without a split file (the lever changes nothing that runs there), release
+builds: wall −5.9…+4.9%, CPU −4.2…+2.4% (`fx-syntax`, `fx-parser`, `reg-tokio`, `reg-winnow`):
+the noise of this window.
+
+- The split file without helpers runs its whole units phase on one core while the other
+  workers finish the crate: `fx-hir`'s tail grows 8x and its idle core time 74x, `fx-ide-db`'s
+  32x and 48x. The measured spans rise by 40% and 18% where the replay said 49% and 28%: the
+  sequential path costs less than the split one (no item set-up, no stitch, no extra red
+  trees), which the replay of the base's costs does not know. The sign and most of the size
+  are the replay's.
+- CPU falls 1.4–3.6% on the two crates with fewer threads, the one gain the cap was for, and
+  it does not pay for the lost parallelism.
+- **Keep rule:** the tails grow on both crates and two spans rise: **reverted** (`efd781c`).
+- Per-run rows: appendix D.
+
+## Levers (c) and (d): not built
+
+Both falsifiers that bind them hold on the replays: no lever halves both tails, and (c) and
+(d) cannot pass the keep rule on these crates. (c) leaves `fx-hir` unchanged by construction
+(its largest unit is a 2.95 ms `impl`, no unit reaches 100 KB), so its tail cannot fall by
+half; (d) raises `fx-hir`'s reconstructed span in 21–26 of 30 runs in every collection. On the
+quiet host both bound `fx-ide-db`'s span at −0.3%. What each would need, for a later experiment
+whose target is a large file's chain (Follow-up 2):
+
 - **(c)** cuts a `const` whose initialiser is an array of independent elements
   (`DEFAULT_LINTS`, `CLIPPY_LINTS` in `lints.rs`) into element ranges formatted on several
   threads and assembled by the array's list formatting. Exactness has to hold through
@@ -374,13 +428,21 @@ chain alone as its target:
   element's rewrite, and the last element may be tried at another shape), so the unit-record
   checks of `parallel.rs` do not carry over as they are: the element rewrites would be computed
   in workers and looked up by (element, shape) inside the sequential list formatting, with the
-  sequential rewrite as the fallback for any shape not computed. Bound: `fx-ide-db` span −0.3%
-  on the quiet host (−2.1…−5.8% under load), tail −40% (−73…−87%); nothing on the other eight
-  crates.
+  sequential rewrite as the fallback for any shape not computed and for any element whose
+  rewrite touched the run's shared state (skipped ranges, the macro and comment flags).
+  Bound on the crates: `fx-ide-db` span −0.3% on the quiet host (−2.1…−5.8% under load), tail
+  −40% (−73…−87%), nothing on the other eight.
 - **(d)** is P9 of [../../2026-10-15-extensions-theory/parser-and-substrate.md](../../2026-10-15-extensions-theory/parser-and-substrate.md)
-  §2 (300–500 lines, the element-equality harness). Bound: `fx-ide-db` span −0.3% on the
-  quiet host (−1.9…−6.9% under load), tail −60% (−76…−91%); `fx-hir` span +1.1% (+1.0…+1.4%):
-  it would need a rule that parses in parallel only when workers would otherwise idle.
+  §2 (300–500 lines, the element-equality harness). Bound on the crates: `fx-ide-db` span
+  −0.3% on the quiet host (−1.9…−6.9% under load), tail −60% (−76…−91%); `fx-hir` span +1.1%
+  (+1.0…+1.4%): three parse threads beside three busy workers delay everything else; it would
+  need a rule that parses in parallel only when workers would otherwise idle.
+- **Where they would pay: one large file alone.** Replayed with only the split file (Q2's
+  costs, four threads, no other file, process start-up excluded): `lints.rs` 19.54 ms today,
+  15.97 with (c) (−13.3%), 11.15 with (d) (−43.0%), 8.37 with both (−57.0%); `hir/src/lib.rs`
+  18.81 ms today, 9.12 with (d) (−51.5%), unchanged by (c). This is the stdin and editor case
+  (M5's measurement E: the split takes `stdin-lints` only to 0.857x of one thread), not the
+  crate's tail.
 
 ## Gates
 
@@ -413,6 +475,14 @@ the final head and reported in the next revision of this record.
 - Lever (a), built, is exact (0 of 193) and schedule-neutral (replay 0.0%); what it measurably
   removes is one thread start per split file (0.05–0.07 ms); its tails moved both ways and its
   wall-view tails rose; reverted.
+- Lever (b), built, is exact (0 of 193) and takes the split file's helpers away when its units
+  are ready: spans +39.9% and +17.8%, tails ×8 and ×32 (measured, loaded; the replay predicted
+  +49.4% and +28.1%); reverted. The cap's premise, that the split file's item threads cost the
+  other files their cores, is not what the schedule shows: under processor sharing they only
+  share them, and the work is the same.
+- (c) and (d) not built: neither can pass the keep rule on these crates ((c) leaves `fx-hir`
+  unchanged by construction, (d) raises its span), and on the quiet host both bound
+  `fx-ide-db`'s span at −0.3%.
 - Kept for the integrator: `split_sim.py`, `collect_ab.sh`, `trace_patch.py owner` and the
   README note; `chloro-core` and `chloro/src` at the head are `03c61be`'s.
 
@@ -423,11 +493,14 @@ the final head and reported in the next revision of this record.
    time; `split_sim.py --blind` shows how much on any patched trace. If the release trace
    should be readable on its own, it could record the item threads' spans (wall stamps only,
    as the kept timeline does), which `diag.py` already reads.
-2. **`fx-ide-db`'s chain, as its own hypothesis,** only if a workload makes it matter: (c) or
-   (d), bound −0.3% of that crate's four-core span on the quiet host and −2…−7% under load, and
-   nothing elsewhere; (d) needs a rule that keeps it off crates like `fx-hir`. Of the two, (d)
-   is the general one (any large file's parse), (c) the one with a local exactness argument
-   (element rewrites at known shapes).
+2. **A large file's chain, as its own hypothesis, for a single file run alone** (stdin, an
+   editor's format-on-save, `chloro <file>`): replayed with Q2's costs, (d) takes `lints.rs`
+   from 19.54 to 11.15 ms (−43.0%) and `hir/src/lib.rs` from 18.81 to 9.12 ms (−51.5%), (c)
+   takes `lints.rs` to 15.97 ms (−13.3%), both together to 8.37 ms (−57.0%); on crates their
+   bound is −0.3% of `fx-ide-db`'s span on the quiet host (−2…−7% under load) and (d) needs a
+   rule that keeps it off crates like `fx-hir` (parse in parallel only when no other file is
+   waiting). Of the two, (d) is the general one (any large file's parse, P9), (c) the one with
+   a local exactness argument (element rewrites at known shapes).
 3. **The cost of a thread start per split file**, which (a) removes (0.05–0.07 ms of the
    worker's CPU), is below what the crate-level collections resolve (CPU moved ±9% between
    interleaved blocks, both ways); a pinned 1c4t comparison (EXP-023 D5's configuration) on
@@ -648,3 +721,75 @@ fx-ide-db, L2 (interleaved blocks of 6 runs; block k of the base then block k of
 | 27 | 5.16, 163.1, 184.9, 30.88 | 48.02, 5.64, 15.23 | 5.16, 116.5, 138.2, 20.60 | 33.17, 0.14, 0.22 |
 | 28 | 5.16, 143.3, 129.1, 14.78 | 36.50, 9.03, 23.77 | 5.16, 133.0, 141.3, 1.27 | 34.75, 1.84, 4.23 |
 | 29 | 5.16, 135.4, 123.4, 37.23 | 29.59, 1.13, 3.17 | 5.16, 124.0, 146.2, 2.51 | 37.07, 3.43, 9.33 |
+
+## Appendix D: per-run, lever (b) against the base, L3
+
+fx-hir, L3: 5 blocks; in each block 6 runs of each binary in the order release base, release (b), patched base, patched (b)
+
+| run | load | release base: wall, CPU, tail | release (b): wall, CPU, tail | patched base: wall, CPU; A span, tail, idle | patched (b): wall, CPU; A span, tail, idle |
+|---|---|---|---|---|---|
+| 0 | 8.69 | 57.5, 89.4, 25.39 | 60.1, 95.8, 19.55 | 49.8, 96.0; 22.96, 1.43, 0.69 | 65.5, 94.4; 30.86, 11.41, 33.26 |
+| 1 | 8.69 | 58.0, 87.3, 16.32 | 52.5, 87.0, 14.69 | 47.5, 88.8; 21.06, 1.15, 0.37 | 53.4, 91.1; 31.54, 13.12, 39.09 |
+| 2 | 8.69 | 45.0, 87.5, 10.93 | 56.8, 87.1, 17.80 | 54.2, 89.3; 21.27, 0.95, 0.48 | 69.6, 87.1; 30.71, 13.51, 39.91 |
+| 3 | 8.69 | 65.1, 112.7, 13.46 | 51.4, 85.6, 14.72 | 47.2, 88.2; 21.00, 1.10, 0.44 | 53.7, 88.1; 32.60, 15.75, 46.53 |
+| 4 | 8.69 | 57.3, 107.3, 2.28 | 57.6, 103.6, 9.62 | 51.2, 92.7; 22.09, 0.36, 0.45 | 55.8, 101.8; 32.35, 10.92, 31.86 |
+| 5 | 8.69 | 54.6, 98.0, 4.93 | 58.0, 97.9, 0.93 | 47.0, 91.9; 21.74, 0.28, 0.31 | 63.1, 90.6; 31.63, 13.73, 40.28 |
+| 6 | 8.69 | 54.1, 90.5, 10.66 | 67.4, 114.4, 1.94 | 52.3, 93.7; 22.35, 1.48, 1.18 | 58.0, 89.9; 30.83, 12.90, 37.87 |
+| 7 | 8.48 | 52.2, 93.9, 11.30 | 64.5, 104.8, 22.23 | 49.5, 92.7; 22.03, 1.82, 0.42 | 58.8, 88.3; 30.78, 13.60, 39.34 |
+| 8 | 8.48 | 58.1, 101.0, 1.49 | 56.9, 98.8, 2.01 | 50.9, 92.7; 22.18, 2.21, 0.61 | 69.7, 112.8; 31.74, 7.91, 20.51 |
+| 9 | 8.48 | 58.9, 101.3, 12.20 | 60.8, 88.2, 26.46 | 58.7, 97.3; 23.14, 2.13, 0.57 | 68.9, 97.6; 31.85, 11.99, 34.03 |
+| 10 | 8.48 | 55.4, 101.4, 2.90 | 63.9, 104.8, 20.14 | 64.0, 113.5; 27.51, 0.95, 1.90 | 61.6, 107.8; 38.44, 19.54, 51.79 |
+| 11 | 8.48 | 60.4, 112.4, 0.96 | 57.1, 97.1, 12.83 | 62.4, 114.5; 27.27, 3.67, 0.86 | 63.3, 113.1; 31.27, 7.12, 18.14 |
+| 12 | 8.48 | 66.3, 112.0, 19.02 | 80.4, 114.7, 30.27 | 58.2, 108.1; 25.56, 0.47, 0.58 | 90.6, 88.2; 31.17, 13.86, 40.73 |
+| 13 | 8.48 | 64.5, 123.7, 2.06 | 61.0, 101.7, 12.12 | 46.9, 90.5; 21.48, 1.92, 0.43 | 53.6, 88.4; 30.95, 13.67, 39.82 |
+| 14 | 8.48 | 71.1, 127.6, 14.15 | 64.7, 97.9, 21.65 | 48.4, 94.3; 22.37, 1.40, 0.44 | 55.1, 88.1; 32.00, 15.00, 43.85 |
+| 15 | 8.48 | 63.8, 114.2, 6.03 | 64.3, 98.2, 22.53 | 60.1, 110.3; 26.63, 0.70, 1.46 | 51.0, 86.0; 30.27, 13.14, 39.08 |
+| 16 | 8.48 | 62.4, 118.7, 6.57 | 63.6, 104.2, 16.12 | 48.1, 91.8; 21.89, 1.41, 0.59 | 69.1, 117.8; 43.48, 21.33, 61.16 |
+| 17 | 8.48 | 69.8, 124.6, 3.79 | 58.7, 97.9, 13.15 | 47.6, 93.5; 22.24, 1.69, 0.52 | 52.6, 94.9; 30.96, 11.35, 33.49 |
+| 18 | 8.48 | 55.5, 93.7, 20.76 | 51.1, 92.3, 4.56 | 56.3, 107.5; 25.24, 4.82, 0.53 | 64.2, 89.0; 32.81, 16.06, 47.02 |
+| 19 | 8.48 | 67.3, 118.8, 12.37 | 68.1, 106.0, 17.30 | 62.1, 104.8; 25.13, 0.94, 1.86 | 55.6, 88.8; 31.40, 14.17, 41.78 |
+| 20 | 8.48 | 57.2, 111.4, 3.02 | 53.6, 95.9, 4.07 | 67.3, 115.3; 27.75, 0.97, 2.17 | 52.0, 89.4; 31.04, 13.21, 38.69 |
+| 21 | 8.48 | 55.7, 91.3, 18.63 | 56.3, 90.2, 17.91 | 59.7, 108.0; 25.80, 6.30, 1.94 | 62.3, 93.9; 32.67, 14.66, 43.21 |
+| 22 | 8.48 | 51.2, 91.7, 14.80 | 90.0, 150.8, 22.31 | 56.4, 105.6; 24.94, 5.01, 0.63 | 56.5, 92.0; 30.57, 11.91, 34.95 |
+| 23 | 8.48 | 52.1, 92.4, 11.63 | 77.2, 128.2, 11.27 | 50.3, 90.1; 21.21, 2.68, 0.45 | 55.7, 89.9; 30.96, 13.07, 38.07 |
+| 24 | 8.48 | 97.4, 147.4, 13.27 | 57.9, 94.4, 16.10 | 47.4, 86.6; 20.61, 2.09, 0.29 | 58.5, 95.1; 30.41, 12.10, 31.35 |
+| 25 | 8.04 | 55.2, 101.2, 4.30 | 62.7, 101.9, 19.93 | 46.8, 91.1; 21.70, 1.64, 0.43 | 57.0, 94.8; 34.06, 15.51, 45.78 |
+| 26 | 8.04 | 55.9, 100.1, 14.71 | 80.2, 117.1, 29.54 | 49.0, 90.3; 21.20, 2.12, 0.37 | 54.9, 85.2; 29.64, 13.19, 38.94 |
+| 27 | 8.04 | 54.8, 98.5, 13.08 | 68.8, 109.6, 17.09 | 53.9, 92.5; 22.10, 2.87, 0.46 | 58.2, 90.5; 31.23, 13.00, 38.66 |
+| 28 | 8.04 | 51.1, 96.2, 6.28 | 72.0, 127.8, 10.27 | 56.8, 96.1; 22.98, 2.36, 0.92 | 52.8, 86.0; 30.32, 13.61, 39.17 |
+| 29 | 8.04 | 53.1, 95.5, 5.72 | 47.9, 85.4, 2.08 | 51.8, 95.8; 22.66, 3.33, 0.44 | 51.0, 88.2; 31.05, 13.85, 39.88 |
+
+fx-ide-db, L3: 5 blocks; in each block 6 runs of each binary in the order release base, release (b), patched base, patched (b)
+
+| run | load | release base: wall, CPU, tail | release (b): wall, CPU, tail | patched base: wall, CPU; A span, tail, idle | patched (b): wall, CPU; A span, tail, idle |
+|---|---|---|---|---|---|
+| 0 | 8.04 | 48.0, 99.6, 1.46 | 51.6, 92.5, 4.73 | 57.4, 101.5; 27.31, 5.33, 12.82 | 56.0, 84.1; 24.33, 5.80, 17.32 |
+| 1 | 8.04 | 53.1, 89.4, 4.26 | 44.0, 85.7, 1.52 | 53.3, 102.4; 24.20, 0.15, 0.21 | 48.7, 81.0; 24.13, 6.64, 19.68 |
+| 2 | 8.04 | 45.9, 86.4, 1.13 | 47.9, 85.2, 7.28 | 48.6, 92.3; 21.94, 0.23, 0.56 | 44.3, 82.4; 24.45, 6.60, 19.54 |
+| 3 | 8.04 | 43.2, 82.9, 3.14 | 48.5, 85.3, 7.42 | 42.5, 83.4; 19.71, 0.14, 0.30 | 45.3, 81.7; 24.01, 6.13, 18.27 |
+| 4 | 8.04 | 63.4, 107.3, 6.91 | 53.3, 89.0, 10.19 | 46.8, 84.9; 20.42, 0.64, 1.76 | 51.0, 80.9; 23.57, 5.88, 17.50 |
+| 5 | 8.04 | 60.1, 106.9, 6.65 | 46.0, 86.7, 0.95 | 51.7, 85.4; 20.18, 0.16, 0.23 | 57.6, 86.9; 25.83, 7.08, 21.02 |
+| 6 | 8.04 | 44.6, 85.1, 1.15 | 44.6, 83.2, 0.43 | 46.0, 84.3; 20.22, 0.56, 1.43 | 53.9, 95.4; 28.55, 7.75, 23.11 |
+| 7 | 8.04 | 52.4, 87.0, 3.71 | 48.7, 86.7, 6.97 | 57.2, 90.4; 21.40, 0.22, 0.38 | 49.6, 92.8; 24.29, 3.08, 8.89 |
+| 8 | 8.04 | 46.3, 84.9, 1.92 | 49.6, 87.4, 1.23 | 53.6, 100.3; 23.71, 0.32, 0.59 | 60.4, 92.4; 27.09, 6.86, 20.34 |
+| 9 | 8.04 | 48.3, 86.9, 1.10 | 52.4, 85.9, 10.79 | 48.3, 95.5; 22.64, 0.15, 0.39 | 48.5, 81.6; 23.86, 6.12, 18.17 |
+| 10 | 8.04 | 47.6, 83.9, 4.99 | 58.9, 88.7, 1.74 | 45.6, 85.2; 20.23, 0.20, 0.51 | 47.9, 79.2; 22.92, 5.54, 16.57 |
+| 11 | 8.04 | 49.4, 85.1, 2.20 | 48.5, 83.1, 12.86 | 47.0, 80.6; 19.11, 0.13, 0.26 | 43.5, 81.7; 23.86, 6.04, 18.06 |
+| 12 | 8.04 | 49.1, 84.4, 8.35 | 54.9, 89.0, 5.86 | 45.9, 85.5; 20.26, 0.15, 0.42 | 47.8, 81.4; 23.36, 5.48, 16.27 |
+| 13 | 8.04 | 66.7, 110.5, 13.45 | 53.5, 82.1, 12.91 | 52.8, 91.2; 21.68, 0.12, 0.24 | 48.1, 84.1; 24.88, 6.51, 19.41 |
+| 14 | 8.04 | 61.9, 107.2, 4.82 | 47.4, 82.4, 6.80 | 41.5, 84.4; 19.99, 0.12, 0.26 | 49.1, 86.3; 26.97, 8.72, 25.89 |
+| 15 | 8.04 | 50.7, 92.1, 0.86 | 47.5, 84.2, 7.19 | 58.0, 100.6; 25.55, 3.13, 6.81 | 45.5, 83.5; 24.51, 6.22, 18.53 |
+| 16 | 8.04 | 50.9, 95.8, 1.29 | 45.4, 81.3, 6.28 | 73.2, 99.6; 23.64, 0.22, 0.44 | 42.2, 80.8; 23.98, 6.49, 19.18 |
+| 17 | 8.04 | 48.8, 96.2, 6.31 | 45.6, 81.8, 0.88 | 56.5, 107.6; 27.44, 3.17, 7.57 | 46.8, 81.6; 24.21, 6.50, 19.35 |
+| 18 | 8.35 | 47.8, 83.6, 6.05 | 55.0, 98.3, 5.63 | 61.1, 86.5; 20.41, 0.20, 0.37 | 62.6, 89.8; 27.20, 8.06, 23.93 |
+| 19 | 8.35 | 56.2, 86.4, 5.87 | 47.2, 82.6, 5.43 | 46.0, 88.2; 20.80, 0.10, 0.22 | 55.4, 99.6; 26.31, 3.75, 11.03 |
+| 20 | 8.35 | 41.8, 85.3, 0.74 | 46.8, 80.4, 6.08 | 39.4, 84.4; 19.97, 0.11, 0.15 | 55.2, 92.2; 26.23, 5.60, 16.56 |
+| 21 | 8.35 | 44.1, 83.6, 1.07 | 50.6, 87.5, 3.79 | 48.8, 92.6; 22.02, 0.10, 0.18 | 50.2, 89.4; 25.46, 5.75, 16.91 |
+| 22 | 8.35 | 48.7, 83.0, 1.02 | 51.4, 81.1, 13.94 | 49.7, 86.2; 20.37, 0.09, 0.14 | 51.7, 84.9; 24.04, 5.45, 16.04 |
+| 23 | 8.35 | 56.7, 86.1, 7.58 | 43.8, 81.7, 2.13 | 49.4, 100.5; 23.97, 0.22, 0.57 | 52.2, 87.6; 25.55, 6.32, 18.75 |
+| 24 | 8.35 | 49.8, 87.6, 10.30 | 53.2, 91.9, 3.44 | 50.3, 85.8; 20.22, 0.18, 0.33 | 49.8, 82.9; 24.54, 6.59, 19.52 |
+| 25 | 8.35 | 46.2, 88.6, 1.02 | 49.0, 85.7, 5.50 | 45.3, 85.3; 20.04, 0.16, 0.29 | 48.3, 85.1; 24.53, 5.83, 17.29 |
+| 26 | 8.35 | 49.1, 89.8, 5.61 | 49.2, 87.4, 2.26 | 47.3, 84.6; 19.95, 0.16, 0.31 | 45.5, 85.2; 24.32, 5.54, 16.55 |
+| 27 | 8.35 | 49.4, 87.8, 1.05 | 54.5, 102.7, 0.92 | 43.3, 86.1; 20.77, 0.79, 2.15 | 59.9, 85.0; 25.02, 6.54, 19.46 |
+| 28 | 8.35 | 48.4, 91.7, 0.44 | 62.7, 95.0, 14.00 | 51.8, 94.0; 22.31, 0.22, 0.38 | 55.0, 95.3; 24.41, 2.30, 6.67 |
+| 29 | 8.35 | 46.1, 86.9, 1.53 | 45.9, 85.3, 1.53 | 49.2, 93.8; 23.16, 1.46, 4.17 | 57.5, 102.5; 25.76, 1.97, 5.62 |
