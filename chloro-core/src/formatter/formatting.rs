@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use ra_ap_parser::{Edition, LexedStr, TopEntryPoint};
 
-use crate::cst::{AstNode, Tree, TreeArena, ast};
+use crate::cst::{AstNode, Tree, TreeArena, ast, lex};
 
 use super::comment::{CharClasses, LineClasses};
 use super::config::{NewlineStyle, RustfmtVersion, Settings};
@@ -43,7 +43,21 @@ pub(crate) struct Formatted {
 /// A file that rust-analyzer's lexer or parser rejects is parsed again by `rustc_syntax`
 /// when rustc's parser accepts it.
 fn parse(source: &str, edition: Edition, rustfmt_version: RustfmtVersion) -> Option<Tree<'_>> {
-    // `Tree::parse`, keeping the lexer's and the parser's output for `reparse`.
+    // Chloro's own lexer front end (`lex::lex`, EXP-031). On a parser error, `reparse` gets
+    // `LexedStr` with this parser output, which is the one `to_input`'s input gives.
+    if let Some((tokens, input)) = lex::lex(edition, source) {
+        let output = TopEntryPoint::SourceFile.parse(&input, edition);
+        let tree = match Tree::from_steps_at(source, &tokens, &output, 0, 0) {
+            Some(tree) => tree,
+            None => {
+                let lexed = LexedStr::new(edition, source);
+                reparse(source, &lexed, Some(&output), edition, rustfmt_version)?
+            }
+        };
+        return (!rejected_by_rustc(tree.root(), edition, rustfmt_version)).then_some(tree);
+    }
+    // A lexer error, or a shebang or frontmatter: `Tree::parse`, keeping the lexer's and the
+    // parser's output for `reparse`.
     let lexed = LexedStr::new(edition, source);
     let tree = if lexed.errors().next().is_none() {
         let output = TopEntryPoint::SourceFile.parse(&lexed.to_input(edition), edition);
