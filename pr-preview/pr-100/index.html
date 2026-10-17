@@ -1300,37 +1300,42 @@ the Rust compiler. It comes as a 2 MB command-line tool and as a library.</p>
 
 <div class="chl-benches">
 <div class="chl-bench">
-<p class="chl-bench-title">Nine crates <span>against rustfmt 1.9.0</span></p>
-<p class="chl-bench-note">215 KB–2.9 MB each, <code>--check</code> on formatted files; an idle
-four-core Linux VM, 30 runs per cell, one-core runs pinned</p>
+<p class="chl-bench-kicker">Controlled benchmark</p>
+<p class="chl-bench-title">Nine crates <span>vs rustfmt 1.9.0</span></p>
+<p class="chl-bench-note">hir, hir-ty, ide-db, syntax and parser from rust-analyzer, and
+tokio, regex-syntax, clap_builder and winnow from crates.io: 215 KB–2.9 MB each.
+An idle four-core Linux VM, 30 runs per cell, one-core runs pinned. Ranges span the
+nine crates.</p>
 <table class="chl-bench-table">
-<thead><tr><th>chloro on</th><th>wall time, rustfmt = 100%</th><th>peak memory</th></tr></thead>
+<thead><tr><th></th><th>speed</th><th>peak memory</th></tr></thead>
 <tbody>
-<tr><th>1 core</th><td><span class="chl-meter" title="21–35% of rustfmt's wall time, per crate"><span class="chl-fill" style="width:21%"></span><span class="chl-spread" style="left:21%;width:14%"></span></span>21–35%</td><td>4–10 MiB</td></tr>
-<tr><th>4 cores</th><td><span class="chl-meter" title="8–17% of rustfmt's wall time, per crate"><span class="chl-fill" style="width:8%"></span><span class="chl-spread" style="left:8%;width:9%"></span></span>8–17%</td><td>5–23 MiB</td></tr>
-<tr class="chl-ref"><th>rustfmt</th><td><span class="chl-meter" title="rustfmt, one thread: 100%"><span class="chl-fill" style="width:100%"></span></span>100%</td><td>43–86 MiB</td></tr>
+<tr class="chl-ref"><th>rustfmt</th><td><span class="chl-meter" title="rustfmt: the baseline, 1×"><span class="chl-fill" style="width:3.8%"></span></span>1×</td><td>43–86 MiB</td></tr>
+<tr><th>chloro, 1 core</th><td><span class="chl-meter" title="2.9–4.7× as fast as rustfmt, per crate"><span class="chl-fill" style="width:10.9%"></span><span class="chl-spread" style="left:10.9%;width:6.8%"></span></span>2.9–4.7×</td><td>4–10 MiB</td></tr>
+<tr><th>chloro, 4 cores</th><td><span class="chl-meter" title="6.1–13× as fast as rustfmt, per crate"><span class="chl-fill" style="width:23.0%"></span><span class="chl-spread" style="left:23.0%;width:26.0%"></span></span>6.1–13×</td><td>5–23 MiB</td></tr>
 </tbody>
 </table>
 </div>
 <div class="chl-bench">
-<p class="chl-bench-title">ruff <span>against <code>cargo fmt</code></span></p>
-<p class="chl-bench-note">2,008 files, <code>--check</code> on the formatted workspace; a
-20-core workstation, rustfmt 1.10.0, 5 runs each (<code>just vs-ruff</code>)</p>
+<p class="chl-bench-kicker">A large real-world workspace</p>
+<p class="chl-bench-title">ruff <span>vs <code>cargo fmt</code></span></p>
+<p class="chl-bench-note">The whole <a href="https://github.com/astral-sh/ruff">ruff</a>
+repository: 2,008 files in one run of each tool. A 20-core workstation, rustfmt 1.10.0,
+5 runs each (<code>just vs-ruff</code>).</p>
 <table class="chl-bench-table">
-<thead><tr><th>chloro on</th><th>wall time, cargo fmt = 100%</th><th>peak memory</th></tr></thead>
+<thead><tr><th></th><th>speed</th><th>peak memory</th></tr></thead>
 <tbody>
-<tr><th>1 thread</th><td><span class="chl-meter" title="28% of cargo fmt's wall time (1.60 s against 5.63 s)"><span class="chl-fill" style="width:28.4%"></span></span>28%</td><td>16 MiB</td></tr>
-<tr><th>20 threads</th><td><span class="chl-meter" title="3.8% of cargo fmt's wall time (0.21 s against 5.63 s)"><span class="chl-fill" style="width:3.8%"></span></span>3.8%</td><td>90 MiB</td></tr>
-<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt (rustfmt, one thread): 100%, 5.63 s"><span class="chl-fill" style="width:100%"></span></span>100%</td><td>194 MiB</td></tr>
+<tr class="chl-ref"><th><code>cargo fmt</code></th><td><span class="chl-meter" title="cargo fmt: the baseline, 1× (5.63 s)"><span class="chl-fill" style="width:3.8%"></span></span>1×</td><td>194 MiB</td></tr>
+<tr><th>chloro, 1 thread</th><td><span class="chl-meter" title="3.5× as fast as cargo fmt (1.60 s against 5.63 s)"><span class="chl-fill" style="width:13.2%"></span></span>3.5×</td><td>16 MiB</td></tr>
+<tr><th>chloro, 20 threads</th><td><span class="chl-meter" title="26.5× as fast as cargo fmt (0.21 s against 5.63 s)"><span class="chl-fill" style="width:100.0%"></span></span>26.5×</td><td>90 MiB</td></tr>
 </tbody>
 </table>
 </div>
 </div>
 
-<p class="chl-stats-caption">rustfmt formats on one thread, so the one-core and one-thread
-rows compare the formatters like for like; the others add chloro's parallelism. The two
-benchmarks were run on different machines with different methods, so compare within a
-table, not across. Methods, every workload and the limits of these numbers are on the
+<p class="chl-stats-caption">Speed is rustfmt's wall time divided by chloro's, checking
+already-formatted files. rustfmt formats on one thread, so the one-core and one-thread rows
+compare the two formatters like for like; the last row of each adds chloro's parallelism.
+Bars share one scale. The method, every workload and the limits of these numbers are on the
 <a href="performance/">Performance</a> page.</p>
 
 <h2 id="getting-started">Getting started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>

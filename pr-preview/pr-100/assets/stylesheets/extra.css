@@ -203,6 +203,16 @@
   background: var(--chl-wash);
 }
 
+.md-typeset .chl-bench-kicker {
+  font-family: "Encode Sans Condensed", "Work Sans", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--chl-ink);
+  margin: 0 0 0.1rem;
+}
+
 .md-typeset .chl-bench-title {
   font-family: "Encode Sans Condensed", "Work Sans", sans-serif;
   font-weight: 700;
@@ -275,12 +285,12 @@
   font-weight: 500;
 }
 
-/* A bar per row: the track is rustfmt's wall time, the fill chloro's share of it, and a
-   lighter extension the spread across crates */
+/* A bar per row: its length is the speed relative to rustfmt, on one scale for every panel
+   (26.5x full), with a lighter extension for the spread across crates */
 .chl-meter {
   position: relative;
   display: inline-block;
-  width: calc(100% - 3.6rem);
+  width: calc(100% - 4rem);
   min-width: 3rem;
   height: 0.5rem;
   margin-right: 0.45rem;
