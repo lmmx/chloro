@@ -6,19 +6,19 @@
 //! at every token, converts each `TokenKind` to a `SyntaxKind` (keywords looked up), checks
 //! literal escapes and collects error messages, growing its vectors from empty; then
 //! `LexedStr::to_input` (`shortcuts.rs`) walks the tokens again to drop trivia, look up
-//! contextual keywords and set joint bits. [`lex`] does both in one loop over one cursor,
-//! into vectors sized from the text, and keeps no messages.
+//! contextual keywords and set joint bits. [`lex`] does both in one loop, into vectors sized
+//! from the text, and keeps no messages; the common tokens skip the cursor (P4).
 //!
 //! Why its tokens are `LexedStr`'s (read from the sources named above; checked on both
 //! corpora, random texts and mutated fixtures by `examples/lex_equality.rs`, and against
 //! `LexedStr` in debug builds on every text):
 //!
-//! - One cursor: with `FrontmatterAllowed::No`, `Cursor::advance_token` reads nothing but
-//!   the remaining text (its `prev` character exists only in debug builds, for debug
-//!   assertions), so one cursor over the text yields the tokens a new cursor per token
-//!   yields. The one place `LexedStr` cuts a token short, a guarded string prefix (`#"`,
-//!   `##`) before edition 2024, which becomes a `#` with the rest lexed again, restarts the
-//!   cursor after the `#` the same way.
+//! - The tokens: `LexedStr` starts a cursor (`FrontmatterAllowed::No`) at every token;
+//!   [`fast_token`] answers what that cursor answers for whitespace, ASCII identifiers,
+//!   one-character punctuation and line comments by a byte scan, and a cursor started at the
+//!   token lexes every other token. Where `LexedStr` cuts a token short, a guarded string
+//!   prefix (`#"`, `##`) before edition 2024, which becomes a `#` with the rest lexed
+//!   again, the next token starts after the `#` the same way.
 //! - The start of the text: `LexedStr::new` first runs the frontmatter parser, which emits
 //!   a shebang or frontmatter token only when the text starts with `#!` not followed by `[`
 //!   (after whitespace), or when its first character that is not Pattern_White_Space is `-`;
@@ -35,7 +35,9 @@
 #[cfg(debug_assertions)]
 use ra_ap_parser::Output;
 use ra_ap_parser::{Edition, Input, LexedStr, SyntaxKind, T};
-use ra_ap_rustc_lexer::{Cursor, FrontmatterAllowed, LiteralKind, TokenKind};
+use ra_ap_rustc_lexer::{
+    Cursor, DocStyle, FrontmatterAllowed, LiteralKind, Token as LexToken, TokenKind,
+};
 use rustc_literal_escaper::{
     EscapeError, unescape_byte, unescape_byte_str, unescape_c_str, unescape_char, unescape_str,
 };
@@ -191,9 +193,67 @@ fn lex_tokens<'a, S: InputSink>(
     let mut offset = 0usize;
     // `to_input`'s state: the previous token was punctuation that may join the next one.
     let mut was_joint = false;
-    let mut cursor = Cursor::new(text, FrontmatterAllowed::No);
-    loop {
-        let token = cursor.advance_token();
+    let bytes = text.as_bytes();
+    while let Some(&b) = bytes.get(offset) {
+        // The common tokens by a byte scan, the others by a cursor started at the token, as
+        // `LexedStr` starts one for every token (see [`fast_token`] for why the scans give
+        // the cursor's tokens).
+        let class = CLASS[b as usize];
+        if class & PUNCT != 0 {
+            // One-byte punctuation: `extend_token`'s kind and `to_input`'s joint state.
+            let k = PUNCT_KIND[b as usize];
+            #[cfg(debug_assertions)]
+            check_fast_token(text, offset, fast_token(bytes, offset));
+            tokens.push(Token {
+                start: offset as u32,
+                kind: k,
+            });
+            if was_joint {
+                sink.was_joint();
+            }
+            sink.push(k);
+            was_joint = true;
+            offset += 1;
+            continue;
+        }
+        let mut scanned = None;
+        if class & WS != 0 {
+            let mut end = offset + 1;
+            while bytes.get(end).is_some_and(|&b| CLASS[b as usize] & WS != 0) {
+                end += 1;
+            }
+            if bytes.get(end).is_none_or(|&b| b < 0x80) {
+                scanned = Some(LexToken {
+                    kind: TokenKind::Whitespace,
+                    len: (end - offset) as u32,
+                });
+            }
+        } else if class & ID_START != 0 {
+            let mut end = offset + 1;
+            while bytes
+                .get(end)
+                .is_some_and(|&b| CLASS[b as usize] & ID_CONTINUE != 0)
+            {
+                end += 1;
+            }
+            if bytes
+                .get(end)
+                .is_none_or(|&b| CLASS[b as usize] & ID_STOP == 0)
+            {
+                scanned = Some(LexToken {
+                    kind: TokenKind::Ident,
+                    len: (end - offset) as u32,
+                });
+            }
+        }
+        let token = match scanned.or_else(|| fast_token(bytes, offset)) {
+            Some(token) => {
+                #[cfg(debug_assertions)]
+                check_fast_token(text, offset, Some(LexToken { ..token }));
+                token
+            }
+            None => Cursor::new(&text[offset..], FrontmatterAllowed::No).advance_token(),
+        };
         let mut len = token.len as usize;
         // The token's text, sliced where it is read.
         let token_text = || &text[offset..offset + token.len as usize];
@@ -269,7 +329,6 @@ fn lex_tokens<'a, S: InputSink>(
             TokenKind::GuardedStrPrefix if !edition.at_least_2024() => {
                 // `#"` or `##`: a `#`, and the rest lexed again.
                 len -= 1;
-                cursor = Cursor::new(&text[offset + len..], FrontmatterAllowed::No);
                 T![#]
             }
             // Each with a message: an invalid identifier, a reserved guarded string prefix,
@@ -355,6 +414,195 @@ fn contextual_keyword(ident: &str, edition: Edition) -> SyntaxKind {
 fn may_be_keyword(ident: &str) -> bool {
     let b = ident.as_bytes();
     (2..=15).contains(&b.len()) && (b[0].is_ascii_lowercase() || ident == "Self")
+}
+
+/// Byte classes of the scans in [`lex_tokens`]: Pattern_White_Space's ASCII members, ASCII
+/// XID_Start and `_`, ASCII XID_Continue, the bytes after an identifier that make the cursor
+/// answer otherwise (`#`, `"`, `'`, and any byte of a non-ASCII character), and the
+/// one-byte punctuation that needs no lookahead (all of the cursor's one-symbol tokens but
+/// `#` and `/`).
+const WS: u8 = 1;
+const ID_START: u8 = 2;
+const ID_CONTINUE: u8 = 4;
+const ID_STOP: u8 = 8;
+const PUNCT: u8 = 16;
+
+const PUNCTUATION: [(u8, SyntaxKind); 25] = [
+    (b';', T![;]),
+    (b',', T![,]),
+    (b'.', T![.]),
+    (b'(', T!['(']),
+    (b')', T![')']),
+    (b'{', T!['{']),
+    (b'}', T!['}']),
+    (b'[', T!['[']),
+    (b']', T![']']),
+    (b'@', T![@]),
+    (b'~', T![~]),
+    (b'?', T![?]),
+    (b':', T![:]),
+    (b'$', T![$]),
+    (b'=', T![=]),
+    (b'!', T![!]),
+    (b'<', T![<]),
+    (b'>', T![>]),
+    (b'-', T![-]),
+    (b'&', T![&]),
+    (b'|', T![|]),
+    (b'+', T![+]),
+    (b'*', T![*]),
+    (b'^', T![^]),
+    (b'%', T![%]),
+];
+
+static CLASS: [u8; 256] = {
+    let mut t = [0u8; 256];
+    let mut b = 0usize;
+    while b < 256 {
+        let c = b as u8;
+        if matches!(c, b' ' | b'\t' | b'\n' | b'\r' | 0x0B | 0x0C) {
+            t[b] |= WS;
+        }
+        if c.is_ascii_alphabetic() || c == b'_' {
+            t[b] |= ID_START | ID_CONTINUE;
+        }
+        if c.is_ascii_digit() {
+            t[b] |= ID_CONTINUE;
+        }
+        if c >= 0x80 || matches!(c, b'#' | b'"' | b'\'') {
+            t[b] |= ID_STOP;
+        }
+        b += 1;
+    }
+    let mut i = 0;
+    while i < PUNCTUATION.len() {
+        t[PUNCTUATION[i].0 as usize] |= PUNCT;
+        i += 1;
+    }
+    t
+};
+
+static PUNCT_KIND: [SyntaxKind; 256] = {
+    let mut t = [SyntaxKind::EOF; 256];
+    let mut i = 0;
+    while i < PUNCTUATION.len() {
+        t[PUNCTUATION[i].0 as usize] = PUNCTUATION[i].1;
+        i += 1;
+    }
+    t
+};
+
+/// Debug builds: a token a scan decided is the cursor's.
+#[cfg(debug_assertions)]
+fn check_fast_token(text: &str, offset: usize, token: Option<LexToken>) {
+    let token = token.expect("the scans decide only tokens `fast_token` decides");
+    let reference = Cursor::new(&text[offset..], FrontmatterAllowed::No).advance_token();
+    assert!(
+        reference.kind == token.kind && reference.len == token.len,
+        "{token:?} at {offset} of {text:?}: rustc_lexer {reference:?}"
+    );
+}
+
+/// The token `Cursor::advance_token` lexes at `offset` (with `FrontmatterAllowed::No`), for
+/// the tokens a byte scan decides: whitespace, identifiers and keywords, one-character
+/// punctuation and line comments, all ASCII. `None` for every other token, and wherever
+/// the byte after the scan could change the answer; the caller then runs the cursor.
+///
+/// Why each answer is the cursor's (ra-ap-rustc_lexer 0.137.0, `lib.rs`, `advance_token`
+/// and the functions it dispatches to; debug builds compare every answer with the
+/// cursor's):
+///
+/// - Whitespace: the cursor eats Pattern_White_Space (`is_whitespace`), whose ASCII members
+///   are exactly tab, line feed, vertical tab, form feed, carriage return and space; the
+///   scan stops at any other byte, and gives up when that byte starts a non-ASCII
+///   character (five of Pattern_White_Space's are).
+/// - Identifiers: an ASCII letter or `_` starts one (`is_id_start`); `r`, `b` and `c` start
+///   raw identifiers and literals only when a `#`, `"` or `'` follows the letters, and
+///   `ident_or_unknown_prefix` answers `UnknownPrefix` for a `#`, `"` or `'` after the
+///   identifier and `InvalidIdent` for an emoji: the scan eats ASCII XID_Continue (letters,
+///   digits, `_`) and gives up when the next byte is `#`, `"`, `'` or starts a non-ASCII
+///   character (which may continue the identifier).
+/// - Punctuation: the cursor's one-symbol tokens are one byte each, without lookahead,
+///   except `#` before `"` or `#` (a guarded string prefix) and `/` before `/` or `*`.
+/// - Line comments: `//` to the next line feed (`line_comment`, `eat_until(b'\n')`), with
+///   the doc style of its third and fourth bytes.
+#[inline(always)]
+fn fast_token(bytes: &[u8], offset: usize) -> Option<LexToken> {
+    #[inline(always)]
+    fn token(kind: TokenKind, len: usize) -> Option<LexToken> {
+        Some(LexToken {
+            kind,
+            len: len as u32,
+        })
+    }
+    let at = |i: usize| bytes.get(i).copied();
+    let b = at(offset)?;
+    match b {
+        b' ' | b'\t' | b'\n' | b'\r' | 0x0B | 0x0C => {
+            let mut end = offset + 1;
+            while let Some(b' ' | b'\t' | b'\n' | b'\r' | 0x0B | 0x0C) = at(end) {
+                end += 1;
+            }
+            if at(end).is_some_and(|b| b >= 0x80) {
+                return None;
+            }
+            token(TokenKind::Whitespace, end - offset)
+        }
+        b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
+            let mut end = offset + 1;
+            while at(end).is_some_and(|b| b.is_ascii_alphanumeric() || b == b'_') {
+                end += 1;
+            }
+            if at(end).is_some_and(|b| b >= 0x80 || matches!(b, b'#' | b'"' | b'\'')) {
+                return None;
+            }
+            token(TokenKind::Ident, end - offset)
+        }
+        b';' => token(TokenKind::Semi, 1),
+        b',' => token(TokenKind::Comma, 1),
+        b'.' => token(TokenKind::Dot, 1),
+        b'(' => token(TokenKind::OpenParen, 1),
+        b')' => token(TokenKind::CloseParen, 1),
+        b'{' => token(TokenKind::OpenBrace, 1),
+        b'}' => token(TokenKind::CloseBrace, 1),
+        b'[' => token(TokenKind::OpenBracket, 1),
+        b']' => token(TokenKind::CloseBracket, 1),
+        b'@' => token(TokenKind::At, 1),
+        b'~' => token(TokenKind::Tilde, 1),
+        b'?' => token(TokenKind::Question, 1),
+        b':' => token(TokenKind::Colon, 1),
+        b'$' => token(TokenKind::Dollar, 1),
+        b'=' => token(TokenKind::Eq, 1),
+        b'!' => token(TokenKind::Bang, 1),
+        b'<' => token(TokenKind::Lt, 1),
+        b'>' => token(TokenKind::Gt, 1),
+        b'-' => token(TokenKind::Minus, 1),
+        b'&' => token(TokenKind::And, 1),
+        b'|' => token(TokenKind::Or, 1),
+        b'+' => token(TokenKind::Plus, 1),
+        b'*' => token(TokenKind::Star, 1),
+        b'^' => token(TokenKind::Caret, 1),
+        b'%' => token(TokenKind::Percent, 1),
+        b'#' => match at(offset + 1) {
+            Some(b'"' | b'#') => None,
+            _ => token(TokenKind::Pound, 1),
+        },
+        b'/' => match at(offset + 1) {
+            Some(b'/') => {
+                let doc_style = match at(offset + 2) {
+                    Some(b'!') => Some(DocStyle::Inner),
+                    Some(b'/') if at(offset + 3) != Some(b'/') => Some(DocStyle::Outer),
+                    _ => None,
+                };
+                let rest = &bytes[offset..];
+                let len = rest.iter().position(|&b| b == b'\n').unwrap_or(rest.len());
+                token(TokenKind::LineComment { doc_style }, len)
+            }
+            Some(b'*') => None,
+            _ => token(TokenKind::Slash, 1),
+        },
+        _ => None,
+    }
 }
 
 /// `Converter::extend_literal`'s kind for a literal token, `None` where it records an error.
