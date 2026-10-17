@@ -82,6 +82,12 @@ registry.
 
 ## Checks for a change
 
+CI (`.github/workflows/ci.yml`) runs on every pull request: `cargo fmt --check`, clippy with
+warnings denied, the tests on Linux, macOS (arm64) and Windows, a build of the
+`aarch64-pc-windows-msvc` release target, `cargo check` on Rust 1.88 (the workspace's
+`rust-version`), and `conform -i` at both rustfmt releases. The arm64 runner matters: the byte
+search in `formatter/comment.rs` has an SSE2 path on x86-64 and a portable one elsewhere.
+
 A change that is meant to leave the output alone (a performance change, a refactor) must
 show that it does. In order, cheapest first:
 

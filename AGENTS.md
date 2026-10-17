@@ -19,6 +19,9 @@ just clippy                      # -D warnings, all targets and features
 cargo fmt --check
 ```
 
+CI (`.github/workflows/ci.yml`) runs these on Linux, macOS (arm64) and Windows, plus a
+Rust 1.88 check (the `rust-version`) and `conform -i` at both rustfmt releases.
+
 ## Rules a change must keep
 
 - Output is the contract. A change that is not a conformance fix must leave every formatted
