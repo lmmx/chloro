@@ -74,9 +74,33 @@ they follow the scheme, and each chart has its data in a table beside it.
 
 ## Deployment
 
-`.github/workflows/site.yml` builds the site on every pull request that touches it, and on
-every push to `master` builds it and deploys it to GitHub Pages with
-`actions/deploy-pages`. It can also be run by hand from the Actions tab.
+GitHub Pages serves the site from the `gh-pages` branch (Settings → Pages → Build and
+deployment → Source: *Deploy from a branch*, `gh-pages`, `/ (root)`).
+`.github/workflows/site.yml` writes to that branch:
 
-The deploy job needs the repository's Pages source to be set to **GitHub Actions**
-(Settings → Pages → Build and deployment → Source).
+- **Production.** Every push to `master` builds the site and deploys it to the root of
+  `gh-pages`, which is served at <https://lmmx.github.io/chloro/>. The deploy replaces
+  everything at the root except the `pr-preview/` directory.
+- **Pull request previews.** A pull request that changes the site (`docs/site/`,
+  `zensical.toml`, `CHANGELOG.md`, `docs/scripts/` or the workflow) is built with its
+  `site_url` set to its preview path and deployed to
+  `gh-pages/pr-preview/pr-<number>/`, served at
+  `https://lmmx.github.io/chloro/pr-preview/pr-<number>/`. The workflow posts the link
+  as a comment on the pull request once GitHub Pages has published it, edits that same
+  comment on later pushes, and deletes the preview when the pull request is closed or
+  merged.
+
+Every pull request also runs the build and `docs/scripts/check_site.py`, whether or not it
+gets a preview. Pull requests from forks get the checks but no preview: their workflows
+have a read-only token and cannot push to `gh-pages`. The job that deploys a preview checks
+out the default branch, not the pull request, and publishes only the files the build job
+produced.
+
+The production and preview deploys write to separate paths of the branch, and each
+rebases and retries if the branch moved while it ran, so they can run at the same time.
+The `gh-pages` branch keeps every deploy as a commit.
+
+The workflow reads the Pages source at the start of each run. While the source is still
+*GitHub Actions*, it also publishes `master` with `actions/deploy-pages` and does not deploy
+previews; once the source is the `gh-pages` branch, that job is skipped. The workflow can
+also be run by hand from the Actions tab.
