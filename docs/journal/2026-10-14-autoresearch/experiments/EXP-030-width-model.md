@@ -306,6 +306,17 @@ hypothesis is falsified: the kept total is under 1.0%, and step 1 put the ceilin
 width-decidable attempt at 0.28% of the fixture run and 0.39% of the registry run before the
 model's own cost; the volume beyond E26's bound is structural, not a matter of width.
 
+Merged at `96c9abc` (rule M only) after the integrator reproduced the gates on the merged tree,
+which carries E31's lexer front end above this branch's base: 0 of 1238 fixture hashes changed
+(sequential and 4 threads), 0 of 25,077 registry hashes; `conform -i` 1220/1220 at 1.9.0 and
+1.8.0; `Ir` 202,822,327–202,822,529 on the fixture sample over three runs (−0.162% against
+the E31 merge's 203,151,226; per file 202,143,814 net, −0.390% against 202,934,484) and
+255,681,216–255,681,242 on the registry sample (per file 255,654,657, +0.000% against
+255,654,373, inside the run-to-run spread); fmt, clippy, 309 tests, the option matrix
+identical on every value; `closures-expr` 5,485,338 at depth 8 and 5,513,281 at depth 16 with
+identical output; the debug-assertion `bench` over both corpora and the cliff fixtures: 0
+changed, no assertion fired. The ledger closes the width-model lever at its measured ceiling.
+
 ## Follow-up
 
 - **Never one line, per construct.** The rest of the structural volume at S1, 0.28% on the
