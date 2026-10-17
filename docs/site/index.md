@@ -11,10 +11,10 @@ description: A fast Rust code formatter that matches the output of rustfmt, byte
 
 <p class="chl-tagline">A fast Rust code formatter that matches the output of rustfmt.</p>
 
-chloro is a module-by-module port of rustfmt 1.9.0's formatting code onto the syntax trees
-of rust-analyzer's parser. It writes the same bytes as `rustfmt --edition 2024` without
-needing the Rust compiler. It comes as a 2 MB command-line tool and as a library, and it
-runs several times faster than rustfmt and uses less memory.
+chloro formats Rust several times faster than rustfmt, in a fraction of the memory, and
+writes the same bytes as `rustfmt --edition 2024`. It is a module-by-module port of rustfmt
+1.9.0's formatting code onto the syntax trees of rust-analyzer's parser, so it does not need
+the Rust compiler. It comes as a 2 MB command-line tool and as a library.
 
 <div class="chl-stats">
 <div class="chl-stat">
