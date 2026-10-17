@@ -533,8 +533,16 @@ on reproduced gates.
 ## Current State
 
 - This entry compiles the owner's two ChatGPT passes and this session's pass with 20
-  precedents and their sources; wave 3 (E19–E22) is being launched on worktrees from
-  `bf05b31` as it is committed, wave 4 (E23–E27) is queued behind it.
+  precedents and their sources; wave 3 (E19–E22) was launched on worktrees from `bf05b31` as
+  the entry was committed, wave 4 (E23–E28) followed, wave 5 (E29–E31) ran on 2026-10-17.
+- Where the ten tricks of §5 went (the ledger has each result): T1 E22 (co-metric kept, layout
+  levers closed), T2 E24 (closed at 0.16%) and E28 (depth gate kept), T3 E23 and E29 (both
+  refuted; the trace timeline and the simulators kept), T4 E21 (refuted for the CLI), T5 E25
+  (`bumpalo` arena kept), T6 E20 (the one-copy sink kept, the chain sink rejected), T7 E26
+  (lower bound kept, the cliff removed) and E30 (exact model measured at 0.28% / 0.39%, one
+  rule kept), T8 E19 (the cliff harness and six exact levers), T9 E31 (fork-free levers P2 and
+  P4 kept, −8.06% / −14.76%; the fork trigger is crossed on the registry sample and the fork
+  is the owner's open decision), T10 E27 (harness) and the protocol's two-sample rule.
 - Nothing in this entry is a measurement of chloro; the bounds are the records', the
   precedents are other projects' published figures, and the IPC and penalty estimate in §1 is
   derived and marked so.

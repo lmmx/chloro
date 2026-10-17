@@ -537,6 +537,10 @@ provisional):
   `trace_patch.py owner` and the README notes; `chloro-core` and `chloro/src` at the head are
   `03c61be`'s.
 
+Merged as a record at `5dddfc9` (the harness files and this record; no formatter or CLI code,
+`git diff 03c61be fac58b1 -- chloro chloro-core` empty). The M6 record reads its trace
+section with this experiment's correction.
+
 ## Follow-up
 
 1. **Read every tail from a patched trace.** M5's measurement T (and any wall view of a crate

@@ -3,7 +3,7 @@
 The owner asked ChatGPT to turn the sources of
 [2026-10-15-unmined-tricks.md](2026-10-15-unmined-tricks.md) into a research brief for a
 separate conversation, ran that brief, and asked that the whole thread be journalled and then
-compared with the work already identified here. The four documents are recorded verbatim under
+compared with the work already identified here. The five documents are recorded verbatim under
 [2026-10-15-external-research-brief/](2026-10-15-external-research-brief/):
 
 | document | what it is |
@@ -12,8 +12,9 @@ compared with the work already identified here. The four documents are recorded 
 | [02-first-exchange.md](2026-10-15-external-research-brief/02-first-exchange.md) | the research conversation's first reply (an approach, not the research) and the owner's retort |
 | [03-research-report.md](2026-10-15-external-research-brief/03-research-report.md) | the research report: executive synthesis, seven deep dives (A–G), comparison matrix, roadmap, "what not to do yet", source audit |
 | [04-what-it-adds.md](2026-10-15-external-research-brief/04-what-it-adds.md) | ChatGPT's own summary of what the report adds, and its suggested backlog order |
+| [05-next-step-message.md](2026-10-15-external-research-brief/05-next-step-message.md) | ChatGPT's "next step" message of 2026-10-17 with the reconciliation instructions the session carried out (§6 below); the same paste repeated documents 1 and 4, which are not stored twice |
 
-**Status of these documents.** They are external research synthesis. Their claims and
+**Status of these documents.** They are external research synthesis (document 5 is an instruction, not research). Their claims and
 recommendations are pending verification against this repository's records; the report says
 itself that it did not inspect chloro's source, profiles or harness, and that it could not
 verify the Zig commit's figures. Where a figure in the report comes from this repository it is
@@ -156,16 +157,81 @@ The report's rank 1 (dense memoisation) is E24, queued; rank 4 (scaling) is E19,
 - **The report's chloro figures that this repository cannot check.** The 405-file directory
   timings are kept as the owner's and marked so; they are not carried into README or records.
 
+## 6. Retrospective (2026-10-17): the report's ideas against the ledger after waves 3–5
+
+Written on 2026-10-17 at the owner's request (document 5), after waves 3–5 (E19–E31) and M6.
+Every status below is read from the committed ledger ([2026-10-14-autoresearch/experiments.md](2026-10-14-autoresearch/experiments.md))
+and the experiment records, not from the report or from memory; "covered" means an experiment
+with its gates reproduced on the integration host measured the idea on chloro, whatever the
+outcome.
+
+### 6.1 The seven candidates named in document 5
+
+| candidate (document 5's wording) | status | the evidence in this repository |
+|---|---|---|
+| LLVM BOLT on top of the existing PGO build | **covered, closed** (E22) | BOLT 20 applied to the PGO build ([EXP-022](2026-10-14-autoresearch/experiments/EXP-022-layout.md) § BOLT trial): output identical, `I1mr` −9.1%, `Bcm` −3.4%, `Ir` −0.08%, the simulator's cycle estimate −1.6%, wall inside ±4% on CLI minima; not proposed for the release workflow; the layout lever closed under protocol §7. The report's Clang figures (202.72 → 180.11 s) remain the source's, not reproduced here. What is not done: a quiet-host wall pair of PGO against PGO + BOLT (E22's wall rows were taken under load). |
+| controlled scaling experiments for algorithmic cliffs | **covered** (E19, E26, E30; M5, M6) | `benchmarks/cliffs/` generates 20 input shapes at geometric scales and fits `a + b·n^p` (the additive term from this report, §1.4); E19 found the nested-closure cliff (exponent 3.6), E26 removed it (depth 16: 105.4 M → 5.5 M; exponent 0.03 over depths 8–16), E30 re-ran five shapes (exponents 0.94–1.31, none moved by more than 0.001 from its rule); M5 and M6 carry the shape on base, head and head-pgo with identical output. |
+| more complete rollback state for transactional output sinks | **covered in part; the rest closed** (E20) | the kept sink (`write_list_into`) restores the buffer length only, which is complete there because the sites it covers mutate nothing else ([EXP-020](2026-10-14-autoresearch/experiments/EXP-020-sink.md)); the chain's growing-buffer sink, which would have carried more state, was rejected on cost (+2.0–2.5 M) before any state question arose; the `Checkpoint` design rule of §1.2 stands for any future sink step and has had no occasion to apply. |
+| measuring per-file parallel load imbalance before finer-grained scheduling | **covered, twice** (E23, E29) | E23 built the `CHLORO_TRACE` timeline and the reconstruction from thread CPU clocks and stopped the unit queue by its rule (tail ≤ 12.9%); E29 measured the split file's own schedule on patched traces and showed M5's `fx-hir` tail to be the release trace's blind spot (idle 0.7–1.6 core-ms; the schedule 1.1–1.5% above the work-conserving bound), built two scheduling levers, reverted both ([EXP-029](2026-10-14-autoresearch/experiments/EXP-029-split-tail.md)). |
+| independent confirmation runs and a separate validation corpus | **covered, in the protocol** (E27; §3 and §4.6) | the registry validation sample (`benchmarks/samples/registry49.txt`, 49 files of four crates) is reported beside the fixture sample in every record from E23 on and a kept lever regresses neither (E30's rule C was reverted on exactly this: +10 K on the registry sample); every merge's gates are re-run by the integrator from a clean build before merging, and the per-file figure separates a lever's effect from the heap-layout term. |
+| memoisation representation and reset-cost experiments | **covered, closed** (E24, E28) | E24 measured hit rate (3.2% fixtures, 0.6% registry), occupancy and shapes per node before building, then four side-array forms including an in-place clear and chunked storage: best −0.16% per file, rejected; the clear cost was measured (0.25 M of a 2.34 M container cost) ([EXP-024](2026-10-14-autoresearch/experiments/EXP-024-memo-array.md)); E28 counted the store cost per lookup (692 `Ir`) against the hits and kept a depth gate (−2.49%) ([EXP-028](2026-10-14-autoresearch/experiments/EXP-028-memo-policy.md)). |
+| incremental parsing distinguished from compact parsing, evidence before a redesign | **compact parsing covered; incremental parsing not pursued, with the evidence recorded** | compact: E7b (flat tree), E17 (fused build), E31 (own lexer front end, −8.06% / −14.76%); the parse-only phase is measured per record (33.7% / 41.7% at M6) and the fork's bound is derived ([EXP-031](2026-10-14-autoresearch/experiments/EXP-031-parse-floor-2.md) § Decision). Incremental: no experiment; the evidence the brief asks for first is in E21 (a save through a fresh client costs 3.1–3.3 ms, of which the process alone 2.1–2.3) and E29 (the parse is 88–93% of a split file's sequential time, 10–13 ms for 236–640 KB files), so re-parsing dominates only the largest files on the editor path; deferred, not refuted. |
+
+### 6.2 What became of the seven additions adopted on 2026-10-15 (§1)
+
+1. The registry validation sample: built by E27, in every record since, decisive once (E30's
+   rule C).
+2. Rollback as state: no sink step after E20 carried state, so the `Checkpoint` rule has not
+   been exercised.
+3. Generation-stamped dense tables: E24 measured before building and found the lookup volume
+   too small for any layout to matter (0.16% at best); the stamp was not needed.
+4. The additive term in cliff fits: in `gen.py fit` from E19 on; M5 and M6 report `p` with `a`.
+5. Imbalance measured before scheduling: E23's stop rule held; E29 extended the diagnostic to
+   the split file and reversed M5's reading of its tail.
+6. The parse-only phase: in `bench --phase parse` and `profile.sh --phase parse` from E27 on;
+   it put the parser's share at 37.3% / 43% (E27), 39.1% / 46.6% (M5) and 33.7% / 41.7% (M6),
+   which is what sent E31 at the lexer and bounds the fork.
+7. The daemon client's latency: E21 measured it (3.1–3.3 ms median per save through a fresh
+   client) and the lever was refuted for the CLI on exactly this criterion.
+
+### 6.3 The summary's suggested order (document 4 § 4) against what ran
+
+Document 4 proposed: scaling diagnostics, memoisation representation, output/retry
+instrumentation, PGO + BOLT, parallel scheduling diagnostics, the persistent process, then
+incremental parsing or a redesign. The waves ran, in order of launch: E19 (scaling), E20
+(sink, with the retry instrumentation first), E21 (persistent process), E22 (BOLT and layout),
+E23 (scheduling diagnostic), E24 (memo representation), E25 (arena), E26 (width bound), E27
+(harness), E28 (memo policy), then E29, E30, E31. Every item of the suggested order has an
+experiment; the order differed where a lever's bound or an agent's availability put it earlier.
+
+### 6.4 What remains new, and what is unverified
+
+- New and untested: nothing in documents 1–5 names an idea without an experiment in the
+  ledger, except the parser fork (P3/P6/P11), which the brief and the report both defer and
+  which is the owner's open decision (the decision record in
+  [2026-10-14-autoresearch.md](2026-10-14-autoresearch.md) § What is left), and a quiet-host
+  wall pair for PGO against PGO + BOLT, which E22 did not take.
+- Refinements the report sharpened and the waves used: the additive term in fits, the
+  two-sample rule, the imbalance-first rule, the client-latency criterion (§1).
+- Still unverified against their sources by any session here: the report's descriptions of
+  Biome's state-snapshot API, Lezer's reuse limits, the Zig AST rework's figures and the
+  Clang BOLT figures; the report's own chloro figures that came from outside this repository
+  (the 405-file directory timings). None of these has been carried into a record or the
+  README.
+
 ## Current State
 
-- The four documents are recorded verbatim; this assessment is this session's.
-- Seven additions adopted into briefs and the protocol (§1, §4); E19 sent the additive-term
-  note; E21 sent the client-latency criterion; E23/E24/E27 briefs carry the rest when wave 4
-  launches.
-- E20 merged next (gates reproduced); E22 under reproduction; E19 and E21 running.
+- The five documents are recorded verbatim; §1–§5 are the 2026-10-15 assessment and §6 the
+  2026-10-17 retrospective.
+- The seven additions of §1 are in the protocol (§3 two samples, §4.6 confirmation run), the
+  harness (`profile.sh --per-file`, `--sample-list`, `--phase parse`; `cliffs/gen.py fit` with
+  the additive term) and the records of E19, E21, E23, E24, E27, E29 and E30.
+- Every experiment the report and the summary proposed has a ledger row with its gates and a
+  decision (E19–E31); the parser fork is the one proposal without an experiment.
 
 ## Missing
 
-- The registry sample and the parse-only phase do not exist yet (E27).
-- The report's claims about Biome's snapshot API and Lezer's reuse limits are taken from the
-  report; neither has been read against the sources by this session.
+- The report's claims about Biome's snapshot API, Lezer's reuse limits, the Zig AST rework and
+  the Clang BOLT run are the report's; none has been read against its source by a session here.
+- A quiet-host wall pair of PGO against PGO + BOLT (E22 measured instructions, the simulator's
+  cache and branch events, and wall under load).

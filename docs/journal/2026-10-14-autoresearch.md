@@ -657,11 +657,58 @@ reusing rewrites across indentation (not exact, from the earlier entries).
 
 ## What is left, with its ceiling
 
-Written at the end of the first session from [profile-flat.md](2026-10-14-autoresearch/profile-flat.md)
-and the E3 record; revised after the overnight run of 2026-10-15 (the theory records and
-ranked bounds are in [2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md), the
-report in [2026-10-15-overnight-report.md](2026-10-15-overnight-report.md)). Against the final
-head, `e640fbf`, 248,202,094 instructions on the sample:
+### Revised 2026-10-17, after waves 3–5 (E19–E31) and M6
+
+The bullets below this subsection were written at the end of the first session and revised
+after the overnight run; waves 3–5 ([2026-10-15-unmined-tricks.md](2026-10-15-unmined-tricks.md)
+§7 and the ledger) have since taken or closed most of them. Against the best-known-good
+`96c9abc`, 202,822,327 instructions on the fixture sample and 255,681,216 on the registry
+sample (M6):
+
+- The shared sink: taken in part (E20, `write_list_into` and the list scans, −4.10%); the
+  chain's growing-buffer form measured and rejected (+2.0–2.5 M under glibc's `realloc`);
+  closed at that.
+- The parser: E31 took the fork-free levers P2 and P4 (−8.06% / −14.76%); the parse phase is
+  33.7% / 41.7% of the instructions; the fork is the open decision below.
+- Speculation at decision points: E26 took the one-line width lower bound (the nested-closure
+  cliff 105.4 M → 5.5 M at depth 16); E30 measured the exact width model at 0.28% / 0.39%
+  before building it and kept one structural rule (−0.36%); the width-model lever is closed
+  (protocol §7).
+- The memo: E28 gated it by depth (−2.49%); E24 measured the dense side array at 0.16% and
+  closed it.
+- The resident process: E21 measured the editor's path at 3.1–3.3 ms per save through a fresh
+  client against 2.1–2.3 ms for the process alone, 0.4–0.9 ms only for a resident client;
+  refuted for the CLI; the server half stays on `20261015-resident`.
+- Sub-item parallel units and the unit queue: E23 (unit queue across files, stopped by its
+  rule) and E29 (the split file's own schedule, refuted; M5's tail was the release trace's
+  blind spot) closed both; the schedule is 1.1–1.5% above the work-conserving bound.
+- Code layout: E22 measured hot/cold splits, flag tables and BOLT on the PGO build and
+  closed the lever (BOLT: `I1mr` −9.1%, `Bcm` −3.4%, `Ir` −0.08%, wall inside ±4%).
+- The allocator: E25 put the module-local intermediates of chains, overflow and types in a
+  `bumpalo` arena (−1.62% / −0.73%); glibc stays (E14).
+- The six open conformance cases: unchanged.
+
+### Decision record (2026-10-17): the parser fork — open, the owner's
+
+The one lever with a measured bound above the run-to-run spread that no merged experiment
+has taken is a fork of `ra_ap_parser` 0.0.307 (levers P3 and P6 of
+[2026-10-15-extensions-theory/parser-and-substrate.md](2026-10-15-extensions-theory/parser-and-substrate.md);
+bounds re-derived by E31 from the head's parse-phase profiles,
+[EXP-031](2026-10-14-autoresearch/experiments/EXP-031-parse-floor-2.md) § Decision). Recorded
+here for the owner's decision; nothing of it is built.
+
+| | fact, with its source |
+|---|---|
+| upside, P3 (parser vectors sized up front) | ≤ 2.44 M instructions (1.2%) on the fixture sample, ≤ 3.67 M (1.4%) on the registry sample: `RawVec<Event>` and `Output` growth and their `memcpy` at the head (EXP-031) |
+| upside, P6 (`event::process` writes chloro's tree directly, no `Output`, no decode) | ≤ 8.8–10.8 M (4.3–5.3%) and ≤ 12.4–15.4 M (4.9–6.0%); the `forward_parent` walk stays (3–5 M, a hypothesis) |
+| upside, P3 + P6 | ≈ 11–13 M (5.5–6.5%) and ≈ 16–19 M (6.3–7.5%); the parse share would fall from 33.7% / 41.7% to about 29–30% / 37–38% |
+| upside, P11 (an own parser) | beyond P3 + P6, only a difference in grammar decision cost over 18.7 M / 24.7 M of grammar work (≈ 1–1.6% in the theory record, a hypothesis) |
+| what the fork is | a vendored `ra_ap_parser` 0.0.307 under `[patch.crates-io]`: about 10 lines in 4 files for P3, about 200 lines for P6 (parser-and-substrate.md § Ranked bounds) |
+| maintenance | every `ra_ap_parser` release moves the fork: the patch re-applied and the gates rerun (E17's element-equality tests over both corpora, E31's `lex_equality`, the goldens, `conform`); the crate is at version 0.0.307 (chloro pins it in `chloro-core/Cargo.toml`) and chloro has not moved to a newer release during the programme, so the cadence of re-porting is the cadence of chloro's own upgrades |
+| conformance risk | P3: none in kind (the same events, the same tree); P6: the same events written another way, checked by the element-equality harness that exists; P11: very high (the conformance ledger's rustc-acceptance cases re-opened: 15 of its 24 cases rest on the parser's behaviour) |
+| alternatives on record | (a) stop at the fork-free levers: the parse phase is 33.7% / 41.7% and the fixture sample is below the plan's 40% trigger; (b) upstream P3 to rust-analyzer (sizing `Vec<Event>` and `Output` from the token count is not chloro-specific), which removes the fork for P3 and leaves P6; (c) P6 without a fork is not available: it needs `event::process` to call chloro's builder; (d) a parallel parse of a split file's items (P9, E29's lever (d)) was bounded at −0.3% of `fx-ide-db`'s span on the quiet host and not built |
+| what is not known | the fork's wall-time effect (the bound is in instructions; M4–M6 show wall ratios moving with the count at about 0.6–1.0 of its movement on the crate rows); the cost of P6's `forward_parent` handling in chloro's builder; whether rust-analyzer would take P3 |
+
 
 - The allocator in the CLI: glibc's own time share is now **measured** directly (E14): 13–16%
   of the formatter's time on one thread. No replacement met the rule set in advance (peak RSS
@@ -693,6 +740,14 @@ head, `e640fbf`, 248,202,094 instructions on the sample:
 - The six open conformance cases.
 
 ## Handoff for the next session
+
+Superseded on 2026-10-17: the live handoff is the "Handoff (overnight run)" section of
+[2026-10-15-extensions-theory.md](2026-10-15-extensions-theory.md), which carries waves 3–5
+and M6. State at 2026-10-17 09:30 UTC: branch `claude/chloro-perf-research-swarm-nrscj8` at
+`df30b2a` (code head `96c9abc`), working tree clean, everything pushed, PR #88 open; no agent,
+monitor, benchmark or scheduled check-in is running or armed; the two remaining worktrees are
+the integration checkout and `/home/user/wt/base` (`884f9c9`). The decision record above is
+the one open item. The text below is the first session's handoff, kept as written.
 
 State at the end of this session (2026-10-15, about 00:30 UTC):
 
@@ -749,32 +804,35 @@ Next actions, in the order of value per effort:
   E7b; `bumpalo` for E25's scratch arena, `ctor` for the identity record)
 - Instructions on the 49-file fixture sample under `benchmarks/profile.sh`: 202,822,327 at the
   best-known-good `96c9abc` (E31 and E30 merged) against 587,988,576 at `884f9c9` (-65.5%);
-  171,001,243 profile-guided (0.291 of the start); on the registry validation
-  sample 255,681,216 against 688,589,271 (-62.9%); the parse-only phase is 33.7% and 41.7%
-  of those counts (M5 measured 220,957,089 / 299,933,543 and 39.1% / 46.6% on the code of
-  `e96b530`, before E31; the ledger's best-known-good row has the step-by-step chain)
-- In process on one core of the 2.80GHz host class: 9.33–10.38 MB/s on the 1238 fixtures
-  against 3.68–4.03 for `884f9c9` in the same window (11.15–12.56 profile-guided); against
-  rustfmt 1.9.0 on nine crates, formatted input, `--check`: 0.239–0.405 of its wall time on
-  one core and 0.083–0.173 on four, with every chloro run below every rustfmt run and every
-  run of the start's binary in both modes (measurements/m6-quiet-host.md, on the code of
-  `96c9abc`: 0.214–0.345 and 0.077–0.165; M5 on `e96b530` read 0.239–0.405 and 0.083–0.173, M4 on
-  `e640fbf` 0.26–0.44 and 0.092–0.179)
+  170,069,599 profile-guided in M6 (0.289 of the start; the build of the E31 merge read
+  171,001,243); on the registry validation sample 255,681,216 against 688,589,271 (-62.9%),
+  219,987,557 profile-guided; the parse-only phase is 33.7% and 41.7% of those counts (M5
+  measured 220,957,089 / 299,933,543 and 39.1% / 46.6% on the code of `e96b530`, before E31;
+  the ledger's best-known-good row has the step-by-step chain)
+- In process on one core of the 2.80GHz host class (M6, measurements/m6-quiet-host.md, on the
+  code of `96c9abc`): 11.99–13.19 MB/s on the 1238 fixtures against 4.36–4.86 for `884f9c9`
+  in the same window (14.45–15.10 profile-guided; 2.71x–2.75x); against rustfmt 1.9.0 on nine
+  crates, formatted input, `--check`: 0.214–0.345 of its wall time on one core and
+  0.077–0.165 on four (profile-guided 0.182–0.325 and 0.067–0.164), with every chloro run
+  below every rustfmt run and every run of the start's binary in both modes; M5 on `e96b530`
+  read 0.239–0.405 and 0.083–0.173, M4 on `e640fbf` 0.26–0.44 and 0.092–0.179
 - The nested-closure cliff is removed: a 2,000-byte file of expression closures nested to
-  depth 16 costs 5.69 M instructions against 242.5 M at the start, with identical output
-  (benchmarks/cliffs, E19 and E26)
+  depth 16 costs 5.51 M instructions against 242.5 M at the start, with identical output
+  (benchmarks/cliffs, E19 and E26; M6)
 - Conformance is 1220/1220 identical with 0 non-idempotent outputs at `rustfmt_version`
   1.9.0 and 1.8.0, and all 31 option values are fully identical (`conform -i`,
-  `config_matrix -n 1220` at `113367a`); 20540/20540 registry files identical in the live
-  comparison; against the `884f9c9` output record the whole programme changed exactly the
-  13 files the conformance fixes target (experiments.md, best-known-good)
+  `config_matrix -n 1220` at every merge that changes formatter code, last at `96c9abc`);
+  20540/20540 registry files identical in the live comparison; against the `884f9c9` output
+  record the whole programme changed exactly the 13 files the conformance fixes target
+  (experiments.md, best-known-good; 0 of 25,077 registry hashes changed at every merge)
 - The CLI hands files to one worker per core from a largest-first queue and formats the
   top-level items of files of 128 KiB and more on all threads
   (chloro/src/cli/orchestrate.rs, chloro-core/src/formatter/parallel.rs); `--threads N`
   sets the count; `format_source_with_config_parallel` is the library entry
 - The CLI records content digests of files found already formatted and skips formatting
   them on later runs; `--no-cache` disables it (chloro/src/cli/cache.rs); a check of 1238
-  formatted files takes about 30 ms warm; the cache file's 48-byte header carries its
+  formatted files takes 16.2 ms warm on four cores and 32.1 ms on one (M6; 355.5 ms and
+  1289.8 ms without the cache); the cache file's 48-byte header carries its
   (binary, configuration) key, the save is skipped when the executable changed since the
   open, and the temporary file is created exclusively (R5)
 - The CLI's file list is canonical, sorted and de-duplicated, so a file reachable twice is
@@ -802,11 +860,16 @@ Next actions, in the order of value per effort:
   parameters, rustfmt's internal error on one rustyline file, rustfmt's run time on one
   pest_meta file, non-idempotent outputs that are rustfmt's own, and a trailing comma in
   `builtin # offset_of`
-- No quiet-host measurement of the R5 merge `bdfb9d1` itself; M3 measured the code of
-  `113367a`, and R5 touches no sequential formatting path (instruction count inside the
-  spread, outputs identical)
-- No profile-guided build in the release workflow; `.github/workflows/binaries.yml` is
-  unchanged and the proposed step is in experiments/EXP-002-cli-build.md
+- The profile-guided release build (`.github/workflows/binaries.yml`, E13) has run locally
+  and not yet in a release: the first release's log is the check (`no profile data
+  available` lines; the `macos-13` runner)
+- No profile-guided build of `fmt_stdin` or `conform` in any measurement record (M4–M6), so
+  the stdin rows and the `conform -i` row have no `head-pgo` figure
+- The parser fork (P3 and P6 of the parser record; the decision record above) has no
+  experiment; E31's bound for it is derived from the head's parse-phase profiles, not
+  measured on a fork
+- The README badges for dependency count and binary size are the start's (`just emblazon`
+  is not installed on the integration host)
 
 ## Divergence
 
