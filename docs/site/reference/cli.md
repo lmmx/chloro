@@ -11,7 +11,8 @@ explains how the pieces fit together.
 
 !!! note
 
-    `[SOURCES]` defaults to the current directory (`.`), not `'src'` as the help text says.
+    `[SOURCES]` defaults to the current directory (`.`), not `'src'` as the help text says
+    ([#91](https://github.com/lmmx/chloro/issues/91)).
 
 ## Options
 

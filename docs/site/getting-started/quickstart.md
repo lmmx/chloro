@@ -24,7 +24,8 @@ it is processed and a summary at the end.
     chloro walks every directory under the paths it is given, hidden directories and
     `target/` included, and does not read `.gitignore`. With no path at all it starts at the
     current directory. In a Cargo project, pass `src/` and your other source directories
-    rather than `.`, or `target/` will be formatted too.
+    rather than `.`, or `target/` will be formatted too
+    ([#90](https://github.com/lmmx/chloro/issues/90)).
 
 ## Format
 

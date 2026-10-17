@@ -15,7 +15,8 @@ starts at the current directory.
 
 - Every directory under a source is walked, including hidden ones and `target/`. chloro has
   no ignore rules and does not read `.gitignore`, so in a Cargo project name `src/`,
-  `tests/`, `examples/` and `benches/` rather than `.`.
+  `tests/`, `examples/` and `benches/` rather than `.`
+  ([#90](https://github.com/lmmx/chloro/issues/90)).
 - A file reachable twice (named twice, reached through a symlink, or both named and found in
   a directory) is formatted once.
 - A symlinked directory that points back into a directory being walked is not followed again.
@@ -46,9 +47,11 @@ any needed formatting.
 | 0 | every file was processed; with `--check`, none needs formatting |
 | 1 | `--check` found files that need formatting; or a file could not be read or written; or a source path does not exist; or `--config` was invalid; or the arguments could not be parsed |
 
-A file that does not parse is not an error: as rustfmt does, chloro leaves it unchanged and
-counts it as formatted. The same applies to a file containing syntax that rustc's parser
-rejects, and to a file with an inner `#![rustfmt::skip]` attribute.
+A file that does not parse, or that contains syntax rustc's parser rejects, is left
+unchanged, as rustfmt leaves it. Unlike rustfmt, which prints the parse error and exits with
+status 1, chloro does not report such a file, even with `--verbose`, and counts it as
+formatted; that is a known issue ([#87](https://github.com/lmmx/chloro/issues/87)). A file
+with an inner `#![rustfmt::skip]` attribute is also left unchanged, as intended.
 
 ## Options
 
@@ -70,7 +73,8 @@ text.
 !!! note "The default source in `--help`"
 
     The help text describes the default source as `'src'`; the default is in fact the
-    current directory (`.`), as described above.
+    current directory (`.`), as described above
+    ([#91](https://github.com/lmmx/chloro/issues/91)).
 
 ## Environment variables
 

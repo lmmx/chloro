@@ -47,10 +47,11 @@ Some records worth knowing about on their own:
 
 !!! note "Commit hashes in the journal"
 
-    The journal cites commits of the performance branch by hash. Those commits were
-    re-recorded under the maintainer's name before the branch was merged, which gave them
-    new hashes; [2026-10-17-commit-map.md][map] maps every cited hash to its commit in
-    the repository's history.
+    The commits of the performance branch were re-recorded under the maintainer's name
+    before the branch was merged, which gave them new hashes. The journal's references
+    read `new` (was `old`): the commit's hash in the repository, with the hash recorded at
+    the time beside it. Commands, file names and tool output quoted in the records keep the
+    original hashes; [2026-10-17-commit-map.md][map] maps every one of them.
 
 [journal]: https://github.com/lmmx/chloro/tree/master/docs/journal
 [format]: https://github.com/lmmx/chloro/blob/master/docs/JOURNAL.md

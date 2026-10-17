@@ -95,8 +95,11 @@ compared.
 - **Syntax rust-analyzer's parser cannot represent.** chloro parses with rust-analyzer's
   parser and rebuilds the tree for the cases where rustc's parser accepts something
   rust-analyzer rejects. Two such constructs remain (below).
-- **Error reporting.** Where rustfmt fails with an internal error but still writes output,
-  chloro writes the same output and reports no error; the library has no error channel.
+- **Error reporting.** Both tools leave a file that does not parse unchanged, but rustfmt
+  prints the parse error and exits with status 1, while chloro reports nothing and exits
+  with 0 ([#87](https://github.com/lmmx/chloro/issues/87)). Where rustfmt fails with an
+  internal error but still writes output, chloro writes the same output and reports no
+  error; the library has no error channel.
 
 ## Known differences
 
