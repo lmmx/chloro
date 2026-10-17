@@ -20,8 +20,11 @@
 //! fragment trees are kept by the run ([`RunState::keep_tree`]) for as long as the
 //! argument nodes are cached.
 
-use ra_ap_parser::{Edition, LexedStr, PrefixEntryPoint, Step, SyntaxKind, T, TopEntryPoint};
+use ra_ap_parser::{
+    Edition, Input, LexedStr, PrefixEntryPoint, Step, SyntaxKind, T, TopEntryPoint,
+};
 
+use crate::cst::lex::{self, Tokens};
 use crate::cst::{AstNode, Node, Tree, TreeBuilder, ast};
 
 use super::config::RustfmtVersion;
@@ -106,8 +109,44 @@ struct PrefixParse<'a> {
     window: usize,
     /// Start of the window in the interior.
     lo: usize,
-    lexed: LexedStr<'a>,
+    lexed: WindowLex<'a>,
     output: ra_ap_parser::Output,
+}
+
+/// A lexed text: chloro's tokens (`lex::lex`), or `LexedStr` for a text with a lexer error
+/// or a script prefix, which `lex` leaves to it.
+enum WindowLex<'a> {
+    Own(Tokens<'a>),
+    Ra(LexedStr<'a>),
+}
+
+impl<'a> WindowLex<'a> {
+    /// `text` lexed, and the parser's input for it, as `LexedStr::new` and `to_input` give
+    /// them.
+    fn new(edition: Edition, text: &'a str) -> (WindowLex<'a>, Input) {
+        match lex::lex(edition, text) {
+            Some((tokens, input)) => (WindowLex::Own(tokens), input),
+            None => {
+                let lexed = LexedStr::new(edition, text);
+                let input = lexed.to_input(edition);
+                (WindowLex::Ra(lexed), input)
+            }
+        }
+    }
+
+    /// `Tree::from_steps_at` over these tokens.
+    fn tree<'s>(
+        &self,
+        src: &'s str,
+        output: &ra_ap_parser::Output,
+        base: u32,
+        id: u32,
+    ) -> Option<Tree<'s>> {
+        match self {
+            WindowLex::Own(t) => Tree::from_steps_at(src, t, output, base, id),
+            WindowLex::Ra(l) => Tree::from_steps_at(src, l, output, base, id),
+        }
+    }
 }
 
 impl PrefixParse<'_> {
@@ -122,6 +161,14 @@ impl PrefixParse<'_> {
     /// outputs are the same steps (ra_ap_parser 0.0.307, `grammar.rs` `entry::prefix` and
     /// `entry::top`). `Pat` and `Item` use other grammar functions and keep the second
     /// parse.
+    /// The window's text (debug checks).
+    fn window_text(&self) -> &str {
+        match &self.lexed {
+            WindowLex::Own(t) => t.as_str(),
+            WindowLex::Ra(l) => l.as_str(),
+        }
+    }
+
     fn matches_top_parse(&self, kind: FragmentKind, lo: usize) -> bool {
         matches!(kind, FragmentKind::Expr | FragmentKind::Ty)
             && self.error.is_none()
@@ -225,8 +272,7 @@ impl<'a, 't> MacroTokens<'a, 't> {
     fn prefix_parse_window(&self, kind: FragmentKind, start: usize, end: usize) -> PrefixParse<'a> {
         let lo = self.toks[start].lo;
         let text = &self.text[lo..self.toks[end - 1].hi];
-        let lexed = LexedStr::new(self.edition, text);
-        let input = lexed.to_input(self.edition);
+        let (lexed, input) = WindowLex::new(self.edition, text);
         let output = kind.prefix_entry().parse(&input, self.edition);
         let mut consumed = 0usize;
         let mut error = None;
@@ -361,22 +407,22 @@ impl<'a, 't> MacroTokens<'a, 't> {
     ) -> Option<Node<'a>> {
         let (lexed, output) = match prefix {
             Some(p) => {
-                debug_assert_eq!(p.lexed.as_str(), &self.text[lo..hi]);
+                debug_assert_eq!(p.window_text(), &self.text[lo..hi]);
                 debug_assert!(same_steps(&p.output, &{
-                    let input = p.lexed.to_input(self.edition);
+                    let input =
+                        LexedStr::new(self.edition, &self.text[lo..hi]).to_input(self.edition);
                     kind.top_entry().parse(&input, self.edition)
                 }));
                 (p.lexed, p.output)
             }
             None => {
-                let lexed = LexedStr::new(self.edition, &self.text[lo..hi]);
-                let input = lexed.to_input(self.edition);
+                let (lexed, input) = WindowLex::new(self.edition, &self.text[lo..hi]);
                 let output = kind.top_entry().parse(&input, self.edition);
                 (lexed, output)
             }
         };
         let base = self.base + lo as BytePos;
-        let tree = Tree::from_steps_at(self.file, &lexed, &output, base, self.run.next_tree_id())?;
+        let tree = lexed.tree(self.file, &output, base, self.run.next_tree_id())?;
         let tree = self.run.keep_tree(tree);
         let root = tree.root();
         let node = if kind == FragmentKind::Item {

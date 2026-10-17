@@ -27,11 +27,14 @@
 
 pub mod ast;
 mod generated;
+pub mod lex;
 
 use std::fmt;
 use std::marker::PhantomData;
 
 use ra_ap_parser::{Edition, LexedStr, Output, Step, StrStep, SyntaxKind, TopEntryPoint};
+
+use lex::Lexed;
 
 /// Trees allocated during one formatting run, with stable addresses for the run's lifetime.
 pub type TreeArena<'s> = typed_arena::Arena<Tree<'s>>;
@@ -99,6 +102,11 @@ impl<'s> Tree<'s> {
     /// a syntax error, and so does chloro. Only lexer and parser errors count;
     /// rust-analyzer's semantic validation is not run.
     pub fn parse(src: &'s str, edition: Edition) -> Option<Tree<'s>> {
+        // Chloro's own lexer front end; `LexedStr` for the texts it leaves (`lex::lex`).
+        if let Some((tokens, input)) = lex::lex(edition, src) {
+            let output = TopEntryPoint::SourceFile.parse(&input, edition);
+            return Self::from_steps_at(src, &tokens, &output, 0, 0);
+        }
         let lexed = LexedStr::new(edition, src);
         if lexed.errors().next().is_some() {
             return None;
@@ -131,9 +139,9 @@ impl<'s> Tree<'s> {
     /// needed. A fragment is a tree of its own: `parent()` of its root is `None`.
     ///
     /// `None` when the parser reported an error.
-    pub fn from_steps_at(
+    pub fn from_steps_at<L: Lexed>(
         src: &'s str,
-        lexed: &LexedStr<'_>,
+        lexed: &L,
         output: &ra_ap_parser::Output,
         base: u32,
         id: u32,
@@ -277,11 +285,11 @@ impl<'s> TreeBuilder<'s> {
     /// [`Self::steps_fused`]). `None` when the parser reported an error (the builder is
     /// then unusable). Debug builds also run [`Self::steps_interspersed`] on a copy of the
     /// builder and assert that both give the same elements.
-    pub fn steps(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
+    pub fn steps<L: Lexed>(&mut self, lexed: &L, output: &Output) -> Option<()> {
         #[cfg(debug_assertions)]
         let mut reference = self.clone();
         #[cfg(debug_assertions)]
-        let expected = reference.steps_interspersed(lexed, output);
+        let expected = lexed.interspersed(&mut reference, output);
         let result = self.steps_fused(lexed, output);
         #[cfg(debug_assertions)]
         {
@@ -344,7 +352,7 @@ impl<'s> TreeBuilder<'s> {
     /// deferred, because the trailing trivia goes inside it. This keeps the per-step
     /// `PendingExit` tests, data-dependent branches the simulator counted among the most
     /// mispredicted of the build (EXP-022), out of the loop.
-    pub fn steps_fused(&mut self, lexed: &LexedStr<'_>, output: &Output) -> Option<()> {
+    pub fn steps_fused<L: Lexed>(&mut self, lexed: &L, output: &Output) -> Option<()> {
         let len = |i: usize| (lexed.text_start(i + 1) - lexed.text_start(i)) as u32;
         let n = lexed.len();
         let mut pos = 0usize;
@@ -481,7 +489,7 @@ impl<'s> TreeBuilder<'s> {
 
     /// Emits the trivia tokens from `pos` up to the next non-trivia token; returns its index.
     #[inline]
-    fn trivias(&mut self, lexed: &LexedStr<'_>, mut pos: usize, n: usize) -> usize {
+    fn trivias<L: Lexed>(&mut self, lexed: &L, mut pos: usize, n: usize) -> usize {
         while pos < n {
             let kind = lexed.kind(pos);
             if !kind.is_trivia() {
@@ -961,7 +969,7 @@ impl<'t, N> AstChildren<'t, N> {
 /// backwards from the node. Only items and fields take trivia. A blank line stops the walk
 /// unless an outer doc comment precedes it; an inner doc comment stops it; any other
 /// comment extends the attached part to include it.
-fn n_attached_trivias(kind: SyntaxKind, lexed: &LexedStr<'_>, pos: usize, run: usize) -> usize {
+fn n_attached_trivias<L: Lexed>(kind: SyntaxKind, lexed: &L, pos: usize, run: usize) -> usize {
     use SyntaxKind::*;
     match kind {
         CONST | ENUM | FN | IMPL | MACRO_CALL | MACRO_DEF | MACRO_RULES | MODULE | RECORD_FIELD
