@@ -53,8 +53,8 @@ The patched build adds `cpu START NS` after each file (its worker's CPU time ove
 a fifth field on `worker` lines (the worker's CPU time) and `item KIND START END NS N` lines.
 An unpatched trace has no `item` lines, so its wall view counts a split file's whole span as
 one busy core and its item workers as idle: its idle core time in the tail overstates the
-loss whenever a split file is running then (EXP-029: on the same quiet-host traces, 13.0
-core-ms blind against 4.0 seen on `fx-hir`, 19.2 against 14.6 on `fx-ide-db`; `split_sim.py
+loss whenever a split file is running then (EXP-029: on the same quiet-host traces, 10.6
+core-ms blind against 2.2 seen on `fx-hir`, 6.7 against 5.3 on `fx-ide-db`; `split_sim.py
 --blind`). Read the tail of a crate with a split file from a patched trace.
 On a loaded host the wall view mixes the schedule with waiting for a core, and the waiting
 shows up as gaps between a worker's files (in EXP-023, 0.9 ms over 122 files with one thread
