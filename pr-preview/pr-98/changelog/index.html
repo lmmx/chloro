@@ -1575,6 +1575,9 @@ are described on the <a href="https://lmmx.github.io/chloro/performance/">Perfor
   as 1.9.0, the default: <code>--config rustfmt_version=1.8.0</code>.</li>
 <li><code>#[rustfmt::skip::macros(..)]</code> and <code>#[rustfmt::skip::attributes(..)]</code> are honoured.</li>
 <li><code>CHLORO_TRACE=FILE</code> writes a per-worker timeline of a command-line run.</li>
+<li><code>-V</code>/<code>--version</code> prints the version. A build from anything but the release's tagged commit
+  is marked as a development build, with its commit and whether it had uncommitted changes:
+  <code>chloro 0.8.0-dev (2f9b060, dirty)</code>.</li>
 <li><code>chloro-core</code> library functions: <code>format_source_with_config_parallel</code> (one file's items on
   several threads), <code>format_source_with_unit_cache</code> with the <code>UnitCache</code> trait, <code>UnitKey</code> and
   <code>CachedUnit</code> (reuse formatted items across calls), and <code>parse_only</code>. The existing

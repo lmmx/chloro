@@ -1633,8 +1633,41 @@ else the platform's user cache directory (<code>~/.cache/chloro</code>, <code>~/
 <p>Report, on standard error, the sources and mode, the cache file and its size, the number of
 files and threads, each file as it is processed, and a summary at the end.</p>
 <h3 id="-version-v"><span class="keys"><kbd>--version</kbd></span> / <span class="keys"><kbd>-V</kbd></span><a class="headerlink" href="#-version-v" title="Permanent link">&para;</a></h3>
-<p>Print the version and exit. A binary installed with <code>just reinstall</code> from a checkout also
-prints its build ID, <code>chloro 0.8.0 (build &lt;id&gt;)</code>, a hash of the source it was built from
+<p>Print the version and exit. The plain version, <code>chloro 0.8.0</code>, is printed only by a build
+of the release itself; any other build is marked as a development build, with what is known
+of its source:</p>
+<table>
+<thead>
+<tr>
+<th>output</th>
+<th>built from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chloro 0.8.0</code></td>
+<td>the release: the commit tagged <code>chloro-v0.8.0</code> with no uncommitted changes, or the crate published to crates.io</td>
+</tr>
+<tr>
+<td><code>chloro 0.8.0-dev (2f9b060)</code></td>
+<td>another commit (<code>2f9b060</code>) of a git checkout</td>
+</tr>
+<tr>
+<td><code>chloro 0.8.0-dev (2f9b060, dirty)</code></td>
+<td>a checkout with uncommitted changes to the files that go into the binary</td>
+</tr>
+<tr>
+<td><code>chloro 0.8.0-dev (unknown source)</code></td>
+<td>a copy of the source with no git repository or packaging record, which cannot be checked</td>
+</tr>
+</tbody>
+</table>
+<p>The version is the crate's version; <code>-dev</code> is added only to this output. The check is made
+when chloro is compiled (<code>chloro/build.rs</code>), from the local repository: the build reruns when
+HEAD moves, a tag changes, or a source file changes, and <code>--version</code> reads nothing at run
+time.</p>
+<p>A binary installed with <code>just reinstall</code> also prints its build ID, a hash of the source it
+was built from, as in <code>chloro 0.8.0-dev (2f9b060, dirty, build &lt;id&gt;)</code>
 (<a href="../../maintainers/benchmarking/#on-any-cargo-project-just-vs-rustfmt">Benchmarking</a>).</p>
 <h3 id="-help-h"><span class="keys"><kbd>--help</kbd></span> / <span class="keys"><kbd>-h</kbd></span><a class="headerlink" href="#-help-h" title="Permanent link">&para;</a></h3>
 <p>Print the help text and exit.</p>
