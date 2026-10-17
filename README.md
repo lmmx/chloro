@@ -6,8 +6,8 @@
 [![MIT/Apache-2.0 licensed](https://img.shields.io/crates/l/chloro.svg)](https://github.com/lmmx/chloro#license)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/chloro/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/chloro/master)
 [![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn)<!-- blazon -->
-[![Dependencies: 33](https://img.shields.io/badge/cargo%20tree-33-blue)](https://crates.io/crates/chloro)
-[![Binary Size: 2.5M](https://img.shields.io/badge/build%20size-2.5M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
+[![Dependencies: 19](https://img.shields.io/badge/cargo%20tree-19-blue)](https://crates.io/crates/chloro)
+[![Binary Size: 2.2M](https://img.shields.io/badge/build%20size-2.2M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
 
 chloro is a Rust code formatter that produces rustfmt's output, byte for byte, without
 depending on the compiler. It is a module-for-module port of rustfmt 1.9.0's formatting
