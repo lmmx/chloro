@@ -14,7 +14,7 @@ source), **derived**.
 |---|---|
 | branch | `20261015-width-model` from `03c61be` (integration head; its code is the best-known-good `e96b530`), worktree `/home/user/wt/width-model` |
 | kept commit | `2c6bc21` (a closure body that renders a `match` arm is never one line: the S1 pre-check skips it); then this record |
-| rejected | the chain-width rule (a chain wider than `chain_width` is never one line), built, measured and reverted on the registry condition; diff in `scratchpad/e30/chain-width-rule.patch` |
+| rejected | the chain-width rule (a chain wider than `chain_width` is never one line): committed as `3d471d9`, reverted in `d6b4d73` on the registry condition (also `scratchpad/e30/chain-width-rule.patch`) |
 | not built | the exact width `W(n)` and its three uses, the negative memo, the bound cache: every one has a measured bound under the brief's 0.3% (§ 1) |
 | toolchain | `rustc 1.97.0 (2d8144b78 2026-07-07)`, valgrind 3.22.0, `rustfmt 1.9.0-stable (2d8144b788 2026-07-07)`; `cargo build --release -p chloro --features cli && cargo build --release -p chloro-core --examples` (fat LTO, one codegen unit) |
 | host | 4 vCPU, shared with E29 and E31 throughout; the session was interrupted from 2026-10-15 18:31 to 2026-10-17 06:31 UTC (account rate limit, host reboot); every binary's sha256 was checked after the reboot. `Ir` is load-independent; no wall-clock figure is claimed |
@@ -214,18 +214,27 @@ the result is `None` (E26's checks).
 | registry, whole | 299,932,845 | 299,939,565 | +6,720 |
 | registry, per file net (3 runs) | 298,829,438 | 298,839,573 | **+10,135** |
 
-- The registry rise is above the run-to-run spread (1.8–2.3 K between runs of one binary), so
-  protocol § 3 does not keep it, whatever the fixture gain; reverted.
+- A repeat of both registry measurements read 298,830,247 and 298,844,884 (+14,637): the rise is
+  a stable property of this binary, above the run-to-run spread of the minimum-of-3 figure
+  (1.8–2.3 K, two measurements of one binary; single runs of one binary differ by 10–14 K), so
+  protocol § 3 does not keep it, whatever the fixture gain: committed as `3d471d9` and reverted in
+  `d6b4d73`.
 - Decomposition (whole-sample exclusive `Ir`): the formatter +805 (`rewrite_closure_expr` +726,
   `Node::first_child` +96), libc +5,887 (`memcmp` +3,591; `vfscanf`, `strtoul`, `getdelim` at
   startup, glibc reading `/proc/self/maps`, whose cost follows the binary's mappings; the empty
   process moved from 316,079 to 318,352). Per file the largest move is
   `windows-sys-0.48.0/src/Windows/Win32/System/Rpc/mod.rs`, +5,608, which formatted alone under
   callgrind reads +1,801, of which `memcmp` +1,518 and no formatter function. So the rise is a
-  layout term, not the rule's work (+805); a layout-independent check (a `--shuffle` spread on
-  the registry sample, EXP-022) would be the way to settle it, and was not run in the time box.
-- The rule passed the harness over the fixtures (three option sets), the cliff shape and the
-  registry (§ 4) in the build that carried it.
+  layout term, not the rule's work (+805). Split per file the same way (each of the 49
+  processes' callgrind profile, net of the empty process, mean of the three runs): the formatter,
+  parser and std code −678, libc +8,100, `bench`'s own timing output −2,679. The startup term
+  (glibc reading `/proc/self/maps`, +2,273 per process) is the same in the empty and the real
+  processes and nets out. The same split puts `2c6bc21`'s own code at +3,819 per file on the
+  registry (whole-sample +3,178), offset by libc −3,779: the kept commit's registry figure is
+  flattered by the same kind of term that sinks rule C's. Function-order shuffling (`--shuffle`)
+  would not separate it (the term is in data layout, not code order) and was not run.
+- The rule passed the harness over the fixtures (three option sets), the closures-expr depths,
+  the registry and the cliff files (§ 4) in the commit that carried it.
 
 ## 4. The harness (measured)
 
@@ -236,10 +245,9 @@ the result is `None` (E26's checks).
 - A release build with debug assertions (`CARGO_PROFILE_RELEASE_DEBUG_ASSERTIONS=true`, LTO off,
   `target-da`) runs the same tests and `CHLORO_WIDTH_BOUND_ROOT` over the registry (25,077
   `.rs` files) and over the 109 files of the cliff generator (`gen.py`, scales 1, 2, 4, 8): 0
-  failures for `2c6bc21` (68.9 s for the fixtures and the registry), and 0 for the build with rule
-  C over the fixtures, the closures-expr depths and the registry (154.8 s; the cliff files were
-  not run for it). Mismatches: 0 (every check is an assertion; the first failure would stop the
-  run).
+  failures for `2c6bc21` (68.9 s for the fixtures and the registry) and 0 for `3d471d9` (63.8 s;
+  and 154.8 s for an earlier build of rule C with a full bound scan). Mismatches: 0 (every check
+  is an assertion; the first failure would stop the run).
 - Unit tests in `width.rs`: rule M with and without arms, comments, attributes, macro calls,
   generic arguments, items; rule C's item count, the absorbed receiver, the parents, `?`s,
   `.await`, fields, comments, a division (the rejected patch carries its tests).
@@ -266,26 +274,27 @@ base for closures-expr's k_net (1.143) and the fitted `p` of three shapes, which
 not change. The shapes have no `match` in a closure body, so the rule only costs its tests there
 (+7,482 at generic-calls scale 8, the largest).
 
-## Gates (measured, `2c6bc21`)
+## Gates (measured)
 
-| gate | scope | result |
-|---|---|---|
-| `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean |
-| `cargo test --workspace --all-features` | | 309 passed, 0 failed |
-| `bench -n 1 --check fixtures-e8d87c2.tsv`, sequential and `--threads 4` | 1238 fixtures | 0 changed; 0 differ between 4 threads and `format_source` |
-| `bench -n 1 --check registry-e8d87c2.tsv` | 25,077 registry files | 0 changed |
-| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220, 0 not idempotent, both |
-| `config_matrix -n 1220` | 31 option values against live rustfmt | every value identical on every accepted file (28 at 1022/1022; editions 844/844, 843/843, 838/838) |
-| `profile.sh --per-file` | both samples | § 3 |
-| debug-assertion harness | fixtures (3 option sets), closures-expr 2–16, registry, cliff files | 0 failures |
-| cliff generator | 5 shapes, 20 files | identical to rustfmt; § 5 |
+| gate | scope | `2c6bc21` (kept) | `3d471d9` (rule C, reverted) |
+|---|---|---|---|
+| `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings` | | clean | clean |
+| `cargo test --workspace --all-features` | | 309 passed, 0 failed | 310 passed, 0 failed |
+| `bench -n 1 --check fixtures-e8d87c2.tsv`, sequential and `--threads 4` | 1238 fixtures | 0 changed; 0 differ between 4 threads and `format_source` | same |
+| `bench -n 1 --check registry-e8d87c2.tsv` | 25,077 registry files | 0 changed | 0 changed |
+| `conform -i`, `conform -i -V 1.8.0` | 1220 fixtures | 1220/1220, 0 not idempotent, both | same |
+| `config_matrix -n 1220` | 31 option values against live rustfmt | every value identical on every accepted file (28 at 1022/1022; editions 844/844, 843/843, 838/838) | every value identical on every accepted file (same counts) |
+| `profile.sh --per-file` | both samples | § 3 | § 3 (registry rise) |
+| debug-assertion harness | fixtures (3 option sets), closures-expr 2–16, registry, 109 cliff files | 0 failures | 0 failures |
+| cliff generator | 5 shapes, 20 files | identical to rustfmt; § 5 | identical to rustfmt; exponents within 0.004 of the base |
 
 ## Decision
 
 Kept on the branch, for the integrator: `2c6bc21`, −801,783 `Ir` per file on the fixture sample
 (−0.363%), −2,718 on the registry sample, no output change on either corpus or any option value.
-Rejected: the chain-width rule (−688,476 per file on the fixtures, +10,135 on the registry, a
-layout term by its decomposition but above the spread). Not built: the exact width `W(n)` and its
+Rejected: the chain-width rule (`3d471d9`, reverted in `d6b4d73`; −688,476 per file on the
+fixtures, +10,135 and +14,637 on the registry in two measurements, a layout term by its
+decomposition but above the spread). Not built: the exact width `W(n)` and its
 uses at S1, S3 and `choose_rhs`, the negative memo and the bound cache, each under 0.3% by step 1.
 The hypothesis is falsified: the kept total is under 1.0%, and step 1 put the ceiling of every
 width-decidable attempt at 0.28% of the fixture run and 0.39% of the registry run before the
