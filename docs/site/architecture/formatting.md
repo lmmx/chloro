@@ -1,3 +1,7 @@
+---
+description: "chloro's port of rustfmt 1.9.0's formatting modules, the layer that adapts rust-analyzer's tree, and its optimisations."
+---
+
 # The formatting engine
 
 <p class="lede">chloro's formatter is a module-by-module port of rustfmt 1.9.0. An adaptation

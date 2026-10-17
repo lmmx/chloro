@@ -1,3 +1,7 @@
+---
+description: "chloro's development journal: how the dated records are organised, the codes they use, and where to start reading."
+---
+
 # Project history
 
 <p class="lede">chloro keeps a development journal: dated records of what was decided, what

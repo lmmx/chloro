@@ -86,6 +86,7 @@ logo = "assets/images/chloro.svg"
 variant = "modern"
 language = "en"
 features = [
+  "content.action.copy",
   "content.code.copy",
   "content.tabs.link",
   "navigation.footer",
@@ -128,3 +129,51 @@ name = "chloro on GitHub"
 icon = "fontawesome/brands/rust"
 link = "https://crates.io/crates/chloro"
 name = "chloro on crates.io"
+
+# llms.txt, llms-full.txt and a Markdown copy of each page listed here (<page>/index.md),
+# converted from the built HTML, with <link rel="alternate" type="text/markdown"> on each
+# page. Each description must equal the page's front-matter description; check_site.py
+# checks that, and that every page in the nav is listed.
+[project.plugins.llmstxt]
+full_output = "llms-full.txt"
+markdown_description = """
+chloro is a Rust code formatter that writes the same bytes as rustfmt (1.9.0 by default,
+or 1.8.0), several times faster and without the Rust compiler. It is a command-line tool
+(`chloro`) and two library crates (`chloro`, `chloro-core`; API on docs.rs). Each link
+below is the Markdown version of a page of https://lmmx.github.io/chloro/.
+"""
+
+[project.plugins.llmstxt.sections]
+"Start here" = [
+  {"index.md" = "A fast Rust code formatter that matches the output of rustfmt, byte for byte."},
+  {"getting-started/installation.md" = "Install chloro's command-line tool from a pre-built binary or from source, or add the chloro and chloro-core crates as a library."},
+  {"getting-started/quickstart.md" = "Check and format a Rust crate with chloro, and run the check in CI, with the same result as rustfmt at edition 2024."},
+]
+"Guide" = [
+  {"guide/cli.md" = "How the chloro command works: sources, check and write modes, exit codes, options, threads and caches."},
+  {"guide/configuration.md" = "rustfmt's stable options in chloro, with the same names, values and defaults, and the rustfmt_version option."},
+  {"guide/parallelism.md" = "How chloro spreads files and the items of large files across cores, with identical output at any thread count."},
+  {"guide/caching.md" = "chloro's caches: skipping files already seen formatted, the opt-in cache of formatted items, and where they live."},
+  {"guide/library.md" = "Formatting Rust source text from Rust with chloro's library functions, in parallel or with a cache of items."},
+]
+"Reference" = [
+  {"reference/cli.md" = "Reference for the chloro command: usage, every option, environment variables and exit statuses."},
+  {"reference/api.md" = "chloro's public Rust API on docs.rs, and where each entry point is explained on this site."},
+  {"compatibility.md" = "What chloro's output has been compared against, rustfmt 1.9.0 and 1.8.0, the options covered, and the known differences."},
+  {"performance.md" = "chloro's speed and memory against rustfmt and cargo fmt, the conditions of each measurement, and what was not measured."},
+  {"changelog.md" = "What changed in each chloro release, for people who use it."},
+]
+"How it works" = [
+  {"architecture/overview.md" = "How chloro turns Rust source into rustfmt's output: lexer, flat syntax tree, and a module-by-module port of rustfmt."},
+  {"architecture/parsing.md" = "How chloro parses with rust-analyzer's parser into a flat array, so that reading the syntax tree allocates nothing."},
+  {"architecture/formatting.md" = "chloro's port of rustfmt 1.9.0's formatting modules, the layer that adapts rust-analyzer's tree, and its optimisations."},
+  {"architecture/concurrency.md" = "Why rustfmt's top-level items can be formatted independently, and how chloro uses that for threads and caches."},
+]
+"Optional" = [
+  {"maintainers/development.md" = "The repository's layout, how to build and test chloro, the conformance checks, and the checks a change must pass."},
+  {"maintainers/parser-upgrades.md" = "How to check chloro's lexer and tree builder against a new ra_ap_parser release before upgrading."},
+  {"maintainers/benchmarking.md" = "How chloro is measured: instruction counts with callgrind, wall time against rustfmt, and the just vs-rustfmt recipe."},
+  {"maintainers/releasing.md" = "How chloro and chloro-core are released with release-plz, the checklist before a release, and the release binaries."},
+  {"maintainers/documentation.md" = "Where chloro's documentation lives, and how this website is built, checked and published to GitHub Pages."},
+  {"history.md" = "chloro's development journal: how the dated records are organised, the codes they use, and where to start reading."},
+]

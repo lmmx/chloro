@@ -1,3 +1,7 @@
+---
+description: "How chloro spreads files and the items of large files across cores, with identical output at any thread count."
+---
+
 # Parallelism
 
 <p class="lede">By default chloro uses every core. Files are spread across worker threads,

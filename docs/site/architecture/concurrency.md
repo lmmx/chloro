@@ -1,3 +1,7 @@
+---
+description: "Why rustfmt's top-level items can be formatted independently, and how chloro uses that for threads and caches."
+---
+
 # Parallelism and caches
 
 <p class="lede">chloro can format parts of a file separately because, in rustfmt, the output

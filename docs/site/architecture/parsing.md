@@ -1,3 +1,7 @@
+---
+description: "How chloro parses with rust-analyzer's parser into a flat array, so that reading the syntax tree allocates nothing."
+---
+
 # Parsing and the syntax tree
 
 <p class="lede">chloro parses with rust-analyzer's parser and stores the result as one flat

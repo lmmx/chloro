@@ -1,3 +1,7 @@
+---
+description: "The repository's layout, how to build and test chloro, the conformance checks, and the checks a change must pass."
+---
+
 # Development
 
 <p class="lede">How the repository is laid out, how to build and test it, and the checks a

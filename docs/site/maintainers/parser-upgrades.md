@@ -1,3 +1,7 @@
+---
+description: "How to check chloro's lexer and tree builder against a new ra_ap_parser release before upgrading."
+---
+
 # Upgrading the parser
 
 <p class="lede">chloro reimplements two pieces of rust-analyzer's parser crate for speed:

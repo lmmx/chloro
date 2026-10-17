@@ -1,3 +1,7 @@
+---
+description: "chloro's caches: skipping files already seen formatted, the opt-in cache of formatted items, and where they live."
+---
+
 # Caching
 
 <p class="lede">Most formatter runs, from a pre-commit hook or an editor on save, are over
