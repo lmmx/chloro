@@ -1,3 +1,7 @@
+---
+description: "Formatting Rust source text from Rust with chloro's library functions, in parallel or with a cache of items."
+---
+
 # Library
 
 <p class="lede">Each of chloro's library functions takes source text and returns formatted

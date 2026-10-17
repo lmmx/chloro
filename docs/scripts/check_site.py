@@ -7,12 +7,16 @@
 - Every internal link, image and stylesheet in the built site (default: site/) resolves to
   a file of the build, with its #anchor present, as served under the base path of
   site_url (/chloro/ on GitHub Pages).
+- Every nav page has a front-matter description, and is listed once in the llmstxt sections
+  of zensical.toml with that same description; the built site has llms.txt, llms-full.txt
+  and the page's Markdown copy.
 - With --chloro, docs/site/_snippets/cli/help.txt equals that binary's `--help` output.
 
 Exits with 1 and lists every problem found.
 """
 
 import argparse
+import re
 import subprocess
 import sys
 import tomllib
@@ -103,6 +107,32 @@ def check_links(config, site, problems):
     return checked
 
 
+def check_llms(config, site, problems):
+    docs = ROOT / config["project"]["docs_dir"]
+    sections = config["project"]["plugins"]["llmstxt"]["sections"]
+    listed = [entry for entries in sections.values() for item in entries for entry in item.items()]
+    paths = [path for path, _ in listed]
+    for page in sorted({p for p in paths if paths.count(p) > 1}):
+        problems.append(f"listed more than once in the llmstxt sections: {page}")
+    for page in nav_pages(config["project"]["nav"]):
+        text = (docs / page).read_text() if (docs / page).exists() else ""
+        m = re.match(r'---\n(?:.*\n)*?description: "(.*)"\n(?:.*\n)*?---\n', text)
+        if not m:
+            problems.append(f"no front-matter description: {page}")
+        if page not in paths:
+            problems.append(f"not in the llmstxt sections of zensical.toml: {page}")
+        elif m and dict(listed)[page] != m.group(1):
+            problems.append(f"llmstxt description differs from the front matter: {page}")
+    if (site / "index.html").exists():
+        for name in ("llms.txt", "llms-full.txt"):
+            if not (site / name).exists():
+                problems.append(f"no {name} in the built site")
+        for page in paths:
+            md = site / ("index.md" if page == "index.md" else page.removesuffix(".md") + "/index.md")
+            if not md.exists():
+                problems.append(f"no Markdown copy of {page} at {md.relative_to(site)}")
+
+
 def check_snippet(chloro, problems):
     snippet = ROOT / "docs/site/_snippets/cli/help.txt"
     help_text = subprocess.run([chloro, "--help"], capture_output=True, text=True).stdout
@@ -124,6 +154,7 @@ def main():
         print(f"{checked} internal links checked", file=sys.stderr)
     else:
         problems.append(f"no built site at {site} (just site-build)")
+    check_llms(config, site, problems)
     if args.chloro:
         check_snippet(args.chloro, problems)
     for problem in problems:

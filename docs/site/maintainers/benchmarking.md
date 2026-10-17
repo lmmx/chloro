@@ -1,3 +1,7 @@
+---
+description: "How chloro is measured: instruction counts with callgrind, wall time against rustfmt, and the just vs-rustfmt recipe."
+---
+
 # Benchmarking
 
 <p class="lede">chloro's performance work uses two kinds of measurement: instruction counts,

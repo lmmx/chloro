@@ -1,3 +1,7 @@
+---
+description: "How chloro turns Rust source into rustfmt's output: lexer, flat syntax tree, and a module-by-module port of rustfmt."
+---
+
 # How it works
 
 <p class="lede">chloro is rustfmt's formatting code ported onto a parser that is available as

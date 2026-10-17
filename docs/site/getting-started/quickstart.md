@@ -1,3 +1,7 @@
+---
+description: "Check and format a Rust crate with chloro, and run the check in CI, with the same result as rustfmt at edition 2024."
+---
+
 # Quickstart
 
 <p class="lede">How to check and format a crate with chloro, and how to run the check in CI.

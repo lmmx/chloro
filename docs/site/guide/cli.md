@@ -1,3 +1,7 @@
+---
+description: "How the chloro command works: sources, check and write modes, exit codes, options, threads and caches."
+---
+
 # Command line
 
 <p class="lede">chloro formats the <code>.rs</code> files under the paths you give it.

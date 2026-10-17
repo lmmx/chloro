@@ -1,3 +1,7 @@
+---
+description: "Where chloro's documentation lives, and how this website is built, checked and published to GitHub Pages."
+---
+
 # Documentation
 
 <p class="lede">Where chloro's documentation lives, and how this website is built, checked
@@ -57,10 +61,35 @@ When the CLI's help text changes, `just site-snippets` regenerates the snippet t
   a file, relative to the repository root.
 - Add a new page to the `nav` in `zensical.toml`; `site-check` fails on a page that is not
   in it.
+- Give each page a front-matter `description` (one sentence, at most 160 characters), and
+  list the page with the same description in the `llmstxt` sections of `zensical.toml`.
+  The description is the page's meta description for search engines and its entry in
+  `llms.txt`; `site-check` fails on a page without one, or one listed with another.
 - Link between pages with relative paths to the `.md` files. Link to the journal, the source
   and anything else in the repository with absolute GitHub URLs on `master`, since those
   files are not part of the site.
 - State measured figures with their conditions, and link to the record they come from.
+
+## For agents and LLMs
+
+Zensical's built-in `llmstxt` plugin, configured in `zensical.toml`, adds to every build:
+
+- `llms.txt`, an index of the pages in the [llms.txt](https://llmstxt.org/) format, with
+  each page's description; the maintainers' pages are under *Optional*;
+- `llms-full.txt`, every listed page in one file;
+- a Markdown copy of each page beside its HTML, `<page>/index.md`, converted from the built
+  page (snippets included, links absolute);
+- `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` (to
+  `llms.txt`) in each page's head.
+
+Each page also has a *Copy as Markdown* button (`content.action.copy`). `AGENTS.md` at the
+repository root is the entry point for coding agents working on the code, and the README
+links all of these.
+
+GitHub Pages serves the site from a subpath, so a `robots.txt` (which must be at the domain
+root) is not possible, and it cannot negotiate content or set headers: an agent asking for
+`text/markdown` gets HTML, and finds the Markdown through the links above. The sitemap is at
+`sitemap.xml`.
 
 ## Design
 

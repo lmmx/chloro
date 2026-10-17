@@ -1,3 +1,7 @@
+---
+description: "chloro's public Rust API on docs.rs, and where each entry point is explained on this site."
+---
+
 # Rust API
 
 The Rust API is documented on docs.rs. This page lists the public entry points and where

@@ -1,3 +1,7 @@
+---
+description: "Install chloro's command-line tool from a pre-built binary or from source, or add the chloro and chloro-core crates as a library."
+---
+
 # Installation
 
 <p class="lede">chloro is published as two crates: <code>chloro</code>, which holds the

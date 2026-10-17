@@ -1,3 +1,7 @@
+---
+description: "rustfmt's stable options in chloro, with the same names, values and defaults, and the rustfmt_version option."
+---
+
 # Configuration
 
 <p class="lede">chloro accepts rustfmt's stable options, with the same names, value spellings

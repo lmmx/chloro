@@ -1,3 +1,7 @@
+---
+description: "chloro's speed and memory against rustfmt and cargo fmt, the conditions of each measurement, and what was not measured."
+---
+
 # Performance
 
 <p class="lede">chloro's speed and memory use measured against rustfmt, the conditions of the

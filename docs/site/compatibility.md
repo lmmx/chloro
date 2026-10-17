@@ -1,3 +1,7 @@
+---
+description: "What chloro's output has been compared against, rustfmt 1.9.0 and 1.8.0, the options covered, and the known differences."
+---
+
 # rustfmt compatibility
 
 <p class="lede">chloro aims to produce exactly the bytes rustfmt produces. This page lists

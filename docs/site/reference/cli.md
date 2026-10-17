@@ -1,3 +1,8 @@
+---
+title: "Command-line reference"
+description: "Reference for the chloro command: usage, every option, environment variables and exit statuses."
+---
+
 # ++"chloro"++
 
 Reference for the `chloro` command. The [Command line guide](../guide/cli.md) explains how the

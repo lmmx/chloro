@@ -1,6 +1,6 @@
 ---
-title: chloro
-description: A fast Rust code formatter that matches the output of rustfmt, byte for byte.
+title: "A fast Rust formatter that matches rustfmt"
+description: "A fast Rust code formatter that matches the output of rustfmt, byte for byte."
 ---
 
 <h1 id="chloro-home">chloro</h1>
