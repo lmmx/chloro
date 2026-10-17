@@ -23,6 +23,10 @@ Options:
       --config-path PATH
                      The rustfmt.toml for every file, or a directory holding one
       --isolated     Read no rustfmt.toml and no Cargo.toml edition
+      --stdin        Format standard input to standard output
+      --stdin-filepath PATH
+                     With --stdin: the file the text belongs to, whose
+                     configuration applies (default: the current directory's)
       --no-cache     Format every file; do not read or write the caches
       --unit-cache   Also cache each formatted top-level item, so that a changed
                      file formats only the items not seen before (off by default)
@@ -44,6 +48,9 @@ Examples:
 
   # Format files in-place
   chloro --write src/
+
+  # Format an editor's buffer, under the configuration of its file
+  chloro --stdin --stdin-filepath src/lib.rs < buffer.rs
 
   # Format with rustfmt options
   chloro --config max_width=80,tab_spaces=2 src/lib.rs
@@ -90,6 +97,14 @@ The `rustfmt.toml` for every file, or a directory whose `.rustfmt.toml` or `rust
 ### <kbd>--isolated</kbd>
 
 Read no `rustfmt.toml` (the nearest, the home directory's or the user configuration directory's) and take no edition from a `Cargo.toml`: every file is formatted with the defaults and `--config`. Cannot be combined with `--config-path`.
+
+### <kbd>--stdin</kbd>
+
+Format standard input and write it to standard output. Input that does not parse writes nothing to standard output and exits with 1; with `--check`, nothing is written and the exit status is 1 when the input needs formatting. Not with `--write` or sources. [Standard input](<https://lmmx.github.io/chloro/guide/cli/#standard-input>).
+
+### <kbd>--stdin-filepath PATH</kbd>
+
+With `--stdin`, the file the input belongs to (it need not exist): its configuration applies, and errors name it. Without it, the current directory's configuration applies.
 
 ### <kbd>--threads N</kbd>
 

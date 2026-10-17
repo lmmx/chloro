@@ -51,7 +51,7 @@ chloro's formatting modules follow rustfmt's source files (`items`, `expr`, `cha
 
 It takes rustfmt's stable options under their rustfmt names (`max_width`, `tab_spaces`, `use_small_heuristics`, `edition`, `style_edition` and the rest), from `rustfmt.toml` and `--config key=value` on the command line or on a `Config` in the library, and takes each crate's edition from its `Cargo.toml` as `cargo fmt` does. Unstable options keep their default values. By default it reproduces rustfmt 1.9.0; with `rustfmt_version = "1.8.0"` it reproduces rustfmt 1.8.0, the release shipped with Rust 1.88.
 
-The command line is not a replacement for the `rustfmt` binary: chloro has no `--emit` modes, and does not format standard input. [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>) lists the other differences.
+The command line is not a replacement for the `rustfmt` binary: chloro has no `--emit` modes, and formats standard input only with `--stdin`. [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>) lists the other differences.
 
 ## Documentation
 

@@ -1154,6 +1154,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-stdin" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--stdin</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-stdin-filepath-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--stdin-filepath PATH</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-threads-n" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1472,6 +1494,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#-stdin" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--stdin</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-stdin-filepath-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <span class="keys"><kbd>--stdin-filepath PATH</kbd></span>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-threads-n" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1622,6 +1666,10 @@ Options:
       --config-path PATH
                      The rustfmt.toml for every file, or a directory holding one
       --isolated     Read no rustfmt.toml and no Cargo.toml edition
+      --stdin        Format standard input to standard output
+      --stdin-filepath PATH
+                     With --stdin: the file the text belongs to, whose
+                     configuration applies (default: the current directory's)
       --no-cache     Format every file; do not read or write the caches
       --unit-cache   Also cache each formatted top-level item, so that a changed
                      file formats only the items not seen before (off by default)
@@ -1643,6 +1691,9 @@ Examples:
 
   # Format files in-place
   chloro --write src/
+
+  # Format an editor's buffer, under the configuration of its file
+  chloro --stdin --stdin-filepath src/lib.rs &lt; buffer.rs
 
   # Format with rustfmt options
   chloro --config max_width=80,tab_spaces=2 src/lib.rs
@@ -1688,6 +1739,14 @@ one, is an error. The edition still comes from each file's <code>Cargo.toml</cod
 <p>Read no <code>rustfmt.toml</code> (the nearest, the home directory's or the user configuration
 directory's) and take no edition from a <code>Cargo.toml</code>: every file is formatted with the
 defaults and <code>--config</code>. Cannot be combined with <code>--config-path</code>.</p>
+<h3 id="-stdin"><span class="keys"><kbd>--stdin</kbd></span><a class="headerlink" href="#-stdin" title="Permanent link">&para;</a></h3>
+<p>Format standard input and write it to standard output. Input that does not parse writes
+nothing to standard output and exits with 1; with <code>--check</code>, nothing is written and the
+exit status is 1 when the input needs formatting. Not with <code>--write</code> or sources.
+<a href="../../guide/cli/#standard-input">Standard input</a>.</p>
+<h3 id="-stdin-filepath-path"><span class="keys"><kbd>--stdin-filepath PATH</kbd></span><a class="headerlink" href="#-stdin-filepath-path" title="Permanent link">&para;</a></h3>
+<p>With <code>--stdin</code>, the file the input belongs to (it need not exist): its configuration
+applies, and errors name it. Without it, the current directory's configuration applies.</p>
 <h3 id="-threads-n"><span class="keys"><kbd>--threads N</kbd></span><a class="headerlink" href="#-threads-n" title="Permanent link">&para;</a></h3>
 <p>The number of worker threads. The default, or <code>0</code>, is one per core. Files of 128 KiB and
 more also have their top-level items formatted on this many threads.

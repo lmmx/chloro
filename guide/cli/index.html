@@ -528,6 +528,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#standard-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Standard input
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1322,6 +1333,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#standard-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Standard input
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1488,6 +1510,16 @@ text.</p>
 <td><a href="../configuration/#configuration-files">Configuration files</a></td>
 </tr>
 <tr>
+<td><code>--stdin</code></td>
+<td>format standard input to standard output</td>
+<td><a href="#standard-input">below</a></td>
+</tr>
+<tr>
+<td><code>--stdin-filepath PATH</code></td>
+<td>with <code>--stdin</code>, the file whose configuration applies</td>
+<td><a href="#standard-input">below</a></td>
+</tr>
+<tr>
 <td><code>--threads N</code></td>
 <td>worker threads (default: one per core)</td>
 <td><a href="../parallelism/">Parallelism</a></td>
@@ -1519,6 +1551,46 @@ text.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="standard-input">Standard input<a class="headerlink" href="#standard-input" title="Permanent link">&para;</a></h2>
+<p><code>chloro --stdin</code> reads Rust source from standard input and writes the formatted text to
+standard output, as <code>rustfmt</code> does when it is given no file. This is how editors call a
+formatter on an unsaved buffer.</p>
+<div class="language-sh highlight"><pre><span></span><code>chloro<span class="w"> </span>--stdin<span class="w"> </span>&lt;<span class="w"> </span>src/lib.rs
+chloro<span class="w"> </span>--stdin<span class="w"> </span>--stdin-filepath<span class="w"> </span>src/lib.rs<span class="w"> </span>&lt;<span class="w"> </span>buffer.rs
+</code></pre></div>
+<ul>
+<li><strong>Configuration.</strong> That of the file <code>--stdin-filepath</code> names (which need not exist), as
+  for a file under <a href="../configuration/#configuration-files">Configuration files</a>; without it,
+  that of the current directory, as rustfmt does. <code>--config</code> and <code>--isolated</code> apply.</li>
+<li><strong>Errors.</strong> Input that does not parse is reported on standard error, under <code>&lt;stdin&gt;</code> or
+  the <code>--stdin-filepath</code> path, nothing is written to standard output, and the exit status
+  is 1, so an editor keeps the buffer as it is.</li>
+<li><strong><code>--check</code></strong> writes nothing and exits with 1 when the input needs formatting (rustfmt
+  1.9.0 prints the diff and exits with 0). <code>--write</code> and sources are refused. The caches
+  are not used.</li>
+</ul>
+<p>Editor settings that run chloro on the buffer, with the buffer's path for its
+configuration where the editor can pass it:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">rust-analyzer</label><label for="__tabbed_1_2">Zed</label><label for="__tabbed_1_3">Helix</label><label for="__tabbed_1_4">conform.nvim</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-json highlight"><pre><span></span><code><span class="nt">"rust-analyzer.rustfmt.overrideCommand"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"chloro"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--stdin"</span><span class="p">]</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-json highlight"><pre><span></span><code><span class="nt">"formatter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"external"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"chloro"</span><span class="p">,</span><span class="w"> </span><span class="nt">"arguments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"--stdin"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--stdin-filepath"</span><span class="p">,</span><span class="w"> </span><span class="s2">"{buffer_path}"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-toml highlight"><pre><span></span><code><span class="n">formatter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"chloro"</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"--stdin"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--stdin-filepath"</span><span class="p">,</span><span class="w"> </span><span class="s2">"%{buffer_name}"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-lua highlight"><pre><span></span><code><span class="nv">formatters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">chloro</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"chloro"</span><span class="p">,</span><span class="w"> </span><span class="nv">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"--stdin"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--stdin-filepath"</span><span class="p">,</span><span class="w"> </span><span class="s2">"$FILENAME"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1557,8 +1629,8 @@ text.</p>
   line endings that does need formatting is written with <code>\n</code> ones. Under the other styles,
   any difference in the bytes counts.</li>
 </ul>
-<p>A few things rustfmt does that chloro does not (<code>--emit</code>, formatting standard input) are
-listed under
+<p>A few things rustfmt does that chloro does not (<code>--emit</code>, <code>--files-with-diff</code>) are listed
+under
 <a href="../../compatibility/#what-is-not-covered">rustfmt compatibility</a>.</p>
 
 

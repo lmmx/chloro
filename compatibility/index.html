@@ -1543,9 +1543,11 @@ compared.</p>
   release with <code>rustfmt_version</code>.</li>
 <li><strong>Unstable options.</strong> chloro always uses rustfmt's defaults for them, and setting one to
   another value is an error (<a href="../guide/configuration/#unstable-rustfmt-options">Configuration</a>).</li>
-<li><strong>rustfmt's command line.</strong> There are no <code>--emit</code>, <code>--files-with-diff</code>, <code>--edition</code> or
-  standard input modes; <code>--check</code> reports a count, not a diff. An edition comes from the
-  crate's <code>Cargo.toml</code> or from <code>--config edition=…</code>.</li>
+<li><strong>rustfmt's command line.</strong> There are no <code>--emit</code>, <code>--files-with-diff</code> or <code>--edition</code>
+  options; <code>--check</code> reports a count, not a diff. An edition comes from the crate's
+  <code>Cargo.toml</code> or from <code>--config edition=…</code>. Standard input needs <code>--stdin</code>, since chloro
+  with no source formats the current directory; with <code>--check</code>, chloro exits with 1 when it
+  needs formatting, where rustfmt 1.9.0 prints the diff and exits with 0.</li>
 <li><strong>Out-of-line modules.</strong> rustfmt formats the files a crate's <code>mod</code> declarations lead to;
   chloro formats the files and directories you name, whatever modules they declare.</li>
 <li><strong>Syntax rust-analyzer's parser cannot represent.</strong> chloro parses with rust-analyzer's

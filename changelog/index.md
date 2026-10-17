@@ -12,6 +12,7 @@ This file is written by hand, and each release's GitHub notes are taken from it.
 - `is_unchanged(source, formatted, config)` tells whether rustfmt counts a formatting function's output as a change to the source (see *Fixed*); `chloro` re-exports it.
 - The command line reads each file's configuration as `cargo fmt` does ([\#105](<https://github.com/lmmx/chloro/issues/105>)): the nearest `.rustfmt.toml` or `rustfmt.toml` (else the home or user configuration directory's), with rustfmt's warnings for unstable and unknown options and its refusal of an invalid value, and the edition of the crate's `Cargo.toml` (`edition.workspace = true` included), which overrides the file's. `--config` applies over both, `--config-path` names the file for every file, and `--isolated` reads neither. The fixed-point and unit caches are kept per configuration.
 - `Config::set_from_file` and `FileValue`: one option of a configuration file, applied with rustfmt's types and warnings.
+- `--stdin` formats standard input to standard output, for editors ([\#106](<https://github.com/lmmx/chloro/issues/106>)), under the configuration of the file `--stdin-filepath` names or of the current directory. Input that does not parse writes nothing and exits with 1; `--check` exits with 1 when the input needs formatting.
 
 ### Changed
 

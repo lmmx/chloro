@@ -64,12 +64,45 @@ The flags are summarised here; the [CLI reference](<https://lmmx.github.io/chlor
 | `--config OPTS` | rustfmt options as `key=value,key=value`, over the configuration file's | [Configuration](<https://lmmx.github.io/chloro/guide/configuration/index.md>) |
 | `--config-path PATH` | the `rustfmt.toml` for every file, or a directory holding one | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
 | `--isolated` | read no `rustfmt.toml` and no `Cargo.toml`: only `--config` applies | [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>) |
+| `--stdin` | format standard input to standard output | [below](<#standard-input>) |
+| `--stdin-filepath PATH` | with `--stdin`, the file whose configuration applies | [below](<#standard-input>) |
 | `--threads N` | worker threads (default: one per core) | [Parallelism](<https://lmmx.github.io/chloro/guide/parallelism/index.md>) |
 | `--no-cache` | neither read nor write the caches | [Caching](<https://lmmx.github.io/chloro/guide/caching/index.md>) |
 | `--unit-cache` | also cache each formatted top-level item | [Caching](<https://lmmx.github.io/chloro/guide/caching/#the-unit-cache>) |
 | `--cache-dir DIR` | where the caches live | [Caching](<https://lmmx.github.io/chloro/guide/caching/#where-the-cache-lives>) |
 | `-V`, `--version` | print the version, marked `-dev` unless built from the release | [Reference](<https://lmmx.github.io/chloro/reference/cli/#-version-v>) |
 | `-h`, `--help` | print the help text |  |
+
+## Standard input
+
+`chloro --stdin` reads Rust source from standard input and writes the formatted text to standard output, as `rustfmt` does when it is given no file. This is how editors call a formatter on an unsaved buffer.
+
+```sh
+chloro --stdin < src/lib.rs
+chloro --stdin --stdin-filepath src/lib.rs < buffer.rs
+```
+
+- **Configuration.** That of the file `--stdin-filepath` names (which need not exist), as for a file under [Configuration files](<https://lmmx.github.io/chloro/guide/configuration/#configuration-files>); without it, that of the current directory, as rustfmt does. `--config` and `--isolated` apply.
+- **Errors.** Input that does not parse is reported on standard error, under `<stdin>` or the `--stdin-filepath` path, nothing is written to standard output, and the exit status is 1, so an editor keeps the buffer as it is.
+- **`--check`** writes nothing and exits with 1 when the input needs formatting (rustfmt 1.9.0 prints the diff and exits with 0). `--write` and sources are refused. The caches are not used.
+
+Editor settings that run chloro on the buffer, with the buffer's path for its configuration where the editor can pass it:
+
+```json
+"rust-analyzer.rustfmt.overrideCommand": ["chloro", "--stdin"]
+```
+
+```json
+"formatter": { "external": { "command": "chloro", "arguments": ["--stdin", "--stdin-filepath", "{buffer_path}"] } }
+```
+
+```toml
+formatter = { command = "chloro", args = ["--stdin", "--stdin-filepath", "%{buffer_name}"] }
+```
+
+```lua
+formatters = { chloro = { command = "chloro", args = { "--stdin", "--stdin-filepath", "$FILENAME" } } }
+```
 
 ## Environment variables
 
@@ -87,4 +120,4 @@ chloro handles both as rustfmt does:
 - The output's line endings follow the `newline_style` option. `Unix` and `Windows` force `\n` or `\r\n`, and `Native` uses the platform's. The default, `Auto`, takes the style of the first line ending of the text as rustc reads it, in which `\r\n` is already `\n`: so the output has `\n` line endings (the platform's for a file without a line break).
 - Whether a file needs formatting is decided as rustfmt decides it. Under `Auto`, a file that differs from its formatted output only in its `\r\n` line endings or a byte order mark is formatted: `--check` passes and `--write` leaves it as it is. A file with `\r\n` line endings that does need formatting is written with `\n` ones. Under the other styles, any difference in the bytes counts.
 
-A few things rustfmt does that chloro does not (`--emit`, formatting standard input) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
+A few things rustfmt does that chloro does not (`--emit`, `--files-with-diff`) are listed under [rustfmt compatibility](<https://lmmx.github.io/chloro/compatibility/#what-is-not-covered>).
